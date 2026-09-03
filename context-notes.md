@@ -116,6 +116,59 @@ IndexedDB는 PK 변경이 불가능하다.
 
 ---
 
+## 2026-09-03 — Phase 1 착수 (스캐폴딩 + 원본 데이터)
+
+### 스캐폴딩
+
+- `npm create vite@latest -- --template react-ts`로 생성. 현재 폴더에 문서가 이미 있어
+  임시 폴더에 만든 뒤 소스·설정만 옮겼다.
+- Vite 8 / React 19 / TS 6. 스캐폴드가 eslint 대신 `oxlint`를 기본으로 준다 — 그대로 둠.
+- `vite-plugin-pwa`는 설치만 하고 `vite.config.ts`에 연동하지 않았다. PWA는 Phase 7
+  범위이고, Phase 1~4는 Node 테스트 환경이라 서비스워커가 개발을 방해한다.
+- `tsx`를 추가했다. `tools/*.ts`를 트랜스파일 없이 실행하기 위한 것. `tsconfig.tools.json`
+  분리.
+- 테스트는 vitest, `environment: 'node'` (Phase 4까지 DOM 불필요).
+- `data/dict/`도 `.gitignore`에 추가했다. 빌드타임 사전 DB 산출물이라 재생성 가능.
+
+### 원본 데이터 (data/raw/, 커밋 안 함)
+
+| 파일 | 출처 | 버전 / 일자 | 라이선스 |
+|---|---|---|---|
+| `kanjidic2-all-3.6.2.json` | jmdict-simplified 릴리스 `3.6.2+20260831182826` | dictDate 2026-08-31, db 2026-243 | CC BY-SA 4.0 |
+| `jmdict-eng-3.6.2.json` | jmdict-simplified 같은 릴리스 (117MB) | dictDate 2026-08-31 | CC BY-SA 4.0 |
+| `JMdict_e.gz` | EDRDG ftp 원본 XML (10.5MB) | 다운로드 2026-09-03 | CC BY-SA 4.0 |
+
+재현: `curl -sL <github release url>` + `tar -xzf`. KANJIDIC2 원본 XML은 JSON 변환본으로
+충분해서 받지 않았다.
+
+### KANJIDIC2 임포트 결과 (`tools/import-kanjidic.ts` → `data/dict/kanji.json`)
+
+- 한자 13,108자. grade 1~8(상용) 2,136자. `korean_h` 보유 6,293자.
+- 표외자 필터는 `jouyou = grade 1~8` 플래그로 파생. grade 9~10(인명용)·null은 표외 취급.
+- 반복 기호 `々`는 KANJIDIC 문자가 아니다. 段々·人々 같은 숙어 처리 시 별도 대응 필요.
+
+### ⚠️ jmdict-simplified가 우선순위 태그(`nfxx`)를 버렸다 — 밴드 설계에 영향
+
+PLAN §4 난이도 밴드는 전적으로 `nf01`~`nf48` / `news1` / `news2` / `ichi1` / `spec1`
+태그 범위에 기반한다. **jmdict-simplified 3.6.2는 이 태그를 전부 제거하고 form별
+`common` 불리언 하나로 대체했다.** (raw 데이터에서 `"nf`, `"news1"` 등 검색 결과 0건 확인.)
+
+반면 EDRDG 원본 `JMdict_e.gz`는 `<ke_pri>`/`<re_pri>`에 `nf22`, `news1`, `ichi1` 등을
+그대로 보존한다 (검색으로 확인).
+
+→ **미결정. 사용자 확인 대기.** 후보:
+- **A. JMdict 원본 XML을 파싱** — 표제어·읽기·품사·우선순위 태그가 한 소스에 다 있다.
+  `fast-xml-parser` 설치해둠. jmdict-simplified 타입 패키지는 JMdict용으로는 불필요해진다.
+- **B. jmdict-simplified 유지 + 밴드를 `common` + KANJIDIC `frequency`로 재설계** —
+  PLAN §4와 context-notes가 명시적으로 기각한 "외부 빈도 코퍼스" 방향으로 되돌아감.
+  `common`은 2단계뿐이라 5밴드 해상도가 안 나온다.
+- **C. 하이브리드** — jmdict-simplified로 본문, 원본 XML로 우선순위만 뽑아 `id`(=`ent_seq`)로 조인. 파서 2개.
+
+권고는 **A**. jmdict-simplified의 유일한 이점이 깨끗한 JSON인데, 이 프로젝트 난이도 축의
+핵심 신호를 못 실으면 JMdict용으로는 실격이다. XML 파싱은 1회성 빌드 스크립트다.
+
+---
+
 ## 미확정 — Phase 1 실측 후 결정
 
 | # | 항목 | 판단 근거 |

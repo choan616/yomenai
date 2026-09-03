@@ -19,30 +19,22 @@
 
 ### 1-1. 프로젝트 셋업
 
-- [ ] Vite + React + TS 스캐폴딩
-  ```bash
-  npm create vite@latest yomenai -- --template react-ts
-  cd yomenai && npm install
-  ```
-- [ ] 의존성 설치 (한 번에)
-  ```bash
-  npm install dexie dexie-react-hooks ts-fsrs wanakana
-  npm install -D vitest vite-plugin-pwa
-  ```
-- [ ] `npm run dev` 정상 기동 확인 → **검증: 브라우저에서 열리고 콘솔 에러 없음**
-- [ ] `npm run test` 스크립트 추가, 더미 테스트 1개 통과 → **검증: vitest 실행됨**
-- [ ] `.gitignore`에 `data/raw/` 추가 (사전 원본은 커밋하지 않는다)
+- [x] Vite + React + TS 스캐폴딩 (임시 폴더 경유, Vite 8 / React 19 / TS 6)
+- [x] 의존성 설치 — dexie, dexie-react-hooks, ts-fsrs, wanakana / -D vitest, vite-plugin-pwa, tsx, fast-xml-parser
+- [x] `npm run dev` 정상 기동 확인 → HTTP 200, index.html 서빙, 콘솔 에러 없음
+- [x] `npm run test` 스크립트 추가, 더미 테스트 1개 통과 → vitest 3.2 실행 확인
+- [x] `.gitignore`에 `data/raw/` (+ `data/dict/`) 추가
 
 ### 1-2. 원본 데이터 확보
 
-- [ ] KANJIDIC2 다운로드 → `data/raw/`
-- [ ] JMdict (또는 jmdict-simplified JSON) 다운로드 → `data/raw/`
-- [ ] 파일 버전·다운로드 일자를 `context-notes.md`에 기록 → **검증: 재현 가능한 기록**
+- [x] KANJIDIC2 다운로드 → `data/raw/kanjidic2-all-3.6.2.json` (jmdict-simplified 변환본)
+- [x] JMdict 다운로드 → `data/raw/jmdict-eng-3.6.2.json` + `data/raw/JMdict_e.gz` (원본 XML)
+- [x] 파일 버전·다운로드 일자를 `context-notes.md`에 기록 (2026-09-03 절)
 
 ### 1-3. 임포트 스크립트
 
-- [ ] `tools/import-kanjidic.ts` — 한자별 `grade`, `freq`, 음훈독, `korean_h` 추출
-- [ ] `tools/import-jmdict.ts` — 한자만으로 구성된 표제어 필터링, 우선순위 태그 파싱
+- [x] `tools/import-kanjidic.ts` — 한자별 `grade`, `freq`, 음훈독, `korean_h` 추출 → `data/dict/kanji.json` (13,108자)
+- [ ] `tools/import-jmdict.ts` — 한자만으로 구성된 표제어 필터링, 우선순위 태그 파싱 **(JMdict 소스 결정 대기: context-notes 2026-09-03 ⚠️ 절)**
 - [ ] 표외자 포함 숙어 제외 필터
 - [ ] 사전 DB 산출 (형식은 1-4에서 결정)
 - [ ] **검증: 임의 숙어 20개의 읽기·품사·구성 한자가 원본과 일치**
