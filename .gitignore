@@ -1,0 +1,17 @@
+node_modules/
+dist/
+dist-ssr/
+*.log
+
+.env
+.env.local
+*.local
+
+# 사전 원본 (재다운로드 가능, 커밋 금지)
+data/raw/
+# 빌드타임 사전 DB 산출물 (재생성 가능)
+data/dict/
+
+.DS_Store
+.vscode/*
+!.vscode/extensions.json

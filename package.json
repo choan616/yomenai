@@ -1,0 +1,38 @@
+{
+  "name": "yomenai",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "lint": "oxlint",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "import:kanjidic": "tsx tools/import-kanjidic.ts",
+    "import:jmdict": "tsx tools/import-jmdict.ts",
+    "measure": "tsx tools/measure.ts"
+  },
+  "dependencies": {
+    "dexie": "^4.2.0",
+    "dexie-react-hooks": "^4.2.0",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "ts-fsrs": "^5.4.1",
+    "wanakana": "^5.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "^24.13.3",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.4",
+    "@vitejs/plugin-react": "^6.1.0",
+    "fast-xml-parser": "^5.2.5",
+    "oxlint": "^1.79.0",
+    "tsx": "^4.20.3",
+    "typescript": "~6.0.2",
+    "vite": "^8.2.2",
+    "vite-plugin-pwa": "^1.0.3",
+    "vitest": "^3.2.4"
+  }
+}
