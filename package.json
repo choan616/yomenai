@@ -12,7 +12,10 @@
     "test:watch": "vitest",
     "import:kanjidic": "tsx tools/import-kanjidic.ts",
     "import:jmdict": "tsx tools/import-jmdict.ts",
-    "measure": "tsx tools/measure.ts"
+    "measure": "tsx tools/measure.ts",
+    "build:bands": "tsx tools/build-bands.ts",
+    "build:onyomi": "tsx tools/build-onyomi-map.ts",
+    "review:bands": "tsx tools/review-bands.ts"
   },
   "dependencies": {
     "dexie": "^4.2.0",
