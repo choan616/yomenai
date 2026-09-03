@@ -8,6 +8,7 @@
     "module": "nodenext",
     "moduleResolution": "nodenext",
     "moduleDetection": "force",
+    "allowImportingTsExtensions": true,
     "noEmit": true,
     "strict": true,
     "noUnusedLocals": true,
