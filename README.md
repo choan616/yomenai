@@ -22,8 +22,14 @@
 
 ## 현재 상태
 
-Phase 0 문서 작성 완료. 코드는 아직 없다.
-다음 작업은 `checklist.md`의 Phase 1부터다.
+Phase 1 완료 — 스캐폴딩(Vite + React 19 + TS) + 데이터 파이프라인.
+`tools/import-kanjidic.ts` → 한자 13,108자, `tools/import-jmdict.ts` → 숙어 107,532개.
+실측 결과와 미확정 결정은 `context-notes.md` 2026-09-03 절 참조.
+다음 작업은 `checklist.md`의 Phase 2 (레벨링 + 음독 매핑)다.
+
+사전 원본(`data/raw/`)과 산출물(`data/dict/`)은 커밋하지 않는다.
+`npm i` 후 `npm run import:kanjidic && npm run import:jmdict` 로 재생성한다.
+단 `data/raw/`에 `kanjidic2-all-*.json` 과 `JMdict_e.gz` 가 먼저 있어야 한다.
 
 ## Claude Code에서 시작하기
 
