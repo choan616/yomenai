@@ -18,6 +18,11 @@ const text = (v: unknown): string =>
   typeof v === 'string' ? v : typeof v === 'number' ? String(v) : String((v as El)?.['#text'] ?? '')
 // <pos>&adj-no;</pos> → "adj-no"
 const posCode = (v: unknown): string => text(v).replace(/[^A-Za-z0-9-]/g, '')
+// 검색 전용(sK)·비정상(iK)·구자체(oK) 표기는 표제어로 쓰지 않는다. 학습자가 볼 표기가 아니다
+const isIrregularForm = (k: El): boolean =>
+  asArray(k.ke_inf as string | string[] | undefined)
+    .map(text)
+    .some((s) => s.includes('sK') || s.includes('iK') || s.includes('oK'))
 
 interface KanjiFile {
   kanji: Record<string, { jouyou: boolean }>
@@ -39,7 +44,7 @@ function main() {
   const parser = new XMLParser({
     ignoreAttributes: false,
     isArray: (name) =>
-      ['entry', 'k_ele', 'r_ele', 'sense', 'pos', 'gloss', 'ke_pri', 're_pri', 're_restr'].includes(
+      ['entry', 'k_ele', 'r_ele', 'sense', 'pos', 'gloss', 'ke_pri', 're_pri', 're_restr', 'ke_inf'].includes(
         name,
       ),
   })
@@ -51,16 +56,22 @@ function main() {
   let kanjiIdiomCandidates = 0
   let droppedNoKanjidic = 0
   let droppedHyogai = 0
+  let droppedIrregularOnly = 0
 
   for (const entry of entries) {
     scanned++
     const kEles = asArray(entry.k_ele as El | El[] | undefined)
-    // 두 글자 이상 한자 표기 표제어 중 첫 번째를 대표로
-    const kEle = kEles.find((k) => {
+    const isKanjiHeadword = (k: El) => {
       const keb = text(k.keb)
       return isKanjiOnly(keb) && [...keb].length >= 2
-    })
-    if (!kEle) continue
+    }
+    // 두 글자 이상 한자 표기 표제어 중 첫 번째. 단 sK/iK/oK 표기는 건너뛴다
+    const kEle = kEles.find((k) => isKanjiHeadword(k) && !isIrregularForm(k))
+    if (!kEle) {
+      // 순한자 표제어가 sK/iK/oK 뿐이면 그 엔트리는 한자 숙어가 아니다 (当たり↔魚信 류) → 드롭
+      if (kEles.some(isKanjiHeadword)) droppedIrregularOnly++
+      continue
+    }
     kanjiIdiomCandidates++
 
     const headword = text(kEle.keb)
@@ -127,6 +138,7 @@ function main() {
 
   console.log(`JMdict entry 총 ${scanned}개 스캔`)
   console.log(`  한자 표기 숙어 후보 ${kanjiIdiomCandidates}개`)
+  console.log(`  제외 — 순한자 표제어가 sK/iK/oK 표기뿐 ${droppedIrregularOnly}개`)
   console.log(`  제외 — KANJIDIC 미등재 한자 포함 ${droppedNoKanjidic}개`)
   console.log(`  제외 — 표외자(비상용) 포함 ${droppedHyogai}개`)
   console.log(`  최종 숙어 ${out.length}개 (우선순위 태그 보유 ${withPri}개)`)

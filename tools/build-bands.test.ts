@@ -46,10 +46,11 @@ describe.runIf(hasDict)('밴드 분포 스냅샷 (data/dict/idioms.json)', () =>
   const { idioms } = JSON.parse(readFileSync(idiomsPath, 'utf8')) as { idioms: IdiomRecord[] }
 
   it('분포가 확정 규칙과 일치한다', () => {
+    // 2026-09-04: sK/iK/oK 표기 표제어 제외 필터 추가로 코퍼스 107,532 → 106,803
     expect(computeDistribution(idioms)).toEqual({
-      total: 107532,
-      byBand: { '0': 4033, '1': 3945, '2': 1509, '3': 7889, '4': 90156 },
-      band4Common: 1096,
+      total: 106803,
+      byBand: { '0': 4014, '1': 3915, '2': 1501, '3': 7787, '4': 89586 },
+      band4Common: 1033,
     })
   })
 

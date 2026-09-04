@@ -109,12 +109,13 @@ describe.runIf(hasDict)('전체 코퍼스 매핑 (data/dict)', () => {
   const built = buildMap(idioms, kanji)
 
   it('매핑 실패율 스냅샷', () => {
-    expect(built.stats.total).toBe(107532)
-    expect(built.stats.ok).toBe(103172)
+    // 2026-09-04: sK/iK/oK 표기 표제어 제외 필터 추가로 코퍼스 107,532 → 106,803
+    expect(built.stats.total).toBe(106803)
+    expect(built.stats.ok).toBe(102549)
     expect(built.stats.byReason).toEqual({
-      KATAKANA_READING: 522,
+      KATAKANA_READING: 498,
       UNKNOWN_KANJI: 0,
-      NO_PARSE: 3838,
+      NO_PARSE: 3756,
       BUDGET: 0,
     })
   })
