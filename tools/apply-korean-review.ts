@@ -1,7 +1,7 @@
 // 사람 verdict(korean-review.tsv) + Ollama 초벌(korean-llm-draft.tsv)을 접어 숙어별 최종 분류를 굳히는 스크립트
 // 1 동형동의(교정) · 2 동형이의(확장) · 3 관련없음→일본고유(확장)
 // 우선순위: 사람 verdict > (--trust-llm 일 때) 초벌 > 잠정값
-import { readFileSync, writeFileSync, existsSync } from 'node:fs'
+import { readFileSync, writeFileSync, existsSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
 import { DICT_DIR } from './lib/dict.ts'
 
@@ -23,41 +23,44 @@ interface MatchEntry {
   matches: MatchRow[]
 }
 
-// 작업 파일(우선순위 정렬 + 초벌 병기)이 있으면 그쪽 verdict 를 사람 검수로 읽는다
-const WORKLIST_PATH = join(DICT_DIR, 'korean-worklist.tsv')
-const REVIEW_PATH = existsSync(WORKLIST_PATH) ? WORKLIST_PATH : join(DICT_DIR, 'korean-review.tsv')
+// 작업 파일(korean-worklist*.tsv)이 있으면 그쪽 verdict 를 사람 검수로 읽는다. 없으면 korean-review.tsv
+const worklists = readdirSync(DICT_DIR).filter((f) => /^korean-worklist.*\.tsv$/.test(f))
+const REVIEW_PATHS =
+  worklists.length > 0 ? worklists.map((f) => join(DICT_DIR, f)) : [join(DICT_DIR, 'korean-review.tsv')]
 const MATCH_PATH = join(DICT_DIR, 'korean-match.json')
 const DRAFT_PATH = join(DICT_DIR, 'korean-llm-draft.tsv')
 const TRUST_LLM = process.argv.includes('--trust-llm')
 
-if (!existsSync(REVIEW_PATH) || !existsSync(MATCH_PATH)) {
+if (!existsSync(MATCH_PATH) || !REVIEW_PATHS.every(existsSync)) {
   console.error('korean-review.tsv / korean-match.json 이 없다. match:korean 을 먼저 실행한다.')
   process.exit(1)
 }
 
 const { byId } = JSON.parse(readFileSync(MATCH_PATH, 'utf8')) as { byId: Record<string, MatchEntry> }
 
-// 사람 verdict
-const reviewLines = readFileSync(REVIEW_PATH, 'utf8').split('\n')
-const rh = reviewLines[0].split('\t')
-const idCol = rh.indexOf('id')
-const verdictCol = rh.indexOf('verdict')
-if (idCol < 0 || verdictCol < 0) {
-  console.error('korean-review.tsv 헤더에 id / verdict 열이 없다.')
-  process.exit(1)
-}
+// 사람 verdict — 여러 작업 파일을 합친다 (tier 별로 분리돼 있을 수 있음)
 const verdicts = new Map<string, 1 | 2 | 3>()
 let unfilled = 0
 let bad = 0
-for (const line of reviewLines.slice(1)) {
-  if (!line.trim()) continue
-  const c = line.split('\t')
-  const id = c[idCol]?.trim()
-  const raw = c[verdictCol]?.trim()
-  if (!id) continue
-  if (!raw || raw === '?') unfilled++
-  else if (raw === '1' || raw === '2' || raw === '3') verdicts.set(id, Number(raw) as 1 | 2 | 3)
-  else bad++
+for (const path of REVIEW_PATHS) {
+  const lines = readFileSync(path, 'utf8').split('\n')
+  const h = lines[0].split('\t')
+  const idCol = h.indexOf('id')
+  const verdictCol = h.indexOf('verdict')
+  if (idCol < 0 || verdictCol < 0) {
+    console.error(`${path} 헤더에 id / verdict 열이 없다.`)
+    process.exit(1)
+  }
+  for (const line of lines.slice(1)) {
+    if (!line.trim()) continue
+    const c = line.split('\t')
+    const id = c[idCol]?.trim()
+    const raw = c[verdictCol]?.trim()
+    if (!id) continue
+    if (!raw || raw === '?') unfilled++
+    else if (raw === '1' || raw === '2' || raw === '3') verdicts.set(id, Number(raw) as 1 | 2 | 3)
+    else bad++
+  }
 }
 
 // Ollama 초벌 (id -> verdict). 여러 모델이 있으면 마지막 줄이 이긴다

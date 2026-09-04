@@ -6,13 +6,17 @@ import { DICT_DIR } from './lib/dict.ts'
 
 const REVIEW = join(DICT_DIR, 'korean-review.tsv')
 const DRAFT = join(DICT_DIR, 'korean-llm-draft.tsv')
-const OUT = join(DICT_DIR, 'korean-worklist.tsv')
 
 // 꼭 사람이 봐야 하는 tier 만 파일에 담는다. 나머지는 초벌(apply --trust-llm)을 신뢰.
-// 기본 1,2 — tier1(원어 오탐 복구, 빠름) + tier2(밴드0 Y 초벌2, 신중히). --tiers=all 로 전체
-const tiersArg = process.argv.find((a) => a.startsWith('--tiers='))?.split('=')[1] ?? '1,2'
+// 기본 2 — 밴드0 Y 초벌2 (교정↔확장 갈림). --tiers=1 은 별도 파일, --tiers=all 로 전체
+const tiersArg = process.argv.find((a) => a.startsWith('--tiers='))?.split('=')[1] ?? '2'
 const wantTiers: Set<number> | null =
   tiersArg === 'all' ? null : new Set(tiersArg.split(',').map(Number))
+// 파일명: 기본은 korean-worklist.tsv, 단일 비기본 tier 는 korean-worklist-t<n>.tsv 로 분리
+const OUT = join(
+  DICT_DIR,
+  tiersArg === '2' || tiersArg === 'all' ? 'korean-worklist.tsv' : `korean-worklist-t${tiersArg.replace(/,/g, '_')}.tsv`,
+)
 
 if (!existsSync(REVIEW)) {
   console.error('korean-review.tsv 가 없다. match:korean 을 먼저 실행한다.')
