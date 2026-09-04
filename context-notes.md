@@ -1109,3 +1109,28 @@ PLAN §7 "단순하게". 3상태(mastered/learning/unseen)를 `replay().onyomi` 
 `src/core/onyomiMap.test.ts` 4 테스트 — 상태 분류, 중복 pairId 접기, 정렬 순서, 요약 집계.
 스크린샷 `04-onyomi-map.png`(빈 상태) / `04-onyomi-map-all.png`(전체 목록, `lang="ja"` 자형).
 `tsc -b` / `oxlint` 클린.
+
+## 2026-09-04 — Phase 5 (진단 리포트)
+
+### 리포트는 `replay()` 재파생 — 별도 집계 저장 없음
+
+`Report.tsx` 가 `listEvents` → `replay(events, {pairsOf})` → `buildReport(state, pairs, nameOf)`.
+`mistakeTotals` (기존)로 유형 분포, `state.onyomi` 로 취약 음독, `state.cards[*].mistakes.KO_INTERFERENCE`
+로 간섭 숙어를 뽑는다. Phase 4 의 "상태를 저장하지 않는다" 를 화면에서도 지킨다.
+
+### 취약 음독 기준 — `seen≥3 && wrong>0`, 오답률 내림차순 상위 8
+
+음독 맵의 숙달 기준(`wrong/seen≤0.2`)과 다르다. 리포트는 "고쳐야 할 것"이라
+오답이 하나라도 있으면(그리고 표본이 되면) 싣는다. 상위 8만 — 리포트는 훑는 화면이다.
+
+### 차트 — 인라인 CSS 막대, 라이브러리 없음
+
+`.bar-track`/`.bar-fill` 를 `display:block` 로 명시(그리드 아이템은 blockify 되지만 그
+자식은 아니라, 안 하면 폭 0). 채움색만 `--ng` — PLAN §7 "색은 정오답 피드백과 리포트
+차트에만". 한국음 간섭 콜아웃은 색 대신 좌측 보더 + 큰 숫자로 강조(무채색).
+
+### 검증
+
+`src/core/report.test.ts` 5 테스트 — 유형 분포 정렬/0 제외, 읽기 reps 만 합산, 취약 음독
+필터·정렬, 간섭 숙어 수집, 빈 리포트. 시드 이벤트(실제 base.json id)로 스크린샷 2장.
+`npm test` 17파일 167 통과. `tsc -b` / `oxlint` 클린.

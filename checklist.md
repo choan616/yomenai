@@ -168,7 +168,11 @@
   **검증: `src/study/mistakeDetail.test.ts` 6 테스트 통과. 스크린샷 `scratchpad/01-mistake-detail.png`
   로 忠実 분해(忠 ちゅう / 実 じつ, 実 이 일본 자형) 레이아웃 확인**
 - [ ] 진입 진단 플로우
-- [ ] 진단 리포트
+- [x] 진단 리포트 — `src/app/Report.tsx` + 파생 `src/core/report.ts`. `mistakeTotals` 유형 분포
+  (인라인 CSS 막대, 차트에만 `--ng`), `replay().onyomi` 취약 음독(오답률순, seen≥3), `KO_INTERFERENCE`
+  집계 + 해당 숙어. 무채색 기반, 상태는 아이콘+위치 병행. 데이터 없으면 빈 상태 안내.
+  **검증: `src/core/report.test.ts` 5 테스트 통과. 시드 이벤트로 스크린샷 `scratchpad/03-report.png`
+  (분포 막대·간섭 콜아웃·취약 음독), `03-report-empty.png` (빈 상태) 확인**
 - [x] 음독 맵 — `src/app/OnyomiMap.tsx` + 파생 `src/core/onyomiMap.ts`. `loadPairs()` +
   `replay().onyomi`. 분모는 base 풀이 참조하는 쌍(3,000). 숙달 기준 `seen≥3 && wrong/seen≤0.2`.
   "음독 3000개 중 N개 숙달" + 무채색 진행 바 + 학습 중(오답률순) 목록, 상태는 아이콘+텍스트 병행.

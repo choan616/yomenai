@@ -114,12 +114,14 @@
   font-size: 14px;
 }
 .bar-track {
+  display: block;
   height: 18px;
   background: var(--surface-2);
   border-radius: 4px;
   overflow: hidden;
 }
 .bar-fill {
+  display: block;
   height: 100%;
   background: var(--ng);
   min-width: 2px;
@@ -241,6 +243,37 @@
 }
 .setting.disabled {
   opacity: 0.5;
+}
+
+/* ── 진단 리포트 ── 이 앱의 얼굴. 무채색 + 차트에만 색 (PLAN §7) */
+.report-lead {
+  font-size: 17px;
+  line-height: 1.7;
+  margin: 0;
+}
+.report .screen-body {
+  gap: 28px;
+}
+.ko-callout {
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--text-dim);
+  border-radius: var(--radius);
+  padding: 16px;
+  background: var(--surface);
+}
+.ko-callout .section-title {
+  margin-top: 0;
+}
+.ko-big {
+  font-size: 15px;
+  margin: 0 0 12px;
+}
+.ko-big b {
+  font-size: 32px;
+  font-variant-numeric: tabular-nums;
+}
+.ko-callout .rows {
+  background: var(--bg);
 }
 
 /* ── 진입 진단 ── */

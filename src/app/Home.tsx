@@ -68,6 +68,9 @@ export function Home({ onNavigate }: { onNavigate: (screen: Screen) => void }) {
       </button>
 
       <nav className="home-nav">
+        <button type="button" className="accent" onClick={() => onNavigate('report')}>
+          진단 리포트 <span className="chev">›</span>
+        </button>
         <button type="button" onClick={() => onNavigate('onyomi')}>
           음독 맵 <span className="chev">›</span>
         </button>
