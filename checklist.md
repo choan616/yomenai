@@ -184,7 +184,12 @@
   "음독 3000개 중 N개 숙달" + 무채색 진행 바 + 학습 중(오답률순) 목록, 상태는 아이콘+텍스트 병행.
   **검증: `src/core/onyomiMap.test.ts` 4 테스트 통과. 스크린샷 `scratchpad/04-onyomi-map.png`,
   `04-onyomi-map-all.png` 로 요약·목록·`lang="ja"` 확인**
-- [ ] 홈 / 설정
+- [x] 홈 / 설정 — 홈(`src/app/Home.tsx`)에 오늘 복습 수 + 세션 시작 + 진입 진단(미완료 시)·
+  리포트·음독 맵·설정 진입점. 설정(`src/app/Settings.tsx`): 세션 길이 스테퍼(5~40),
+  모드 비율 프리셋(7:3 / 5:5 / 읽기만), 백업 자리표시자(비활성). 값은 `src/app/settings.ts`
+  로 localStorage 즉시 저장, `useStudySession`/`Home` 이 `buildSession` 에 `limit`·`ratio` 전달.
+  **검증: `src/app/settings.test.ts` 5 테스트(클램프·검증·불변). 스크린샷 `scratchpad/05-home.png`,
+  `05-settings.png`**
 - [ ] 다크 모드
 - [ ] **검증: 진입 진단 → 세션 → 리포트 전체 흐름 완주**
 

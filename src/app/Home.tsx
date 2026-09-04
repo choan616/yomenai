@@ -80,6 +80,9 @@ export function Home({ onNavigate }: { onNavigate: (screen: Screen) => void }) {
         <button type="button" onClick={() => onNavigate('onyomi')}>
           음독 맵 <span className="chev">›</span>
         </button>
+        <button type="button" onClick={() => onNavigate('settings')}>
+          설정 <span className="chev">›</span>
+        </button>
       </nav>
     </main>
   )

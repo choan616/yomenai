@@ -1182,3 +1182,18 @@ PLAN §6 "각 밴드에서 30~50개". 하한 30 채택 — 90문항도 일회성
 `src/core/diagnostic.test.ts` 6 테스트 — 시드 결정론, 밴드당 개수, 중복 없음, 밴드
 오름차순, 요약 집계(meaningKnown·밴드 미상 제외). 스크린샷 3장(ask/known/result).
 `npm test` 18파일 173 통과. `tsc -b` / `oxlint` 클린.
+
+## 2026-09-04 — Phase 5 (홈 / 설정)
+
+### 설정 값은 변경 즉시 localStorage 에 쓴다 (저장 버튼 없음)
+
+`Settings.tsx` 가 스테퍼·프리셋을 누를 때마다 `saveSettings`. 세션 길이는 스테퍼
+(5~40, step 5), 모드 비율은 프리셋 3개(7:3 / 5:5 / 읽기만=10:0). 자유 입력 비율 슬라이더는
+안 만들었다 — `selectSession` 의 `ratio` 는 상대값이라 프리셋으로 충분하고, 입력 검증
+표면을 줄인다. 백업은 Phase 7 이라 비활성 안내만.
+
+### `parseSettings` 가 방어선
+
+localStorage 는 사용자가 건드릴 수 있고 버전이 바뀌면 형태가 달라진다. `loadSettings`
+가 항상 `parseSettings` 를 거쳐 클램프(길이)·검증(ratio 합>0)하고 깨진 값은
+`DEFAULT_SETTINGS` 로 되돌린다. 반환값은 매번 새 객체(기본값과 참조 공유 안 함).
