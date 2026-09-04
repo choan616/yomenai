@@ -8,6 +8,12 @@ const REVIEW = join(DICT_DIR, 'korean-review.tsv')
 const DRAFT = join(DICT_DIR, 'korean-llm-draft.tsv')
 const OUT = join(DICT_DIR, 'korean-worklist.tsv')
 
+// 꼭 사람이 봐야 하는 tier 만 파일에 담는다. 나머지는 초벌(apply --trust-llm)을 신뢰.
+// 기본 1,2 — tier1(원어 오탐 복구, 빠름) + tier2(밴드0 Y 초벌2, 신중히). --tiers=all 로 전체
+const tiersArg = process.argv.find((a) => a.startsWith('--tiers='))?.split('=')[1] ?? '1,2'
+const wantTiers: Set<number> | null =
+  tiersArg === 'all' ? null : new Set(tiersArg.split(',').map(Number))
+
 if (!existsSync(REVIEW)) {
   console.error('korean-review.tsv 가 없다. match:korean 을 먼저 실행한다.')
   process.exit(1)
@@ -101,6 +107,7 @@ function tierOf(r: Rev): number {
 
 const enriched = rows
   .map((r) => ({ r, tier: tierOf(r), d: draft.get(r.id) }))
+  .filter((e) => wantTiers === null || wantTiers.has(e.tier))
   .sort(
     (a, b) =>
       a.tier - b.tier ||
@@ -160,4 +167,8 @@ const labels: Record<number, string> = {
 }
 for (const t of Object.keys(tierCount).map(Number).sort((a, b) => a - b)) {
   console.log(`  tier ${t}  ${String(tierCount[t]).padStart(5)}  ${labels[t]}`)
+}
+if (wantTiers !== null) {
+  const excluded = rows.length - enriched.length
+  console.log(`\n제외된 ${excluded}행은 초벌/잠정값을 신뢰한다 (apply --trust-llm). 전체를 보려면 --tiers=all`)
 }
