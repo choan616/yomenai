@@ -8,6 +8,7 @@ import {
   saveSettings,
   type Settings as SettingsData,
 } from './settings.ts'
+import { applyTheme, loadTheme, saveTheme, type Theme } from './theme.ts'
 
 const STEP = 5
 
@@ -21,12 +22,25 @@ function sameRatio(a: SettingsData['ratio'], b: SettingsData['ratio']): boolean 
   return a.correction === b.correction && a.expansion === b.expansion
 }
 
+const THEMES: { label: string; value: Theme }[] = [
+  { label: '시스템', value: 'system' },
+  { label: '라이트', value: 'light' },
+  { label: '다크', value: 'dark' },
+]
+
 export function Settings({ onBack }: { onBack: () => void }) {
   const [settings, setSettings] = useState<SettingsData>(loadSettings)
+  const [theme, setThemeState] = useState<Theme>(loadTheme)
 
   const update = (next: SettingsData) => {
     setSettings(next)
     saveSettings(next)
+  }
+
+  const setTheme = (next: Theme) => {
+    setThemeState(next)
+    saveTheme(next)
+    applyTheme(next)
   }
 
   const setLimit = (delta: number) =>
@@ -86,6 +100,23 @@ export function Settings({ onBack }: { onBack: () => void }) {
             ))}
           </div>
           <span className="hint">한쪽 정원이 비면 다른 쪽이 채웁니다. 기본 7 : 3</span>
+        </div>
+
+        <div className="setting">
+          <label>테마</label>
+          <div className="seg" role="group" aria-label="테마">
+            {THEMES.map((t) => (
+              <button
+                key={t.value}
+                type="button"
+                aria-pressed={theme === t.value}
+                onClick={() => setTheme(t.value)}
+              >
+                {t.label}
+              </button>
+            ))}
+          </div>
+          <span className="hint">시스템은 기기 설정을 따릅니다.</span>
         </div>
 
         <div className="setting disabled">

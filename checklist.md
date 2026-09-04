@@ -190,7 +190,12 @@
   로 localStorage 즉시 저장, `useStudySession`/`Home` 이 `buildSession` 에 `limit`·`ratio` 전달.
   **검증: `src/app/settings.test.ts` 5 테스트(클램프·검증·불변). 스크린샷 `scratchpad/05-home.png`,
   `05-settings.png`**
-- [ ] 다크 모드
+- [x] 다크 모드 — `src/app/theme.ts` (`system`|`light`|`dark`), root `data-theme` + localStorage
+  `yomenai:theme`. `main.tsx` 가 첫 페인트 전에 `applyTheme(loadTheme())`. `src/index.css` 에
+  `:root[data-theme='dark']` / `[data-theme='light']` 오버라이드(속성 선택자라 `prefers-color-scheme`
+  블록을 이김), 기존 OS 블록 유지. 설정 화면에 시스템/라이트/다크 토글.
+  **검증: `src/app/theme.test.ts` 2 테스트. 스크린샷 `scratchpad/06-{home,settings}-dark.png`,
+  `06-settings-light.png`. reload 후 `data-theme` 유지 확인**
 - [ ] **검증: 진입 진단 → 세션 → 리포트 전체 흐름 완주**
 
 ---

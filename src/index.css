@@ -45,6 +45,38 @@
   }
 }
 
+/* 사용자 토글 (src/app/theme.ts). data-theme 이 붙으면 OS 설정(prefers-color-scheme)을 이긴다.
+   속성 선택자라 위 두 블록보다 특이도가 높아 순서와 무관하게 우선한다. */
+:root[data-theme='light'] {
+  color-scheme: light;
+  --bg: #f6f7f9;
+  --surface: #fff;
+  --surface-2: #eef0f3;
+  --border: #d9dce1;
+  --text: #16181d;
+  --text-dim: #5c6069;
+  --text-faint: #8b909a;
+  --ok: #14a05a;
+  --ok-bg: rgba(20, 160, 90, 0.1);
+  --ng: #d64545;
+  --ng-bg: rgba(214, 69, 69, 0.1);
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --bg: #131417;
+  --surface: #1c1e23;
+  --surface-2: #24272e;
+  --border: #31343d;
+  --text: #eceef2;
+  --text-dim: #a1a6b0;
+  --text-faint: #6f7480;
+  --ok: #3ddc84;
+  --ok-bg: rgba(61, 220, 132, 0.12);
+  --ng: #ff6b6b;
+  --ng-bg: rgba(255, 107, 107, 0.12);
+}
+
 * {
   box-sizing: border-box;
 }

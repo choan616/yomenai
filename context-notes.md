@@ -1197,3 +1197,26 @@ PLAN §6 "각 밴드에서 30~50개". 하한 30 채택 — 90문항도 일회성
 localStorage 는 사용자가 건드릴 수 있고 버전이 바뀌면 형태가 달라진다. `loadSettings`
 가 항상 `parseSettings` 를 거쳐 클램프(길이)·검증(ratio 합>0)하고 깨진 값은
 `DEFAULT_SETTINGS` 로 되돌린다. 반환값은 매번 새 객체(기본값과 참조 공유 안 함).
+
+## 2026-09-04 — Phase 5 (다크 모드 토글)
+
+### `data-theme` 속성 + 3-상태 (system / light / dark)
+
+기존엔 `@media (prefers-color-scheme)` 만 따랐다. `src/app/theme.ts` 가 root 의
+`data-theme` 를 세우고 `yomenai:theme` 에 저장한다. `system` 은 속성을 **지운다** —
+그러면 CSS 가 자동으로 OS 미디어 쿼리로 되돌아간다. `main.tsx` 가 `createRoot` 전에
+`applyTheme(loadTheme())` 해서 깜빡임이 없다.
+
+### CSS — 속성 선택자 특이도로 우선순위 확보
+
+`:root[data-theme='dark']` 는 특이도 (0,1,1) 이라 바깥 `:root` (0,0,1) 과
+`@media … :root` (0,0,1) 을 소스 순서와 무관하게 이긴다. 그래서 OS 가 라이트여도
+사용자가 다크를 고르면 다크가 나온다. 토큰 블록을 복제했다 — CSS 변수는 "변수의
+변수" 재사용이 지저분해서, 값 12개를 두 블록에 그대로 적는 게 낫다. `color-scheme`
+도 명시해 폼 컨트롤(progress·input)이 테마를 따르게 했다.
+
+### 검증
+
+`src/app/theme.test.ts` 2 테스트 — `parseTheme`(light/dark 만 통과), `applyTheme`(stub root
+에 data-theme 세우기/지우기). 스크린샷 라이트·다크, reload 후 유지 확인. `npm test`
+20파일 180 통과.
