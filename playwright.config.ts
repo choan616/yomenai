@@ -5,6 +5,9 @@ export default defineConfig({
   testDir: './tests/e2e',
   timeout: 120_000,
   fullyParallel: false,
+  // 두 스펙이 같은 오리진의 IndexedDB 를 공유한다 (full-flow 가 deleteDatabase 로 초기화).
+  // 동시 실행 시 서로의 상태를 건드리므로 단일 워커로 직렬화한다.
+  workers: 1,
   reporter: [['list']],
   use: {
     baseURL: 'http://localhost:5173',

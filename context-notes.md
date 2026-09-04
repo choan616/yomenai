@@ -1220,3 +1220,23 @@ localStorage 는 사용자가 건드릴 수 있고 버전이 바뀌면 형태가
 `src/app/theme.test.ts` 2 테스트 — `parseTheme`(light/dark 만 통과), `applyTheme`(stub root
 에 data-theme 세우기/지우기). 스크린샷 라이트·다크, reload 후 유지 확인. `npm test`
 20파일 180 통과.
+
+## 2026-09-04 — Phase 5 (전체 흐름 e2e)
+
+### `tests/e2e/full-flow.spec.ts` — 진단 → 세션 → 리포트 완주
+
+테스트 첫 스텝에서 `indexedDB.deleteDatabase('yomenai')` + `localStorage.clear()` 후
+reload 로 결정론을 잡는다(체크리스트 권고). 진입 진단은 90문항을 전부 오답('zzz')으로
+빠르게 넘기고, 결과 화면의 밴드 막대 3개 → 리포트의 리드·섹션 제목·간섭 콜아웃을
+확인한다. 이어서 세션을 완주하고 리포트를 재진입한다.
+
+### `workers: 1` 로 직렬화
+
+`playwright.config.ts` 에 추가. `fullyParallel: false` 는 파일 내부만 직렬이라
+`card-transition` 과 `full-flow` 가 2워커로 동시에 떠서 같은 오리진의 IndexedDB 를
+서로 건드릴 수 있었다(full-flow 의 deleteDatabase). 단일 워커면 순서가 고정된다.
+
+### 최종 상태
+
+`npm test` 20파일 180 통과 · `tsc -b` 클린 · `oxlint` 클린 · `npm run e2e` 2 스펙 통과
+(full-flow 12.4s, card-transition p95 14.3ms) · `vite build` 성공(js 363 kB / gzip 116 kB).

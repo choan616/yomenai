@@ -196,7 +196,12 @@
   블록을 이김), 기존 OS 블록 유지. 설정 화면에 시스템/라이트/다크 토글.
   **검증: `src/app/theme.test.ts` 2 테스트. 스크린샷 `scratchpad/06-{home,settings}-dark.png`,
   `06-settings-light.png`. reload 후 `data-theme` 유지 확인**
-- [ ] **검증: 진입 진단 → 세션 → 리포트 전체 흐름 완주**
+- [x] **검증: 진입 진단 → 세션 → 리포트 전체 흐름 완주** — `tests/e2e/full-flow.spec.ts`.
+  테스트 시작 시 `indexedDB.deleteDatabase` + `localStorage.clear` 로 초기화 → 진입 진단
+  90문항 완주 → 결과 화면(밴드 1~3 막대 3개) → 리포트(리드에 "읽기 90", 오답 분포·간섭
+  콜아웃·취약 음독 렌더) → 홈(진단 진입점 사라짐) → 세션 완주 → 리포트 재진입.
+  `playwright.config.ts` `workers: 1` (두 스펙이 같은 오리진 IndexedDB 공유).
+  **검증: `npm run e2e` 2 스펙 통과 (full-flow 12.4s, card-transition p95 14.3ms)**
 
 ---
 
