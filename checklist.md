@@ -169,7 +169,11 @@
   로 忠実 분해(忠 ちゅう / 実 じつ, 実 이 일본 자형) 레이아웃 확인**
 - [ ] 진입 진단 플로우
 - [ ] 진단 리포트
-- [ ] 음독 맵
+- [x] 음독 맵 — `src/app/OnyomiMap.tsx` + 파생 `src/core/onyomiMap.ts`. `loadPairs()` +
+  `replay().onyomi`. 분모는 base 풀이 참조하는 쌍(3,000). 숙달 기준 `seen≥3 && wrong/seen≤0.2`.
+  "음독 3000개 중 N개 숙달" + 무채색 진행 바 + 학습 중(오답률순) 목록, 상태는 아이콘+텍스트 병행.
+  **검증: `src/core/onyomiMap.test.ts` 4 테스트 통과. 스크린샷 `scratchpad/04-onyomi-map.png`,
+  `04-onyomi-map-all.png` 로 요약·목록·`lang="ja"` 확인**
 - [ ] 홈 / 설정
 - [ ] 다크 모드
 - [ ] **검증: 진입 진단 → 세션 → 리포트 전체 흐름 완주**

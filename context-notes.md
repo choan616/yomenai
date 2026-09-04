@@ -1072,3 +1072,40 @@ FSRS 등급을 바꾸는데 이벤트는 append-only 라 나중에 못 고친다
 `src/study/mistakeDetail.test.ts` 6 테스트 — `breakdown` 이 pairIds 를 (한자, 음독) 조각으로
 펼치고 한국 한자음 병기, `buildPairIndex` 역인덱스가 자기 자신 제외 + limit. 스크린샷으로
 忠実 분해(실 이 일본 자형 実) 레이아웃 확인. `tsc -b` / `oxlint` 클린.
+
+### 앱 셸 확장 — screen enum + 홈 네비, 라우터 없음
+
+`App.tsx` 를 `switch (screen)` 로 바꾸고 `Screen = 'home' | 'study' | 'onyomi' | …` 로
+늘려간다. `Home` 은 `onNavigate(screen)` 하나만 받는다. 공통 스타일은 `src/app/screens.css`
+(셸 화면은 카드 루프가 아니라 느린 스크롤 허용).
+
+### 환경설정 — `src/app/settings.ts`, localStorage
+
+세션 길이·모드 비율을 `yomenai:settings` 키에 둔다. `parseSettings` 가 클램프(길이 5~40)·
+검증(ratio 합 > 0)을 하고 깨진 값은 기본값. `useStudySession` / `Home` 이 `loadSettings()` 로
+읽어 `buildSession` 에 `limit`·`ratio` 로 넘긴다. `SESSION_LIMIT` 상수는 제거 —
+`DEFAULT_SETTINGS.sessionLimit`(20)로 대체됐다. IndexedDB 스키마와 무관(사전/사용자 DB
+경계 밖의 UI 설정)이라 localStorage 가 맞다.
+
+## 2026-09-04 — Phase 5 (음독 맵)
+
+### 숙달 분모 — pairs.json 전체가 아니라 base 풀이 참조하는 쌍
+
+`pairs.json` 은 코퍼스 전체의 3,940 쌍이지만, 사용자가 만나는 건 밴드 0~3(base) 이
+참조하는 3,000 쌍뿐이다. 진도 지표의 분모는 후자로 잡는다 —
+`pool.flatMap(p => p.pairIds)` 를 `pairRows` 에 넘긴다. 기각 — pairs.json 크기(3,940)를
+분모로 쓰는 안. 밴드 4 를 안 켠 사용자에게 영영 안 나오는 쌍이 분모에 껴서
+"숙달률"이 구조적으로 낮게 나온다.
+
+### 숙달 기준 — `seen≥3 && wrong/seen≤0.2`, 파생 상태 저장 없음
+
+PLAN §7 "단순하게". 3상태(mastered/learning/unseen)를 `replay().onyomi` 집계에서 즉석
+계산한다. 별도 테이블 없음(Phase 4 결정과 같은 이유). 정렬은 학습 중(오답률 내림차순)
+→ 미학습 → 숙달. 화면은 기본적으로 "학습 중"만 보이고 토글로 전체를 편다 — 3,000행을
+항상 그리지 않으려는 것.
+
+### 검증
+
+`src/core/onyomiMap.test.ts` 4 테스트 — 상태 분류, 중복 pairId 접기, 정렬 순서, 요약 집계.
+스크린샷 `04-onyomi-map.png`(빈 상태) / `04-onyomi-map-all.png`(전체 목록, `lang="ja"` 자형).
+`tsc -b` / `oxlint` 클린.

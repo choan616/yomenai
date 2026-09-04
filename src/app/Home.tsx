@@ -1,17 +1,18 @@
-// 홈 — 이번 세션 카드 수와 세션 시작 버튼. 그 외 없음 (PLAN §7)
+// 홈 — 오늘 복습 수와 세션 시작. 그 아래 리포트·음독 맵·설정 진입점 (PLAN §7)
 import { useEffect, useState } from 'react'
 import { buildSession } from '../core/session.ts'
 import { LOCAL_USER_ID, listEvents } from '../db/events.ts'
 import { db } from '../db/schema.ts'
 import { loadBaseIdioms } from '../dict/load.ts'
-import { SESSION_LIMIT } from '../study/useStudySession.ts'
+import { loadSettings } from './settings.ts'
+import type { Screen } from '../App.tsx'
 
 interface Preview {
   ready: number
   due: number
 }
 
-export function Home({ onStart }: { onStart: () => void }) {
+export function Home({ onNavigate }: { onNavigate: (screen: Screen) => void }) {
   const [preview, setPreview] = useState<Preview | null>(null)
   const [error, setError] = useState<string | null>(null)
 
@@ -24,7 +25,8 @@ export function Home({ onStart }: { onStart: () => void }) {
           listEvents(db(), LOCAL_USER_ID),
         ])
         if (!alive) return
-        const session = buildSession(pool, events, { now: Date.now(), limit: SESSION_LIMIT })
+        const { sessionLimit, ratio } = loadSettings()
+        const session = buildSession(pool, events, { now: Date.now(), limit: sessionLimit, ratio })
         setPreview({
           ready: session.cards.length,
           due: session.cards.filter((c) => c.due).length,
@@ -59,11 +61,17 @@ export function Home({ onStart }: { onStart: () => void }) {
       <button
         type="button"
         className="btn-primary big"
-        onClick={onStart}
+        onClick={() => onNavigate('study')}
         disabled={!preview || preview.ready === 0}
       >
         세션 시작
       </button>
+
+      <nav className="home-nav">
+        <button type="button" onClick={() => onNavigate('onyomi')}>
+          음독 맵 <span className="chev">›</span>
+        </button>
+      </nav>
     </main>
   )
 }

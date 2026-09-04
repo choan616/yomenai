@@ -20,8 +20,7 @@ import { db } from '../db/schema.ts'
 import { LOCAL_USER_ID } from '../db/events.ts'
 import { listEvents } from '../db/events.ts'
 import { loadBaseIdioms, loadKanji, type RuntimeIdiom } from '../dict/load.ts'
-
-export const SESSION_LIMIT = 20
+import { loadSettings } from '../app/settings.ts'
 
 /** 읽기 답안을 낸 직후의 판정 결과. 이벤트는 아직 안 쓴다 — 자신감 버튼을 기다린다 */
 export interface ReadingFeedback {
@@ -107,7 +106,8 @@ export function useStudySession(): [StudyState, StudyActions] {
             Object.fromEntries([...kanji].map(([k, v]) => [k, { koreanH: v.kr, onyomi: v.on }])),
           ),
         }
-        const built = buildSession(loaded, events, { now: Date.now(), limit: SESSION_LIMIT })
+        const { sessionLimit, ratio } = loadSettings()
+        const built = buildSession(loaded, events, { now: Date.now(), limit: sessionLimit, ratio })
         setSession(built)
         setInClassReview(built.cards[0]?.needsClassReview ?? false)
         shownAt.current = performance.now()
