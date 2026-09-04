@@ -15,7 +15,10 @@
     "measure": "tsx tools/measure.ts",
     "build:bands": "tsx tools/build-bands.ts",
     "build:onyomi": "tsx tools/build-onyomi-map.ts",
-    "review:bands": "tsx tools/review-bands.ts"
+    "review:bands": "tsx tools/review-bands.ts",
+    "match:korean": "tsx tools/match-korean.ts",
+    "draft:korean-review": "tsx tools/draft-korean-review.ts",
+    "apply:korean-review": "tsx tools/apply-korean-review.ts"
   },
   "dependencies": {
     "dexie": "^4.2.0",

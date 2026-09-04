@@ -400,3 +400,186 @@ nf24/nf25도 같다.
 | `data/dict/onyomi-failures.tsv` | 215 KB | 매핑 실패 목록 (밴드·사유별) |
 
 전부 `.gitignore`된 재생성 가능 산출물이다. `npm run build:bands` / `build:onyomi`.
+
+---
+
+## 2026-09-03 — Phase 3 (한국어 대조 배치)
+
+### 동형동의 ↔ 동형이의 판별 방법 — 수동 검수 큐
+
+배치가 자동으로 가르는 것은 **JP_UNIQUE(일본 고유) vs NEEDS_REVIEW(검수 필요)** 둘뿐이다.
+동형동의(1)와 동형이의(2)의 최종 판정은 사람이 `korean-review.tsv`의 `verdict` 칸에
+1/2/3을 채우고 `apply:korean-review`를 돌리는 것으로 한다.
+
+기각한 대안.
+
+- **LLM 뜻 비교** — (표제어, JMdict 영어 gloss, stdict 한국어 정의)를 Claude에 넣어
+  동일 여부 판정. PLAN이 `source:'llm'`을 허용하고 정확도도 가장 높다. 그러나 우리가 가진
+  일본어측 정보는 영어 gloss뿐이라(JMdict는 일본어 정의가 없다) 2단계 번역 손실이 있고,
+  `汽車`처럼 뉘앙스차를 동형이의로 볼지가 프롬프트 설계에 민감하다. 별도 키·비용도 든다.
+  규모를 먼저 본 뒤 재검토한다
+- **원어 한자 일치만으로 자동 분류** — stdict `原語`가 표제어와 같은 글자면 동형동의로
+  간주. `工夫`(공부)·`放心`(방심)처럼 글자는 같아도 뜻이 갈리는 게 정확히 이 앱의 교정
+  대상이라 자동 동형동의 처리는 위험하다. `hasOriginMatch` 플래그로 남겨 검수 속도만 돕는다
+
+### 검수 큐에 音만 겹치는 것(`手紙`→`收支`)도 넣는다
+
+`手紙`(편지)는 한국어에 `手紙`라는 한자어가 없다. 후보 `수지`로 stdict를 치면
+`收支`·`樹脂`가 나온다. `原語` 대조로는 불일치라 JP_UNIQUE로 떨굴 수도 있지만,
+**한국 한자음에 이끌린 오독(`KO_INTERFERENCE`)이 정확히 이 지점에서 난다.** 그래서
+후보로 stdict 항목이 하나라도 잡히면 전부 NEEDS_REVIEW로 보내 사람이 본다.
+JP_UNIQUE는 "어떤 후보로도 stdict 결과 0건"인 경우만이다.
+
+결과적으로 Phase 3 완료 기준("동형이의어 10개가 2번으로 분류")은 두 단계로 충족된다 —
+배치가 10개를 NEEDS_REVIEW(잠정 2번) 큐에 넣고, 사람이 2번을 확정한다.
+`tools/match-korean.test.ts`가 fixture로 이 경로를 고정한다(23 테스트).
+
+### 신자체 ↔ 정자 대조 — KANJIDIC2 variant에서 자동 추출
+
+stdict `原語`는 정자(`醫學`)로 쓰이고 JMdict 표제어는 신자체(`医学`)라 글리프가 어긋난다.
+손으로 이체자표를 적는 대신 `data/raw/kanjidic2-all-*.json`의 `misc.variants` 중
+`jis208` 항목을 EUC-JP로 디코딩해 `신자체 → {정자,…}` 집합을 만든다
+(`tools/lib/kanji-variants.ts`). `医学↔醫學`·`経済↔經濟` 통과, `手紙↔收支` 거부 확인.
+
+- `jis212`/`jis213`은 제외했다. 디코딩이 불안정해 `鉄`의 variant가 `簗`로 나오는 등
+  무관한 문자가 섞인다. `jis208`만으로 상용 신자체는 전부 커버된다
+- 한 신자체가 복수 정자에 대응하면(`弁`→`辨/瓣/辯/辮`) 전부 집합에 담는다. 대조는
+  위치별 소속 검사라 과포함이어도 다른 위치·독음 조건이 오탐을 막는다
+- `収`는 KANJIDIC에 `korean_h`가 없다(밴드 0~3에서 유일하게 이 결함이 문제). variant
+  `收`의 한자음 `수`로 자동 보강된다. 국자 `枠`는 대응 한자음이 없어 후보 생성 실패로
+  기록된다(정상 — 한국어에 대응어가 없다)
+
+### 재개 방식 — stdict 응답 디스크 캐시
+
+`data/dict/.korean-cache.json`에 검색어별 응답을 저장한다. 이게 곧 재개 지점이다.
+일 호출 한도 초과 등 API가 페이로드로 오류를 주면(`StdictApiError`) 캐시를 flush하고
+exit 2. 다음 날 재실행하면 캐시된 검색어는 건너뛰고 이어서 진행한다. 스로틀은 호출당
+50ms. `--limit=N`, `--only=id,id` 로 부분 실행.
+
+### 산출물
+
+| 파일 | 내용 |
+|---|---|
+| `data/dict/korean-match.json` | 숙어 id → {category, tentativeCategory, hasOriginMatch, matches[]} |
+| `data/dict/korean-review.tsv` | NEEDS_REVIEW 검수 큐. `verdict` 칸에 1/2/3 채운다. 原語 일치 먼저 정렬 |
+| `data/dict/korean-candidate-failures.tsv` | 한자음 후보를 못 만든 숙어(국자 등) |
+| `data/dict/korean-class.json` | 검수 반영 최종 분류 + `koMeaning`(source `stdict`, verified `false`) |
+
+`koMeaning.verified`는 항상 `false`. 표시 뜻의 정확성 검수는 별도 단계다(PLAN 리스크 표).
+전부 `.gitignore`된 재생성 가능 산출물. `npm run match:korean` / `apply:korean-review`.
+
+### stdict 응답 형식 — 첫 실행에서 두 가지 수정
+
+- **결과 없는 검색어는 HTTP 200 + 빈 본문.** `res.json()`이 "Unexpected end of JSON input"으로
+  터졌다. 빈 본문은 `[]`로 처리한다
+- **`origin`·`pos`는 item 레벨, `definition`·`link`·`type`은 sense 레벨.** 처음엔 전부 sense
+  안에 있다고 가정했다가 `originMatch`가 전부 false로 나와 발견
+
+### 배치 실행 결과 (2026-09-03, 밴드 0~3, 17,376개, ~36분, 8건/s)
+
+| 분류 | 수 | 비중 |
+|---|---|---|
+| JP_UNIQUE (일본 고유, 자동 확정) | 1,916 | 11.0% |
+| NEEDS_REVIEW (검수 필요) | 15,456 | 89.0% |
+| ├ 原語 한자 일치 | 13,155 | |
+| └ 音만 일치 (KO 간섭 위험) | 2,301 | |
+| 후보 생성 실패 | 4 | 枠(국자) 숙어뿐 — 정상 |
+
+밴드 3의 JP_UNIQUE 비율이 높다 (1,042 / 7,889 = 13%). 고유명사·성청명(外務省)·
+四字熟語·문화어(歌舞伎·横綱)가 이 구간에 몰린다.
+
+**`originMatch` 플래그는 동형동의의 안전한 대리 지표가 아니다.** `工夫`(공부)·`汽車`(기차)·
+`放心`(방심)·`勉強`(면강)·`大丈夫`(대장부) 등 대표 동형이의어가 전부 `原語` 일치다.
+따라서 原語 일치 블록을 일괄 1번(동형동의)으로 밀면 이 앱이 교정하려는 바로 그 단어들을
+오분류한다. 原語 일치 블록도 뜻 비교(사람 또는 LLM)가 필요하다.
+
+**`originMatch` 오탐(false negative)이 있다.** `税`↔`稅`, `戸`↔`戶` 처럼 부수 단순화는
+KANJIDIC variant에 없어 `減税↔減稅`·`江戸↔江戶`가 "音만 일치"로 분류된다. 오분류는
+아니다(둘 다 NEEDS_REVIEW) — 큐 정렬 정확도만 떨어진다. `hasOriginMatch=13,155`는 실제
+동형의 약간 과소 집계다.
+
+### 검수 규모 — 15,456건. 여러 세션에 나눠 진행하기로
+
+수동 검수 큐를 택했을 때 이 규모는 감안했지만(미확정 #3) 실측값이 커서, 한 번에 끝내지
+않고 **세션 간 이어서 검수**하는 방식으로 간다. 방식 자체(LLM 병용 / 밴드 축소)는
+아직 안 정했고, 검수를 진행하다 규모가 체감되면 그때 결정한다.
+
+**세션 간 검수가 깨지지 않게 한 장치.**
+
+- `match:korean` 재실행 시 `korean-review.tsv`의 기존 verdict(1/2/3)를 id 기준으로
+  이어받는다. 사전 DB를 다시 빌드해도 채운 칸이 날아가지 않는다
+- `--limit` / `--only` 부분 실행은 산출물을 `*.partial.*`로 써서 정식 검수 파일을 안 건드린다
+- `apply:korean-review`는 채운 만큼만 반영하고 미검수 수를 보고한다. 여러 번 돌려도 됨
+
+### 검수 초벌 — 로컬 Ollama (빌드타임)
+
+브라우저 PWA는 로컬 Ollama에 못 닿으므로 LLM은 전부 빌드타임에 돈다. 배포물엔 Ollama
+의존이 없다. 초벌 결과를 사전 DB에 굳혀 배포하고, 인앱에서 사람이 카드가 뜰 때
+확정·수정한다(사용자 이벤트 로그). 같은 코퍼스면 초벌은 1회.
+
+**모델 선정 — qwen3.5:latest.** 보유 모델 중 실측.
+
+| 모델 | 결과 |
+|---|---|
+| qwen3.5:latest (6.6GB) | `think:false` + `format:json` 시 웜 1.3s/건, 컴팩트 JSON 정상. **채택** |
+| gemma4:26b (17GB) | 웜 5~15s+/건, `format:json`인데도 `reason`이 반복 토큰 루프로 붕괴. 제외 |
+| qwen3:8b, gemma2:9b | 대안 후보(교차 검증용). 지금은 안 씀 |
+
+- **qwen3의 `/no_think` 프롬프트 지시는 무시된다.** 요청 본문 top-level `"think": false`를
+  써야 사고 과정을 끈다. `format:json`을 켜면 사고 모델은 JSON을 `thinking` 필드로 보내고
+  `response`가 비므로, `think:false`와 반드시 같이 쓴다
+- **프롬프트를 `originMatch`로 분기한다.** Y(한자 확실 일치)면 3 보기를 빼고 1 vs 2만 묻는다.
+  이렇게 안 하면 `工夫`(한자 동일)를 "뜻이 다르다"는 이유로 3(무관)으로 잘못 보낸다.
+  n(원어 한자 불일치)이면 3(우연히 음만 겹침) vs 1·2(자형 차이일 뿐 같은 단어)를 묻는다
+- 12건 스모크에서 `架空`(가공, 架空=공중 가설 ↔ JP=가상의)을 2로 정확히 잡음
+
+**표본 150건 검증 (사람 라벨 대비).** 일치율 90.7%. 혼동표에서 class 3(무관, 원어 한자
+불일치) 검출이 87/88로 거의 완벽 — `originMatch=n`(KO 간섭 핵심)에서 가장 정확하다.
+1↔2 경계가 노이즈(1→2 5건, 2→1 4건). 불일치 14건을 뜯어보면 사람 라벨 오류가
+6건가량(`角度`·`家族計画`·`島内`·`甘酢` 등), 진짜 애매 6건, 모델 실오류 3건 수준이라
+**실질 정확도는 95%+**. 거친 사전 분류로 충분하다고 판단, 진행.
+
+- 프롬프트 강화 시도(고유명사→3 규칙 추가)는 역효과 — 모델이 `無論`·`短編` 같은
+  평범한 동형동의어를 "일본식 한자음 고유명사"라며 3으로 밀어 88.7%로 하락. 되돌림.
+  "reason은 verdict와 일치해야 한다" 한 줄만 유지(`決別` 자기모순 해소)
+- 초벌 배치 실행 — scope `band01+sound` 8,700건, qwen3.5, 건당 ~1.5s (~3.6h)
+
+### 도구
+
+| 스크립트 | 역할 |
+|---|---|
+| `tools/lib/ollama.ts` | `judge(model, input)` — originMatch 분기 프롬프트, think off, JSON, 재시도 |
+| `tools/draft-korean-review.ts` | `--sample=N` 층화 표본 추출 / `--validate` 사람 대비 일치율 / 기본은 초벌 생성 |
+| `tools/apply-korean-review.ts` | 사람 verdict > (`--trust-llm`) 초벌 > 잠정. `classSource` 태깅 |
+
+- 초벌 캐시 `data/dict/.korean-llm-cache.json` (id+model 키, 재개 지점)
+- 초벌 산출 `data/dict/korean-llm-draft.tsv` (id, model, verdict, reason — 모델별 누적)
+- `--scope` 기본 `band01+sound` — 밴드 0~1 NEEDS_REVIEW + 전 밴드 음만 일치 (~9k건)
+
+### 다음 세션 착수점
+
+1. `data/dict/korean-review-sample.tsv` (층화 표본 200건, 이미 생성됨)의 `verdict` 칸에
+   1/2/3 을 직접 채운다
+2. `npm run draft:korean-review -- --validate --in=data/dict/korean-review-sample.tsv`
+   → qwen3.5 일치율·혼동표·불일치 목록·건당 시간 확인. 일치율이 낮으면 프롬프트 손보고,
+   대안 모델(qwen3:8b 등)도 같은 표본으로 잰다
+3. `npm run draft:korean-review` (scope=band01+sound, ~9k건, ~3시간) → `korean-llm-draft.tsv`
+4. `npm run apply:korean-review -- --trust-llm` → `korean-class.json`
+5. 그 뒤 사람이 `korean-review.tsv` `verdict`를 우선순위 높은 것부터(음만 일치, 밴드 0
+   교정 시드) 채우면 다음 `apply` 실행에서 초벌을 덮어쓴다. 전부 채우면 Phase 3 완료
+
+### 산출물 (재실행 가능, .gitignore)
+
+| 파일 | 크기 | 내용 |
+|---|---|---|
+| `data/dict/korean-match.json` | 12.6 MB | 숙어 id → 분류 + matches[] |
+| `data/dict/korean-review.tsv` | 2.5 MB | NEEDS_REVIEW 15,456행. verdict 칸 비어 있음 |
+| `data/dict/korean-candidate-failures.tsv` | 175 B | 枠 숙어 4건 |
+| `data/dict/.korean-cache.json` | 11.5 MB | stdict 응답 캐시 (재개 지점) |
+
+`korean-class.json`(최종 분류)은 사람이 verdict를 채운 뒤 `apply:korean-review`로 생성한다.
+
+### 일본 고유(category 3) 뜻 확보 방식 — 여전히 미결
+
+Phase 1-4에서 이월된 항목. category 3 = JP_UNIQUE 1,916 + 검수에서 3번 판정될 분량.
+규모가 이제 대략 나왔으니(하한 1,916) 방식 결정 가능 — 영어 병기 / 직접 작성 / LLM 초벌+검수.

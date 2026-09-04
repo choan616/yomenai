@@ -71,14 +71,25 @@
 
 ## Phase 3 — 한국어 대조 배치
 
-- [ ] stdict 오픈 API 인증 키 발급
-- [ ] 키를 `.env`로 분리 → **코드에 하드코딩 금지**
-- [ ] `tools/match-korean.ts` — 한자별 `korean_h` 조합 → 한국어 후보 생성 → stdict 조회
-- [ ] 호출 한도 대응 (스로틀링, 중단 지점 재개)
-- [ ] 3분류 저장 — 동형동의 / 동형이의 / 일본 고유
-- [ ] 모든 뜻 필드에 `source` + `verified` 기록
-- [ ] 동형이의 그룹은 `verified=false` 기본값
-- [ ] **검증: 愛人, 汽車, 手紙, 大丈夫 등 알려진 동형이의어 10개가 전부 2번으로 분류**
+- [x] stdict 오픈 API 인증 키 발급 — 사용자 발급 완료 (2026-09-03)
+- [x] 키를 `.env`로 분리 → **코드에 하드코딩 금지** — `.env.example` 추가, `process.loadEnvFile()`로 읽음. `.env`는 `.gitignore`됨
+- [x] `tools/match-korean.ts` — 한자별 `korean_h` 조합 → 한국어 후보 생성 → stdict 조회
+  (`tools/lib/korean.ts` 후보 생성·原語 대조·분류, `tools/lib/kanji-variants.ts` 신자체↔정자)
+- [x] 호출 한도 대응 (스로틀링 50ms, `.korean-cache.json` 디스크 캐시로 중단 지점 재개, `StdictApiError` 시 flush 후 exit 2)
+- [x] 3분류 저장 — 동형동의(1) / 동형이의(2) / 일본 고유(3). 배치는 JP_UNIQUE vs NEEDS_REVIEW만 자동, 1/2는 수동 검수 큐(`korean-review.tsv`) → `apply-korean-review.ts`
+- [x] 모든 뜻 필드에 `source` + `verified` 기록 — `korean-class.json`의 `koMeaning` = `{source:'stdict', verified:false}`
+- [x] 동형이의 그룹은 `verified=false` 기본값 — 전 항목 `verified=false` (표시 뜻 검수는 별도 단계)
+- [x] **분류 로직 검증** — `tools/match-korean.test.ts` 23 테스트 통과. 알려진 동형이의어 10개가 fixture로 NEEDS_REVIEW(잠정 2번) 큐 진입 확인
+- [x] **실측 검증: `npm run match:korean` 실행 완료 (밴드 0~3, 17,376개, ~36분).**
+  알려진 동형이의어 10개 전부 NEEDS_REVIEW(잠정 2번, 原語 일치). JP_UNIQUE 1,916 (11.0%) /
+  NEEDS_REVIEW 15,456 (89.0%). 규모·소견 context-notes 2026-09-03 Phase 3 절
+- [x] Ollama 초벌 파이프라인 — `tools/lib/ollama.ts` + `draft-korean-review.ts` + `apply-korean-review.ts --trust-llm`.
+  모델 qwen3.5 실측 채택(gemma4:26b는 출력 붕괴로 제외). 12건 스모크 정상. 층화 표본 200건 생성됨
+- [x] 표본 150건 라벨링 + `--validate` → qwen3.5 일치율 90.7% (실질 95%+, 라벨 노이즈 감안). 프롬프트 확정
+- [~] 초벌 배치 실행 중 — scope `band01+sound` 8,700건, 백그라운드. 끝나면 `apply:korean-review -- --trust-llm` → `korean-class.json`
+- [ ] **검수 큐 verdict 세션 간 채우기 (음만 일치 2,301 + 밴드 0 교정 시드 우선) → `korean-class.json` 확정**
+  착수점은 context-notes 2026-09-03 Phase 3 "다음 세션 착수점" 절.
+  현재 `korean-class.json`은 미검수 전량 잠정 2번 상태 (배치 완료 후 초벌 8,700건 반영 예정)
 
 ---
 
