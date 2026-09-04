@@ -989,3 +989,62 @@ GitHub Pages 서브패스는 Phase 7 대응.
 `lang="ja"` 를 실제 요소에 붙이는 것과 骨/直/令 **육안 자형 확인**은 화면이 없어서
 못 했다. CSS 기계는 준비됐으니 화면 만들면서 검증한다. `wanakana.bind()` 입력 필드,
 7개 화면, 다크 모드, 카드 전환 150ms 실측도 다음 세션.
+
+---
+
+## 2026-09-04 — Phase 5 (학습 카드 화면까지)
+
+사용자와 이번 범위를 "최소 홈 → 학습 카드"로 합의. 네비게이션은 라이브러리 없이
+상태 기반(`src/App.tsx` 의 `screen` state). 오답 상세·진입 진단·리포트·음독 맵·설정은 다음.
+
+### 앱 셸·스타일
+
+- 데모 스캐폴딩 정리 — `src/App.tsx` 재작성, `src/App.css` 삭제(재작성으로 고아가 됨).
+  `src/assets/{hero.png,react.svg,vite.svg}` 는 이제 참조 없음 — 삭제 안 하고 남겨둠
+  (Vite 스캐폴드 잔재, 다음에 정리).
+- `src/index.css` 재작성 — 무채색 · 다크 우선 토큰. 라이트는 `prefers-color-scheme: light`
+  오버라이드. 색 토큰(`--ok`/`--ng`)은 정오답 피드백 전용 (PLAN §7). 다크 모드 *토글*은
+  아직 없다 — OS 설정만 따른다. 별도 체크리스트 항목으로 남김.
+
+### 사전·이벤트 로드 경로
+
+`useStudySession` 이 `loadBaseIdioms()` + `loadKanji()` + `listEvents(db, LOCAL_USER_ID)` 를
+병렬로 받아 `buildSession(pool, events, {now, limit:20})`. 오답 판정용 `MistakeContext` 는
+슬림 `kanji.json`(`{kr,on,kun}`)을 `{onyomi,kunyomi}` 로 어댑트하고 `buildKoSiblingIndex`
+에는 `{koreanH,onyomi}` 로 넘긴다.
+
+`deviceId` — `src/db/device.ts` 가 `localStorage['yomenai:deviceId']` 에 `crypto.randomUUID()`
+를 한 번 굳힌다. 프라이빗 모드 등 실패 시 세션 한정 임시 id.
+
+### 카드 채점 흐름 — 이벤트를 언제 쓰나
+
+읽기 카드는 **답 제출 시점에 이벤트를 쓰지 않는다.** 자신감 버튼(쉬웠다·헷갈렸다)이
+FSRS 등급을 바꾸는데 이벤트는 append-only 라 나중에 못 고친다. 그래서
+`submitReading` 은 판정만 해 피드백을 띄우고(`feedback` state), `next(confidence?)` 에서
+`recordReadingAnswer({..., confidence})` 로 이벤트를 만들어 `appendEvent`.
+정답이면 [다음]/[쉬웠다]/[헷갈렸다] 셋 다 이 경로, 오답이면 [다음](Again)만.
+
+뜻 카드는 자기 채점 — "알았어요"면 멈추지 않고 바로 넘어가고(정답), "몰랐어요"면
+뜻을 다시 보여준 뒤 [다음] (PLAN §7 "오답일 때만 멈춘다").
+
+지연 검수(`needsClassReview`) — 카드 앞에 "뜻을 이미 알고 계셨나요" 프롬프트를 끼운다.
+답은 `recordMeaningKnown` 이벤트. 모드 배정 2단계가 이 값을 미확정 분류보다 우선하므로
+새 이벤트 타입이 필요 없다 (Phase 4 결정 그대로). 숙어당 한 번은 `buildSession` 이 이미 보장.
+
+### 카드 전환 150ms 실측 — Playwright + 설치된 Chrome
+
+- 사용자 선택. `@playwright/test` 만 설치하고 `channel: 'chrome'` 로 브라우저 다운로드 없이 돈다.
+- 계측 — `useStudySession.advance()`/`answerClassReview()` 가 `performance.mark('yomenai:advance')`
+  + `transitionSeq` 증가. `Study` 가 `transitionSeq` 변화에 **단일 rAF** 로
+  `performance.mark('yomenai:shown')` + `measure('yomenai:transition', …)`.
+  단일 rAF = DOM 커밋·레이아웃 뒤 페인트 직전. `transitionSeq` 로 트리거해서 피드백 표시
+  같은 다른 렌더가 measure 를 중복 발생시키지 않게 했다 (처음엔 `[index,status]` 로 걸었다가
+  전환 1회에 measure 가 2번 찍혔다).
+- 결과 — 전환 36회, **중앙값 9ms / p95 10.4ms / 최대 10.7ms**. 150ms 대비 여유 큼.
+  트랜지션 애니메이션을 카드에 안 걸었고 풀은 세션 시작 전에 로드된다.
+- `tsconfig.e2e.json` 추가(루트 tsconfig references 에 연결) — `tests/` 도 `tsc -b` 검사.
+
+### 검증
+
+`npm test` 14파일 152 통과(불변). `npm run e2e` 통과. `tsc -b` / `oxlint` / `vite build` 클린.
+라이트·다크 스크린샷으로 레이아웃·`lang="ja"` 자형(忠実 의 実)·wanakana 변환(chuujitsu→ちゅうじつ) 확인.

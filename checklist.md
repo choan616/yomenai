@@ -148,12 +148,19 @@
   `public/fonts/NotoSerifJP-subset.woff2` (698 KB) + Pretendard 복사.
   **검증: 커버리지 100.00% (2,228자), 폴백 0** — 빌드가 fontkit 로 원본·산출 cmap 대조,
   미달 시 exit 1. `src/styles/fonts.test.ts` 3 테스트로 고정 (骨直次令 + 가나 전 구간 + base 전량)
-- [x] `lang` 속성 CSS 기반 — `src/styles/fonts.css`: `@font-face` 2종 + `:lang(ja)`→`--font-ja`
-  (일본 명조 스택, generic serif 최후) / `:lang(ko)`→`--font-ko`. main.tsx 에서 로드.
-  **육안 검증(骨/直/令 일본 자형)은 화면이 생기는 다음 세션에 `lang="ja"` 마크업과 함께**
-- [ ] `wanakana.bind()` 입력 필드 (`autocapitalize="none"` 필수)
-- [ ] 학습 카드 화면
-- [ ] **검증: 카드 전환 150ms 이하 (실측)**
+- [x] `lang` 속성 — `src/styles/fonts.css`: `@font-face` 2종 + `:lang(ja)`→`--font-ja`
+  (일본 명조 스택, generic serif 최후) / `:lang(ko)`→`--font-ko`. 숙어·읽기 요소에 `lang="ja"`.
+  **검증: 忠実 등이 일본 자형(実, 實 아님)으로 렌더링됨** — 스크린샷 확인 (라이트/다크)
+- [x] `wanakana.bind()` 입력 필드 — `src/study/KanaInput.tsx`. `autocapitalize="none"` +
+  `autocomplete/autocorrect=off`, `spellcheck=false`, `lang="ja"`, Enter 제출(조합 중 무시).
+  **검증: e2e 에서 "chuujitsu" → ちゅうじつ 변환·정답 판정 확인**
+- [x] 학습 카드 화면 — 읽기 카드(`ReadingCard`) + 뜻 카드(`MeaningCard`) + 지연 검수
+  프롬프트(`ClassReviewPrompt`), 조립은 `useStudySession` + `Study`. 숙어 중앙 상단, 입력·버튼
+  하단. 자동 채점(오답 Again / 정답 Good + 쉬웠다·헷갈렸다), 피드백은 색+아이콘+위치.
+  최소 홈(`src/app/Home.tsx`) + 상태 기반 셸(`src/App.tsx`). 이벤트는 IndexedDB 에 append.
+- [x] **검증: 카드 전환 150ms 이하 (실측)** — Playwright `tests/e2e/card-transition.spec.ts`,
+  설치된 Chrome 채널. 세션 완주하며 `performance.measure` 로 전환 36회 수집,
+  **p95 10.4ms / 최대 10.7ms**. `npm run e2e`
 - [ ] 오답 상세
 - [ ] 진입 진단 플로우
 - [ ] 진단 리포트
