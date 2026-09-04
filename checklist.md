@@ -111,10 +111,10 @@
 - [x] 모드 자동 배정 3단계 — `src/core/mode.ts`. 한국어 대조 → 진단 응답 → 학습 중 재배치 순으로 덮어쓴다
 - [x] **검증: 세션 100회 시뮬레이션 테스트 통과, 예외 없음** — `src/core/session.sim.test.ts` 7 테스트 통과.
   고정본 24개 풀과 **실제 사전 DB 400개 풀** 양쪽. 중복 출제 0, reps ↔ 이벤트 수 일치, 재생 결정론, 같은 시드 → 같은 로그
-
-**미검증으로 남긴 것.** Dexie 의 실제 open/read/write 경로는 테스트하지 않았다.
-`fake-indexeddb` devDependency 가 필요한데 설치는 사용자 확인 사항이라 보류했다.
-스키마 *정의*는 `STORES` 상수를 통해 검증되고 Dexie 에도 같은 상수가 들어간다.
+- [x] Dexie 실제 open/read/write 경로 검증 — `src/db/events.test.ts` 10 테스트 통과.
+  fake-indexeddb 위에서 실제 스토어가 열리고 선언한 복합 PK·색인 4개가 그대로 붙는 것을 확인.
+  append-only 보호(같은 id 재삽입 거부), 묘비 제외, userId 격리, 저장→조회→재생 왕복
+- [x] `tsconfig.app.json`에 `strict` 켬 — 기존 코드 수정 없이 통과
 
 ---
 
