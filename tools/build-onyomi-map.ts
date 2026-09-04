@@ -2,9 +2,9 @@
 import { readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { DICT_DIR, type IdiomRecord } from './lib/dict.ts'
-import { bandOf, type Band } from './lib/bands.ts'
-import { decompose, pairId, type FailReason, type KanjiReadings } from './lib/onyomi.ts'
-import { surfaceCandidates } from './lib/readings.ts'
+import { bandOf, type Band } from '../src/lib/bands.ts'
+import { decompose, pairId, type FailReason, type KanjiReadings } from '../src/lib/onyomi.ts'
+import { surfaceCandidates } from '../src/lib/readings.ts'
 
 /** 저장용 압축 세그먼트 — [한자, 표면형, 원형, 음훈, 변형] */
 export type PackedSegment = [string, string, string, 'on' | 'kun', string[]]

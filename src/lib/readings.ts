@@ -209,3 +209,42 @@ export function unvoiceHead(s: string): string | null {
   const to = UNVOICE[s[0]]
   return to === undefined ? null : to + s.slice(1)
 }
+
+/** 탁음·반탁음을 전부 청음으로 되돌린다. 連濁 오답 판정에서 두 문자열을 같은 자리에 놓는 용도 */
+export function unvoiceAll(s: string): string {
+  let out = ''
+  for (const ch of s) out += UNVOICE[ch] ?? ch
+  return out
+}
+
+/**
+ * 장음 표기를 걷어낸다 (ー, o·u단 뒤의 う, e·i단 뒤의 い).
+ * 長音 오답(とくちょう → とくちょ) 판정에서 두 문자열을 같은 자리에 놓는 용도다.
+ */
+export function stripLongVowels(s: string): string {
+  let out = ''
+  for (const ch of s) {
+    if (ch === 'ー') continue
+    const prev = vowelOf(out.at(-1) ?? '')
+    if (ch === 'う' && (prev === 'o' || prev === 'u')) continue
+    if (ch === 'い' && (prev === 'e' || prev === 'i')) continue
+    out += ch
+  }
+  return out
+}
+
+/**
+ * っ 를 촉음便 이전 형태로 되돌린 후보들. 促音 오답(はったつ → はつたつ) 판정용이다.
+ * 원형은 포함하지 않는다.
+ */
+export function sokuonVariants(s: string): string[] {
+  const out: string[] = []
+  for (let i = 0; i < s.length; i++) {
+    if (s[i] !== 'っ') continue
+    const head = s.slice(0, i)
+    const tail = s.slice(i + 1)
+    out.push(head + tail) // 촉음 자체가 없는 형태 (促音添加의 역)
+    for (const k of SOKUON_TAIL) out.push(head + k + tail)
+  }
+  return out
+}

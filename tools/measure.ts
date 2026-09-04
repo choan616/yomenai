@@ -2,7 +2,7 @@
 import { readFileSync, statSync } from 'node:fs'
 import { join } from 'node:path'
 import { DICT_DIR, type IdiomRecord } from './lib/dict.ts'
-import { bandOf } from './lib/bands.ts'
+import { bandOf } from '../src/lib/bands.ts'
 
 function mb(bytes: number): string {
   return (bytes / 1024 / 1024).toFixed(2) + ' MB'

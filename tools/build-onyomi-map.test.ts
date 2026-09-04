@@ -3,7 +3,7 @@ import { describe, it, expect } from 'vitest'
 import { readFileSync, existsSync } from 'node:fs'
 import { join } from 'node:path'
 import { DICT_DIR, type IdiomRecord } from './lib/dict.ts'
-import { decompose, type KanjiReadings } from './lib/onyomi.ts'
+import { decompose, type KanjiReadings } from '../src/lib/onyomi.ts'
 import { buildMap, findCycles, findVariantCycles } from './build-onyomi-map.ts'
 
 const kanjiPath = join(DICT_DIR, 'kanji.json')

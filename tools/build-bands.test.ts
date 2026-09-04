@@ -3,7 +3,7 @@ import { describe, it, expect } from 'vitest'
 import { readFileSync, existsSync } from 'node:fs'
 import { join } from 'node:path'
 import { DICT_DIR, type IdiomRecord } from './lib/dict.ts'
-import { priorityToBand, minNf } from './lib/bands.ts'
+import { priorityToBand, minNf } from '../src/lib/bands.ts'
 import { computeDistribution } from './build-bands.ts'
 
 describe('priorityToBand — nf 빈도 순위 단독 규칙', () => {

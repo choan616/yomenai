@@ -1,5 +1,4 @@
 // JMdict 우선순위 태그를 난이도 밴드 0~4로 매핑한다 (PLAN §4). Phase 2에서 nf/news 상관 실측 후 확정
-import type { IdiomRecord } from './dict.ts'
 
 export type Band = 0 | 1 | 2 | 3 | 4
 
@@ -39,7 +38,7 @@ export function priorityToBand(priority: string[]): Band {
   return 4
 }
 
-export function bandOf(idiom: IdiomRecord): Band {
+export function bandOf(idiom: { priority: string[] }): Band {
   return priorityToBand(idiom.priority)
 }
 

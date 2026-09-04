@@ -2,7 +2,7 @@
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { DICT_DIR, type IdiomRecord } from './lib/dict.ts'
-import { bandOf, BAND_LABEL, minNf, type Band } from './lib/bands.ts'
+import { bandOf, BAND_LABEL, minNf, type Band } from '../src/lib/bands.ts'
 
 // 검수 표본이 실행마다 바뀌면 재현이 안 되므로 시드 고정 PRNG(mulberry32)를 쓴다
 function rng(seed: number): () => number {

@@ -2,7 +2,7 @@
 import { readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { DICT_DIR, type IdiomRecord } from './lib/dict.ts'
-import { bandOf, BAND_LABEL, minNf, type Band } from './lib/bands.ts'
+import { bandOf, BAND_LABEL, minNf, type Band } from '../src/lib/bands.ts'
 
 export interface BandDistribution {
   total: number

@@ -59,8 +59,8 @@
   (`tools/review-bands.ts`, 시드 20260903. 검수 소견은 context-notes 2026-09-03 Phase 2 절)
 - [x] 밴드 경계(nf20/nf21 부근) 집중 검수 — nf20/21/24/25 각 20개. 경계 불연속 없음
 - [x] `tools/build-onyomi-map.ts` — 숙어 → (한자, 음독) 쌍 분해
-  - 連濁·促音便·半濁音·連声·促音添加·연용형 흡수 규칙 구현 (`tools/lib/readings.ts`)
-  - 최소 비용 분해 (`tools/lib/onyomi.ts`). 고유 쌍 4,001개
+  - 連濁·促音便·半濁音·連声·促音添加·연용형 흡수 규칙 구현 (`src/lib/readings.ts`, Phase 4에서 tools/lib 에서 이동)
+  - 최소 비용 분해 (`src/lib/onyomi.ts`, Phase 4에서 이동). 고유 쌍 4,001개
 - [x] **검증: 매핑 실패 숙어 목록 출력, 실패율 기록**
   성공 103,172 / 107,532 (95.95%). 밴드 0~3 실패율 1.02% / 1.67% / 1.06% / 1.69%.
   실패 목록 `data/dict/onyomi-failures.tsv` — 대부분 熟字訓이라 거부가 정상 동작
@@ -95,16 +95,26 @@
 
 ## Phase 4 — 학습 코어
 
-- [ ] IndexedDB 스키마 v1 정의 → **CLAUDE.md의 스키마 불변 조건 전부 반영**
-- [ ] 이벤트 로그 append 함수
-- [ ] 이벤트 → FSRS 카드 상태 재생(replay) 함수
-- [ ] **검증: 동일 이벤트 시퀀스를 두 번 재생하면 동일 상태**
-- [ ] `ts-fsrs` 연동, 카드 타입별 개별 스케줄
-- [ ] 오답 유형 자동 판정 함수 (6종)
-- [ ] **검증: 유형별 대표 케이스 각 3개씩 정확히 분류**
-- [ ] 출제 선택 로직 (밴드 + 미숙 음독 가중)
-- [ ] 모드 자동 배정 3단계
-- [ ] **검증: 세션 100회 시뮬레이션 테스트 통과, 예외 없음**
+- [x] IndexedDB 스키마 v1 정의 → `src/db/schema.ts`. 단일 `events` 테이블,
+  PK `[userId+id]`, 색인 `[userId+at]` / `[userId+idiomId+cardType]` / `[userId+deviceId+at]` / `deletedAt`.
+  **검증: `src/db/schema.test.ts` 6 테스트 통과** — PK 에 userId, deletedAt 색인, 전 이벤트의 cardType·mistakeType
+- [x] 이벤트 로그 append 함수 — `src/db/events.ts` (`newEventId` 시간순 정렬 id, `appendEvent`, `listEvents`, `listCardEvents`)
+- [x] 이벤트 → FSRS 카드 상태 재생(replay) 함수 — `src/core/replay.ts`. 카드 상태 + 진단 응답 + 음독 집계를 한 번에 접는다
+- [x] **검증: 동일 이벤트 시퀀스를 두 번 재생하면 동일 상태** — `src/core/replay.test.ts` 12 테스트 통과.
+  순서를 뒤집거나 회전시켜도 같은 상태가 나온다(기기별 파일 합집합 병합의 전제). 삭제 이벤트 제외도 확인
+- [x] `ts-fsrs` 연동, 카드 타입별 개별 스케줄 — `src/core/scheduler.ts`.
+  `enable_fuzz: false` 로 재생 결정론 확보. 자동 채점(`gradeFor`)은 오답 Again / 정답 Good + 쉬웠다·헷갈렸다 2버튼
+- [x] 오답 유형 자동 판정 함수 (6종) — `src/core/mistakes.ts`. 답이 파싱되면 자리별 비교, 아니면 문자열 관계 → KO 간섭 순
+- [x] **검증: 유형별 대표 케이스 각 3개씩 정확히 분류** — `src/core/mistakes.test.ts` 15 테스트 통과.
+  축약 고정본(`mistakes.fixture.ts`, 51자)과 전체 KANJIDIC2 양쪽에서 동일 판정
+- [x] 출제 선택 로직 (밴드 + 미숙 음독 가중) — `src/core/select.ts`. 기한 초과 우선 → 신규는 밴드 오름차순 · 미숙 음독 내림차순. 무작위 없음
+- [x] 모드 자동 배정 3단계 — `src/core/mode.ts`. 한국어 대조 → 진단 응답 → 학습 중 재배치 순으로 덮어쓴다
+- [x] **검증: 세션 100회 시뮬레이션 테스트 통과, 예외 없음** — `src/core/session.sim.test.ts` 7 테스트 통과.
+  고정본 24개 풀과 **실제 사전 DB 400개 풀** 양쪽. 중복 출제 0, reps ↔ 이벤트 수 일치, 재생 결정론, 같은 시드 → 같은 로그
+
+**미검증으로 남긴 것.** Dexie 의 실제 open/read/write 경로는 테스트하지 않았다.
+`fake-indexeddb` devDependency 가 필요한데 설치는 사용자 확인 사항이라 보류했다.
+스키마 *정의*는 `STORES` 상수를 통해 검증되고 Dexie 에도 같은 상수가 들어간다.
 
 ---
 
