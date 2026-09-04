@@ -92,6 +92,9 @@
 - [x] tier 2 필수 검수 완료 (355건, 1:117 / 2:237 / 3:1). tier 1 (439건)은 초벌 신뢰
 - [x] Phase 1 임포트 버그 수정 — sK/iK/oK 표기 표제어 제외 (`魚信`↔`当たり` 발견). 코퍼스 106,803, 파이프라인 재실행, 스냅샷 테스트 갱신, 127 통과
 - [ ] 지연 검수 (Phase 4 카드 풀 진입 시) — tier 1 재확인, 밴드0~1 Y 초벌 1, 밴드 2~3 Y 6,700여건. `主人`(초벌 1, 경계) 포함
+  런타임 준비 완료 — `buildSession`이 `needsClassReview`를 실어 주고 `meaningKnown` 응답이
+  모드를 즉시 바로잡는다 (Phase 4 절 참조). 남은 건 **묻는 화면(Phase 5)**과
+  **응답을 `korean-class.json`으로 되돌리는 도구**다
 
 ---
 
@@ -117,6 +120,13 @@
   fake-indexeddb 위에서 실제 스토어가 열리고 선언한 복합 PK·색인 4개가 그대로 붙는 것을 확인.
   append-only 보호(같은 id 재삽입 거부), 묘비 제외, userId 격리, 저장→조회→재생 왕복
 - [x] `tsconfig.app.json`에 `strict` 켬 — 기존 코드 수정 없이 통과
+- [x] 조립 지점 `src/core/session.ts` — `buildSession`(재생 → 모드 배정 → 선택) +
+  `recordReadingAnswer`/`recordMeaningAnswer`/`recordMeaningKnown`(채점 → 오답 판정 → 이벤트).
+  100회 시뮬레이션이 이 함수들을 쓰도록 바꿔, 검증하는 조립 순서와 화면이 쓸 조립 순서를 일치시켰다.
+  **검증: `src/core/session.test.ts` 16 테스트 통과**
+- [x] 지연 검수 신호 — `SessionCard.needsClassReview`. `classSource !== 'manual'` 인 숙어가
+  카드 풀에 처음 들어올 때만, 숙어당 한 번. 응답은 기존 `meaningKnown` 이벤트로 남고
+  모드 배정 2단계가 미확정 분류를 덮는다 (새 이벤트 타입 불필요)
 
 ---
 

@@ -5,14 +5,19 @@ import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { pairId, type KanjiReadings } from '../lib/onyomi.ts'
 import { stripLongVowels, unvoiceAll } from '../lib/readings.ts'
-import { buildKoSiblingIndex, classifyMistake, type MistakeContext } from './mistakes.ts'
+import { buildKoSiblingIndex, type MistakeContext } from './mistakes.ts'
 import { KANJI_FIXTURE } from './mistakes.fixture.ts'
 import { activeCardTypes, assignMode } from './mode.ts'
+import {
+  buildSession,
+  recordMeaningAnswer,
+  recordMeaningKnown,
+  recordReadingAnswer,
+  type ClassSource,
+  type IdiomEntry,
+} from './session.ts'
 import { mistakeTotals, replay, type ReplayState } from './replay.ts'
-import { gradeFor } from './scheduler.ts'
-import { selectSession, type SessionCandidate } from './select.ts'
-import { cardKey, type KoreanCategory, type LearningEvent, type ReviewEvent } from './types.ts'
-import { newEventId } from '../db/events.ts'
+import { cardKey, type KoreanCategory, type LearningEvent } from './types.ts'
 import type { Band } from '../lib/bands.ts'
 
 const DAY = 86_400_000
@@ -31,13 +36,9 @@ function rng(seed: number): () => number {
   }
 }
 
-interface PoolItem {
-  idiomId: string
+interface PoolItem extends IdiomEntry {
   headword: string
   reading: string
-  band: Band
-  category: KoreanCategory
-  pairIds: string[]
 }
 
 /** 정답 읽기를 그럴듯하게 망가뜨린다 — 促音·連濁·長音 누락과 끝음절 탈락 */
@@ -65,6 +66,8 @@ interface SimResult {
   emptyIdle: number
   dueCards: number
   maxSessionSize: number
+  /** 카드 풀 진입 시점에 한국어 분류 확인을 요구한 횟수 (Phase 3 지연 검수) */
+  classReviews: number
   state: ReplayState
 }
 
@@ -72,10 +75,9 @@ interface SimResult {
  * 하루 한 세션씩 SESSIONS 회. 매 세션마다 이벤트 로그를 처음부터 재생해 상태를 만들고,
  * 그 상태로 다음 세션을 고른다 — 실제 앱과 같은 경로다.
  */
-function simulate(pool: PoolItem[], ctx: MistakeContext, seed: number): SimResult {
+function simulate(pool: PoolItem[], mistakes: MistakeContext, seed: number): SimResult {
   const rand = rng(seed)
   const byId = new Map(pool.map((p) => [p.idiomId, p]))
-  const pairsOf = (id: string) => byId.get(id)?.pairIds ?? []
   const events: LearningEvent[] = []
   /** 숙어별 습득도. 맞힐 때마다 오르고 틀리면 떨어진다 */
   const skill = new Map<string, number>()
@@ -83,76 +85,72 @@ function simulate(pool: PoolItem[], ctx: MistakeContext, seed: number): SimResul
   let emptyWithWork = 0
   let emptyIdle = 0
   let dueCards = 0
+  let classReviews = 0
   let maxSessionSize = 0
 
   for (let s = 0; s < SESSIONS; s++) {
     const now = T0 + s * DAY
-    const state = replay(events, { pairsOf })
+    const { cards, state } = buildSession(pool, events, { now, limit: SESSION_LIMIT })
 
-    const candidates: SessionCandidate[] = pool.map((p) => ({
-      idiomId: p.idiomId,
-      band: p.band,
-      pairIds: p.pairIds,
-      mode: assignMode({
-        category: p.category,
-        meaningKnown: state.meaningKnown.get(p.idiomId),
-        meaningCard: state.cards.get(cardKey(p.idiomId, 'meaning'))?.card,
-      }).mode,
-    }))
-
-    const items = selectSession(candidates, state, { now, limit: SESSION_LIMIT })
-    if (items.length === 0) {
+    if (cards.length === 0) {
       // 빈 세션이 정당하려면 밴드 범위 안에 미도입 카드가 없고 기한이 지난 카드도 없어야 한다.
-      // selectSession 을 다시 부르지 않고 상태만 보고 독립적으로 확인한다
-      const workLeft = candidates.some((c) =>
-        activeCardTypes(c.mode).some((t) => {
-          const st = state.cards.get(cardKey(c.idiomId, t))
-          if (st === undefined) return c.band >= 1
+      // buildSession 을 다시 부르지 않고 상태만 보고 독립적으로 확인한다
+      const workLeft = pool.some((p) => {
+        const mode = assignMode({
+          category: p.category,
+          meaningKnown: state.meaningKnown.get(p.idiomId),
+          meaningCard: state.cards.get(cardKey(p.idiomId, 'meaning'))?.card,
+        }).mode
+        return activeCardTypes(mode).some((t) => {
+          const st = state.cards.get(cardKey(p.idiomId, t))
+          if (st === undefined) return p.band >= 1
           return st.card.due.getTime() <= now
-        }),
-      )
+        })
+      })
       if (workLeft) emptyWithWork++
       else emptyIdle++
     }
-    maxSessionSize = Math.max(maxSessionSize, items.length)
+    maxSessionSize = Math.max(maxSessionSize, cards.length)
 
     const seen = new Set<string>()
-    items.forEach((item, i) => {
+    cards.forEach((item, i) => {
       const key = cardKey(item.idiomId, item.cardType)
       expect(seen.has(key), `세션 ${s} 에 ${key} 가 중복 출제됐다`).toBe(false)
       seen.add(key)
       if (item.due) dueCards++
 
-      const p = byId.get(item.idiomId)!
+      const entry = byId.get(item.idiomId)!
+      const at = now + i * 12_000
+      const ctx = { userId: 'local', deviceId: 'sim', at, elapsedMs: 800 + Math.floor(rand() * 4000), rand }
+
+      // 지연 검수 — 카드 풀 진입 시점에 분류 확인을 먼저 받는다 (Phase 3 에서 미뤄둔 몫)
+      if (item.needsClassReview) {
+        classReviews++
+        events.push(recordMeaningKnown({
+          idiomId: entry.idiomId,
+          known: entry.category === 1,
+          ctx: { ...ctx, at: at - 1 },
+        }))
+      }
+
       const level = skill.get(key) ?? 0
       const correct = rand() < 0.35 + 0.2 * level
       skill.set(key, correct ? Math.min(level + 1, 3) : Math.max(level - 1, 0))
+      const confidence = rand() < 0.15 ? ('hard' as const) : null
 
-      const at = now + i * 12_000
-      const answer = item.cardType === 'reading' && !correct
-        ? corrupt(p.reading, rand)
-        : correct ? p.reading : ''
-      const mistakeType = item.cardType === 'reading' && !correct
-        ? classifyMistake({ headword: p.headword, expected: p.reading, answer }, ctx)
-        : null
-
-      const event: ReviewEvent = {
-        id: newEventId(at, rand),
-        userId: 'local',
-        deviceId: 'sim',
-        at,
-        idiomId: p.idiomId,
-        cardType: item.cardType,
-        mistakeType,
-        deletedAt: null,
-        type: 'review',
-        grade: gradeFor(correct, rand() < 0.15 ? 'hard' : null),
-        answer,
-        expected: item.cardType === 'reading' ? p.reading : '',
-        correct,
-        elapsedMs: 800 + Math.floor(rand() * 4000),
-      }
-      events.push(event)
+      events.push(
+        item.cardType === 'reading'
+          ? recordReadingAnswer({
+              item,
+              headword: entry.headword,
+              reading: entry.reading,
+              answer: correct ? entry.reading : corrupt(entry.reading, rand),
+              confidence,
+              ctx,
+              mistakes,
+            })
+          : recordMeaningAnswer({ item, correct, confidence, ctx }),
+      )
     })
   }
 
@@ -162,8 +160,9 @@ function simulate(pool: PoolItem[], ctx: MistakeContext, seed: number): SimResul
     emptyWithWork,
     emptyIdle,
     dueCards,
+    classReviews,
     maxSessionSize,
-    state: replay(events, { pairsOf }),
+    state: replay(events, { pairsOf: (id) => byId.get(id)?.pairIds ?? [] }),
   }
 }
 
@@ -179,6 +178,7 @@ function checkInvariants(result: SimResult, pool: PoolItem[]): void {
   // 카드별 reps 는 그 카드에 쌓인 이벤트 수와 정확히 같다
   const counted = new Map<string, number>()
   for (const e of result.events) {
+    if (e.type !== 'review') continue // meaningKnown 은 FSRS 카드를 건드리지 않는다
     const key = cardKey(e.idiomId, e.cardType)
     counted.set(key, (counted.get(key) ?? 0) + 1)
   }
@@ -187,6 +187,15 @@ function checkInvariants(result: SimResult, pool: PoolItem[]): void {
     expect(Number.isFinite(card.card.stability)).toBe(true)
     expect(card.card.stability).toBeGreaterThan(0)
     expect(card.card.due.getTime()).toBeGreaterThan(card.lastAt!)
+  }
+
+  // 지연 검수 — 미확정 분류를 가진 숙어에 대해서만, 숙어당 정확히 한 번 묻는다
+  const asked = result.events.filter((e) => e.type === 'meaningKnown')
+  expect(asked).toHaveLength(result.classReviews)
+  expect(new Set(asked.map((e) => e.idiomId)).size, '같은 숙어에 두 번 물었다').toBe(asked.length)
+  for (const e of asked) {
+    const entry = pool.find((p) => p.idiomId === e.idiomId)!
+    expect(entry.classSource, `${e.idiomId} 는 확정 분류인데 물었다`).not.toBe('manual')
   }
 
   // 음독 집계는 읽기 카드 이벤트 수를 넘을 수 없다
@@ -212,6 +221,8 @@ const FIXTURE_POOL: PoolItem[] = [
   reading,
   band: ((i % 3) + 1) as Band,
   category: ((i % 3) + 1) as KoreanCategory,
+  // manual 은 확정, llm·default 는 미확정이라 카드 풀 진입 시 확인을 요구한다
+  classSource: (['manual', 'llm', 'default'] as const)[i % 3] as ClassSource,
   pairIds: [...headword].map((k) => pairId(k, 'x', 'on')),
 }))
 
@@ -242,6 +253,12 @@ describe(`세션 ${SESSIONS}회 시뮬레이션 (고정본 풀)`, () => {
     }
   })
 
+  it('미확정 분류 숙어가 카드 풀에 들어올 때 확인을 요구한다', () => {
+    const unconfirmed = FIXTURE_POOL.filter((p) => p.classSource !== 'manual' && p.band >= 1)
+    expect(result.classReviews).toBeGreaterThan(0)
+    expect(result.classReviews).toBeLessThanOrEqual(unconfirmed.length)
+  })
+
   it('같은 시드면 같은 이벤트 로그가 나온다', () => {
     const again = simulate(FIXTURE_POOL, fixtureCtx, 20260904)
     expect(again.events).toEqual(result.events)
@@ -264,7 +281,8 @@ describe.runIf(hasDict)(`세션 ${SESSIONS}회 시뮬레이션 (실제 사전 DB
       { id: string; headword: string; reading: string }[]
     const classPath = join(DICT, 'korean-class.json')
     const koClass = existsSync(classPath)
-      ? (read('korean-class.json').byId as Record<string, { category: KoreanCategory }>)
+      ? (read('korean-class.json').byId as
+          Record<string, { category: KoreanCategory; classSource: ClassSource }>)
       : {}
 
     const pool: PoolItem[] = []
@@ -278,6 +296,7 @@ describe.runIf(hasDict)(`세션 ${SESSIONS}회 시뮬레이션 (실제 사전 DB
         reading: it.reading,
         band,
         category: koClass[it.id]?.category ?? 2,
+        classSource: koClass[it.id]?.classSource ?? 'default',
         pairIds: segs.map(([k, , base, kind]) => pairId(k, base, kind)),
       })
       if (pool.length >= 400) break

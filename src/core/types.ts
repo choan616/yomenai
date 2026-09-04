@@ -98,3 +98,17 @@ export function cardKey(idiomId: string, cardType: CardType): string {
 export function compareEvents(a: LearningEvent, b: LearningEvent): number {
   return a.at - b.at || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0)
 }
+
+const ID_RANDOM_LEN = 10
+
+/**
+ * 시간순으로 정렬되는 이벤트 ID.
+ * `at` 을 base36 13자리로 고정 폭 인코딩해 문자열 비교가 곧 시간 비교가 되게 하고,
+ * 뒤에 난수를 붙여 같은 밀리초·다른 기기의 충돌을 막는다.
+ */
+export function newEventId(at: number, rand: () => number = Math.random): string {
+  const ts = Math.floor(at).toString(36).padStart(13, '0')
+  let tail = ''
+  for (let i = 0; i < ID_RANDOM_LEN; i++) tail += Math.floor(rand() * 36).toString(36)
+  return `${ts}-${tail}`
+}
