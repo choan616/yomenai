@@ -143,8 +143,14 @@
   → `public/dict/{base,band4,pairs,kanji}.json`, 로더 `src/dict/load.ts`.
   **검증: `src/dict/load.test.ts` 5 테스트 통과** — `_meta.count` ↔ 레코드 수 일치(base 16,970),
   전 레코드 pairIds·category·classSource 유효, `buildSession(pool, [], …)` 가 풀을 그대로 받음
-- [ ] 폰트 서브셋 파이프라인 → **검증: 학습 대상 문자 100% 커버, 폴백 발생 0**
-- [ ] `lang` 속성 적용 → **검증: 骨, 直, 令 등이 일본 자형으로 렌더링됨**
+- [x] 폰트 서브셋 파이프라인 — `tools/build-fonts.ts` (subset-font/hb-subset + fontkit 검증).
+  원본 `data/raw/fonts/` (Noto Serif JP 지역판 OTF + Pretendard woff2, 커밋 안 함) →
+  `public/fonts/NotoSerifJP-subset.woff2` (698 KB) + Pretendard 복사.
+  **검증: 커버리지 100.00% (2,228자), 폴백 0** — 빌드가 fontkit 로 원본·산출 cmap 대조,
+  미달 시 exit 1. `src/styles/fonts.test.ts` 3 테스트로 고정 (骨直次令 + 가나 전 구간 + base 전량)
+- [x] `lang` 속성 CSS 기반 — `src/styles/fonts.css`: `@font-face` 2종 + `:lang(ja)`→`--font-ja`
+  (일본 명조 스택, generic serif 최후) / `:lang(ko)`→`--font-ko`. main.tsx 에서 로드.
+  **육안 검증(骨/直/令 일본 자형)은 화면이 생기는 다음 세션에 `lang="ja"` 마크업과 함께**
 - [ ] `wanakana.bind()` 입력 필드 (`autocapitalize="none"` 필수)
 - [ ] 학습 카드 화면
 - [ ] **검증: 카드 전환 150ms 이하 (실측)**

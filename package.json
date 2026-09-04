@@ -20,7 +20,8 @@
     "draft:korean-review": "tsx tools/draft-korean-review.ts",
     "apply:korean-review": "tsx tools/apply-korean-review.ts",
     "build:review-worklist": "tsx tools/build-review-worklist.ts",
-    "build:runtime-dict": "tsx tools/build-runtime-dict.ts"
+    "build:runtime-dict": "tsx tools/build-runtime-dict.ts",
+    "build:fonts": "tsx tools/build-fonts.ts"
   },
   "dependencies": {
     "dexie": "^4.2.0",
@@ -31,13 +32,17 @@
     "wanakana": "^5.3.1"
   },
   "devDependencies": {
+    "@types/fontkit": "^2.0.9",
     "@types/node": "^24.13.3",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.4",
+    "@types/subset-font": "^2.3.0",
     "@vitejs/plugin-react": "^6.1.0",
     "fake-indexeddb": "^6.2.5",
     "fast-xml-parser": "^5.2.5",
+    "fontkit": "^2.0.4",
     "oxlint": "^1.79.0",
+    "subset-font": "^2.7.0",
     "tsx": "^4.20.3",
     "typescript": "~6.0.2",
     "vite": "^8.2.2",

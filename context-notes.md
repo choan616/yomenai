@@ -940,3 +940,52 @@ GitHub Pages 서브패스 배포에도 맞는다.
 밴드 4 는 `2`/`default` 로 정규화됨을 확인.
 
 `npm test` — 13 파일 149 테스트 통과. `tsc -b` / `oxlint` 클린.
+
+### 폰트 서브셋 — Noto Serif JP 지역판을 학습 문자로 좁힌다
+
+CLAUDE.md 규칙 — 한중일 통합 코드포인트라 폴백이 한 번이라도 나면 사용자가 한국
+자형을 학습한다. 그래서 서브셋이 학습 문자를 100% 덮는지 빌드가 직접 검증하고,
+못 덮으면 exit 1 한다.
+
+**원본** — `data/raw/fonts/` (커밋 안 함, `data/raw/` 가 이미 `.gitignore`).
+
+| 파일 | 출처 | 용도 |
+|---|---|---|
+| `NotoSerifJP-Regular.otf` (5.9 MB) | notofonts/noto-cjk `Serif2.003`, `12_NotoSerifJP.zip` (지역판 SubsetOTF/JP) | 서브셋 원본 |
+| `Pretendard-Regular.woff2` (748 KB) | orioncactus/pretendard v1.3.9, `web/static/woff2/` | 한국어 UI (완성형, 서브셋 불필요) |
+
+통합 CJK OTC 를 안 쓰고 **지역판 파일**을 쓴다 — context-notes 2026-09-03 "폰트" 절의
+결정 그대로다. 지역판은 글리프가 JP 자형으로 기본 선택돼 `locl` 태깅에 안 기댄다.
+
+**도구** — `subset-font` 2.7.0 (wasm hb-subset) 로 서브셋, `fontkit` 2.x 로 검증.
+`@types/subset-font`·`@types/fontkit` 도 devDependency. (사용자 승인 "서브셋 도구 설치".)
+
+**`tools/build-fonts.ts`.**
+- 대상 문자 = `public/dict/base.json` 의 숙어·읽기 전 문자 + 히라가나 U+3041–3096 +
+  결합기호 U+3099–309F + 가타카나 U+30A1–30FF + `　、。・「」『』（）〜〰々〆〇ー`.
+  가나 전 구간을 넣는 건 입력 필드·음독 표시가 폴백을 안 타게 하려는 것.
+  **U+3097·U+3098 은 미배정이라 넣으면 안 된다** — 처음에 U+309F 까지 훑다가 커버리지
+  99.91% 로 실패했고, 상한을 3096 으로 고쳤다.
+- hb-subset 은 원본에 없는 문자를 조용히 버린다. 그래서 요청 text 를 "원본 cmap 에
+  실제로 있는 문자"로 먼저 거른다.
+- 검증: fontkit 으로 원본·산출 woff2 의 `characterSet` 을 읽어, 대상 문자 중
+  ① 원본에 없는 것(진짜 폴백 위험) ② 원본엔 있는데 산출에서 빠진 것(hb-subset 버그)
+  을 각각 센다. 하나라도 있으면 exit 1.
+- 결과 — 대상 2,228자, 커버리지 **100.00%**, 산출 `NotoSerifJP-subset.woff2` **698 KB**.
+- 기본은 밴드 0~3(base)만. `--all` 로 band4 포함(문자 집합·용량이 크게 는다).
+  **밴드 4 를 설정에서 켜면 폰트도 `--all` 로 다시 만들어야 한다.**
+
+**`src/styles/fonts.css`** — `@font-face` 2종(`font-display: swap`) + `--font-ja`
+(`'Noto Serif JP', 'Hiragino Mincho ProN', 'Yu Mincho', … , serif`) / `--font-ko`
+(`'Pretendard', system-ui, …`). `:lang(ja)`/`:lang(ko)` 셀렉터가 스택을 건다.
+`main.tsx` 가 `index.css` 앞에서 로드. `url('/fonts/…')` 은 base `'/'` 전제이고
+GitHub Pages 서브패스는 Phase 7 대응.
+
+`src/styles/fonts.test.ts` 3 테스트 — 骨直次令 + 가나 전 구간 + base 전량이 서브셋에
+담겼는지. `npm test` — 14 파일 152 테스트 통과. `tsc -b` / `oxlint` 클린.
+
+### 이번 세션에서 안 한 것 (다음 세션)
+
+`lang="ja"` 를 실제 요소에 붙이는 것과 骨/直/令 **육안 자형 확인**은 화면이 없어서
+못 했다. CSS 기계는 준비됐으니 화면 만들면서 검증한다. `wanakana.bind()` 입력 필드,
+7개 화면, 다크 모드, 카드 전환 150ms 실측도 다음 세션.
