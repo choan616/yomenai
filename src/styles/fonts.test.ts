@@ -4,7 +4,7 @@ import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { create as createFont } from 'fontkit'
 
-const SUBSET = join('public', 'fonts', 'NotoSerifJP-subset.woff2')
+const SUBSET = join('public', 'fonts', 'NotoSansJP-subset.woff2')
 const BASE = join('public', 'dict', 'base.json')
 
 function charSet(path: string): Set<number> {
@@ -12,7 +12,7 @@ function charSet(path: string): Set<number> {
   return new Set(font.characterSet)
 }
 
-describe.runIf(existsSync(SUBSET) && existsSync(BASE))('NotoSerifJP-subset.woff2', () => {
+describe.runIf(existsSync(SUBSET) && existsSync(BASE))('NotoSansJP-subset.woff2', () => {
   const glyphs = charSet(SUBSET)
   const has = (s: string) => [...s].every((c) => glyphs.has(c.codePointAt(0)!))
 

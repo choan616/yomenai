@@ -1317,3 +1317,45 @@ reload 로 결정론을 잡는다(체크리스트 권고). 진입 진단은 90�
 **결론** — 훈독은 별도 메뉴가 아니라 세션 모드/필터 후보로 남긴다. (B) 오쿠리가나
 동사를 넣게 되면 그때 같은 필터로 묶는다. 실사용에서 훈독이 "못 읽겠다"의 잦은
 원인으로 드러나면 승격한다 (데이터 기반, PLAN "3개월 후 판단").
+
+---
+
+## 2026-09-04 — 일본어 폰트를 명조 → 산스로 변경 + 입력 포커스 확대 방지
+
+### 일본어 폰트: Noto Serif JP → Noto Sans JP (결정 번복)
+
+**당초 결정**(context-notes 2026-09-03 폰트 절, PLAN §7) — 숙어·가나는 `Noto Serif JP`
+(명조). 근거는 ① CJK 자형 정확성 ② 숙어와 UI(산스)를 시각적으로 구분 ③ 명조가 한자
+학습의 전통 자형.
+
+**변경**(사용자 요청) — 산스로 통일. `Noto Sans JP` 지역판 OTF(notofonts/noto-cjk
+`Sans2.004`, `16_NotoSansJP.zip`)를 원본으로 같은 서브셋 파이프라인에 태운다.
+
+- ①(자형 정확성)은 서체 계열과 무관하다. 지역판 산스도 글리프가 JP 자형으로 기본
+  선택되고, `lang="ja"` + 서브셋 100% 커버라 한국 자형 폴백이 안 난다 (스크린샷에서
+  忠実의 実가 신자체로 렌더됨 확인)
+- ②(구분)은 약해지지만, UI 는 Pretendard 로 그대로 산스라 크기·자간·배치로 구분된다
+- 산출 용량은 오히려 준다 — 서브셋 woff2 698 KB(명조) → **496 KB**(산스)
+
+**변경 범위** — `tools/build-fonts.ts`(원본 파일명·산출 파일명), `src/styles/fonts.css`
+(`@font-face` family `Noto Sans JP`, `--font-ja` 스택을 일본 고딕 폴백 `Hiragino Kaku
+Gothic ProN` / `Yu Gothic` / `Meiryo` / `sans-serif` 로, 최후는 `serif` 대신 `sans-serif`),
+`src/styles/fonts.test.ts`(경로), PLAN §7, checklist. `data/raw/fonts/` 원본 교체
+(Serif 제거). `--font-ja` CSS 변수명은 그대로 둬서 `study.css`·`screens.css` 는 안 건드림.
+
+**기각 안** — 파일명을 `NotoJP-subset.woff2` 처럼 서체 중립으로. 지금 한 번 더 바꿀
+계획이 없어 `NotoSansJP-subset.woff2` 로 명시. 다시 바꾸면 그때 rename.
+
+### 입력 포커스 시 화면 확대 방지
+
+iOS Safari 는 `font-size < 16px` 인 입력에 포커스가 가면 화면을 확대한다.
+
+- `index.html` viewport 메타에 `maximum-scale=1, user-scalable=no` 추가.
+  접근성상 핀치 줌을 막지만 개인용 PWA 이고, 숙어는 이미 `clamp(48px,16vw,88px)` 로 크게 띄운다
+- `src/index.css` 의 `input` 규칙에 `font-size: max(16px, 1rem)` 하한. 유일한 입력
+  `.kana-input` 은 이미 22px 라 안전하지만 미래 입력까지 커버
+
+### 검증
+
+`npm test` 20파일 180 통과 · `tsc -b` / `oxlint` 클린 · `build:fonts` 커버리지 100% ·
+`vite build` 성공. 다크 스크린샷 `scratchpad/sans-reading.png`·`sans-feedback.png`.

@@ -144,8 +144,9 @@
   **검증: `src/dict/load.test.ts` 5 테스트 통과** — `_meta.count` ↔ 레코드 수 일치(base 16,970),
   전 레코드 pairIds·category·classSource 유효, `buildSession(pool, [], …)` 가 풀을 그대로 받음
 - [x] 폰트 서브셋 파이프라인 — `tools/build-fonts.ts` (subset-font/hb-subset + fontkit 검증).
-  원본 `data/raw/fonts/` (Noto Serif JP 지역판 OTF + Pretendard woff2, 커밋 안 함) →
-  `public/fonts/NotoSerifJP-subset.woff2` (698 KB) + Pretendard 복사.
+  원본 `data/raw/fonts/` (Noto Sans JP 지역판 OTF + Pretendard woff2, 커밋 안 함) →
+  `public/fonts/NotoSansJP-subset.woff2` (496 KB) + Pretendard 복사.
+  당초 Noto Serif JP 였으나 산스로 변경 (사용자 요청, context-notes 2026-09-04 절).
   **검증: 커버리지 100.00% (2,228자), 폴백 0** — 빌드가 fontkit 로 원본·산출 cmap 대조,
   미달 시 exit 1. `src/styles/fonts.test.ts` 3 테스트로 고정 (骨直次令 + 가나 전 구간 + base 전량)
 - [x] `lang` 속성 — `src/styles/fonts.css`: `@font-face` 2종 + `:lang(ja)`→`--font-ja`

@@ -10,7 +10,7 @@ const RAW_FONTS = join(import.meta.dirname, '..', 'data', 'raw', 'fonts')
 const DICT_DIR = join(import.meta.dirname, '..', 'public', 'dict')
 const OUT_DIR = join(import.meta.dirname, '..', 'public', 'fonts')
 
-const SRC_JP = join(RAW_FONTS, 'NotoSerifJP-Regular.otf')
+const SRC_JP = join(RAW_FONTS, 'NotoSansJP-Regular.otf')
 const SRC_KO = join(RAW_FONTS, 'Pretendard-Regular.woff2')
 
 const withBand4 = process.argv.includes('--all')
@@ -60,7 +60,7 @@ const text = [...targets].filter((cp) => srcSet.has(cp)).map((cp) => String.from
 const outBuf = await subsetFont(srcBuf, text, { targetFormat: 'woff2' })
 
 mkdirSync(OUT_DIR, { recursive: true })
-writeFileSync(join(OUT_DIR, 'NotoSerifJP-subset.woff2'), outBuf)
+writeFileSync(join(OUT_DIR, 'NotoSansJP-subset.woff2'), outBuf)
 writeFileSync(join(OUT_DIR, 'Pretendard-Regular.woff2'), readFileSync(SRC_KO))
 
 // ── 검증 ──────────────────────────────────────────────────────────────────
@@ -74,7 +74,7 @@ const show = (cps: number[]) =>
   cps.slice(0, 30).map((cp) => `${String.fromCodePoint(cp)}(U+${cp.toString(16).toUpperCase()})`).join(' ')
 
 console.log(`\npublic/fonts/`)
-console.log(`  NotoSerifJP-subset.woff2  ${(outBuf.length / 1024).toFixed(0)} KB  (원본 ${(srcBuf.length / 1024 / 1024).toFixed(1)} MB)`)
+console.log(`  NotoSansJP-subset.woff2  ${(outBuf.length / 1024).toFixed(0)} KB  (원본 ${(srcBuf.length / 1024 / 1024).toFixed(1)} MB)`)
 console.log(`  Pretendard-Regular.woff2  ${(readFileSync(SRC_KO).length / 1024).toFixed(0)} KB  (그대로 복사, 한글 완성형)`)
 console.log(`\n커버리지 ${pct}%  (${covered}/${targets.size})`)
 
