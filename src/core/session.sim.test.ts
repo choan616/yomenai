@@ -243,7 +243,7 @@ describe(`세션 ${SESSIONS}회 시뮬레이션 (고정본 풀)`, () => {
     checkInvariants(result, FIXTURE_POOL)
   })
 
-  it('오답 유형이 6종 안에서만 나온다', () => {
+  it('분류기가 내는 오답 유형은 6종뿐이다 (OKURIGANA 는 예약 슬롯, 미방출)', () => {
     const totals = mistakeTotals(result.state)
     expect(Object.keys(totals).length).toBeGreaterThan(0)
     for (const type of Object.keys(totals)) {

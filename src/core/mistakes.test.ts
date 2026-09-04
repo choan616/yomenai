@@ -18,7 +18,8 @@ const ctx = contextFor(KANJI_FIXTURE)
 /** [숙어, 정답 읽기, 오답 입력] */
 type Case = [string, string, string]
 
-const CASES: Record<MistakeType, Case[]> = {
+// OKURIGANA 는 분류기가 아직 안 낸다 (types.ts 예약 슬롯) — 대표 케이스 없음. 그래서 Partial
+const CASES: Partial<Record<MistakeType, Case[]>> = {
   // 같은 한자의 *다른* 음독을 골랐다. 답 자체는 일본어로 파싱된다
   ONYOMI_CHOICE: [
     ['発端', 'ほったん', 'はつたん'],

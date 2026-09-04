@@ -7,7 +7,11 @@ export type CardType = 'reading' | 'meaning'
 /** 학습 모드. correction = 읽기 교정(1차), expansion = 어휘 확장(2차) */
 export type StudyMode = 'correction' | 'expansion'
 
-/** 오답 유형 6종 (PLAN §6). 자동 판정은 src/core/mistakes.ts */
+/**
+ * 오답 유형 (PLAN §6). 자동 판정은 src/core/mistakes.ts.
+ * `OKURIGANA` 는 아직 분류기가 내지 않는다 — 동사·형용사형(오쿠리가나 포함) 확장에 대비해
+ * 스키마 불변 조건인 이 enum 에 자리만 미리 잡아둔 것이다 (context-notes 2026-09-04 절).
+ */
 export type MistakeType =
   | 'ONYOMI_CHOICE'
   | 'RENDAKU'
@@ -15,6 +19,7 @@ export type MistakeType =
   | 'CHOON'
   | 'MIXED_READING'
   | 'KO_INTERFERENCE'
+  | 'OKURIGANA'
 
 /** 한국어 대조 분류 (Phase 3). 1=동형동의 2=동형이의 3=일본 고유 */
 export type KoreanCategory = 1 | 2 | 3

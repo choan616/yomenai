@@ -19,7 +19,8 @@ IndexedDB는 primary key 변경이 불가능하다. 아래는 v1부터 반드시
 - 학습 기록은 **append-only 이벤트 로그**. 상태를 덮어쓰지 않는다
 - 이벤트에 `cardType` (`reading` | `meaning`)
 - 이벤트에 오답 유형 필드 (`ONYOMI_CHOICE` | `RENDAKU` | `SOKUON` | `CHOON` |
-  `MIXED_READING` | `KO_INTERFERENCE` | `null`)
+  `MIXED_READING` | `KO_INTERFERENCE` | `OKURIGANA` | `null`).
+  `OKURIGANA` 는 동사·형용사형(오쿠리가나 포함) 확장 대비 예약 슬롯이며 분류기는 아직 안 낸다
 - 뜻 필드에 `source` (`stdict` | `jmdict` | `llm` | `manual`) + `verified` (boolean)
 
 스키마 변경이 필요하다고 판단되면 **먼저 사용자에게 알린다.** 조용히 마이그레이션을

@@ -16,6 +16,7 @@ const MISTAKE_ORDER: MistakeType[] = [
   'RENDAKU',
   'SOKUON',
   'CHOON',
+  'OKURIGANA',
 ]
 
 export interface MistakeSlice {

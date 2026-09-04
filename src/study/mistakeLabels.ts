@@ -8,4 +8,6 @@ export const MISTAKE_LABEL: Record<MistakeType, string> = {
   CHOON: '장음',
   MIXED_READING: '음훈 혼독',
   KO_INTERFERENCE: '한국음 간섭',
+  // 분류기가 아직 안 내는 예약 유형 (types.ts 참조). 화면에 뜰 일은 없지만 exhaustive 라 채운다
+  OKURIGANA: '오쿠리가나',
 }
