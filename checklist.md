@@ -89,9 +89,10 @@
 - [x] 초벌 배치 완료 (8,700건, 1(동형동의) 6,107 / 2 732 / 3 1,861) → `apply:korean-review -- --trust-llm` 반영.
   `korean-class.json` — 동형동의 6,107 / 동형이의 7,488 / 일본고유 3,777. 스팟 검토 품질 양호
 - [x] **완료 기준 — 알려진 동형이의어 10개 중 9개 category 2.** `主人`만 초벌 1 (경계 사례, 수동 검수로 확정)
-- [ ] **수동 검수 세션 간 진행 → `korean-class.json` 확정**
-  우선순위: (1) `n` 블록 초벌 3 확인 (2) 밴드 0 `originMatch=Y` 초벌 1 확인(`主人` 포함)
-  (3) 밴드 2~3 `originMatch=Y` 6,756건은 지연 검수(Phase 4). context-notes 2026-09-04 절
+- [ ] **필수 수동 검수 796건 (`korean-worklist.tsv`, tier 1+2) → `apply:korean-review -- --trust-llm`**
+  tier 1 (440, n·초벌1/2 원어 오탐 복구, 빠른 훑기) + tier 2 (356, 밴드0 Y·초벌2, 신중히).
+  나머지 14,660건은 초벌/잠정 신뢰. 밴드 2~3 Y 6,756건은 Phase 4 지연 검수.
+  `build:review-worklist` 로 재생성(verdict 이어받음), `--tiers=all` 로 전체. context-notes 2026-09-04 절
 
 ---
 
