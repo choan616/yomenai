@@ -86,10 +86,12 @@
 - [x] Ollama 초벌 파이프라인 — `tools/lib/ollama.ts` + `draft-korean-review.ts` + `apply-korean-review.ts --trust-llm`.
   모델 qwen3.5 실측 채택(gemma4:26b는 출력 붕괴로 제외). 12건 스모크 정상. 층화 표본 200건 생성됨
 - [x] 표본 150건 라벨링 + `--validate` → qwen3.5 일치율 90.7% (실질 95%+, 라벨 노이즈 감안). 프롬프트 확정
-- [~] 초벌 배치 실행 중 — scope `band01+sound` 8,700건, 백그라운드. 끝나면 `apply:korean-review -- --trust-llm` → `korean-class.json`
-- [ ] **검수 큐 verdict 세션 간 채우기 (음만 일치 2,301 + 밴드 0 교정 시드 우선) → `korean-class.json` 확정**
-  착수점은 context-notes 2026-09-03 Phase 3 "다음 세션 착수점" 절.
-  현재 `korean-class.json`은 미검수 전량 잠정 2번 상태 (배치 완료 후 초벌 8,700건 반영 예정)
+- [x] 초벌 배치 완료 (8,700건, 1(동형동의) 6,107 / 2 732 / 3 1,861) → `apply:korean-review -- --trust-llm` 반영.
+  `korean-class.json` — 동형동의 6,107 / 동형이의 7,488 / 일본고유 3,777. 스팟 검토 품질 양호
+- [x] **완료 기준 — 알려진 동형이의어 10개 중 9개 category 2.** `主人`만 초벌 1 (경계 사례, 수동 검수로 확정)
+- [ ] **수동 검수 세션 간 진행 → `korean-class.json` 확정**
+  우선순위: (1) `n` 블록 초벌 3 확인 (2) 밴드 0 `originMatch=Y` 초벌 1 확인(`主人` 포함)
+  (3) 밴드 2~3 `originMatch=Y` 6,756건은 지연 검수(Phase 4). context-notes 2026-09-04 절
 
 ---
 
