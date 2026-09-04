@@ -6,6 +6,7 @@ import type { ReadingFeedback } from './useStudySession.ts'
 import { KanaInput } from './KanaInput.tsx'
 import { MistakeDetail } from './MistakeDetail.tsx'
 import { MISTAKE_LABEL } from './mistakeLabels.ts'
+import { tts } from './tts.ts'
 
 interface Props {
   idiom: RuntimeIdiom
@@ -63,6 +64,11 @@ function Feedback({
       <p className="reading-shown" lang="ja">
         {expected}
       </p>
+      {tts.available && (
+        <button type="button" className="tts-btn" onClick={() => tts.speak(expected)}>
+          <span aria-hidden="true">🔊</span> 소리 듣기
+        </button>
+      )}
       {!correct && (
         <p className="wrong-answer">
           입력: <span lang="ja">{answer || '(빈칸)'}</span>

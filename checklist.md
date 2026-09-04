@@ -209,7 +209,13 @@
 ## Phase 6 — 예문·음성 (선택)
 
 - [ ] Tatoeba 예문 커버리지 실측 → **부족하면 이 Phase 자체를 뺀다**
-- [ ] TTS 인터페이스 분리 (Web Speech API 우선)
+- [x] TTS 인터페이스 분리 (Web Speech API 우선) — `src/study/tts.ts` `Tts` 인터페이스 뒤에
+  `createWebSpeechTts()`. 정답 읽기(히라가나)를 `ja-JP` 로 발화, 헤드워드가 아니라 읽기를
+  읽혀 발음이 모호하지 않다. **문제 풀이 화면엔 없고 확인(피드백) 단계에만** — 읽기 카드는
+  정오답 피드백에, 뜻 카드는 뜻 확인 후에만 (사용자 요청). 자동재생 아님, 버튼 탭
+  **검증: `src/study/tts.test.ts` 4 테스트**(가짜 엔진 주입, ja-JP·이전 발화 취소·빈 입력
+  무시 확인) + `tests/e2e/tts.spec.ts`(실브라우저, 문제 풀이 화면 소리버튼 0개 /
+  확인 단계에서만 등장 / `speechSynthesis.speak` 가 `ja-JP`로 호출됨)
 
 ---
 
