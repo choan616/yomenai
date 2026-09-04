@@ -126,6 +126,9 @@
   background: var(--ng);
   min-width: 2px;
 }
+.bar-fill.ok {
+  background: var(--ok);
+}
 .bar-row .bar-num {
   text-align: right;
   font-variant-numeric: tabular-nums;

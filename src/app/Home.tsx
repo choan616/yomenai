@@ -4,6 +4,7 @@ import { buildSession } from '../core/session.ts'
 import { LOCAL_USER_ID, listEvents } from '../db/events.ts'
 import { db } from '../db/schema.ts'
 import { loadBaseIdioms } from '../dict/load.ts'
+import { isDiagnosticDone } from './diagnostic-state.ts'
 import { loadSettings } from './settings.ts'
 import type { Screen } from '../App.tsx'
 
@@ -68,7 +69,12 @@ export function Home({ onNavigate }: { onNavigate: (screen: Screen) => void }) {
       </button>
 
       <nav className="home-nav">
-        <button type="button" className="accent" onClick={() => onNavigate('report')}>
+        {!isDiagnosticDone() && (
+          <button type="button" className="accent" onClick={() => onNavigate('diagnostic')}>
+            진입 진단 시작 <span className="chev">›</span>
+          </button>
+        )}
+        <button type="button" onClick={() => onNavigate('report')}>
           진단 리포트 <span className="chev">›</span>
         </button>
         <button type="button" onClick={() => onNavigate('onyomi')}>

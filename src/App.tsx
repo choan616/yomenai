@@ -2,12 +2,13 @@
 import { useState } from 'react'
 import './study/study.css'
 import './app/screens.css'
+import { Diagnostic } from './app/Diagnostic.tsx'
 import { Home } from './app/Home.tsx'
 import { OnyomiMap } from './app/OnyomiMap.tsx'
 import { Report } from './app/Report.tsx'
 import { Study } from './study/Study.tsx'
 
-export type Screen = 'home' | 'study' | 'onyomi' | 'report'
+export type Screen = 'home' | 'study' | 'onyomi' | 'report' | 'diagnostic'
 
 export default function App() {
   const [screen, setScreen] = useState<Screen>('home')
@@ -20,6 +21,8 @@ export default function App() {
       return <OnyomiMap onBack={home} />
     case 'report':
       return <Report onBack={home} />
+    case 'diagnostic':
+      return <Diagnostic onDone={() => setScreen('report')} onExit={home} />
     default:
       return <Home onNavigate={setScreen} />
   }

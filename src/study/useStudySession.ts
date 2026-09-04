@@ -1,6 +1,6 @@
 // 학습 세션의 런타임 상태 — 풀·이벤트 로드 → buildSession → 카드 순회 → 답안 기록
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { buildKoSiblingIndex, type MistakeContext } from '../core/mistakes.ts'
+import type { MistakeContext } from '../core/mistakes.ts'
 import {
   buildSession,
   isCorrectReading,
@@ -20,6 +20,7 @@ import { db } from '../db/schema.ts'
 import { LOCAL_USER_ID } from '../db/events.ts'
 import { listEvents } from '../db/events.ts'
 import { loadBaseIdioms, loadKanji, type RuntimeIdiom } from '../dict/load.ts'
+import { mistakeContextFromKanji } from '../dict/mistakeContext.ts'
 import { loadSettings } from '../app/settings.ts'
 
 /** 읽기 답안을 낸 직후의 판정 결과. 이벤트는 아직 안 쓴다 — 자신감 버튼을 기다린다 */
@@ -97,15 +98,7 @@ export function useStudySession(): [StudyState, StudyActions] {
         ])
         if (!alive) return
         setPool(loaded)
-        mistakes.current = {
-          lookup: (k) => {
-            const r = kanji.get(k)
-            return r ? { onyomi: r.on, kunyomi: r.kun } : undefined
-          },
-          koSiblingOnyomi: buildKoSiblingIndex(
-            Object.fromEntries([...kanji].map(([k, v]) => [k, { koreanH: v.kr, onyomi: v.on }])),
-          ),
-        }
+        mistakes.current = mistakeContextFromKanji(kanji)
         const { sessionLimit, ratio } = loadSettings()
         const built = buildSession(loaded, events, { now: Date.now(), limit: sessionLimit, ratio })
         setSession(built)

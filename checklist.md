@@ -167,7 +167,13 @@
   다른 숙어 4개. 일본어 요소 전부 `lang="ja"`.
   **검증: `src/study/mistakeDetail.test.ts` 6 테스트 통과. 스크린샷 `scratchpad/01-mistake-detail.png`
   로 忠実 분해(忠 ちゅう / 実 じつ, 実 이 일본 자형) 레이아웃 확인**
-- [ ] 진입 진단 플로우
+- [x] 진입 진단 플로우 — `src/app/Diagnostic.tsx` + `src/core/diagnostic.ts`.
+  `pickDiagnostic(pool, 30, DIAGNOSTIC_SEED=20260904)` 로 밴드 1~3 각 30개 시드 고정 무작위 출제.
+  읽기 오답 문항에만 "뜻은 알고 계셨나요"(`recordMeaningKnown`). 결과는 이벤트 로그로만
+  남고 완료 플래그는 `localStorage['yomenai:diagnosticDone']`(`src/app/diagnostic-state.ts`),
+  완료 시 홈에서 진입점이 사라진다. 결과 화면은 `diagnosticSummary` 로 밴드별 정답률.
+  **검증: `src/core/diagnostic.test.ts` 6 테스트 통과. 스크린샷 `scratchpad/02-diagnostic-{ask,known,result}.png`
+  로 90문항 완주·`lang="ja"`·결과 차트 확인**
 - [x] 진단 리포트 — `src/app/Report.tsx` + 파생 `src/core/report.ts`. `mistakeTotals` 유형 분포
   (인라인 CSS 막대, 차트에만 `--ng`), `replay().onyomi` 취약 음독(오답률순, seen≥3), `KO_INTERFERENCE`
   집계 + 해당 숙어. 무채색 기반, 상태는 아이콘+위치 병행. 데이터 없으면 빈 상태 안내.

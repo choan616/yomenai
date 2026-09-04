@@ -1134,3 +1134,51 @@ PLAN §7 "단순하게". 3상태(mastered/learning/unseen)를 `replay().onyomi` 
 `src/core/report.test.ts` 5 테스트 — 유형 분포 정렬/0 제외, 읽기 reps 만 합산, 취약 음독
 필터·정렬, 간섭 숙어 수집, 빈 리포트. 시드 이벤트(실제 base.json id)로 스크린샷 2장.
 `npm test` 17파일 167 통과. `tsc -b` / `oxlint` 클린.
+
+## 2026-09-04 — Phase 5 (진입 진단)
+
+### 무작위 표본 시드 — `DIAGNOSTIC_SEED = 20260904` 명시
+
+context-notes 2026-09-04 "출제 선택" 절이 "진입 진단의 무작위 표본은 Phase 5에서 시드를
+명시해 따로 만든다" 고 한 것을 이행. `pickDiagnostic` 은 mulberry32 로 밴드별 Fisher-Yates
+셔플 후 30개씩. `selectSession` 은 여전히 무작위를 안 쓴다 — 진단만 시드 무작위다.
+
+### 범위 — 밴드 1~3 각 30개(총 90). 밴드 0/4 제외
+
+PLAN §6 "각 밴드에서 30~50개". 하한 30 채택 — 90문항도 일회성 진단으로는 길지만
+`selectSession` 기본 학습 범위(minBand 1, maxBand 4 중 4는 선택)와 맞춘 게 밴드 1~3 이다.
+밴드 0 은 "건너뛰기 기본", 밴드 4 는 "선택"이라 진단 대상이 아니다.
+
+### 완료 판정 — localStorage 플래그, 결과는 이벤트 로그
+
+`src/app/diagnostic-state.ts` 의 `yomenai:diagnosticDone`. 체크리스트가 "이벤트 로그에서
+파생(밴드 커버) 하거나 localStorage 플래그" 를 허용했고, 후자가 단순하다. 진단 응답
+자체(`review` + `meaningKnown` 이벤트)는 전부 로그에 있어 리포트·모드 배정이 바로 쓴다.
+스키마 변경 없음. 완료하면 홈에서 "진입 진단 시작" 버튼이 사라진다(자동 리다이렉트는
+안 건다 — 라우팅 복잡도·e2e 취약).
+
+### "시작점 결정" — 표시만, 선택 로직은 안 건드림
+
+결과 화면이 밴드별 정답률과 "밴드 N 부터 흔들립니다" 문구를 보여준다. `selectSession`
+의 `minBand` 를 자동으로 바꾸는 것은 하지 않았다(요청 범위 밖, 추측성). 선택 로직은
+이미 밴드 오름차순 도입이라 진단 없이도 낮은 밴드부터 나온다.
+
+### `src/dict/mistakeContext.ts` — 오답 판정 컨텍스트 어댑터 추출
+
+`useStudySession` 에 인라인이던 "slim kanji.json → MistakeContext" 변환을 꺼냈다.
+`Diagnostic` 도 같은 변환이 필요해서 — 두 벌이 되면 한쪽만 고치는 사고가 난다.
+`useStudySession` 은 한 줄(`mistakeContextFromKanji(kanji)`)로 줄었다.
+
+### study.css — `.card-bottom` 가로 넘침 수정
+
+`.card-bottom { align-self: end }` 는 교차축이 가로라 내용 폭으로 줄어들며 카드 왼쪽으로
+흘러넘쳤다(진단 카드 입력 필드가 화면 밖으로). `align-self: stretch` 로 바꾸고
+`.answer-row { justify-content: flex-end }` 로 버튼만 있는 행의 오른쪽 정렬을 유지했다.
+세로 위치는 원래 `.card > .card-bottom { margin-top: auto }` 가 잡고 있어 영향 없다.
+읽기/뜻/지연검수 카드 스크린샷으로 회귀 없음 확인.
+
+### 검증
+
+`src/core/diagnostic.test.ts` 6 테스트 — 시드 결정론, 밴드당 개수, 중복 없음, 밴드
+오름차순, 요약 집계(meaningKnown·밴드 미상 제외). 스크린샷 3장(ask/known/result).
+`npm test` 18파일 173 통과. `tsc -b` / `oxlint` 클린.
