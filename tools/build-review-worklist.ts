@@ -126,7 +126,7 @@ const header = [
 
 const body = enriched.map(({ r, tier, d }) =>
   [
-    prior.get(r.id) ?? '',
+    prior.get(r.id) ?? '?', // 사람이 이 자리에 1/2/3 을 적는다 (미기입은 ?)
     tier,
     d?.v ?? '',
     r.originMatch,

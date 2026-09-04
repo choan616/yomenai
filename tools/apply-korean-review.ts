@@ -55,7 +55,7 @@ for (const line of reviewLines.slice(1)) {
   const id = c[idCol]?.trim()
   const raw = c[verdictCol]?.trim()
   if (!id) continue
-  if (!raw) unfilled++
+  if (!raw || raw === '?') unfilled++
   else if (raw === '1' || raw === '2' || raw === '3') verdicts.set(id, Number(raw) as 1 | 2 | 3)
   else bad++
 }
