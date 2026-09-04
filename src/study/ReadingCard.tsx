@@ -1,8 +1,10 @@
 // 읽기 교정 카드 — 숙어 제시 → 히라가나 입력. 객관식이 아니다 (PLAN §6)
+import { useState } from 'react'
 import type { Confidence } from '../core/scheduler.ts'
 import type { RuntimeIdiom } from '../dict/load.ts'
 import type { ReadingFeedback } from './useStudySession.ts'
 import { KanaInput } from './KanaInput.tsx'
+import { MistakeDetail } from './MistakeDetail.tsx'
 import { MISTAKE_LABEL } from './mistakeLabels.ts'
 
 interface Props {
@@ -41,6 +43,12 @@ function Feedback({
   onNext: (confidence?: Confidence) => void
 }) {
   const { correct, expected, mistakeType, answer } = feedback
+  const [detail, setDetail] = useState(false)
+
+  if (detail) {
+    return <MistakeDetail idiom={idiom} onClose={() => setDetail(false)} />
+  }
+
   return (
     <div className={`card feedback ${correct ? 'is-ok' : 'is-ng'}`}>
       <div className="card-head">
@@ -76,6 +84,9 @@ function Feedback({
           </div>
         ) : (
           <div className="answer-row">
+            <button type="button" className="btn" onClick={() => setDetail(true)}>
+              자세히
+            </button>
             <button type="button" className="btn-primary wide" onClick={() => onNext()}>
               다음
             </button>

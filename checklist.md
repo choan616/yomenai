@@ -161,7 +161,12 @@
 - [x] **검증: 카드 전환 150ms 이하 (실측)** — Playwright `tests/e2e/card-transition.spec.ts`,
   설치된 Chrome 채널. 세션 완주하며 `performance.measure` 로 전환 36회 수집,
   **p95 10.4ms / 최대 10.7ms**. `npm run e2e`
-- [ ] 오답 상세
+- [x] 오답 상세 — `src/study/MistakeDetail.tsx` + 뷰모델 `src/study/mistakeDetail.ts` +
+  역인덱스 `src/dict/pairIndex.ts`. 읽기 오답 피드백의 "자세히" 로 진입. `loadPairs()`+`loadKanji()`
+  로 (한자, 음독) 분해 + 한국 한자음(`kr`) 병기, `buildPairIndex(base)` 로 같은 pairId 를 쓰는
+  다른 숙어 4개. 일본어 요소 전부 `lang="ja"`.
+  **검증: `src/study/mistakeDetail.test.ts` 6 테스트 통과. 스크린샷 `scratchpad/01-mistake-detail.png`
+  로 忠実 분해(忠 ちゅう / 実 じつ, 実 이 일본 자형) 레이아웃 확인**
 - [ ] 진입 진단 플로우
 - [ ] 진단 리포트
 - [ ] 음독 맵

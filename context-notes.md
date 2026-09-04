@@ -1048,3 +1048,27 @@ FSRS 등급을 바꾸는데 이벤트는 append-only 라 나중에 못 고친다
 
 `npm test` 14파일 152 통과(불변). `npm run e2e` 통과. `tsc -b` / `oxlint` / `vite build` 클린.
 라이트·다크 스크린샷으로 레이아웃·`lang="ja"` 자형(忠実 의 実)·wanakana 변환(chuujitsu→ちゅうじつ) 확인.
+
+---
+
+## 2026-09-04 — Phase 5 (나머지 화면: 오답 상세)
+
+### 오답 상세 — 세션 내부 오버레이, 별도 screen 아님
+
+읽기 오답 피드백에서 "자세히" 버튼으로 `ReadingCard` 안에서 `<MistakeDetail>` 로 교체한다.
+`App.tsx` 의 `screen` state 를 늘리지 않았다 — 오답 상세는 항상 특정 카드의 맥락에서만
+의미가 있고, 홈에서 독립적으로 열 이유가 없다. 체크리스트의 "또는 별도 접근"은
+피드백 진입 하나로 충족된다고 봤다.
+
+### 같은 음독 다른 숙어 — base 풀 역인덱스, 새 산출물 없음
+
+`src/dict/pairIndex.ts` `buildPairIndex(pool)` 가 `loadBaseIdioms()` 결과를 pairId →
+숙어[] 로 접는다. 빌드타임에 역인덱스 파일을 따로 만드는 안은 기각 — base.json 이 이미
+런타임에 로드돼 있고(16,970건) 역인덱스는 1회 O(n) 이라 배포 자산을 늘릴 이유가 없다.
+`loadPairIndex()` 가 모듈 레벨 Promise 로 캐시한다.
+
+### 검증
+
+`src/study/mistakeDetail.test.ts` 6 테스트 — `breakdown` 이 pairIds 를 (한자, 음독) 조각으로
+펼치고 한국 한자음 병기, `buildPairIndex` 역인덱스가 자기 자신 제외 + limit. 스크린샷으로
+忠実 분해(실 이 일본 자형 実) 레이아웃 확인. `tsc -b` / `oxlint` 클린.

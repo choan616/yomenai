@@ -219,6 +219,67 @@
   flex-wrap: wrap;
 }
 
+/* ── 오답 상세 ── 음독 분해 + 한국 한자음 대조 (PLAN §7). 셸 구간이라 느린 스크롤 허용 */
+.mistake-detail {
+  overflow-y: auto;
+}
+.md-head {
+  justify-content: space-between;
+}
+.headword.sm {
+  font-size: clamp(36px, 12vw, 60px);
+  margin-top: clamp(12px, 4vh, 40px);
+}
+.md-note {
+  text-align: center;
+  margin-top: 32px;
+}
+.md-parts {
+  list-style: none;
+  margin: 24px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.md-part {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  background: var(--surface);
+}
+.md-part-head {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.md-kanji {
+  font-family: var(--font-ja);
+  font-size: 30px;
+}
+.md-yomi {
+  font-family: var(--font-ja);
+  font-size: 20px;
+  color: var(--text-dim);
+}
+.md-kr {
+  margin-left: auto;
+  color: var(--text-dim);
+  font-size: 14px;
+}
+.md-shared {
+  margin: 10px 0 0;
+  font-size: 14px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  align-items: baseline;
+}
+.md-shared-item {
+  font-family: var(--font-ja);
+}
+
 /* ── 로딩·오류·완료 ── */
 .centered {
   flex: 1;
