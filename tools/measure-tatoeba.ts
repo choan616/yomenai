@@ -4,42 +4,14 @@
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { bandOf } from '../src/lib/bands.ts'
-import { DICT_DIR, RAW_DIR, type IdiomRecord } from './lib/dict.ts'
-
-const TATOEBA_DIR = join(RAW_DIR, 'tatoeba')
-
-interface Sentence {
-  id: string
-  text: string
-}
-
-function readSentences(): Sentence[] {
-  const raw = readFileSync(join(TATOEBA_DIR, 'jpn_sentences_detailed.tsv'), 'utf8')
-  const out: Sentence[] = []
-  for (const line of raw.split('\n')) {
-    if (line === '') continue
-    const tab1 = line.indexOf('\t')
-    const tab2 = line.indexOf('\t', tab1 + 1)
-    const tab3 = line.indexOf('\t', tab2 + 1)
-    if (tab1 < 0 || tab2 < 0) continue
-    const lang = line.slice(tab1 + 1, tab2)
-    if (lang !== 'jpn') continue
-    const text = tab3 < 0 ? line.slice(tab2 + 1) : line.slice(tab2 + 1, tab3)
-    out.push({ id: line.slice(0, tab1), text })
-  }
-  return out
-}
-
-function countLinks(file: string): number {
-  const raw = readFileSync(join(TATOEBA_DIR, file), 'utf8')
-  return raw.split('\n').filter((l) => l !== '').length
-}
+import { DICT_DIR, type IdiomRecord } from './lib/dict.ts'
+import { countLinks, readJapaneseSentences } from './lib/tatoeba.ts'
 
 function main() {
   const { idioms } = JSON.parse(readFileSync(join(DICT_DIR, 'idioms.json'), 'utf8')) as {
     idioms: IdiomRecord[]
   }
-  const sentences = readSentences()
+  const sentences = readJapaneseSentences()
 
   // 표제어 첫 글자로 후보를 좁힌 뒤 startsWith 로 확정 — 전수 문자열 검색보다 훨씬 빠르다.
   // 읽기까지 검증하지 않는 순수 표기 매칭이라 동형이의어는 구분 못 한다 (아래 결과에 명시).

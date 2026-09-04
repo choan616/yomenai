@@ -14,6 +14,7 @@
     "import:jmdict": "tsx tools/import-jmdict.ts",
     "measure": "tsx tools/measure.ts",
     "measure:tatoeba": "tsx tools/measure-tatoeba.ts",
+    "build:examples": "tsx tools/build-examples.ts",
     "build:bands": "tsx tools/build-bands.ts",
     "build:onyomi": "tsx tools/build-onyomi-map.ts",
     "review:bands": "tsx tools/review-bands.ts",

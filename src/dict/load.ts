@@ -78,6 +78,7 @@ let basePromise: Promise<RuntimeIdiom[]> | null = null
 let band4Promise: Promise<RuntimeIdiom[]> | null = null
 let pairsPromise: Promise<Map<string, OnyomiPair>> | null = null
 let kanjiPromise: Promise<Map<string, KanjiInfo>> | null = null
+let examplesPromise: Promise<Map<string, string[]>> | null = null
 
 /** 밴드 0~3 기본 번들. 첫 호출에서 fetch 하고 이후 캐시된 Promise 를 준다 */
 export function loadBaseIdioms(): Promise<RuntimeIdiom[]> {
@@ -109,4 +110,16 @@ export function loadKanji(): Promise<Map<string, KanjiInfo>> {
     (d) => new Map(Object.entries(d.kanji)),
   )
   return kanjiPromise
+}
+
+/**
+ * Tatoeba 무번역 예문 — 확인 단계 참고용 (Phase 6). 세션 시작을 막지 않게 첫 필요
+ * 시점(읽기 피드백 렌더)에서만 fetch 한다. `data/dict/examples.json` 을 안 만들었으면
+ * 산출물 자체가 없어 fetch 가 실패하는데, 그 경우 조용히 빈 맵으로 — 기능이 없을 뿐이다
+ */
+export function loadExamples(): Promise<Map<string, string[]>> {
+  examplesPromise ??= fetchDict<{ byId: Record<string, string[]> }>('examples.json')
+    .then((d) => new Map(Object.entries(d.byId)))
+    .catch(() => new Map<string, string[]>())
+  return examplesPromise
 }

@@ -1,10 +1,11 @@
 // 빌드타임 사전 산출물을 런타임이 바로 쓰는 분할 JSON 번들로 조립한다 (PLAN §5, context-notes 미확정 #1)
-//   base.json   밴드 0~3 (기본 번들)
-//   band4.json  밴드 4   (opt-in 지연 로드)
-//   pairs.json  (한자, 음독) 쌍 사전 — 음독 맵 화면
-//   kanji.json  런타임 등장 한자만 추린 한국 한자음·음훈독 — 오답 상세 화면
+//   base.json      밴드 0~3 (기본 번들)
+//   band4.json     밴드 4   (opt-in 지연 로드)
+//   pairs.json     (한자, 음독) 쌍 사전 — 음독 맵 화면
+//   kanji.json     런타임 등장 한자만 추린 한국 한자음·음훈독 — 오답 상세 화면
+//   examples.json  Tatoeba 무번역 예문 (Phase 6, 있으면만 — data/dict/examples.json 이 없으면 건너뜀)
 // 사전 DB 는 읽기 전용 재생성 산출물이다. 사용자 DB(IndexedDB)와 절대 섞지 않는다.
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { pairId } from '../src/lib/onyomi.ts'
 import { DICT_DIR } from './lib/dict.ts'
@@ -126,6 +127,26 @@ emit('base.json', { _meta: { ...meta, band: '0~3', count: base.length }, idioms:
 emit('band4.json', { _meta: { ...meta, band: '4', count: band4.length }, idioms: band4 })
 emit('pairs.json', { _meta: meta, pairs })
 emit('kanji.json', { _meta: meta, kanji: kanjiSlim })
+
+// Tatoeba 예문 — data/dict/examples.json 이 없으면 조용히 건너뛴다 (원본이 큰 수동 다운로드라
+// 다들 받아두는 게 아니다). `npm run build:examples` 로 만든다
+const examplesPath = join(DICT_DIR, 'examples.json')
+if (existsSync(examplesPath)) {
+  const src = read<{ _meta: { source: string; rule: string }; byId: Record<string, string[]> }>(
+    'examples.json',
+  )
+  const inRuntime = new Set([...base, ...band4].map((r) => r.id))
+  const examples: Record<string, string[]> = {}
+  for (const [id, sentences] of Object.entries(src.byId)) {
+    if (inRuntime.has(id)) examples[id] = sentences
+  }
+  emit('examples.json', {
+    _meta: { ...meta, source: src._meta.source, rule: src._meta.rule, idiomCount: Object.keys(examples).length },
+    byId: examples,
+  })
+} else {
+  console.log('  examples.json   건너뜀 (data/dict/examples.json 없음 — npm run build:examples)')
+}
 
 console.log(
   `\nbase ${base.length} · band4 ${band4.length} · pairs ${Object.keys(pairs).length} · kanji ${

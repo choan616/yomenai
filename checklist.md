@@ -212,7 +212,16 @@
   밴드 0~3 표기 매칭 66.6%(밴드 0 90.5% ~ 밴드 3 "주력" 50.4%), 밴드 4 12.5%.
   **한국어 번역 연결은 0.9%**(2,261/248,888) — PLAN §6 이 기각한 영어 gloss 경유 없이는
   번역 붙은 예문이 사실상 불가능. 상세 context-notes 2026-09-04 절
-  → **"부족하면 뺀다" 판정은 사용자 확인 후 아래 항목에 반영**
+  → **판정: 무번역 예문만 채택 (사용자 확인)**. 아래 항목으로 구현
+- [x] 무번역 예문 표시 — `tools/build-examples.ts`(`npm run build:examples`, 원본
+  `data/raw/tatoeba/` 미커밋) 가 표제어 매칭 문장을 60자 이하·짧은 순 최대 3개씩 골라
+  `data/dict/examples.json`. `build-runtime-dict.ts` 가 base/band4 에 실린 숙어로 걸러
+  `public/dict/examples.json`(534 KB gzip, 숙어 11,377개). `loadExamples()`(`src/dict/load.ts`)
+  는 세션 시작을 안 막고 **읽기 카드 피드백이 처음 뜰 때만** fetch — TTS 와 같은 확인 단계
+  전용 위치. 산출물 없으면 조용히 빈 기능(에러 없음)
+  **검증: `tools/build-examples.test.ts` 5 테스트(선별 순수함수) + `src/dict/examples.test.ts`
+  3 테스트(base.json 참조 무결성·60자 이하·중복 없음) + `tests/e2e/examples.spec.ts`
+  (문제 풀이 화면 0개 / 확인 단계에서 `lang="ja"` 로 등장, 20장 세션 중 1회 이상 확인)
 - [x] TTS 인터페이스 분리 (Web Speech API 우선) — `src/study/tts.ts` `Tts` 인터페이스 뒤에
   `createWebSpeechTts()`. 정답 읽기(히라가나)를 `ja-JP` 로 발화, 헤드워드가 아니라 읽기를
   읽혀 발음이 모호하지 않다. **문제 풀이 화면엔 없고 확인(피드백) 단계에만** — 읽기 카드는

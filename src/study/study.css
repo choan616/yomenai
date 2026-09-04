@@ -234,6 +234,16 @@
   flex-wrap: wrap;
 }
 
+/* Tatoeba 무번역 예문 — 확인 단계 참고용 (Phase 6). 번역이 없어 조용히 곁들이기만 한다 */
+.example-sentence {
+  text-align: center;
+  color: var(--text-faint);
+  font-size: 15px;
+  line-height: 1.5;
+  margin: 14px auto 0;
+  max-width: 320px;
+}
+
 /* ── 오답 상세 ── 음독 분해 + 한국 한자음 대조 (PLAN §7). 셸 구간이라 느린 스크롤 허용 */
 .mistake-detail {
   overflow-y: auto;

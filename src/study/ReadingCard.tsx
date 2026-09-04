@@ -1,6 +1,7 @@
 // 읽기 교정 카드 — 숙어 제시 → 히라가나 입력. 객관식이 아니다 (PLAN §6)
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { Confidence } from '../core/scheduler.ts'
+import { loadExamples } from '../dict/load.ts'
 import type { RuntimeIdiom } from '../dict/load.ts'
 import type { ReadingFeedback } from './useStudySession.ts'
 import { KanaInput } from './KanaInput.tsx'
@@ -75,6 +76,7 @@ function Feedback({
           {mistakeType && <span className="tag">{MISTAKE_LABEL[mistakeType]}</span>}
         </p>
       )}
+      <ExampleSentence key={idiom.idiomId} idiomId={idiom.idiomId} />
       <div className="card-bottom">
         {correct ? (
           <div className="answer-row three">
@@ -100,5 +102,31 @@ function Feedback({
         )}
       </div>
     </div>
+  )
+}
+
+/**
+ * Tatoeba 무번역 예문 1개 — 확인 단계 참고용, 번역 없음 (Phase 6, context-notes 2026-09-04 절).
+ * 세션 시작을 막지 않으려고 첫 렌더에서만 fetch 한다. 없으면 아무것도 안 보여준다.
+ * 부모가 `key={idiomId}` 로 카드마다 새로 마운트한다 — 이전 예문이 잠깐이라도 안 남는다.
+ */
+function ExampleSentence({ idiomId }: { idiomId: string }) {
+  const [sentence, setSentence] = useState<string | null>(null)
+
+  useEffect(() => {
+    let alive = true
+    void loadExamples().then((m) => {
+      if (alive) setSentence(m.get(idiomId)?.[0] ?? null)
+    })
+    return () => {
+      alive = false
+    }
+  }, [idiomId])
+
+  if (sentence === null) return null
+  return (
+    <p className="example-sentence" lang="ja">
+      {sentence}
+    </p>
   )
 }
