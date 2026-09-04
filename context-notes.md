@@ -881,3 +881,62 @@ JP_UNIQUE까지 자연히 포함한다. 체크리스트를 실측값으로 고�
 
 **`korean-worklist-t1.tsv`(439행)는 생성만 됐고 verdict가 전량 `?`다.** tier 1을
 "초벌 신뢰"로 넘긴 상태라 파일을 채울 필요는 없지만, 지연 검수에서 다시 만난다.
+
+---
+
+## 2026-09-04 — Phase 5 착수 (UI 선행 조건)
+
+Phase 5 는 UI 전체라 여러 커밋으로 나눈다. 사용자와 이번 세션 범위를 **선행 조건만**
+(런타임 사전 번들 + 폰트 파이프라인 + `lang` 속성)으로 합의했다. 화면 구현은 다음 세션.
+
+### 런타임 사전 번들 — 분할 JSON 확정 (미확정 #1 종결)
+
+context-notes 2026-09-03 이 "분할 JSON 권고, 사용자 최종 확인만 남음"으로 남겨둔 것을
+확정했다. 기각한 대안 — 단일 JSON(초기 로드에 밴드 4 89k 포함), sql.js(전문 검색 요구가
+아직 없어 문서가 기각 방향).
+
+`tools/build-runtime-dict.ts` 가 `data/dict/` 빌드 산출물을 런타임이 바로 fetch 하는
+형태로 조립한다.
+
+| 파일 | 크기 (raw / gzip) | 내용 |
+|---|---|---|
+| `public/dict/base.json` | 5.3 MB / **999 KB** | 밴드 0~3, 16,970 숙어 (기본 번들) |
+| `public/dict/band4.json` | 18.9 MB / 2.6 MB | 밴드 4, 85,579 숙어 (opt-in 지연 로드) |
+| `public/dict/pairs.json` | 234 KB / 46 KB | (한자, 음독) 쌍 3,940 — 음독 맵 화면 |
+| `public/dict/kanji.json` | 149 KB / 35 KB | 등장 한자 2,130 자의 한국 한자음·음훈독 — 오답 상세 |
+
+레코드 형태 — `{id, headword, reading, pos, band, common, category, classSource, koMeaning,
+pairIds}`. `pairIds` 는 `onyomi-map.json` 의 `byIdiom` 분해를 `src/lib/onyomi.ts` 의
+`pairId(k, base, kind)` 로 만든다 (`session.sim.test.ts` 가 쓰던 것과 같은 경로).
+
+**음독 분해가 없는 숙어(247 + 4,007)는 번들에서 뺐다.** 熟字訓·当て字라 학습 대상이
+아니고 Phase 2 의 설계된 거부다. `pairIds` 가 빈 카드는 미숙 음독 가중이 무의미하다.
+
+**밴드 4 는 한국어 대조를 안 돌렸다** (Phase 3 는 밴드 0~3 만). `category`/`classSource`
+가 `null` 로 나오고, 로더 `normalizeIdiom` 이 `2`(확장)/`default` 로 채운다 — 모드 배정
+1단계 기본값과 같다.
+
+### 로더 — `src/dict/load.ts`
+
+`loadBaseIdioms()` / `loadBand4Idioms()` / `loadPairs()` / `loadKanji()`. 모듈 레벨에서
+Promise 를 캐시해 중복 fetch 를 막는다. URL 은 `${import.meta.env.BASE_URL}dict/…` 라
+GitHub Pages 서브패스 배포에도 맞는다.
+
+`RuntimeIdiom extends IdiomEntry` — `buildSession` 이 요구하는 5개 필드
+(`idiomId, band, category, classSource, pairIds`)를 그대로 담고 화면용
+(`headword, reading, pos, common, koMeaning`)을 더한다. 화면은 이 하나만 부르면 된다.
+
+### 산출물을 `.gitignore` 에 넣었다
+
+`public/dict/` · `public/fonts/` 는 재생성 가능한 빌드 산출물이라 `data/dict/` 와 같이
+커밋하지 않는다. Phase 7 배포 스크립트가 `vite build` 앞에서 만든다.
+`npm run build:runtime-dict`.
+
+### 검증
+
+`src/dict/load.test.ts` 5 테스트 — `_meta.count` ↔ 레코드 수 일치, 전 레코드
+`pairIds`·`band`(0~3)·`category`(1/2/3)·`classSource` 유효, `pairId` 형식,
+`buildSession(pool, [], {now, limit:20})` 이 풀을 그대로 받아 신규 카드 20장 구성.
+밴드 4 는 `2`/`default` 로 정규화됨을 확인.
+
+`npm test` — 13 파일 149 테스트 통과. `tsc -b` / `oxlint` 클린.

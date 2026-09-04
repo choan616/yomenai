@@ -139,6 +139,10 @@
 
 ## Phase 5 — UI
 
+- [x] 런타임 사전 번들 (분할 JSON, context-notes 미확정 #1 확정) — `tools/build-runtime-dict.ts`
+  → `public/dict/{base,band4,pairs,kanji}.json`, 로더 `src/dict/load.ts`.
+  **검증: `src/dict/load.test.ts` 5 테스트 통과** — `_meta.count` ↔ 레코드 수 일치(base 16,970),
+  전 레코드 pairIds·category·classSource 유효, `buildSession(pool, [], …)` 가 풀을 그대로 받음
 - [ ] 폰트 서브셋 파이프라인 → **검증: 학습 대상 문자 100% 커버, 폴백 발생 0**
 - [ ] `lang` 속성 적용 → **검증: 骨, 直, 令 등이 일본 자형으로 렌더링됨**
 - [ ] `wanakana.bind()` 입력 필드 (`autocapitalize="none"` 필수)
