@@ -23,7 +23,9 @@ interface MatchEntry {
   matches: MatchRow[]
 }
 
-const REVIEW_PATH = join(DICT_DIR, 'korean-review.tsv')
+// 작업 파일(우선순위 정렬 + 초벌 병기)이 있으면 그쪽 verdict 를 사람 검수로 읽는다
+const WORKLIST_PATH = join(DICT_DIR, 'korean-worklist.tsv')
+const REVIEW_PATH = existsSync(WORKLIST_PATH) ? WORKLIST_PATH : join(DICT_DIR, 'korean-review.tsv')
 const MATCH_PATH = join(DICT_DIR, 'korean-match.json')
 const DRAFT_PATH = join(DICT_DIR, 'korean-llm-draft.tsv')
 const TRUST_LLM = process.argv.includes('--trust-llm')

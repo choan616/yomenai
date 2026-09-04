@@ -18,7 +18,8 @@
     "review:bands": "tsx tools/review-bands.ts",
     "match:korean": "tsx tools/match-korean.ts",
     "draft:korean-review": "tsx tools/draft-korean-review.ts",
-    "apply:korean-review": "tsx tools/apply-korean-review.ts"
+    "apply:korean-review": "tsx tools/apply-korean-review.ts",
+    "build:review-worklist": "tsx tools/build-review-worklist.ts"
   },
   "dependencies": {
     "dexie": "^4.2.0",
