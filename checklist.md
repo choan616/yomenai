@@ -251,9 +251,13 @@
 - [x] 설정 화면 배선 — `src/app/Settings.tsx` 백업 섹션(로그인/로그아웃/지금 동기화,
   마지막 동기화 시각). 세션 로딩 중 자동 동기화는 안 함(수동 트리거만 — 카드 전환
   150ms 예산과 무관하게 하려고, context-notes 참조)
-- [ ] **실기기 검증 필요(사용자)** — `.env` 에 `VITE_GOOGLE_CLIENT_ID` 채우기(Google Cloud
-  Console 에서 OAuth 클라이언트 발급, 사용자 본인만 가능), 실브라우저 2대(또는 시크릿
-  창 2개)로 로그인→동기화까지 육안 확인. 이 항목은 AI 가 대신 체크할 수 없다
+- [x] **실기기 검증 완료 (2026-09-06)** — `.env` + GitHub Actions secret 에
+  `VITE_GOOGLE_CLIENT_ID` 등록, Google Cloud OAuth 클라이언트(`yomenai`, DIARY 와
+  같은 프로젝트) 발급·동의 화면 구성. 배포판 `choan616.github.io/yomenai/` 에서
+  Google 로그인 → "지금 동기화" → 본인 Drive 에 `YomenaiSync/reviews-<deviceId>.json`
+  생성 확인. 삽질 기록은 context-notes 2026-09-05·06 절 참조
+  (invalid_client = secret 에 `https://…/` 붙음 → `normalizeClientId` 로 방어,
+  이후 "액세스 차단됨" 잔상은 mmtm 서비스 워커/브라우저 캐시 → 사이트 데이터 삭제로 해결)
 - [x] GitHub Pages 배포 — 사용자가 "public/dict·fonts 만 커밋" 안 선택(context-notes
   2026-09-05 절). `.gitignore` 에서 `public/dict/`·`public/fonts/` 제외, `data/dict/`
   는 계속 제외(Phase 3 검수 결과라 원본만으론 재생성 불가). `vite.config.ts` base 를
@@ -261,8 +265,8 @@
   `npm run dev` 는 영향 없음). `.github/workflows/deploy.yml` — `npm ci && npm run
   build` 후 `actions/deploy-pages`. CI 는 사전 파이프라인을 안 돌리고 커밋된
   `public/dict`·`public/fonts` 를 그대로 씀
-- [ ] **사용자 액션 필요** — 저장소 Settings → Pages → Source 를 "GitHub Actions" 로
-  설정(1회). 이후 main 에 푸시하면 자동 배포. AI 가 대신 할 수 없음
+- [x] 저장소 Settings → Pages → Source "GitHub Actions" 설정 완료 (2026-09-06).
+  main 푸시마다 자동 배포, `choan616.github.io/yomenai/` 접속 확인
 
 ---
 

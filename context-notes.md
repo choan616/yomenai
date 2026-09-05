@@ -1669,3 +1669,24 @@ Playwright 로 배포판을 직접 열어 OAuth 팝업 URL 을 까 보니 client
 1. 사용자가 GitHub secret 값을 맨몸 client_id 로 교체 후 재배포
 2. `googleDrive.ts` 에 `normalizeClientId()` 추가 — `trim()` + `^https?://` 제거 +
    끝 `/` 제거. 같은 입력 실수가 또 나도 안 깨지게. `googleDrive.test.ts` 5 테스트
+
+### 배포판 로그인 삽질 마무리 (2026-09-06)
+
+두 겹의 문제였다.
+1. **invalid_client** — GitHub secret `VITE_GOOGLE_CLIENT_ID` 에 값을 `https://…com/`
+   형태로 넣어서 배포 번들에 스킴·끝슬래시가 박혔다. `normalizeClientId()` 로 방어
+   (커밋 75ad8b7). 로컬 `.env` 는 맨몸이라 안 걸렸었다.
+2. **수정 배포 후에도 "액세스 차단됨" 잔상** — 폰 브라우저가 옛 번들을 캐시. mmtm 이
+   `choan616.github.io/` 루트에 workbox 서비스 워커를 깔아둔 것도 확인(scope `/`,
+   `NavigationRoute` 로 모든 네비게이션을 mmtm `index.html` 로 바인딩). yomenai 자산을
+   런타임 캐시하진 않지만 같은 origin 이라 캐시/SW 간섭 소지가 있다. 시크릿 창에서
+   즉시 정상 → 일반 창은 "설정 → Safari → 방문 기록 및 웹사이트 데이터 지우기" 로 해결.
+
+**남은 관찰 대상** — mmtm 서비스 워커가 `/yomenai/` 네비게이션을 가로챌 가능성.
+지금은 육안상 yomenai 가 정상 로딩되지만, 다른 기기·다른 사용자에서 mmtm `index.html`
+이 뜨는 일이 생기면 (a) mmtm workbox 설정에 `navigateFallbackDenylist: [/^\/yomenai\//]`
+추가 재배포, 또는 (b) yomenai 에 `/yomenai/` scope 서비스 워커를 붙여(vite-plugin-pwa
+이미 설치됨) 하위 scope 로 mmtm SW 를 덮는 방법. 아직 조치 안 함 — 증상 나오면.
+
+배포판 실기기 검증 성공: Google 로그인 → 지금 동기화 → Drive `YomenaiSync/
+reviews-0bc19888-….json` 생성 (오전 8:12). Phase 7 완료.
