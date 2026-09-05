@@ -1637,3 +1637,18 @@ Actions)가 `public/dict/*.json` 을 만들려면 `data/dict/*.json` 이 있어�
   알고 선택.
 - 남은 건 사용자 몫 — 저장소 Settings → Pages → Source 를 "GitHub Actions" 로 1회
   설정해야 워크플로가 실제로 배포한다.
+
+### 버그 — 배포된 사이트에서 Google 로그인이 "설정 안 됨" 에러
+
+실기기로 `https://choan616.github.io/yomenai/`에서 로그인이 안 된다는 보고를 받고
+확인했다. `.env`는 로컬에만 있고 `.gitignore` 대상이라 CI 에는 없는데, `VITE_` 접두어
+환경변수는 **빌드 시점** 값이 번들에 그대로 박힌다(Vite `loadEnv` 가 `process.env`
+에서 `VITE_` 접두어 키를 읽어 온다 — `node_modules/vite/dist/node/chunks/node.js`
+확인). `.github/workflows/deploy.yml` 의 빌드 스텝에 이 값을 넘기는 코드가 애초에
+빠져 있었다 — 로컬 `.env` 설정만으로는 CI 빌드에 반영되지 않는다는 걸 처음 워크플로
+작성할 때 놓쳤다.
+
+**고침**: `npm run build` 스텝에 `env: VITE_GOOGLE_CLIENT_ID:
+${{ secrets.VITE_GOOGLE_CLIENT_ID }}` 추가. 사용자가 저장소 Settings → Secrets and
+variables → Actions 에 같은 이름으로 값을 등록해야 한다(클라이언트 ID 자체는 공개
+값이라 secret 이 아니어도 되지만, GitHub UI 상 가장 익숙한 경로라 secret 으로 안내함).

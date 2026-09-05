@@ -3,7 +3,12 @@
 # 커밋된 걸 그대로 쓴다 — data/dict/ 가 Phase 3 검수 결과라 원본만으로 재생성이 안 된다
 # (context-notes 2026-09-05 "배포 데이터 공백").
 #
-# 사용자가 직접 할 일 (한 번): 저장소 Settings → Pages → Source 를 "GitHub Actions" 로 설정.
+# 사용자가 직접 할 일 (한 번):
+#   1. 저장소 Settings → Pages → Source 를 "GitHub Actions" 로 설정
+#   2. 저장소 Settings → Secrets and variables → Actions → New repository secret
+#      이름 VITE_GOOGLE_CLIENT_ID, 값은 Google Cloud Console에서 발급받은 클라이언트 ID.
+#      VITE_ 접두어 환경변수는 빌드 시점 값이 번들에 그대로 박히므로(.env 는 CI에 없음)
+#      이 secret 없이는 배포된 사이트에서 Google 로그인이 "설정 안 됨" 에러를 낸다
 name: Deploy to GitHub Pages
 
 on:
@@ -31,6 +36,8 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run build
+        env:
+          VITE_GOOGLE_CLIENT_ID: ${{ secrets.VITE_GOOGLE_CLIENT_ID }}
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
