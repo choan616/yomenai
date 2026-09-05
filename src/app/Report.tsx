@@ -97,8 +97,8 @@ function ReportBody({ data }: { data: ReportData }) {
           <p className="empty">오답이 없습니다.</p>
         ) : (
           <div className="bars">
-            {data.mistakes.map((m) => (
-              <div className="bar-row" key={m.type}>
+            {data.mistakes.map((m, i) => (
+              <div className="bar-row" key={m.type} style={{ '--i': i } as React.CSSProperties}>
                 <span>{MISTAKE_LABEL[m.type]}</span>
                 <span className="bar-track">
                   <span
@@ -124,8 +124,8 @@ function ReportBody({ data }: { data: ReportData }) {
           <p className="dim">해당 숙어가 아직 없습니다.</p>
         ) : (
           <ul className="rows">
-            {data.koInterferenceIdioms.map((it) => (
-              <li key={it.id}>
+            {data.koInterferenceIdioms.map((it, i) => (
+              <li key={it.id} style={{ '--i': i } as React.CSSProperties}>
                 <span className="r-main" lang="ja">
                   {it.headword}
                 </span>
@@ -144,8 +144,8 @@ function ReportBody({ data }: { data: ReportData }) {
           <p className="empty">오답률이 높은 음독이 아직 없습니다.</p>
         ) : (
           <ul className="rows">
-            {data.weakOnyomi.map((w) => (
-              <li key={w.pairId}>
+            {data.weakOnyomi.map((w, i) => (
+              <li key={w.pairId} style={{ '--i': i } as React.CSSProperties}>
                 <span className="st learning" aria-hidden="true">
                   ◐
                 </span>

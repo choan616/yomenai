@@ -1,21 +1,25 @@
-/* 앱 전역 베이스 — 무채색 · 다크 모드 우선. 색은 정오답 피드백에만 (PLAN §7) */
+/* 앱 전역 베이스 — 먹색 무채 · 다크 모드 우선 (PLAN §7)
+   색은 단 하나, 오답의 朱 뿐이다. 정답은 무채로 조용히 지나가고 오답만 붉게 선다 —
+   PLAN 의 "오답일 때만 멈춘다"를 색으로도 지킨다. 배경은 회색-청 대신 살짝 따뜻한
+   먹색이라 종이·교정 은유와 붙는다. 무채색 원칙은 그대로다. */
 
 :root {
   color-scheme: dark light;
 
-  --bg: #131417;
-  --surface: #1c1e23;
-  --surface-2: #24272e;
-  --border: #31343d;
-  --text: #eceef2;
-  --text-dim: #a1a6b0;
-  --text-faint: #6f7480;
+  --bg: #141210;
+  --surface: #1d1a17;
+  --surface-2: #262220;
+  --border: #35302c;
+  --text: #eeeae6;
+  --text-dim: #a8a29b;
+  --text-faint: #756f68;
 
-  /* 피드백색 — 색만으로 구분하지 않는다. 아이콘·위치를 병행한다 (PLAN §7) */
-  --ok: #3ddc84;
-  --ok-bg: rgba(61, 220, 132, 0.12);
-  --ng: #ff6b6b;
-  --ng-bg: rgba(255, 107, 107, 0.12);
+  /* 피드백 — 색만으로 구분하지 않는다. 아이콘·위치를 병행한다 (PLAN §7).
+     --ok 는 무채(= text-dim 계열). 정답에 색을 주면 정답도 이벤트가 된다 */
+  --ok: #a8a29b;
+  --ok-bg: rgba(255, 255, 255, 0.05);
+  --ng: #e8563c;
+  --ng-bg: rgba(232, 86, 60, 0.13);
 
   --radius: 14px;
   --tap: 52px;
@@ -31,17 +35,17 @@
 
 @media (prefers-color-scheme: light) {
   :root {
-    --bg: #f6f7f9;
+    --bg: #f7f5f1;
     --surface: #fff;
-    --surface-2: #eef0f3;
-    --border: #d9dce1;
-    --text: #16181d;
-    --text-dim: #5c6069;
-    --text-faint: #8b909a;
-    --ok: #14a05a;
-    --ok-bg: rgba(20, 160, 90, 0.1);
-    --ng: #d64545;
-    --ng-bg: rgba(214, 69, 69, 0.1);
+    --surface-2: #efece6;
+    --border: #ddd8d0;
+    --text: #1a1714;
+    --text-dim: #605a53;
+    --text-faint: #8d867d;
+    --ok: #605a53;
+    --ok-bg: rgba(0, 0, 0, 0.035);
+    --ng: #c33a1c;
+    --ng-bg: rgba(195, 58, 28, 0.1);
   }
 }
 
@@ -49,32 +53,32 @@
    속성 선택자라 위 두 블록보다 특이도가 높아 순서와 무관하게 우선한다. */
 :root[data-theme='light'] {
   color-scheme: light;
-  --bg: #f6f7f9;
+  --bg: #f7f5f1;
   --surface: #fff;
-  --surface-2: #eef0f3;
-  --border: #d9dce1;
-  --text: #16181d;
-  --text-dim: #5c6069;
-  --text-faint: #8b909a;
-  --ok: #14a05a;
-  --ok-bg: rgba(20, 160, 90, 0.1);
-  --ng: #d64545;
-  --ng-bg: rgba(214, 69, 69, 0.1);
+  --surface-2: #efece6;
+  --border: #ddd8d0;
+  --text: #1a1714;
+  --text-dim: #605a53;
+  --text-faint: #8d867d;
+  --ok: #605a53;
+  --ok-bg: rgba(0, 0, 0, 0.035);
+  --ng: #c33a1c;
+  --ng-bg: rgba(195, 58, 28, 0.1);
 }
 
 :root[data-theme='dark'] {
   color-scheme: dark;
-  --bg: #131417;
-  --surface: #1c1e23;
-  --surface-2: #24272e;
-  --border: #31343d;
-  --text: #eceef2;
-  --text-dim: #a1a6b0;
-  --text-faint: #6f7480;
-  --ok: #3ddc84;
-  --ok-bg: rgba(61, 220, 132, 0.12);
-  --ng: #ff6b6b;
-  --ng-bg: rgba(255, 107, 107, 0.12);
+  --bg: #141210;
+  --surface: #1d1a17;
+  --surface-2: #262220;
+  --border: #35302c;
+  --text: #eeeae6;
+  --text-dim: #a8a29b;
+  --text-faint: #756f68;
+  --ok: #a8a29b;
+  --ok-bg: rgba(255, 255, 255, 0.05);
+  --ng: #e8563c;
+  --ng-bg: rgba(232, 86, 60, 0.13);
 }
 
 * {
@@ -106,4 +110,38 @@ input {
   font: inherit;
   /* 16px 미만이면 iOS Safari 가 포커스 시 화면을 확대한다. 최소값을 못 내려가게 고정한다 */
   font-size: max(16px, 1rem);
+}
+
+/* ── 모션 ──────────────────────────────────────────────────────────────
+   PLAN §7 은 모션을 둘로 나눈다. 카드 루프는 150ms 이하가 목적이라 무모션 그대로 두고,
+   셸·리포트·세션 요약만 느리고 신중하게 움직인다. 빈도가 낮고 결과를 음미하는 구간이다.
+   키프레임은 여기 한 번만 정의하고 screens.css·study.css 가 가져다 쓴다. */
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+@keyframes bar-grow {
+  from {
+    width: 0;
+  }
+}
+@keyframes bar-rise {
+  from {
+    height: 0;
+  }
+}
+
+/* 줄이길 원하면 전부 끈다. duration 을 0 으로 두지 않고 0.01ms 로 두는 이유는
+   animation-fill-mode 로 유지되는 최종 상태(막대 길이 등)를 잃지 않기 위해서다. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

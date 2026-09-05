@@ -3,6 +3,7 @@ import { useLayoutEffect } from 'react'
 import { ClassReviewPrompt } from './ClassReviewPrompt.tsx'
 import { MeaningCard } from './MeaningCard.tsx'
 import { ReadingCard } from './ReadingCard.tsx'
+import { SessionSummary } from './SessionSummary.tsx'
 import { useStudySession } from './useStudySession.ts'
 
 export function Study({ onExit }: { onExit: () => void }) {
@@ -34,17 +35,7 @@ export function Study({ onExit }: { onExit: () => void }) {
     )
   }
   if (s.status === 'done') {
-    return (
-      <Centered>
-        <h2>세션 완료</h2>
-        <p className="summary-num">
-          {s.summary.correct} / {s.summary.total}
-        </p>
-        <button type="button" className="btn-primary" onClick={onExit}>
-          홈으로
-        </button>
-      </Centered>
-    )
+    return <SessionSummary events={s.events} pool={s.pool} onExit={onExit} />
   }
 
   return (

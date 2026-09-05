@@ -13,7 +13,7 @@ import {
 } from '../core/session.ts'
 import { classifyMistake } from '../core/mistakes.ts'
 import type { Confidence } from '../core/scheduler.ts'
-import type { MistakeType } from '../core/types.ts'
+import type { LearningEvent, MistakeType } from '../core/types.ts'
 import { appendEvent } from '../db/events.ts'
 import { getDeviceId } from '../db/device.ts'
 import { db } from '../db/schema.ts'
@@ -50,6 +50,10 @@ export interface StudyState {
   feedback?: ReadingFeedback
   progress: { index: number; total: number }
   summary: { total: number; correct: number }
+  /** 종료 요약이 쓰는 이벤트 — 세션 이전 로그와 이번 세션에 쌓은 로그 */
+  events: { prior: LearningEvent[]; session: LearningEvent[] }
+  /** 요약이 숙어 이름과 음독 쌍을 찾는 데 쓴다 */
+  pool: RuntimeIdiom[]
   /** 카드 전환마다 1 증가. 화면이 전환 시간을 실측하는 트리거 (PLAN §7) */
   transitionSeq: number
 }
@@ -76,11 +80,16 @@ export function useStudySession(): [StudyState, StudyActions] {
   const [meaningDone, setMeaningDone] = useState<boolean | null>(null)
   const [results, setResults] = useState<boolean[]>([])
   const [pool, setPool] = useState<RuntimeIdiom[] | null>(null)
+  /** 세션에서 쓴 이벤트. DB 를 다시 읽지 않고 종료 요약에 그대로 넘긴다 */
+  const [sessionEvents, setSessionEvents] = useState<LearningEvent[]>([])
+  /** 세션 시작 시점의 로그. 종료 요약이 "이번에 처음 맞힌 음독"을 가리는 기준선이다 */
+  const [priorEvents, setPriorEvents] = useState<LearningEvent[]>([])
   const [transitionSeq, setTransitionSeq] = useState(0)
 
   const mistakes = useRef<MistakeContext | null>(null)
   const shownAt = useRef(0)
   const ctxBase = useRef({ userId: LOCAL_USER_ID, deviceId: getDeviceId() })
+
 
   const byId = useMemo(
     () => new Map((pool ?? []).map((p) => [p.idiomId, p])),
@@ -98,6 +107,7 @@ export function useStudySession(): [StudyState, StudyActions] {
         ])
         if (!alive) return
         setPool(loaded)
+        setPriorEvents(events)
         mistakes.current = mistakeContextFromKanji(kanji)
         const { sessionLimit, ratio } = loadSettings()
         const built = buildSession(loaded, events, { now: Date.now(), limit: sessionLimit, ratio })
@@ -124,6 +134,12 @@ export function useStudySession(): [StudyState, StudyActions] {
     }),
     [],
   )
+
+  /** 이벤트를 DB 에 덧붙이면서 세션 요약용으로도 모아 둔다 */
+  const record = useCallback((e: LearningEvent) => {
+    void appendEvent(db(), e)
+    setSessionEvents((prev) => [...prev, e])
+  }, [])
 
   const advance = useCallback(
     (correct: boolean) => {
@@ -160,15 +176,12 @@ export function useStudySession(): [StudyState, StudyActions] {
   const submitMeaning = useCallback(
     (known: boolean) => {
       if (!card) return
-      void appendEvent(
-        db(),
-        recordMeaningAnswer({ item: card, correct: known, ctx: answerCtx() }),
-      )
+      record(recordMeaningAnswer({ item: card, correct: known, ctx: answerCtx() }))
       // 정답(알고 있었다)이면 멈추지 않고 넘어간다. 오답일 때만 뜻을 다시 보여준다 (PLAN §7)
       if (known) advance(true)
       else setMeaningDone(false)
     },
-    [card, answerCtx, advance],
+    [card, answerCtx, advance, record],
   )
 
   const answerClassReview = useCallback(
@@ -176,22 +189,18 @@ export function useStudySession(): [StudyState, StudyActions] {
       if (!card) return
       performance.mark('yomenai:advance')
       setTransitionSeq((n) => n + 1)
-      void appendEvent(
-        db(),
-        recordMeaningKnown({ idiomId: card.idiomId, known, ctx: answerCtx() }),
-      )
+      record(recordMeaningKnown({ idiomId: card.idiomId, known, ctx: answerCtx() }))
       setInClassReview(false)
       shownAt.current = performance.now()
     },
-    [card, answerCtx],
+    [card, answerCtx, record],
   )
 
   const next = useCallback(
     (confidence?: Confidence) => {
       if (!card || !idiom) return
       if (feedback) {
-        void appendEvent(
-          db(),
+        record(
           recordReadingAnswer({
             item: card,
             headword: idiom.headword,
@@ -207,8 +216,14 @@ export function useStudySession(): [StudyState, StudyActions] {
         advance(meaningDone)
       }
     },
-    [card, idiom, feedback, meaningDone, answerCtx, advance],
+    [card, idiom, feedback, meaningDone, answerCtx, advance, record],
   )
+
+  const events = useMemo(
+    () => ({ prior: priorEvents, session: sessionEvents }),
+    [priorEvents, sessionEvents],
+  )
+  const poolOut = useMemo(() => pool ?? [], [pool])
 
   const status: StudyStatus = useMemo(() => {
     if (error) return 'error'
@@ -227,6 +242,8 @@ export function useStudySession(): [StudyState, StudyActions] {
     feedback: feedback ?? undefined,
     progress: { index: Math.min(idx, session?.cards.length ?? 0), total: session?.cards.length ?? 0 },
     summary: { total: results.length, correct: results.filter(Boolean).length },
+    events,
+    pool: poolOut,
     transitionSeq,
   }
 
