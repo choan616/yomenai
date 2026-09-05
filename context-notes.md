@@ -1617,3 +1617,23 @@ Actions)가 `public/dict/*.json` 을 만들려면 `data/dict/*.json` 이 있어�
 필수"로 분리해 뒀는데, Phase 7 배포가 그 확인보다 먼저 일어나게 된다. 개인 프로젝트
 성격상(계정 시스템 없음, 광고 없음) 문제 삼을 정도는 아니라고 보지만 결정은
 사용자 몫이라 판단을 미리 내리지 않았다.
+
+### GitHub Pages — 사용자가 "public/dict·fonts 커밋" 안 선택
+
+세 가지 안 중 A(런타임 산출물만 커밋)를 골랐다. `.gitignore` 를 고쳐 `public/dict/`·
+`public/fonts/` 는 커밋 대상으로 돌리고, `data/dict/`(중간 산출물, Phase 3 검수
+결과 포함)는 계속 제외했다. `data/raw/`(원본, 재다운로드 가능)도 그대로 제외.
+
+- `vite.config.ts` — `base` 를 `command === 'build' || isPreview` 일 때만 `/yomenai/`
+  로 바꿨다. `choan616.github.io` 는 이미 다른 프로젝트(mmtm)가 쓰고 있어 yomenai 는
+  `choan616/yomenai` project page 로 `/yomenai/` 서브패스에 뜬다. `npm run dev` 는
+  base 그대로 `/` — 로컬 개발 흐름을 안 건드린다. `src/dict/load.ts` 가 이미
+  `import.meta.env.BASE_URL` 로 사전 URL 을 짓고 있어 추가 수정이 필요 없었다.
+- `.github/workflows/deploy.yml` — `npm ci && npm run build` → `actions/deploy-pages`.
+  사전 파이프라인 단계(`build:runtime-dict`/`build:fonts`)는 CI 에 안 넣는다 — 커밋된
+  `public/dict`·`public/fonts` 를 그대로 쓴다.
+- 커밋 용량 — `public/dict/*.json` 약 26MB(gzip 전, base+band4+examples+pairs+kanji)
+  + `public/fonts/*.woff2` 약 1.2MB. 저장소가 그만큼 커진다. 사용자가 트레이드오프를
+  알고 선택.
+- 남은 건 사용자 몫 — 저장소 Settings → Pages → Source 를 "GitHub Actions" 로 1회
+  설정해야 워크플로가 실제로 배포한다.

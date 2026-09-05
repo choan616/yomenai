@@ -254,9 +254,15 @@
 - [ ] **실기기 검증 필요(사용자)** — `.env` 에 `VITE_GOOGLE_CLIENT_ID` 채우기(Google Cloud
   Console 에서 OAuth 클라이언트 발급, 사용자 본인만 가능), 실브라우저 2대(또는 시크릿
   창 2개)로 로그인→동기화까지 육안 확인. 이 항목은 AI 가 대신 체크할 수 없다
-- [ ] GitHub Pages 배포 — **보류, 사용자 결정 대기**(context-notes 2026-09-05 절
-  "배포 데이터 공백"): CI 가 사전 데이터 파이프라인을 재현할 수 없다
-  (`data/dict/` 가 `.gitignore` 대상이라 Phase 3 검수 결과물이 저장소에 없음)
+- [x] GitHub Pages 배포 — 사용자가 "public/dict·fonts 만 커밋" 안 선택(context-notes
+  2026-09-05 절). `.gitignore` 에서 `public/dict/`·`public/fonts/` 제외, `data/dict/`
+  는 계속 제외(Phase 3 검수 결과라 원본만으론 재생성 불가). `vite.config.ts` base 를
+  `command==='build'||isPreview` 일 때만 `/yomenai/` 로(project page 서브패스,
+  `npm run dev` 는 영향 없음). `.github/workflows/deploy.yml` — `npm ci && npm run
+  build` 후 `actions/deploy-pages`. CI 는 사전 파이프라인을 안 돌리고 커밋된
+  `public/dict`·`public/fonts` 를 그대로 씀
+- [ ] **사용자 액션 필요** — 저장소 Settings → Pages → Source 를 "GitHub Actions" 로
+  설정(1회). 이후 main 에 푸시하면 자동 배포. AI 가 대신 할 수 없음
 
 ---
 
