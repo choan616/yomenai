@@ -1511,3 +1511,109 @@ iOS Safari 는 `font-size < 16px` 인 입력에 포커스가 가면 화면을 �
 스크린샷 `scratchpad/example-feedback.png`). `npm test` 23파일 192 통과.
 `npm run e2e` 4 스펙 통과(카드 전환 p95 14.7ms — 예문 fetch 는 전환 시간에 안 얹힘).
 `tsc -b`/`oxlint`/`vite build` 클린.
+
+---
+
+## 2026-09-05 — Phase 7 (클라우드 백업, 코드 부분)
+
+### 스키마는 이미 준비돼 있었다
+
+`EventBase.deviceId` 와 `[userId+deviceId+at]` 색인이 Phase 1부터 PLAN §5 원칙 3
+("동기화는 기기별 파일 분리")을 위해 미리 들어가 있었다. `getDeviceId()`
+(`src/db/device.ts`)도 이미 모든 이벤트 생성 경로에 배선돼 있었다. 그래서 이번
+작업은 스키마 변경 없이 순수 추가로 끝났다 — CLAUDE.md "스키마 변경 시 먼저 알린다"
+조항이 발동할 일이 없었다.
+
+### mmtm `GoogleDriveService` 를 그대로 이식하지 않았다
+
+PLAN §8 표는 "가져올 것"에 `cloudStorage/` 전체를 적어 뒀지만, 실제로 옮긴 건
+개념(로그인 → 폴더 → 파일 업로드/다운로드)뿐이고 구현은 새로 짰다.
+
+- **gapi 클라이언트 라이브러리를 안 쓴다.** mmtm 은 GIS(로그인 토큰) + gapi(REST 래퍼)
+  두 스크립트를 로드한다. yomenai 는 GIS 로 토큰만 받고 Drive REST 는 `fetch` 로 직접
+  부른다 — 로드할 스크립트가 1개로 줄고, gapi 의 거대한 미타입 전역을 앱 코드에 안
+  들인다. Drive API 는 REST 문서가 fetch 로 바로 옮겨 적을 만큼 단순해 이 대체가
+  안전하다고 판단했다.
+- **암호화(`crypto.js`, AES-GCM+PBKDF2)는 이번엔 스킵한다.** mmtm 은 일기장이라
+  민감도가 다르다. yomenai 이벤트 로그(숙어 ID·정오답·소요시간)는 공개돼도 실질적
+  피해가 적고, `drive.file` 스코프라 이 앱이 만든 파일만 접근 가능하다. 필요해지면
+  `uploadOrReplace`/`downloadFile` 호출 지점에 감싸 넣을 수 있어 나중에 추가해도
+  구조를 안 흔든다. **기각한 대안**: PLAN §8 표대로 지금 포팅 — 요청받지 않은 기능을
+  먼저 넣는 셈이라 보류.
+- **Dropbox·`CloudStorageFactory`는 안 만든다.** PLAN §2 가 "Google 로그인"만
+  명시한다. 공급자가 하나뿐이면 팩토리 추상화는 조기 일반화다.
+- **버전 관리(`MAX_BACKUPS_TO_KEEP`, 타임스탬프 파일명)도 없다.** mmtm 은 백업마다
+  새 zip 을 쌓지만, yomenai 는 기기당 파일 하나(`reviews-{deviceId}.json`)를
+  계속 덮어쓴다 — 원본(IndexedDB)이 이미 append-only 로그라 별도 버전 이력이 필요
+  없다.
+
+### 병합 로직은 새로 설계했다 — mmtm 의 `syncManager` 충돌 해결 UI를 다시 기각
+
+PLAN §8 이 이미 "syncManager.js 의 충돌 처리는 가져오지 않는다"고 못 박아 뒀다
+(재확인, 새로 기각한 게 아니라 기존 결정 재확인). `src/sync/sync.ts` 의 `syncNow`는
+1) 이 기기 이벤트 전량을 자기 파일에 덮어쓰고 2) 남의 파일들을 읽어 `bulkPut` 으로
+합친다. 이벤트는 append-only 라 같은 id 는 항상 같은 내용이므로 덮어쓰기가 항상
+안전하고, 파일당 쓰는 주체가 하나뿐이라 쓰기 충돌이 구조적으로 없다.
+
+### `getDeviceId()` 는 sync.ts 안에서 부르지 않는다
+
+처음엔 `syncNow` 내부에서 `getDeviceId()` 를 직접 호출했다가 테스트가 깨졌다 —
+Node(vitest) 환경엔 `localStorage` 가 없어 `getDeviceId()` 가 매번 새 UUID를
+반환해, 업로드 파일명이 호출마다 달라지고 "내 파일" 판정이 어긋났다. 기존 코드
+(`useStudySession.ts`, `Diagnostic.tsx`)가 이미 따르던 관례 — `getDeviceId()` 는
+UI 경계에서 한 번만 부르고 그 값을 아래로 넘긴다 — 를 그대로 따라 `syncNow(db,
+deviceId, drive?)` 로 시그니처를 바꿨다. `Settings.tsx` 가 `getDeviceId()` 를 불러
+넘긴다.
+
+### 테스트 — 가짜 Drive 를 메모리 Map 으로
+
+`DriveClient` 인터페이스(`googleDrive.ts`)를 `sync.ts` 가 기본값으로만 쓰고
+매개변수로 받게 해, 테스트는 실제 Google API 를 안 건드리고 `Map<string,string>`
+하나를 공유하는 `FakeDrive` 두 인스턴스로 "브라우저 프로파일 2개"를 흉내 낸다.
+`sync.test.ts` 의 "두 브라우저 프로파일에서 각각 학습 후 병합해도 이벤트 손실이
+없다" 테스트가 체크리스트의 검증 문구를 문자 그대로 구현한다 — A→B→A 순서로
+동기화한 뒤 양쪽 DB 가 6건 전부를 갖고, 재동기화해도 안 늘어나는지 확인.
+실제 OAuth 플로우(GIS 팝업)는 이 프로젝트의 e2e(Playwright)로도 검증 못 한다 —
+테스트 계정을 자동화에 못 넣는다. 실기기 로그인·동기화 육안 확인은 사용자 몫으로
+checklist 에 남겼다.
+
+### 동기화는 수동 트리거만 — 설정 화면 안에서만 실행
+
+카드 루프 150ms 예산(CLAUDE.md 성능 제약)과 무관하게 하려고 자동/백그라운드 동기화는
+넣지 않았다. "지금 동기화" 버튼(설정 화면)을 눌러야만 `fetch` 가 나간다. 앱 시작 시
+`restoreSession()`(조용한 재로그인)만 자동으로 시도한다 — 이건 네트워크 요청 1회고
+학습 화면과 겹치지 않는 설정 화면 마운트 시점에만 일어난다.
+
+### 검증
+
+`src/db/events.test.ts` +6(`listDeviceEvents`/`importEvents`), `src/sync/sync.test.ts`
+4개(로그인 거부, 업로드, 병합+자기 파일 스킵, 2기기 병합+재동기화 멱등).
+`npm test` 24파일 200 테스트 통과. `tsc -b`/`oxlint` 클린. `googleDrive.ts` 자체
+(GIS 스크립트 로드, 실제 fetch 호출)는 단위 테스트를 안 붙였다 — 브라우저 전역
+(`window.google`, 팝업)을 흉내 내봐야 실제 OAuth 플로우를 검증하지 못해 실익이
+적다고 판단했다. 대신 인터페이스 뒤로 격리해 `sync.ts` 쪽 로직은 전부 테스트로
+덮었다.
+
+### 보류 — GitHub Pages 배포 (사용자 결정 대기)
+
+체크리스트의 "GitHub Pages 배포"를 시작하기 전에 막힌 게 하나 있다. CI(GitHub
+Actions)가 `public/dict/*.json` 을 만들려면 `data/dict/*.json` 이 있어야 하는데,
+이 디렉터리는 `.gitignore` 대상이라 저장소에 없다. 원본(JMDict/KANJIDIC2/Tatoeba)은
+다시 받을 수 있지만, **Phase 3 한국어 대조 검수 결과(`korean-class.json`)는 여러
+세션에 걸친 수작업 산출물이라 원본에서 재생성이 안 된다.** `.gitignore` 주석
+("재생성 가능")이 애초에 이 항목엔 안 맞았던 셈이다.
+
+해결책 후보(사용자에게 물어봄, 아직 결정 안 됨):
+- (A) `public/dict/*.json` · `public/fonts/*.woff2` (최종 런타임 산출물)만 `.gitignore`
+  에서 빼고 커밋 — CI 는 `vite build` 만 하면 됨. `data/dict/`(중간 산출물)는 계속 제외
+- (B) `data/dict/*.json` 전체를 커밋 — CI 가 `build:runtime-dict`/`build:fonts` 까지
+  돌림. 원본 폰트 파일(`data/raw/fonts/*.otf`)도 어떻게든 CI 에 올려야 함
+- (C) 로컬에서 빌드해 만든 `public/dict`·`public/fonts`를 배포 직전에 수동으로 커밋
+  (일회성, 자동화 없음)
+
+부수적으로 짚어 둘 점 — GitHub Pages 로 배포하는 순간 이 데이터는 공개된다. 이건
+커밋 여부와 무관하게 Pages 배포 자체의 성격이다. checklist Phase 8 이 이미
+"EDRDG에 CC BY-SA 승계 범위 문의"·"stdict API 이용약관 확인"을 "서비스화 판단 전
+필수"로 분리해 뒀는데, Phase 7 배포가 그 확인보다 먼저 일어나게 된다. 개인 프로젝트
+성격상(계정 시스템 없음, 광고 없음) 문제 삼을 정도는 아니라고 보지만 결정은
+사용자 몫이라 판단을 미리 내리지 않았다.

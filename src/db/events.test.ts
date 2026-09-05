@@ -3,7 +3,15 @@
 import { afterEach, describe, expect, it } from 'vitest'
 import { IDBFactory, IDBKeyRange as FDBKeyRange } from 'fake-indexeddb'
 import { YomenaiDB } from './schema.ts'
-import { appendEvent, listCardEvents, listEvents, LOCAL_USER_ID, newEventId } from './events.ts'
+import {
+  appendEvent,
+  importEvents,
+  listCardEvents,
+  listDeviceEvents,
+  listEvents,
+  LOCAL_USER_ID,
+  newEventId,
+} from './events.ts'
 import { replay } from '../core/replay.ts'
 import type { LearningEvent, MistakeType, ReviewEvent } from '../core/types.ts'
 
@@ -121,6 +129,42 @@ describe('listCardEvents — 카드 1장의 이력', () => {
 
     const hist = await listCardEvents(db, LOCAL_USER_ID, '1', 'reading')
     expect(hist.map((e) => e.at)).toEqual([T0, T0 + 2 * DAY])
+  })
+})
+
+describe('listDeviceEvents — 동기화 업로드 대상', () => {
+  it('이 기기 이벤트만 시간순으로 준다, 묘비 포함', async () => {
+    const db = freshDb()
+    await appendEvent(db, review({ at: T0, idiomId: '1', deviceId: 'dev-a' }))
+    await appendEvent(db, review({ at: T0 + DAY, idiomId: '2', deviceId: 'dev-b' }))
+    await appendEvent(db, review({ at: T0 + 2 * DAY, idiomId: '3', deviceId: 'dev-a', deletedAt: T0 + 9 * DAY }))
+
+    const mine = await listDeviceEvents(db, LOCAL_USER_ID, 'dev-a')
+    expect(mine.map((e) => e.idiomId)).toEqual(['1', '3'])
+  })
+})
+
+describe('importEvents — 다른 기기 파일 병합', () => {
+  it('새 이벤트를 그대로 들여온다', async () => {
+    const db = freshDb()
+    const remote = review({ at: T0, idiomId: '1', deviceId: 'dev-b' })
+    const n = await importEvents(db, [remote])
+    expect(n).toBe(1)
+    expect(await listEvents(db, LOCAL_USER_ID)).toEqual([remote])
+  })
+
+  it('같은 id 를 다시 받아도 중복되지 않는다 — 재동기화가 멱등하다', async () => {
+    const db = freshDb()
+    const remote = review({ at: T0, idiomId: '1', deviceId: 'dev-b' })
+    await importEvents(db, [remote])
+    await importEvents(db, [remote])
+    expect(await listEvents(db, LOCAL_USER_ID)).toHaveLength(1)
+  })
+
+  it('빈 배열은 아무 것도 안 한다', async () => {
+    const db = freshDb()
+    expect(await importEvents(db, [])).toBe(0)
+    expect(await listEvents(db, LOCAL_USER_ID)).toEqual([])
   })
 })
 

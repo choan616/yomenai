@@ -1,5 +1,5 @@
-// 설정 화면 — 세션 길이, 모드 비율, 백업(자리표시자). 값은 localStorage 에 즉시 저장 (PLAN §7)
-import { useState } from 'react'
+// 설정 화면 — 세션 길이, 모드 비율, 백업. 값은 localStorage 에 즉시 저장 (PLAN §7)
+import { useEffect, useState } from 'react'
 import {
   DEFAULT_SETTINGS,
   LIMIT_MAX,
@@ -9,6 +9,11 @@ import {
   type Settings as SettingsData,
 } from './settings.ts'
 import { applyTheme, loadTheme, saveTheme, type Theme } from './theme.ts'
+import { db } from '../db/schema.ts'
+import { getDeviceId } from '../db/device.ts'
+import { googleDrive } from '../sync/googleDrive.ts'
+import { syncNow } from '../sync/sync.ts'
+import { getLastSyncAt, setLastSyncAt, setSignedIn, wasSignedIn } from '../sync/syncState.ts'
 
 const STEP = 5
 
@@ -27,6 +32,93 @@ const THEMES: { label: string; value: Theme }[] = [
   { label: '라이트', value: 'light' },
   { label: '다크', value: 'dark' },
 ]
+
+function formatSyncTime(at: number): string {
+  return new Date(at).toLocaleString('ko-KR', {
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
+}
+
+/** Google Drive 백업 — 로그인 → 지금 동기화. 기기별 파일 분리라 충돌 UI가 없다 (PLAN §5 원칙 3) */
+function BackupSetting() {
+  const [authed, setAuthed] = useState(googleDrive.isAuthenticated())
+  const [busy, setBusy] = useState<'idle' | 'signIn' | 'sync'>('idle')
+  const [error, setError] = useState<string | null>(null)
+  const [lastSyncAt, setLastSyncAtState] = useState<number | null>(getLastSyncAt)
+
+  useEffect(() => {
+    if (!wasSignedIn() || authed) return
+    void googleDrive.restoreSession().then((ok) => {
+      if (ok) setAuthed(true)
+    })
+    // authed 가 바뀌면 재평가되지만 guard 가 바로 막아 실질적으로 1회만 시도한다
+  }, [authed])
+
+  const handleSignIn = () => {
+    setBusy('signIn')
+    setError(null)
+    void googleDrive
+      .signIn()
+      .then((ok) => {
+        setAuthed(ok)
+        setSignedIn(ok)
+        if (!ok) setError('로그인이 취소되었거나 실패했습니다.')
+      })
+      .catch((err: unknown) => setError(err instanceof Error ? err.message : String(err)))
+      .finally(() => setBusy('idle'))
+  }
+
+  const handleSignOut = () => {
+    googleDrive.signOut()
+    setSignedIn(false)
+    setAuthed(false)
+  }
+
+  const handleSync = () => {
+    setBusy('sync')
+    setError(null)
+    void syncNow(db(), getDeviceId())
+      .then(() => {
+        const now = Date.now()
+        setLastSyncAt(now)
+        setLastSyncAtState(now)
+      })
+      .catch((err: unknown) => setError(err instanceof Error ? err.message : String(err)))
+      .finally(() => setBusy('idle'))
+  }
+
+  return (
+    <div className="setting">
+      <label>백업</label>
+      {authed ? (
+        <>
+          <div className="seg" role="group" aria-label="백업">
+            <button type="button" onClick={handleSync} disabled={busy !== 'idle'}>
+              {busy === 'sync' ? '동기화 중…' : '지금 동기화'}
+            </button>
+            <button type="button" onClick={handleSignOut} disabled={busy !== 'idle'}>
+              로그아웃
+            </button>
+          </div>
+          <span className="hint">
+            {lastSyncAt === null ? '아직 동기화하지 않았습니다.' : `마지막 동기화 ${formatSyncTime(lastSyncAt)}`}
+          </span>
+        </>
+      ) : (
+        <>
+          <button type="button" onClick={handleSignIn} disabled={busy !== 'idle'}>
+            {busy === 'signIn' ? '로그인 중…' : 'Google로 로그인'}
+          </button>
+          <span className="hint">기기 간 학습 기록을 Google Drive 로 백업합니다.</span>
+        </>
+      )}
+      {error !== null && <span className="hint error">{error}</span>}
+    </div>
+  )
+}
 
 export function Settings({ onBack }: { onBack: () => void }) {
   const [settings, setSettings] = useState<SettingsData>(loadSettings)
@@ -119,10 +211,7 @@ export function Settings({ onBack }: { onBack: () => void }) {
           <span className="hint">시스템은 기기 설정을 따릅니다.</span>
         </div>
 
-        <div className="setting disabled">
-          <label>백업</label>
-          <span className="hint">클라우드 백업은 이후 단계에서 지원합니다.</span>
-        </div>
+        <BackupSetting />
       </div>
     </section>
   )

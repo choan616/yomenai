@@ -234,10 +234,29 @@
 
 ## Phase 7 — 클라우드 백업 (선택)
 
-- [ ] mmtm `cloudStorage/` 이식
-- [ ] 기기별 파일 분리 동기화 구현
-- [ ] **검증: 두 브라우저 프로파일에서 각각 학습 후 병합 시 이벤트 손실 0**
-- [ ] GitHub Pages 배포
+- [x] Google Drive 클라이언트 (`src/sync/googleDrive.ts`) — mmtm `GoogleDriveService` 를
+  그대로 이식하지 않고 GIS(로그인 토큰) + `fetch` 로만 재작성(context-notes 2026-09-05
+  절 "gapi 안 씀"). `drive.file` 스코프, 암호화·Dropbox·버전 관리(`MAX_BACKUPS_TO_KEEP`)는
+  스킵(같은 절 "encryption 스킵"). `DriveClient` 인터페이스로 sync.ts 가 가짜 구현을
+  주입할 수 있게 분리
+- [x] 기기별 파일 분리 동기화 구현 — `src/sync/sync.ts` `syncNow(db, deviceId, drive?)`.
+  각 기기가 `reviews-{deviceId}.json` 에 자기 이벤트 전량을 덮어쓰고, 남의 파일은
+  `bulkPut` 으로만 병합(PLAN §5 원칙 3, 스키마의 `deviceId` 필드는 Phase 1부터 이미
+  있었음). `src/db/events.ts` 에 `listDeviceEvents`/`importEvents` 추가
+- [x] **검증: 두 브라우저 프로파일에서 각각 학습 후 병합 시 이벤트 손실 0** —
+  `src/sync/sync.test.ts` "두 브라우저 프로파일에서 각각 학습 후 병합해도 이벤트
+  손실이 없다": fake-indexeddb 두 인스턴스 + 메모리 Map 가짜 Drive 로 기기 2대를
+  흉내 내 A→B→A 순으로 동기화, 재동기화 멱등까지 확인. **`npm test` 24파일 200테스트
+  통과, `tsc -b`/`oxlint` 클린**
+- [x] 설정 화면 배선 — `src/app/Settings.tsx` 백업 섹션(로그인/로그아웃/지금 동기화,
+  마지막 동기화 시각). 세션 로딩 중 자동 동기화는 안 함(수동 트리거만 — 카드 전환
+  150ms 예산과 무관하게 하려고, context-notes 참조)
+- [ ] **실기기 검증 필요(사용자)** — `.env` 에 `VITE_GOOGLE_CLIENT_ID` 채우기(Google Cloud
+  Console 에서 OAuth 클라이언트 발급, 사용자 본인만 가능), 실브라우저 2대(또는 시크릿
+  창 2개)로 로그인→동기화까지 육안 확인. 이 항목은 AI 가 대신 체크할 수 없다
+- [ ] GitHub Pages 배포 — **보류, 사용자 결정 대기**(context-notes 2026-09-05 절
+  "배포 데이터 공백"): CI 가 사전 데이터 파이프라인을 재현할 수 없다
+  (`data/dict/` 가 `.gitignore` 대상이라 Phase 3 검수 결과물이 저장소에 없음)
 
 ---
 
