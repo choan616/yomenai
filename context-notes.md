@@ -1652,3 +1652,20 @@ Actions)가 `public/dict/*.json` 을 만들려면 `data/dict/*.json` 이 있어�
 ${{ secrets.VITE_GOOGLE_CLIENT_ID }}` 추가. 사용자가 저장소 Settings → Secrets and
 variables → Actions 에 같은 이름으로 값을 등록해야 한다(클라이언트 ID 자체는 공개
 값이라 secret 이 아니어도 되지만, GitHub UI 상 가장 익숙한 경로라 secret 으로 안내함).
+
+### 배포판 Google 로그인 "invalid_client" — client_id 에 스킴이 붙어 있었다
+
+로컬은 되는데 `https://choan616.github.io/yomenai/` 에서만 "401: invalid_client / The
+OAuth client was not found" 가 떴다. 하룻밤 지나도 그대로라 전파 지연은 아니었다.
+Playwright 로 배포판을 직접 열어 OAuth 팝업 URL 을 까 보니 client_id 가
+`https://291869999860-….apps.googleusercontent.com/` — 앞에 `https://`, 뒤에 `/` 가
+붙어 있었다. GitHub Actions secret `VITE_GOOGLE_CLIENT_ID` 에 값을 URL 형태로 넣은
+게 원인. 로컬 `.env` 는 맨몸 값이라 안 걸렸다.
+
+처음 번들 확인 때 `291869999860-…googleusercontent\.com` 부분 문자열만 grep 해서
+앞뒤에 붙은 스킴·슬래시를 못 봤다 — 확인이 부실했다. 앵커 없는 정규식의 함정.
+
+**고침 2가지**:
+1. 사용자가 GitHub secret 값을 맨몸 client_id 로 교체 후 재배포
+2. `googleDrive.ts` 에 `normalizeClientId()` 추가 — `trim()` + `^https?://` 제거 +
+   끝 `/` 제거. 같은 입력 실수가 또 나도 안 깨지게. `googleDrive.test.ts` 5 테스트

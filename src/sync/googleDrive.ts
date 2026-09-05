@@ -3,7 +3,15 @@
 // Drive REST 를 fetch 로 직접 호출한다 (mmtm 대비 스크립트 1개만 로드, context-notes 참조).
 // 스코프는 drive.file — 이 앱이 만든 파일만 건드릴 수 있다.
 
-const CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID
+/**
+ * .env·CI secret 에 URL 형태(`https://…/`)로 잘못 넣어도 동작하도록 스킴·공백·끝 슬래시를
+ * 벗긴다. 맨몸 client_id 가 아니면 Google 이 invalid_client 로 막는다 (한 번 겪음)
+ */
+export function normalizeClientId(raw: string | undefined): string | undefined {
+  return raw?.trim().replace(/^https?:\/\//, '').replace(/\/+$/, '') || undefined
+}
+
+const CLIENT_ID = normalizeClientId(import.meta.env.VITE_GOOGLE_CLIENT_ID)
 const SCOPE = 'https://www.googleapis.com/auth/drive.file'
 const FOLDER_NAME = 'YomenaiSync'
 const GIS_SRC = 'https://accounts.google.com/gsi/client'
