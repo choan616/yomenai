@@ -61,10 +61,12 @@ export function KanaInput({ onSubmit, resetKey, readOnly }: Props) {
         ref={ref}
         className="kana-input"
         type="text"
-        /* lang="en" + off 속성들 — iOS 가 이 칸에서 일본어 IME(한자 변환 후보 바)를 안 띄우게.
-           wanakana 가 로마자를 가나로 바꾸므로 실제 입력은 라틴 문자다 */
+        /* 일본어 IME(한자 변환 후보 바)를 막는다. iOS 는 변환 바를 숨기는 API 가 없어서
+           inputMode="email" 로 ASCII 전용 키보드를 띄운다(언어 키보드가 아니라 후보 바 없음).
+           키보드에 @ · . 키가 더 보이는 게 대가. wanakana 가 로마자→가나 변환은 그대로 한다.
+           lang="en" · autocorrect/autocomplete off 도 함께 */
         lang="en"
-        inputMode="text"
+        inputMode="email"
         autoCapitalize="none"
         autoComplete="off"
         autoCorrect="off"
