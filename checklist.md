@@ -379,10 +379,23 @@
     `prefers-reduced-motion` 은 index.css 전역 규칙이 접음
   - **검증: `npm test` 267 · e2e 5스펙 통과(카드 전환 p95 15.4ms) · tsc/oxlint/build 클린 ·
     챕터/중반/마무리 3화면 실측 캡처**
+- [x] **iOS 스탠드얼론 웹앱 대응** (2026-09-06, 커밋 `ac8166d`) — 홈 화면 웹앱에서
+  나온 3건. context-notes 2026-09-06 절
+  - 키보드 상단 밀림 — `interactive-widget=resizes-content` 는 iOS 미지원.
+    `src/study/useViewportLock.ts`(visualViewport → `--vvh`, scrollTo(0,0), body overflow hidden).
+    `.study`/`.diag` 가 `height: var(--vvh, 100dvh)`
+  - 자동 포커스 무시 — standalone 은 제스처 밖 `focus()` 무시. `KanaInput` 을
+    리마운트 안 하고(`key` 제거) `resetKey` 로 값만 비워 포커스 유지. `ReadingCard`
+    재구성 — 피드백 중에도 KanaInput 마운트 유지(`readOnly`)
+  - 일본어 IME 한자 변환 억제 — 입력창 `lang="ja"` → `"en"`, `inputMode="text"`.
+    표시 가나는 `.kana-input { font-family: var(--font-ja) }`
+  - **검증: e2e 세션 루프 입력 체크 `isVisible → (isVisible && isEditable)`,
+    5스펙 통과(카드 전환 p95 15.7ms). `npm test` 267. iPhone 에뮬레이션 캡처**
 - [ ] **9-E · 실기기 체감 확인 (사용자)** — 진단을 처음부터 끝까지. "벽" 느낌이
-  줄었는지, 중간 관찰 한 줄이 소음인지 신호인지, 해요체가 과하지 않은지. AI 가 대신 못 함
+  줄었는지, 중간 관찰 한 줄이 소음인지 신호인지, 해요체가 과하지 않은지.
+  iOS 스탠드얼론에서 키보드·포커스·IME 3건이 실제로 해결됐는지도. AI 가 대신 못 함
 
-9-A~9-D 완료(2026-09-06). 남은 건 9-E(실기기 체감, 사용자).
+9-A~9-D + iOS 대응 완료(2026-09-06). 남은 건 9-E(실기기 체감, 사용자).
 
 ---
 
