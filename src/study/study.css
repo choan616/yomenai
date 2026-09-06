@@ -107,6 +107,8 @@
   margin: 0;
   line-height: 1.2;
   word-break: keep-all;
+  /* 큰 크기일수록 전각 자간이 더 벌어 보인다 — :lang(ja) 기본값보다 한 단계 더 좁힌다 */
+  letter-spacing: -0.04em;
 }
 .reading-shown {
   text-align: center;

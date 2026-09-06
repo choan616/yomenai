@@ -33,6 +33,9 @@
 :lang(ko) {
   font-family: var(--font-ko);
 }
+/* 일본어는 자간을 조금 좁힌다 — 전각 한자가 기본 자간으로는 성기게 보인다.
+   한국어(Pretendard)는 현행 자간 그대로 둔다 (사용자 지시 2026-09-06). */
 :lang(ja) {
   font-family: var(--font-ja);
+  letter-spacing: -0.02em;
 }
