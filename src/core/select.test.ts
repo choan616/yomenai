@@ -151,13 +151,13 @@ describe('selectSession — 구성 규칙', () => {
     expect(picked.map((p) => p.idiomId)).toEqual(['easy'])
   })
 
-  it('확장 숙어는 읽기·뜻 두 장을 낸다', () => {
+  it('확장 숙어는 읽기·뜻 두 장을 내되, 읽기가 먼저다 (뜻 카드가 읽기를 보여주므로)', () => {
     const picked = selectSession([candidate('x', 1, 'expansion')], emptyState(), {
       now: T0,
       limit: 5,
       ratio: { correction: 0, expansion: 1 },
     })
-    expect(picked.map((p) => p.cardType).sort()).toEqual(['meaning', 'reading'])
+    expect(picked.map((p) => p.cardType)).toEqual(['reading', 'meaning'])
   })
 
   it('모드 비율 기본값 7:3 을 지킨다', () => {

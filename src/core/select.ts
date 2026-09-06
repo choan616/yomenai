@@ -132,13 +132,27 @@ export function selectSession(
   return picked
 }
 
+/** 같은 숙어면 읽기 카드가 뜻 카드보다 먼저다 — 뜻 카드는 읽기를 보여주므로,
+    읽기를 먼저 안 물으면 답이 새 버린다 (2026-09-06) */
+const CARD_ORDER: Record<CardType, number> = { reading: 0, meaning: 1 }
+
 function byOverdue(a: Slot, b: Slot): number {
-  return b.overdue - a.overdue || cmp(a.idiomId, b.idiomId) || cmp(a.cardType, b.cardType)
+  return (
+    b.overdue - a.overdue ||
+    cmp(a.idiomId, b.idiomId) ||
+    CARD_ORDER[a.cardType] - CARD_ORDER[b.cardType]
+  )
 }
 
-/** 신규 도입 순서 — 쉬운 밴드부터, 같은 밴드면 미숙한 음독을 품은 숙어부터 */
+/** 신규 도입 순서 — 쉬운 밴드부터, 같은 밴드면 미숙한 음독을 품은 숙어부터,
+    같은 숙어면 읽기 → 뜻 순 */
 function byIntroOrder(a: Slot, b: Slot): number {
-  return a.band - b.band || b.weak - a.weak || cmp(a.idiomId, b.idiomId) || cmp(a.cardType, b.cardType)
+  return (
+    a.band - b.band ||
+    b.weak - a.weak ||
+    cmp(a.idiomId, b.idiomId) ||
+    CARD_ORDER[a.cardType] - CARD_ORDER[b.cardType]
+  )
 }
 
 function cmp(a: string, b: string): number {
