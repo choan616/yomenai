@@ -360,23 +360,29 @@
   - `diagnosticSummary`/`firstShaky` 그대로 (seen 수만 작아짐)
   - **검증: `diagnostic.test.ts` +6(bandVerdict), `npm test` 260 · e2e 5스펙 통과
     (full-flow 13.3s → 3.8s) · 실측 — 전패 3문항 / 전부 안정 24문항 / 전형 ~13문항**
-- [ ] **9-C · 루프 안 관찰** — "오늘의 발견"을 세션 끝이 아니라 중간에도
-  - 세션 요약 Finding 로직(`sessionSummary.ts` 5종)을 `observeCard(events, card)` 로
-    분리, 카드 단위로 판정 가능한 것만. 확인 단계에 한 줄, 9-A 해요체 톤
-  - **결정**: 노출 빈도 — 권장 카드 5~8장에 1회, 세션당 최대 4회, 근거 없으면 침묵
-  - **검증**: 단위 테스트 — 근거 없으면 null, WEAK_ONYOMI 반전 시 1회, 세션당 상한.
-    카드 전환 150ms 유지(e2e). 브라우저 육안
-- [ ] **9-D · 세션의 형태** — 균질한 스트림에 시작·중반·마무리
-  - 시작: 첫 카드 앞 1초 챕터 타이틀. 중반: 절반 지점 한 줄(넘기면 사라짐).
-    마무리: 마지막 3장 진행률 바에 옅은 "곧 끝" 표시. 요약은 그대로(문구만 9-A)
-  - `useStudySession` `progress.index` 로 전부 파생, 새 상태 없음. 모션은 셸 급(느리게)
-  - **검증**: e2e 완주. 챕터 타이틀이 카드 전환 측정에 안 얹힘(p95 150ms).
-    `prefers-reduced-motion` 대응
+- [x] **9-C · 루프 안 관찰 + 설정 조절** (2026-09-06, 커밋 `4b6a9a0`)
+  - `src/core/observe.ts` `observeReading(pairIds, before, sessionEvents, pairsOf)` —
+    정답 직후, 이력 나빴던(오답 ≥ 2, 오답 > 정답) 음독 중 최악 하나.
+    지금은 한 종류: `WEAK_ONYOMI_RECOVERED` "지난번엔 틀렸는데 이번엔 맞혔어요".
+    echo 와 같은 계산 경로(재생 없음, 150ms 예산 무관)
+  - 빈도 게이트 — `settings.observeLevel` 별 [최소 카드 간격, 세션당 상한]:
+    off ∞/0 · **normal 6/4(기본)** · often 3/8. `useStudySession` 이 세션 시작 시 읽어 고정
+  - **결정 반영**: 권장 기본값 + Settings 화면 "관찰 문구" 끔/보통/자주 (사용자 요청)
+  - **검증: `observe.test.ts` 6 + `settings.test.ts` +1, `npm test` 267 · e2e 5스펙 통과
+    (카드 전환 p95 15.0ms) · tsc/oxlint/build 클린 · 설정 화면 캡처**
+- [x] **9-D · 세션의 형태** (2026-09-06, 커밋 `a1737cd`)
+  - `src/study/SessionShape.tsx` — `ChapterTitle`(첫 카드 앞 1.2초 "이번 세션, N장이에요")
+    + `MidNote`(절반 지점 1.8초 "절반 왔어요 · N/M · 정답 K")
+  - `Study.tsx` — 마지막 3장(`total - index ≤ 3`)에 `.near-end`: count 에 "곧 끝 ·",
+    진행률 accent 를 무채로 낮춤(색은 오답에만)
+  - `progress.index` 로만 파생, `useStudySession` 에 새 상태 없음. 모션 셸 급(`fade-up`),
+    `prefers-reduced-motion` 은 index.css 전역 규칙이 접음
+  - **검증: `npm test` 267 · e2e 5스펙 통과(카드 전환 p95 15.4ms) · tsc/oxlint/build 클린 ·
+    챕터/중반/마무리 3화면 실측 캡처**
 - [ ] **9-E · 실기기 체감 확인 (사용자)** — 진단을 처음부터 끝까지. "벽" 느낌이
   줄었는지, 중간 관찰 한 줄이 소음인지 신호인지, 해요체가 과하지 않은지. AI 가 대신 못 함
 
-의존: 9-A 먼저(독립). 9-B 독립이나 9-A 뒤가 결과 화면 톤이 맞다. 9-C 는 9-A 톤 결정에
-의존. 9-D 독립. 9-E 는 전부 뒤. **9-A + 홈 정리만 먼저 가도 됨.**
+9-A~9-D 완료(2026-09-06). 남은 건 9-E(실기기 체감, 사용자).
 
 ---
 

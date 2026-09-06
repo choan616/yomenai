@@ -1999,3 +1999,65 @@ auto-focus 된 입력에 빈 Enter 를 6회 반복, 매번 `known` 으로 안 �
 **phase 분할** — checklist "Phase 9 2차" 절. 9-A(홈+해요체) / 9-B(적응형 진단) /
 9-C(루프 관찰) / 9-D(세션 형태) / 9-E(실기기 체감, 사용자). 서로 독립이라 9-A 부터
 순차, 결정 5건 답을 받은 뒤 착수.
+
+---
+
+## 2026-09-06 — Phase 9 2차 실행 (9-A ~ 9-D)
+
+사용자 결정 5건: (1) 진단 리포트도 해요체 (2) "뜻 알았나요?" 제거 (3) 노출 빈도는
+권장안 (4) **설정에서 조절 가능하게** (5) 홈 갈림길 바로. 게임화는 안 함(앞 절).
+
+### 9-A · 홈 갈림길 + 해요체 (커밋 7b4b489)
+
+홈 — 진단 전 "진입 진단 시작"이 큰 주 버튼, "세션 시작 · 진단 건너뛰기"가 보조.
+"세션 시작"을 **아예 숨기지 않은** 이유: e2e 여러 스펙이 그 문자열을 참조하고, 강제보다
+권장이 낫다. 부분 문자열이라 `getByRole({name:'세션 시작'})` 이 계속 매칭된다.
+
+해요체 — 임상 톤 → 편한 해요체. 진단 프롬프트·결과, 세션 요약 + Finding 5종, 리포트
+전체, 빈/오답 안내, 설정 힌트. **화면 제목("진단 완료" 등)·버튼 라벨·분류 라벨·`lang=ja`
+는 유지** — 제목은 검사표 정체성이고 버튼은 동사 단문이 맞다. e2e 참조 문자열 전부 보존.
+
+### 9-B · 적응형 진단 (커밋 aeb067f)
+
+`DIAGNOSTIC_PER_BAND` 30 → 12(상한만). `bandVerdict(seen, wrong)` — 오답 3 → 진단 종료 /
+8개+80% → 다음 밴드 / 12개 상한. 90문항 → 전패 3 / 전부 안정 24 / 전형 ~13.
+
+"뜻 알았나요?"(known 단계) 제거. `diagnosticSummary` 는 이 응답을 안 쓰고(review 만),
+탭만 두 배로 만들었다. 뜻 질문은 지연 검수(`needsClassReview`)가 실제 세션에서 물 때로
+미뤄진다 — Phase 3/4 지연 검수 설계가 이미 이 경우를 위한 것이라 정합적. 모드 배정
+2단계 신호가 그만큼 늦어지는 건 감수.
+
+진행률을 "0 / 90" → "밴드 N · M번째". 적응형이라 총 문항 수를 미리 못 준다.
+
+`firstShaky`(< 0.8)와 `bandVerdict`(nextBand 는 ≥ 0.8) 임계값을 맞췄다 — nextBand 로
+넘어간 밴드는 firstShaky 로 안 잡히게. 안 맞추면 "넘어갔는데 결과에선 그 밴드가 흔들림"
+이 나올 수 있다.
+
+### 9-C · 루프 안 관찰 + 설정 (커밋 4b6a9a0)
+
+`observe.ts` `observeReading` — 정답 직후, 음독 이력이 나빴던(오답 ≥ 2, 오답 > 정답) 것
+중 최악 하나. 지금은 한 종류(`WEAK_ONYOMI_RECOVERED`). `sessionSummary` 의 Finding 5종
+중 카드 단위로 판정 가능한 건 사실상 이것뿐 — CLEAN_RUN·MISTAKE_TREND 는 세션/다세션
+단위, KO_INTERFERENCE·ONYOMI_UNLOCKED 는 나중에 추가 여지. echo 와 같은 입력
+(before 집계 + sessionEvents)으로 재생 없이 센다.
+
+빈도 게이트는 `useStudySession` 이 세션 시작 시 `observeLevel` 을 한 번 읽어 ref 로 고정.
+`cardsSinceObserve` / `observeShown` ref 로 [간격, 상한] 판정. off/normal/often =
+∞·0 / 6·4 / 3·8. 설정 화면에 "관찰 문구" 3버튼.
+
+### 9-D · 세션의 형태 (커밋 a1737cd)
+
+`SessionShape.tsx` — `ChapterTitle`(첫 카드 앞 1.2초 오버레이) + `MidNote`(절반 지점
+1.8초). 마지막 3장은 `.near-end`(count "곧 끝 ·", 진행률 무채). 전부 `progress.index`
+파생, `useStudySession` 에 새 상태 안 만듦. `MidNote` 는 부모가 절반 카드일 때만 조건
+렌더하고 자기가 1.8초 뒤 사라짐 — `setState` 를 effect 안에서 동기 호출하면 oxlint
+`react(set-state-in-effect)` 라, 표시 판정은 부모가, 소멸만 자식이 `setTimeout` 으로.
+
+모션은 `fade-up`(셸 급). 카드 루프 150ms 예산과 무관한 구간. `prefers-reduced-motion`
+은 index.css 전역 규칙(`animation-duration: 0.01ms`)이 이미 접는다.
+
+### 검증 총계
+
+`npm test` 254 → 267 (bandVerdict 6 + observe 6 + settings 1). `npm run e2e` 5스펙
+계속 통과, 카드 전환 p95 ~15ms(예산 150). full-flow e2e 는 적응형 진단으로 13.3s → 3.8s.
+tsc/oxlint/build 클린. 9-E(실기기 체감)만 사용자 몫.
