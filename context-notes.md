@@ -2061,3 +2061,50 @@ auto-focus 된 입력에 빈 Enter 를 6회 반복, 매번 `known` 으로 안 �
 `npm test` 254 → 267 (bandVerdict 6 + observe 6 + settings 1). `npm run e2e` 5스펙
 계속 통과, 카드 전환 p95 ~15ms(예산 150). full-flow e2e 는 적응형 진단으로 13.3s → 3.8s.
 tsc/oxlint/build 클린. 9-E(실기기 체감)만 사용자 몫.
+
+---
+
+## 2026-09-06 — iOS 스탠드얼론 웹앱 이슈 3건
+
+홈 화면에 추가해 웹앱(display: standalone)으로 띄우니 실기기에서 셋이 나왔다.
+
+### 1. 키보드가 상단을 밀어 올린다 (여전히)
+
+Phase 9-D 에서 `interactive-widget=resizes-content` + `100dvh` 로 잡았다고 봤는데,
+**그 viewport 항목은 iOS 미지원**(Chromium 전용)이고 `100dvh` 는 키보드로 안 줄어든다.
+iOS 는 키보드를 오버레이하고 문서를 스크롤해 포커스된 입력을 보이려 한다 → 상단이 밀린다.
+
+`src/study/useViewportLock.ts` — `visualViewport.resize/scroll` 을 듣고 실제 보이는
+높이를 `--vvh` 로 내려준다. `.study`/`.diag` 가 `height: var(--vvh, 100dvh)`. 스크롤이
+0 이 아니면 `window.scrollTo(0,0)` 로 되돌리고 `body { overflow: hidden }`. Study/Diagnostic
+둘 다 훅 호출.
+
+### 2. 자동 포커스가 스탠드얼론에서 무시된다
+
+iOS standalone 은 사용자 제스처 밖의 `element.focus()` 로 키보드를 안 올린다(브라우저
+탭보다 엄격). 카드마다 `KanaInput` 을 `key` 로 리마운트하니 매번 새 포커스가 필요했고
+그게 다 무시됐다.
+
+고침 — `KanaInput` 을 리마운트하지 않는다. `key` 제거, `resetKey`(idiom id) prop 으로
+값만 `el.value = ''` 비운다. 포커스가 유지된다. `ReadingCard` 재구성 — 피드백 중에도
+KanaInput 마운트를 유지(`readOnly`, `disabled` 와 달리 iOS 는 readonly 에서 포커스·
+키보드를 유지한다). 하단은 [readonly 입력 행] + [액션 행] 2단. `viewport lock` 덕에
+둘 다 키보드 위에 남는다. `Feedback` 하위 컴포넌트를 없애고 `ReadingCard` 하나로 합침.
+`detail`(오답 상세) 리셋은 effect 대신 `next()` 핸들러에서 `setDetail(false)`.
+
+첫 카드는 여전히 한 번 탭해야 키보드가 뜬다(제스처 없이 마운트되니까). 그 뒤로는 유지.
+
+### 3. 일본어 키보드 한자 변환 억제
+
+입력창 `lang="ja"` 가 iOS 에서 일본어 IME(한자 변환 후보 바)를 부른다. wanakana 가
+로마자→가나를 하므로 실제 입력은 라틴 문자다. `lang="en"` + `inputMode="text"` +
+기존 autocorrect/autocomplete/autocapitalize off. `inputMode="latin"` 은 React 타입에
+없어 못 씀. 표시되는 가나는 `.kana-input { font-family: var(--font-ja) }` 로 JP 폰트.
+가나는 CJK 통합 대상이 아니라 자형 오학습 우려가 없어 `lang="ja"` 를 빼도 된다
+(CLAUDE.md 규칙은 한자 때문).
+
+### e2e 수정
+
+세션 루프의 입력 체크를 `input.isVisible()` → `(isVisible && isEditable)` 로.
+피드백 중 입력이 readonly 로 남아 `fill()` 이 걸리던 걸 회피. `isEditable()` 단독은
+없는 요소를 auto-wait(테스트 타임아웃까지) 해서 hang — `isVisible()` 로 먼저 단락.
