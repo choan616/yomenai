@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest'
 import type { Band } from '../lib/bands.ts'
 import type { IdiomEntry } from './session.ts'
 import type { LearningEvent } from './types.ts'
-import { DIAGNOSTIC_SEED, diagnosticSummary, pickDiagnostic } from './diagnostic.ts'
+import { bandVerdict, DIAGNOSTIC_SEED, diagnosticSummary, pickDiagnostic } from './diagnostic.ts'
 
 function entry(id: string, band: Band): IdiomEntry {
   return { idiomId: id, band, category: 1, classSource: 'default', pairIds: [`${id}:on:x`] }
@@ -45,6 +45,47 @@ describe('pickDiagnostic', () => {
   it('결과는 밴드 오름차순으로 이어 붙는다', () => {
     const bands = pickDiagnostic(pool, 5).map((p) => p.band)
     expect(bands).toEqual([...bands].sort((x, y) => x - y))
+  })
+})
+
+describe('bandVerdict — 적응형 조기 종료', () => {
+  it('오답 3개면 진단 전체 종료 (몇 개를 풀었든)', () => {
+    expect(bandVerdict(3, 3)).toBe('endDiagnostic')
+    expect(bandVerdict(5, 3)).toBe('endDiagnostic')
+    expect(bandVerdict(11, 4)).toBe('endDiagnostic')
+  })
+
+  it('8개 이상 풀고 정답률 80% 이상이면 다음 밴드', () => {
+    expect(bandVerdict(8, 1)).toBe('nextBand') // 7/8 = 87.5%
+    expect(bandVerdict(10, 2)).toBe('nextBand') // 8/10 = 80%
+  })
+
+  it('8개 풀었어도 정답률이 80% 미만이면 계속 (오답 3 미만인 한)', () => {
+    expect(bandVerdict(8, 2)).toBe('continue') // 6/8 = 75%
+    expect(bandVerdict(9, 2)).toBe('continue')
+  })
+
+  it('상한 12개에 닿으면 애매해도 다음 밴드', () => {
+    expect(bandVerdict(12, 2)).toBe('nextBand')
+  })
+
+  it('초반엔 계속', () => {
+    expect(bandVerdict(0, 0)).toBe('continue')
+    expect(bandVerdict(5, 2)).toBe('continue')
+    expect(bandVerdict(7, 1)).toBe('continue') // 8개 미만이라 아직 판정 안 함
+  })
+
+  it('전형적 시나리오 — 밴드1 전승(≤8), 밴드1 전패(≤3)', () => {
+    // 전승: 8개째에서 nextBand
+    let v: string = 'continue'
+    for (let seen = 1; seen <= 12 && v === 'continue'; seen++) v = bandVerdict(seen, 0)
+    expect(v).toBe('nextBand')
+    // 전패: 3개째에서 endDiagnostic
+    v = 'continue'
+    let seen = 0
+    while (v === 'continue') { seen++; v = bandVerdict(seen, seen) }
+    expect(v).toBe('endDiagnostic')
+    expect(seen).toBe(3)
   })
 })
 

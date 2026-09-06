@@ -1,7 +1,13 @@
 // 진입 진단 화면 — 밴드별 무작위 표본을 읽기로 출제해 숙달 수준을 추정한다 (PLAN §6)
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { diagnosticSummary, pickDiagnostic, type BandEstimate } from '../core/diagnostic.ts'
-import { isCorrectReading, recordMeaningKnown, recordReadingAnswer } from '../core/session.ts'
+import {
+  bandVerdict,
+  DIAGNOSTIC_PER_BAND,
+  diagnosticSummary,
+  pickDiagnostic,
+  type BandEstimate,
+} from '../core/diagnostic.ts'
+import { isCorrectReading, recordReadingAnswer } from '../core/session.ts'
 import { BAND_LABEL, type Band } from '../lib/bands.ts'
 import { getDeviceId } from '../db/device.ts'
 import { LOCAL_USER_ID, appendEvent, listEvents } from '../db/events.ts'
@@ -12,7 +18,9 @@ import type { MistakeContext } from '../core/mistakes.ts'
 import { KanaInput } from '../study/KanaInput.tsx'
 import { markDiagnosticDone } from './diagnostic-state.ts'
 
-type Phase = 'loading' | 'error' | 'ask' | 'known' | 'result'
+// Phase 9-B: '뜻 알았나요?'(known) 단계 제거. 진단은 순수 읽기 검사가 되고,
+// 뜻 질문은 실제 세션의 지연 검수(needsClassReview)로 미룬다.
+type Phase = 'loading' | 'error' | 'ask' | 'result'
 
 export function Diagnostic({ onDone, onExit }: { onDone: () => void; onExit: () => void }) {
   const [phase, setPhase] = useState<Phase>('loading')
@@ -25,6 +33,9 @@ export function Diagnostic({ onDone, onExit }: { onDone: () => void; onExit: () 
   const bandOf = useRef<(id: string) => Band | undefined>(() => undefined)
   const shownAt = useRef(0)
   const ctxBase = useRef({ userId: LOCAL_USER_ID, deviceId: getDeviceId() })
+  // 현재 밴드의 누적 — 적응형 조기 종료 판정에 쓴다 (Phase 9-B)
+  const bandSeen = useRef(0)
+  const bandWrong = useRef(0)
 
   useEffect(() => {
     let alive = true
@@ -51,6 +62,8 @@ export function Diagnostic({ onDone, onExit }: { onDone: () => void; onExit: () 
   }, [])
 
   const q = questions[idx]
+  const bandStart = q ? questions.findIndex((it) => it.band === q.band) : 0
+  const inBand = idx - bandStart + 1 // 현재 밴드에서 몇 번째 문항인지 (1-based)
 
   const ctx = () => ({
     ...ctxBase.current,
@@ -58,18 +71,43 @@ export function Diagnostic({ onDone, onExit }: { onDone: () => void; onExit: () 
     elapsedMs: Math.round(performance.now() - shownAt.current),
   })
 
-  const advance = async () => {
-    const nextIdx = idx + 1
-    if (nextIdx >= questions.length) {
-      markDiagnosticDone()
-      const events = await listEvents(db(), LOCAL_USER_ID)
-      setSummary(diagnosticSummary(events, bandOf.current))
-      setPhase('result')
-      return
+  const finish = async () => {
+    markDiagnosticDone()
+    const events = await listEvents(db(), LOCAL_USER_ID)
+    setSummary(diagnosticSummary(events, bandOf.current))
+    setPhase('result')
+  }
+
+  const goTo = (nextIdx: number) => {
+    if (questions[nextIdx].band !== questions[idx].band) {
+      bandSeen.current = 0
+      bandWrong.current = 0
     }
     setIdx(nextIdx)
     setPhase('ask')
     shownAt.current = performance.now()
+  }
+
+  /** 방금 답의 정오답을 받아 다음 문항을 정한다. 밴드 결론이 서면 그 밴드를 건너뛰거나 진단을 끝낸다 */
+  const advance = (correct: boolean) => {
+    bandSeen.current++
+    if (!correct) bandWrong.current++
+    const verdict = bandVerdict(bandSeen.current, bandWrong.current)
+
+    if (verdict === 'endDiagnostic') {
+      void finish()
+      return
+    }
+    const answeredBand = questions[idx].band
+    const nextIdx =
+      verdict === 'nextBand'
+        ? questions.findIndex((it) => it.band > answeredBand) // 다음 밴드 첫 문항
+        : idx + 1
+    if (nextIdx < 0 || nextIdx >= questions.length) {
+      void finish()
+      return
+    }
+    goTo(nextIdx)
   }
 
   const submitReading = (answer: string) => {
@@ -86,14 +124,7 @@ export function Diagnostic({ onDone, onExit }: { onDone: () => void; onExit: () 
         mistakes: mistakes.current,
       }),
     )
-    if (correct) void advance()
-    else setPhase('known')
-  }
-
-  const answerKnown = (known: boolean) => {
-    if (!q) return
-    void appendEvent(db(), recordMeaningKnown({ idiomId: q.idiomId, known, ctx: ctx() }))
-    void advance()
+    advance(correct)
   }
 
   if (phase === 'loading') return <Centered>진단 문항을 준비하고 있어요…</Centered>
@@ -118,9 +149,10 @@ export function Diagnostic({ onDone, onExit }: { onDone: () => void; onExit: () 
         <button type="button" className="link" onClick={onExit} aria-label="진단 나가기">
           ✕
         </button>
-        <progress value={idx} max={questions.length} />
+        {/* 적응형이라 총 문항 수를 미리 못 준다 (Phase 9-B). 밴드 안에서의 진행만 보여준다 */}
+        <progress value={inBand - 1} max={DIAGNOSTIC_PER_BAND} />
         <span className="count">
-          {idx} / {questions.length}
+          밴드 {q?.band ?? '-'} · {inBand}
         </span>
       </header>
 
@@ -137,32 +169,6 @@ export function Diagnostic({ onDone, onExit }: { onDone: () => void; onExit: () 
             </div>
             <div className="card-bottom">
               <KanaInput key={q.idiomId} onSubmit={submitReading} />
-            </div>
-          </div>
-        )}
-        {q && phase === 'known' && (
-          <div className="card">
-            <div className="card-head">
-              <span className="tag">확인</span>
-            </div>
-            <div className="card-body">
-              <p className="prompt-q">이 숙어의 뜻을 알고 계셨나요?</p>
-              <p className="headword" lang="ja">
-                {q.headword}
-              </p>
-              <p className="reading-shown" lang="ja">
-                {q.reading}
-              </p>
-            </div>
-            <div className="card-bottom">
-              <div className="answer-row choice">
-                <button type="button" className="btn" onClick={() => answerKnown(false)}>
-                  몰랐다
-                </button>
-                <button type="button" className="btn-primary" onClick={() => answerKnown(true)}>
-                  알고 있었다
-                </button>
-              </div>
             </div>
           </div>
         )}

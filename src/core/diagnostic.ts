@@ -5,9 +5,37 @@ import type { LearningEvent } from './types.ts'
 
 /** 무작위 표본의 시드를 명시한다 — 같은 입력이면 같은 문항이 나와야 진단이 재현 가능하다 */
 export const DIAGNOSTIC_SEED = 20260904
-export const DIAGNOSTIC_PER_BAND = 30
+/**
+ * 밴드당 뽑아 두는 문항 수의 상한. 실제로는 `bandVerdict` 가 결론이 서면 그 전에 멈춘다
+ * (Phase 9-B 적응형). 예전엔 30 이라 밴드당 30 을 다 풀어야 했다.
+ */
+export const DIAGNOSTIC_PER_BAND = 12
 /** 밴드 0 은 건너뛰기 기본이라 제외, 밴드 4 는 선택이라 제외 (selectSession 기본 범위와 같다) */
 export const DIAGNOSTIC_BANDS: Band[] = [1, 2, 3]
+
+/** 한 밴드를 풀다가 내리는 판정 */
+export type BandVerdict = 'continue' | 'nextBand' | 'endDiagnostic'
+
+/**
+ * 진단의 목적은 "읽기가 흔들리기 시작하는 첫 밴드"를 찾는 것뿐이다. 그래서 밴드마다
+ * 결론이 서면 즉시 멈춘다 (Phase 9-B). 임계값은 초안 — 실사용 로그 보고 조정한다.
+ *
+ * - 오답 3개 → 이 밴드가 흔들림. 진단 전체 종료 (더 어려운 밴드는 볼 필요 없다)
+ * - 8개 이상 풀고 정답률 ≥ 80% → 이 밴드는 안정. 다음 밴드로
+ * - 12개(상한) 도달 → 애매하면 있는 값으로, 다음 밴드로
+ */
+export function bandVerdict(seen: number, wrong: number): BandVerdict {
+  const WRONG_STOP = 3
+  const MIN_SEEN = 8
+  const OK_RATE = 0.8
+  const CAP = DIAGNOSTIC_PER_BAND
+
+  if (wrong >= WRONG_STOP) return 'endDiagnostic'
+  const correct = seen - wrong
+  if (seen >= MIN_SEEN && correct / seen >= OK_RATE) return 'nextBand'
+  if (seen >= CAP) return 'nextBand'
+  return 'continue'
+}
 
 /** 재현 가능한 난수 (mulberry32). session.sim.test.ts 와 같은 계열 */
 function rng(seed: number): () => number {
