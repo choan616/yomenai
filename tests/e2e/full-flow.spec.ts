@@ -40,7 +40,7 @@ test('진입 진단 → 세션 → 리포트 전체 흐름을 완주한다', asy
   for (let i = 0; i < 500; i++) {
     if (await page.getByText('진단 완료').isVisible().catch(() => false)) break
     const input = page.locator('.kana-input')
-    if (await input.isVisible().catch(() => false)) {
+    if ((await input.isVisible().catch(() => false)) && (await input.isEditable().catch(() => false))) {
       await input.fill('zzz')
       await input.press('Enter')
       await page.waitForTimeout(20)
@@ -75,7 +75,7 @@ test('진입 진단 → 세션 → 리포트 전체 흐름을 완주한다', asy
     if (await page.getByText('세션 완료').isVisible().catch(() => false)) break
     if (await clickIfVisible(page, '알고 있었다')) continue
     const input = page.locator('.kana-input')
-    if (await input.isVisible().catch(() => false)) {
+    if ((await input.isVisible().catch(() => false)) && (await input.isEditable().catch(() => false))) {
       await input.fill('tadashii')
       await input.press('Enter')
       await page.waitForTimeout(20)

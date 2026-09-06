@@ -16,6 +16,7 @@ import { loadBaseIdioms, loadKanji, type RuntimeIdiom } from '../dict/load.ts'
 import { mistakeContextFromKanji } from '../dict/mistakeContext.ts'
 import type { MistakeContext } from '../core/mistakes.ts'
 import { KanaInput } from '../study/KanaInput.tsx'
+import { useViewportLock } from '../study/useViewportLock.ts'
 import { markDiagnosticDone } from './diagnostic-state.ts'
 
 // Phase 9-B: '뜻 알았나요?'(known) 단계 제거. 진단은 순수 읽기 검사가 되고,
@@ -23,6 +24,7 @@ import { markDiagnosticDone } from './diagnostic-state.ts'
 type Phase = 'loading' | 'error' | 'ask' | 'result'
 
 export function Diagnostic({ onDone, onExit }: { onDone: () => void; onExit: () => void }) {
+  useViewportLock()
   const [phase, setPhase] = useState<Phase>('loading')
   const [error, setError] = useState<string | null>(null)
   const [questions, setQuestions] = useState<RuntimeIdiom[]>([])
@@ -168,7 +170,7 @@ export function Diagnostic({ onDone, onExit }: { onDone: () => void; onExit: () 
               </p>
             </div>
             <div className="card-bottom">
-              <KanaInput key={q.idiomId} onSubmit={submitReading} />
+              <KanaInput resetKey={q.idiomId} onSubmit={submitReading} />
             </div>
           </div>
         )}

@@ -29,7 +29,7 @@ test('카드 전환이 150ms 이하다', async ({ page }) => {
 
     // 읽기 입력 → 오답 제출 (피드백 표시, 아직 전환 아님)
     const input = page.locator('.kana-input')
-    if (await input.isVisible().catch(() => false)) {
+    if ((await input.isVisible().catch(() => false)) && (await input.isEditable().catch(() => false))) {
       await input.fill('aaa')
       await clickIfVisible(page, '확인')
       continue

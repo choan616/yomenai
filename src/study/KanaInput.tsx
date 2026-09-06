@@ -1,13 +1,18 @@
-// 로마자를 히라가나로 변환하는 읽기 입력 필드. wanakana 를 요소에 bind 한다 (PLAN §3)
+// 로마자를 히라가나로 변환하는 읽기 입력 필드. wanakana 를 요소에 bind 한다 (PLAN §3).
+// iOS 스탠드얼론 대응 — 카드마다 리마운트하지 않고(포커스 유지) resetKey 로 값만 비운다.
+// lang="ja" 를 빼고 inputMode="latin" 으로 일본어 IME 한자 변환을 억제한다.
 import { useEffect, useRef } from 'react'
 import { bind, unbind } from 'wanakana'
 
 interface Props {
   onSubmit: (value: string) => void
-  disabled?: boolean
+  /** 카드가 바뀔 때마다 값을 비우는 트리거. 컴포넌트는 그대로 두고(포커스 유지) 값만 리셋 */
+  resetKey: string | number
+  /** 피드백 중엔 편집 못 하게. disabled 와 달리 readonly 는 iOS 에서 포커스·키보드를 유지한다 */
+  readOnly?: boolean
 }
 
-export function KanaInput({ onSubmit, disabled }: Props) {
+export function KanaInput({ onSubmit, resetKey, readOnly }: Props) {
   const ref = useRef<HTMLInputElement>(null)
 
   /**
@@ -16,11 +21,13 @@ export function KanaInput({ onSubmit, disabled }: Props) {
    * 빈 답이 오답으로 채점되던 버그를 막는다 (진단·세션 공통, context-notes 2026-09-06).
    */
   const submit = () => {
+    if (readOnly) return
     const value = ref.current?.value ?? ''
     if (value.trim() === '') return
     onSubmit(value)
   }
 
+  // 마운트 1회 — wanakana bind + 첫 포커스 (iOS 스탠드얼론에선 제스처 밖이라 무시될 수 있다)
   useEffect(() => {
     const el = ref.current
     if (!el) return
@@ -35,19 +42,35 @@ export function KanaInput({ onSubmit, disabled }: Props) {
     }
   }, [])
 
+  // 카드가 바뀌면 값만 비운다 (리마운트 아님 → 포커스 유지). readOnly 변화로는 안 비운다 —
+  // 피드백이 뜰 때 방금 친 답을 지우면 안 되니까
+  useEffect(() => {
+    const el = ref.current
+    if (el) el.value = ''
+  }, [resetKey])
+
+  // 카드가 바뀌거나 피드백이 닫히면 포커스를 다시 잡는다 (데스크톱용, iOS 는 이미 유지)
+  useEffect(() => {
+    const el = ref.current
+    if (el && !readOnly) el.focus()
+  }, [resetKey, readOnly])
+
   return (
     <div className="answer-row input">
       <input
         ref={ref}
         className="kana-input"
-        lang="ja"
         type="text"
+        /* lang="en" + off 속성들 — iOS 가 이 칸에서 일본어 IME(한자 변환 후보 바)를 안 띄우게.
+           wanakana 가 로마자를 가나로 바꾸므로 실제 입력은 라틴 문자다 */
+        lang="en"
+        inputMode="text"
         autoCapitalize="none"
         autoComplete="off"
         autoCorrect="off"
         spellCheck={false}
         enterKeyHint="done"
-        disabled={disabled}
+        readOnly={readOnly}
         aria-label="읽기 입력"
         onKeyDown={(e) => {
           if (e.key === 'Enter' && !e.nativeEvent.isComposing) {
@@ -56,7 +79,7 @@ export function KanaInput({ onSubmit, disabled }: Props) {
           }
         }}
       />
-      <button type="button" className="btn-primary" disabled={disabled} onClick={submit}>
+      <button type="button" className="btn-primary" disabled={readOnly} onClick={submit}>
         확인
       </button>
     </div>

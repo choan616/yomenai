@@ -290,7 +290,7 @@
 /* ── 진입 진단 ── study 와 같은 3분할 고정 골격을 쓴다 (study.css .study 참조).
    페이지가 스크롤하지 않아야 키보드가 떠도 진행률·숙어 위치가 안 흔들린다. */
 .diag {
-  height: 100dvh;
+  height: var(--vvh, 100dvh);
   overflow: hidden;
   display: flex;
   flex-direction: column;

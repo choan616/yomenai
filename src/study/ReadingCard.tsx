@@ -1,4 +1,5 @@
-// 읽기 교정 카드 — 숙어 제시 → 히라가나 입력. 객관식이 아니다 (PLAN §6)
+// 읽기 교정 카드 — 숙어 제시 → 히라가나 입력. 객관식이 아니다 (PLAN §6).
+// 입력창은 피드백 중에도 마운트를 유지한다 — iOS 스탠드얼론에서 포커스·키보드를 놓지 않으려고.
 import { useEffect, useState } from 'react'
 import type { Confidence } from '../core/scheduler.ts'
 import { loadExamples } from '../dict/load.ts'
@@ -16,118 +17,113 @@ interface Props {
   onNext: (confidence?: Confidence) => void
 }
 
-export function ReadingCard({ idiom, feedback, onSubmit, onNext }: Props) {
-  if (feedback) {
-    return <Feedback idiom={idiom} feedback={feedback} onNext={onNext} />
-  }
-  return (
-    <div className="card">
-      <div className="card-head">
-        <span className="tag">읽기 · 밴드 {idiom.band}</span>
-      </div>
-      <div className="card-body">
-        <p className="headword" lang="ja">
-          {idiom.headword}
-        </p>
-      </div>
-      <div className="card-bottom">
-        <KanaInput key={idiom.idiomId} onSubmit={onSubmit} />
-      </div>
-    </div>
-  )
-}
-
-function Feedback({
-  idiom,
-  feedback,
-  onNext,
-}: {
-  idiom: RuntimeIdiom
-  feedback: ReadingFeedback
-  onNext: (confidence?: Confidence) => void
-}) {
-  const { correct, expected, mistakeType, answer, echo, ruby, observe } = feedback
+export function ReadingCard({ idiom, feedback: fb, onSubmit, onNext }: Props) {
   const [detail, setDetail] = useState(false)
 
-  if (detail) {
+  // 다음 카드로 넘어갈 때 오답 상세 뷰를 닫는다 (effect 로 setState 하지 않으려고 핸들러에서)
+  const next = (c?: Confidence) => {
+    setDetail(false)
+    onNext(c)
+  }
+
+  if (detail && fb) {
     return <MistakeDetail idiom={idiom} onClose={() => setDetail(false)} />
   }
 
   return (
-    <div className={`card feedback ${correct ? 'is-ok' : 'is-ng'}`}>
+    <div className={`card${fb ? ` feedback ${fb.correct ? 'is-ok' : 'is-ng'}` : ''}`}>
       <div className="card-head">
-        <span className="verdict">
-          <span aria-hidden="true">{correct ? '✓' : '✗'}</span>
-          {correct ? '정답' : '오답'}
-        </span>
-        <span className="tag muted band-tag">밴드 {idiom.band}</span>
-      </div>
-      <div className="card-body">
-        <p className="headword has-ruby" lang="ja">
-          {ruby.map((r, i) => (
-            <ruby key={i}>
-              {r.text}
-              <rt>{r.rt}</rt>
-            </ruby>
-          ))}
-        </p>
-        {!correct && (
-          <p className="wrong-answer">
-            입력: <span lang="ja">{answer || '(빈칸)'}</span>
-            {mistakeType && <span className="tag">{MISTAKE_LABEL[mistakeType]}</span>}
-          </p>
-        )}
-        {tts.available && (
-          <button type="button" className="tts-btn" onClick={() => tts.speak(expected)}>
-            <span aria-hidden="true">🔊</span> 소리 듣기
-          </button>
-        )}
-        <ExampleSentence key={idiom.idiomId} idiomId={idiom.idiomId} />
-        {correct && echo.length > 0 && (
-          <p className="echo">
-            {echo.map((e) => (
-              <span className="echo-item" key={e.kanji + e.base}>
-                <span lang="ja">
-                  {e.kanji} {e.base}
-                </span>
-                <span className="echo-nth">{e.nth}번째</span>
-              </span>
-            ))}
-          </p>
-        )}
-        {observe && (
-          <p className="observe">
-            <span lang="ja">
-              {observe.kanji} {observe.base}
+        {fb ? (
+          <>
+            <span className="verdict">
+              <span aria-hidden="true">{fb.correct ? '✓' : '✗'}</span>
+              {fb.correct ? '정답' : '오답'}
             </span>
-            , 지난번엔 틀렸는데 이번엔 맞혔어요
+            <span className="tag muted band-tag">밴드 {idiom.band}</span>
+          </>
+        ) : (
+          <span className="tag">읽기 · 밴드 {idiom.band}</span>
+        )}
+      </div>
+
+      <div className="card-body">
+        {fb ? (
+          <>
+            <p className="headword has-ruby" lang="ja">
+              {fb.ruby.map((r, i) => (
+                <ruby key={i}>
+                  {r.text}
+                  <rt>{r.rt}</rt>
+                </ruby>
+              ))}
+            </p>
+            {/* 입력값은 아래 readonly 입력창에 그대로 남아 있어 여기선 오답 유형만 (Phase 9-C 이후) */}
+            {!fb.correct && fb.mistakeType && (
+              <p className="wrong-answer">
+                <span className="tag">{MISTAKE_LABEL[fb.mistakeType]}</span>
+              </p>
+            )}
+            {tts.available && (
+              <button type="button" className="tts-btn" onClick={() => tts.speak(fb.expected)}>
+                <span aria-hidden="true">🔊</span> 소리 듣기
+              </button>
+            )}
+            <ExampleSentence key={idiom.idiomId} idiomId={idiom.idiomId} />
+            {fb.correct && fb.echo.length > 0 && (
+              <p className="echo">
+                {fb.echo.map((e) => (
+                  <span className="echo-item" key={e.kanji + e.base}>
+                    <span lang="ja">
+                      {e.kanji} {e.base}
+                    </span>
+                    <span className="echo-nth">{e.nth}번째</span>
+                  </span>
+                ))}
+              </p>
+            )}
+            {fb.observe && (
+              <p className="observe">
+                <span lang="ja">
+                  {fb.observe.kanji} {fb.observe.base}
+                </span>
+                , 지난번엔 틀렸는데 이번엔 맞혔어요
+              </p>
+            )}
+          </>
+        ) : (
+          <p className="headword" lang="ja">
+            {idiom.headword}
           </p>
         )}
       </div>
+
       <div className="card-bottom">
-        {correct ? (
-          <div className="answer-row">
-            <button type="button" className="btn" onClick={() => onNext('hard')}>
-              헷갈렸다
-            </button>
-            <button type="button" className="btn-primary" onClick={() => onNext()}>
-              다음
-            </button>
-            <button type="button" className="btn" onClick={() => onNext('easy')}>
-              쉬웠다
-            </button>
-          </div>
-        ) : (
-          <div className="answer-row">
-            <button type="button" className="btn" onClick={() => setDetail(true)}>
-              자세히
-            </button>
-            <button type="button" className="btn-primary" onClick={() => onNext()}>
-              다음
-            </button>
-            <span className="slot" aria-hidden="true" />
-          </div>
-        )}
+        {/* 카드가 바뀌어도 리마운트하지 않는다 — 포커스·키보드 유지. 피드백 중엔 readonly */}
+        <KanaInput onSubmit={onSubmit} resetKey={idiom.idiomId} readOnly={!!fb} />
+        {fb &&
+          (fb.correct ? (
+            <div className="answer-row">
+              <button type="button" className="btn" onClick={() => next('hard')}>
+                헷갈렸다
+              </button>
+              <button type="button" className="btn-primary" onClick={() => next()}>
+                다음
+              </button>
+              <button type="button" className="btn" onClick={() => next('easy')}>
+                쉬웠다
+              </button>
+            </div>
+          ) : (
+            <div className="answer-row">
+              <button type="button" className="btn" onClick={() => setDetail(true)}>
+                자세히
+              </button>
+              <button type="button" className="btn-primary" onClick={() => next()}>
+                다음
+              </button>
+              <span className="slot" aria-hidden="true" />
+            </div>
+          ))}
       </div>
     </div>
   )

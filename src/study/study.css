@@ -28,12 +28,12 @@
 }
 
 /* ── 세션 ── 3분할 고정 골격.
-   상단(진행률)과 하단(입력·액션)은 고정, 가운데만 가변이다. 페이지 자체는 스크롤하지
-   않는다 — 브라우저가 포커스된 입력을 보이게 하려고 화면을 밀어 올릴 여지를 없앤다.
-   키보드가 뜨면 index.html 의 interactive-widget=resizes-content 가 100dvh 를 줄여
-   하단 블록이 키보드 바로 위에 앉는다. */
+   상단(진행률)과 하단(입력·액션)은 고정, 가운데만 가변이다. 페이지 자체는 스크롤하지 않는다.
+   높이는 --vvh(visualViewport 실측, useViewportLock) 를 쓰고, 없으면 100dvh 로 폴백한다.
+   Chromium 은 index.html 의 interactive-widget=resizes-content 로 이미 줄고, iOS 는
+   --vvh 가 대신 줄여 하단 블록이 키보드 바로 위에 앉는다. */
 .study {
-  height: 100dvh;
+  height: var(--vvh, 100dvh);
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -207,6 +207,10 @@
   padding-top: 16px;
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
+/* 피드백 중 — readonly 입력 행 위에 액션 행이 하나 더 온다 */
+.card-bottom > * + * {
+  margin-top: 10px;
+}
 
 /* 진행 행 — [보조][주][보조] 3슬롯 고정. 없는 보조는 빈칸으로 자리를 지켜,
    주 동작("다음")의 위치와 폭이 카드가 넘어가도 움직이지 않는다. 엄지가 한 자리에 머문다 */
@@ -238,10 +242,17 @@
   color: var(--text);
   text-align: center;
   font-size: 22px;
+  /* lang="ja" 를 뺐다(일본어 IME 한자 변환 억제) — 표시되는 가나는 여기서 JP 폰트로.
+     가나는 CJK 통합 대상이 아니라 자형 오학습 우려가 없다 */
+  font-family: var(--font-ja);
 }
 .kana-input:focus-visible {
   outline: 2px solid var(--text-dim);
   outline-offset: 1px;
+}
+/* 피드백 동안 — 입력을 붙잡아 두되(iOS 포커스 유지) 편집 못 하게. 조용히 물러난다 */
+.kana-input[readonly] {
+  opacity: 0.55;
 }
 
 .btn,

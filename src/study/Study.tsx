@@ -6,8 +6,10 @@ import { ReadingCard } from './ReadingCard.tsx'
 import { ChapterTitle, MidNote } from './SessionShape.tsx'
 import { SessionSummary } from './SessionSummary.tsx'
 import { useStudySession, type SessionKind } from './useStudySession.ts'
+import { useViewportLock } from './useViewportLock.ts'
 
 export function Study({ kind = 'normal', onExit }: { kind?: SessionKind; onExit: () => void }) {
+  useViewportLock()
   const [s, a] = useStudySession(kind)
 
   // 카드 전환 실측. transitionSeq 는 advance 때만 오르고, useStudySession 이 그 직전에

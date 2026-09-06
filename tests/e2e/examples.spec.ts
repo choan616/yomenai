@@ -20,7 +20,7 @@ test('예문은 문제 풀이 화면엔 없고 확인 단계에서만 나온다'
     }
 
     const input = page.locator('.kana-input')
-    if (await input.isVisible().catch(() => false)) {
+    if ((await input.isVisible().catch(() => false)) && (await input.isEditable().catch(() => false))) {
       // 문제 풀이 화면 — 예문이 있으면 답을 미리 알려주는 셈이라 있으면 안 된다
       await expect(page.locator('.example-sentence')).toHaveCount(0)
 
