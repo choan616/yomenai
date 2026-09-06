@@ -40,6 +40,48 @@
   max-width: 560px;
   width: 100%;
   margin: 0 auto;
+  position: relative; /* 챕터 타이틀 오버레이 기준 (Phase 9-D) */
+}
+
+/* ── 세션의 형태 (Phase 9-D) — 시작 챕터 타이틀 · 중반 한 줄 · 마무리 표시.
+   셸 구간이라 느린 모션 허용 (PLAN §7). prefers-reduced-motion 은 index.css 전역 규칙이 접는다 ── */
+.chapter-title {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background: var(--bg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  text-align: center;
+  animation: fade-up 320ms ease-out both;
+}
+.chapter-title p {
+  margin: 0;
+  font-size: 18px;
+}
+.chapter-title b {
+  font-variant-numeric: tabular-nums;
+}
+.mid-note {
+  flex: 0 0 auto;
+  margin: 0;
+  padding: 8px 16px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--text-dim);
+  border-bottom: 1px solid var(--border);
+  font-variant-numeric: tabular-nums;
+  animation: fade-up 320ms ease-out both;
+}
+/* 마지막 3장 — 진행률을 朱 대신 무채로 낮춰 "마무리" 느낌만 준다 (색은 오답에만, PLAN §7) */
+.study-bar.near-end progress {
+  accent-color: var(--text-faint);
+}
+.study-bar.near-end .count {
+  color: var(--text-dim);
 }
 .study-bar {
   flex: 0 0 auto;

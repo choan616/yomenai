@@ -3,6 +3,7 @@ import { useLayoutEffect } from 'react'
 import { ClassReviewPrompt } from './ClassReviewPrompt.tsx'
 import { MeaningCard } from './MeaningCard.tsx'
 import { ReadingCard } from './ReadingCard.tsx'
+import { ChapterTitle, MidNote } from './SessionShape.tsx'
 import { SessionSummary } from './SessionSummary.tsx'
 import { useStudySession, type SessionKind } from './useStudySession.ts'
 
@@ -49,17 +50,26 @@ export function Study({ kind = 'normal', onExit }: { kind?: SessionKind; onExit:
     return <SessionSummary events={s.events} pool={s.pool} onExit={onExit} />
   }
 
+  // 세션의 형태 (Phase 9-D) — progress 로만 파생
+  const { index, total } = s.progress
+  const nearEnd = total - index <= 3 && index < total
+  const atMid = total >= 6 && index === Math.floor(total / 2)
+
   return (
     <div className="study">
-      <header className="study-bar">
+      <ChapterTitle total={s.progress.total} />
+      <header className={`study-bar${nearEnd ? ' near-end' : ''}`}>
         <button type="button" className="link" onClick={onExit} aria-label="세션 나가기">
           ✕
         </button>
-        <progress value={s.progress.index} max={s.progress.total} />
+        <progress value={index} max={total} />
         <span className="count">
-          {s.progress.index} / {s.progress.total}
+          {nearEnd ? '곧 끝 · ' : ''}
+          {index} / {total}
         </span>
       </header>
+
+      {atMid && <MidNote index={index} total={total} correct={s.summary.correct} />}
 
       <main className="study-main">
         {s.status === 'classReview' && s.idiom && (
