@@ -1944,3 +1944,23 @@ Playwright 실측.
 
 교훈 — e2e 를 커밋마다 안 돌리니 이런 게 조용히 썩는다. 카드 UI 를 건드리는 작업
 전후로는 `npm run e2e` 를 돌린다.
+
+### 버그 — 빈 답 Enter 가 오답으로 채점됨 (진단 "해설 먼저" 증상)
+
+"진입진단에서 알고있었다 클릭 시 해설을 먼저 보여준다, 15회 근처"라는 제보.
+Playwright 로 재현. 느린 클릭으로는 안 나오고, "입력→Enter→입력→Enter" 빠른 리듬을
+흉내 내니 25/25 재현됐다.
+
+**원인.** 다음 문항으로 넘어가면 `KanaInput` 이 `el.focus()` (재구성 결정대로 auto-focus
+유지). 사용자가 새 문항을 읽기 전에 리듬으로 Enter 를 누르면 빈 값 `''` 이 제출되고,
+`isCorrectReading(reading, '')` → false → 진단은 `setPhase('known')` 으로 해설(읽기
+공개) 화면을 띄운다. 덤으로 오답 `review` 이벤트가 쌓여 `diagnosticSummary` 밴드
+추정과 FSRS 재생이 오염된다. 세션에서도 같은 경로(빈 답 → 오답 피드백).
+
+**고침.** `KanaInput.submit()` 에서 `value.trim() === ''` 이면 `onSubmit` 을 안 부른다.
+Enter·확인 버튼 공통. 입력창은 여전히 uncontrolled(ref, wanakana bind 유지) — 값 추적
+상태를 안 늘렸다. 빈 채로 확인을 눌러도 아무 일 없음(원래 그게 맞다).
+
+**회귀 테스트.** `tests/e2e/diagnostic-empty-submit.spec.ts` — 알고있었다 직후
+auto-focus 된 입력에 빈 Enter 를 6회 반복, 매번 `known` 으로 안 넘어가고 입력창이
+그대로인지 확인.
