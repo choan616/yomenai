@@ -40,7 +40,7 @@ test('진입 진단 → 세션 → 리포트 전체 흐름을 완주한다', asy
   for (let i = 0; i < 500; i++) {
     if (await page.getByText('진단 완료').isVisible().catch(() => false)) break
     const input = page.locator('.kana-input')
-    if ((await input.isVisible().catch(() => false)) && (await input.isEditable().catch(() => false))) {
+    if (await input.isVisible().catch(() => false)) {
       await input.fill('zzz')
       await input.press('Enter')
       await page.waitForTimeout(20)
@@ -73,9 +73,15 @@ test('진입 진단 → 세션 → 리포트 전체 흐름을 완주한다', asy
 
   for (let i = 0; i < 120; i++) {
     if (await page.getByText('세션 완료').isVisible().catch(() => false)) break
+    // 피드백 중이면 다음으로. 입력창이 계속 보이므로(locked) 이 검사가 먼저다
+    if (await page.locator('.card.feedback').isVisible().catch(() => false)) {
+      await clickIfVisible(page, '다음')
+      await page.waitForTimeout(20)
+      continue
+    }
     if (await clickIfVisible(page, '알고 있었다')) continue
     const input = page.locator('.kana-input')
-    if ((await input.isVisible().catch(() => false)) && (await input.isEditable().catch(() => false))) {
+    if (await input.isVisible().catch(() => false)) {
       await input.fill('tadashii')
       await input.press('Enter')
       await page.waitForTimeout(20)
@@ -83,7 +89,6 @@ test('진입 진단 → 세션 → 리포트 전체 흐름을 완주한다', asy
     }
     if (await clickIfVisible(page, '뜻 보기')) continue
     if (await clickIfVisible(page, '알았어요')) continue
-    if (await clickIfVisible(page, '다음')) continue
     await page.waitForTimeout(30)
   }
   await expect(page.getByText('세션 완료')).toBeVisible({ timeout: 15_000 })

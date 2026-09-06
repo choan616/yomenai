@@ -250,9 +250,10 @@
   outline: 2px solid var(--text-dim);
   outline-offset: 1px;
 }
-/* 피드백 동안 — 입력을 붙잡아 두되(iOS 포커스 유지) 편집 못 하게. 조용히 물러난다 */
-.kana-input[readonly] {
-  opacity: 0.55;
+/* 피드백 동안 — 입력을 붙잡아 두되(iOS 포커스 유지) 시각적으로만 물러난다.
+   HTML readonly/disabled 는 iOS 에서 blur 를 일으키므로 안 쓴다 — 클래스로만 흐린다 */
+.kana-input.locked {
+  opacity: 0.5;
 }
 
 .btn,

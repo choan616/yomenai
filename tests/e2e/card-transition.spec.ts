@@ -24,12 +24,18 @@ test('카드 전환이 150ms 이하다', async ({ page }) => {
   for (let i = 0; i < 60; i++) {
     if (await page.getByText('세션 완료').isVisible().catch(() => false)) break
 
+    // 피드백 중이면 다음으로 (전환). 입력창이 계속 보이므로(locked) 이 검사가 먼저다
+    if (await page.locator('.card.feedback').isVisible().catch(() => false)) {
+      await clickIfVisible(page, '다음')
+      continue
+    }
+
     // 지연 검수 → 답 단계로 (전환)
     if (await clickIfVisible(page, '알고 있었다')) continue
 
     // 읽기 입력 → 오답 제출 (피드백 표시, 아직 전환 아님)
     const input = page.locator('.kana-input')
-    if ((await input.isVisible().catch(() => false)) && (await input.isEditable().catch(() => false))) {
+    if (await input.isVisible().catch(() => false)) {
       await input.fill('aaa')
       await clickIfVisible(page, '확인')
       continue
@@ -38,9 +44,6 @@ test('카드 전환이 150ms 이하다', async ({ page }) => {
     // 뜻 카드 — 뜻 보기 → 알았어요 (자동 전환)
     if (await clickIfVisible(page, '뜻 보기')) continue
     if (await clickIfVisible(page, '알았어요')) continue
-
-    // 피드백 → 다음 (전환)
-    if (await clickIfVisible(page, '다음')) continue
 
     break
   }

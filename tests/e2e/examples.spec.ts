@@ -13,6 +13,13 @@ test('예문은 문제 풀이 화면엔 없고 확인 단계에서만 나온다'
   for (let i = 0; i < 20; i++) {
     if (await page.getByText('세션 완료').isVisible().catch(() => false)) break
 
+    // 피드백 중이면 다음으로 (입력창이 계속 보이므로 이 검사가 먼저)
+    if (await page.locator('.card.feedback').isVisible().catch(() => false)) {
+      const next = page.getByRole('button', { name: '다음' })
+      if (await next.isVisible().catch(() => false)) await next.click()
+      continue
+    }
+
     const classReview = page.getByRole('button', { name: '알고 있었다' })
     if (await classReview.isVisible().catch(() => false)) {
       await classReview.click()
@@ -20,7 +27,7 @@ test('예문은 문제 풀이 화면엔 없고 확인 단계에서만 나온다'
     }
 
     const input = page.locator('.kana-input')
-    if ((await input.isVisible().catch(() => false)) && (await input.isEditable().catch(() => false))) {
+    if (await input.isVisible().catch(() => false)) {
       // 문제 풀이 화면 — 예문이 있으면 답을 미리 알려주는 셈이라 있으면 안 된다
       await expect(page.locator('.example-sentence')).toHaveCount(0)
 

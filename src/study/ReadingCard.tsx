@@ -57,7 +57,7 @@ export function ReadingCard({ idiom, feedback: fb, onSubmit, onNext }: Props) {
                 </ruby>
               ))}
             </p>
-            {/* 입력값은 아래 readonly 입력창에 그대로 남아 있어 여기선 오답 유형만 (Phase 9-C 이후) */}
+            {/* 입력값은 아래 입력창(locked)에 그대로 남아 있어 여기선 오답 유형만 (Phase 9-C 이후) */}
             {!fb.correct && fb.mistakeType && (
               <p className="wrong-answer">
                 <span className="tag">{MISTAKE_LABEL[fb.mistakeType]}</span>
@@ -98,8 +98,8 @@ export function ReadingCard({ idiom, feedback: fb, onSubmit, onNext }: Props) {
       </div>
 
       <div className="card-bottom">
-        {/* 카드가 바뀌어도 리마운트하지 않는다 — 포커스·키보드 유지. 피드백 중엔 readonly */}
-        <KanaInput onSubmit={onSubmit} resetKey={idiom.idiomId} readOnly={!!fb} />
+        {/* 카드가 바뀌어도 리마운트하지 않는다 — 포커스·키보드 유지. 피드백 중엔 locked(제출만 무시) */}
+        <KanaInput onSubmit={onSubmit} resetKey={idiom.idiomId} locked={!!fb} />
         {fb &&
           (fb.correct ? (
             <div className="answer-row">
