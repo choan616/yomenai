@@ -46,9 +46,9 @@ export function MistakeDetail({ idiom, onClose }: Props) {
         </p>
 
         {parts === null ? (
-        <p className="dim md-note">불러오는 중…</p>
+        <p className="dim md-note">불러오고 있어요…</p>
       ) : parts.length === 0 ? (
-        <p className="dim md-note">이 숙어는 음독 분해 정보가 없습니다.</p>
+        <p className="dim md-note">이 숙어는 음독 분해 정보가 없어요.</p>
       ) : (
         <ul className="md-parts">
           {parts.map((p) => (

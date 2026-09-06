@@ -40,7 +40,7 @@ export function MeaningCard({ idiom, graded, onGrade, onNext }: Props) {
         {revealed || graded ? (
           <p className="meaning">{meaning || '뜻 미등록'}</p>
         ) : (
-          <p className="meaning placeholder">뜻을 떠올려 보세요</p>
+          <p className="meaning placeholder">뜻을 떠올려 볼까요?</p>
         )}
       </div>
 

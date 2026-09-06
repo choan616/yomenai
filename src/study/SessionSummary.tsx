@@ -96,7 +96,7 @@ function Trend({ trend, label }: { trend: number[]; label: string }) {
   return (
     <div className="trend">
       <p className="trend-label">
-        {label} <span className="dim">최근 {trend.length}세션</span>
+        {label} <span className="dim">최근 {trend.length}세션이에요</span>
       </p>
       <div className="trend-bars" role="img" aria-label={`${label} 최근 추이 ${trend.join(', ')}`}>
         {trend.map((n, i) => (
@@ -131,17 +131,17 @@ function findingText(f: Finding): ReactNode {
     case 'CLEAN_RUN':
       return (
         <>
-          <b>{f.total}장 전부 정답</b> — 이 구간은 더 어려운 밴드를 볼 때가 됐다
+          <b>{f.total}장 다 맞혔어요.</b> 다음엔 한 단계 위를 볼까요?
         </>
       )
     case 'MISTAKE_TREND':
       return f.direction === 'down' ? (
         <>
-          <b>{MISTAKE_LABEL[f.type]}</b> 오답이 {f.sessions}세션 연속 줄고 있다
+          <b>{MISTAKE_LABEL[f.type]}</b> 오답이 {f.sessions}세션 연속 줄고 있어요. 잘 가고 있어요
         </>
       ) : (
         <>
-          <b>{MISTAKE_LABEL[f.type]}</b> 오답이 {f.sessions}세션 연속 늘고 있다
+          <b>{MISTAKE_LABEL[f.type]}</b> 오답이 {f.sessions}세션 연속 늘고 있어요. 여기 한 번 볼까요?
         </>
       )
     case 'KO_INTERFERENCE':
@@ -158,8 +158,8 @@ function findingText(f: Finding): ReactNode {
           <span lang="ja">
             {f.kanji} {f.base}
           </span>
-          를 처음 맞혔다 — 이 {f.onKind === 'on' ? '음' : '훈'}독을 쓰는 숙어가{' '}
-          <b>{f.unlocks}개</b>
+          를 처음 맞혔어요. 이 {f.onKind === 'on' ? '음' : '훈'}독을 쓰는 숙어가{' '}
+          <b>{f.unlocks}개</b>예요
         </>
       )
     case 'WEAK_ONYOMI':
@@ -168,7 +168,7 @@ function findingText(f: Finding): ReactNode {
           <span lang="ja">
             {f.kanji} {f.base}
           </span>
-          에서 {f.seen}번 중 <b>{f.wrong}번</b> 틀렸다
+          , {f.seen}번 중 <b>{f.wrong}번</b> 틀렸어요. 다음에 만나면 눈여겨볼까요?
         </>
       )
   }

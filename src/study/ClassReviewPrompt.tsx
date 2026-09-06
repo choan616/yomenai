@@ -13,7 +13,7 @@ export function ClassReviewPrompt({ idiom, onAnswer }: Props) {
         <span className="tag">확인</span>
       </div>
       <div className="card-body">
-        <p className="prompt-q">이 숙어의 뜻을 이미 알고 계셨나요?</p>
+        <p className="prompt-q">이 숙어, 뜻은 알고 있었어요?</p>
         <p className="headword" lang="ja">
           {idiom.headword}
         </p>

@@ -96,11 +96,11 @@ export function Diagnostic({ onDone, onExit }: { onDone: () => void; onExit: () 
     void advance()
   }
 
-  if (phase === 'loading') return <Centered>진단 문항을 준비하는 중…</Centered>
+  if (phase === 'loading') return <Centered>진단 문항을 준비하고 있어요…</Centered>
   if (phase === 'error') {
     return (
       <Centered>
-        <p>진단을 시작하지 못했습니다.</p>
+        <p>진단을 시작하지 못했어요.</p>
         <p className="dim">{error}</p>
         <button type="button" className="btn" onClick={onExit}>
           홈으로
@@ -193,8 +193,8 @@ function ResultView({
       <div className="screen-body">
         <p className="report-lead">
           {firstShaky
-            ? `밴드 ${firstShaky.band} 부터 읽기가 흔들립니다. 이 구간을 시작점으로 잡습니다.`
-            : '표본 구간의 읽기는 안정적입니다. 밴드 1 부터 순서대로 도입합니다.'}
+            ? `밴드 ${firstShaky.band}부터 읽기가 조금 흔들리네요. 여기서 시작할게요.`
+            : '표본 구간은 안정적이에요. 밴드 1부터 순서대로 볼게요.'}
         </p>
 
         <div className="bars">

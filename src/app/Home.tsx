@@ -1,4 +1,4 @@
-// 홈 — 오늘 복습 수와 세션 시작. 그 아래 리포트·음독 맵·설정 진입점 (PLAN §7)
+// 홈 — 진단 전엔 진단이 주 동작, 진단 후엔 세션이 주 동작 (Phase 9-A). 그 아래 리포트·음독 맵·설정
 import { useEffect, useState } from 'react'
 import { buildSession, rematchCount } from '../core/session.ts'
 import { LOCAL_USER_ID, listEvents } from '../db/events.ts'
@@ -18,6 +18,7 @@ interface Preview {
 export function Home({ onNavigate }: { onNavigate: (screen: Screen) => void }) {
   const [preview, setPreview] = useState<Preview | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const needsDiagnostic = !isDiagnosticDone()
 
   useEffect(() => {
     let alive = true
@@ -44,46 +45,68 @@ export function Home({ onNavigate }: { onNavigate: (screen: Screen) => void }) {
     }
   }, [])
 
+  const sessionReady = !!preview && preview.ready > 0
+
   return (
     <main className="home">
       <h1 lang="ja">読めない</h1>
-      <p className="tagline">뜻은 아는데 못 읽는 숙어를 교정한다</p>
+      <p className="tagline">뜻은 아는데 못 읽는 숙어를 바로잡아요</p>
 
-      <p className="home-stat">
-        {error ? (
-          <span className="dim">사전을 불러오지 못했습니다</span>
-        ) : preview ? (
-          <>
-            이번 세션 <b>{preview.ready}</b>장
-            {preview.due > 0 && <span className="dim"> · 복습 기한 {preview.due}</span>}
-          </>
-        ) : (
-          <span className="dim">불러오는 중…</span>
-        )}
-      </p>
+      {needsDiagnostic ? (
+        <>
+          <p className="home-stat">
+            <span className="dim">먼저 진단으로 시작 지점을 잡을게요</span>
+          </p>
+          <button
+            type="button"
+            className="btn-primary big"
+            onClick={() => onNavigate('diagnostic')}
+          >
+            진입 진단 시작
+          </button>
+          <button
+            type="button"
+            className="btn rematch"
+            onClick={() => onNavigate('study')}
+            disabled={!sessionReady}
+          >
+            세션 시작 <span className="dim"> · 진단 건너뛰기</span>
+          </button>
+        </>
+      ) : (
+        <>
+          <p className="home-stat">
+            {error ? (
+              <span className="dim">사전을 불러오지 못했어요</span>
+            ) : preview ? (
+              <>
+                이번 세션 <b>{preview.ready}</b>장
+                {preview.due > 0 && <span className="dim"> · 복습 기한 {preview.due}</span>}
+              </>
+            ) : (
+              <span className="dim">불러오는 중…</span>
+            )}
+          </p>
 
-      <button
-        type="button"
-        className="btn-primary big"
-        onClick={() => onNavigate('study')}
-        disabled={!preview || preview.ready === 0}
-      >
-        세션 시작
-      </button>
+          <button
+            type="button"
+            className="btn-primary big"
+            onClick={() => onNavigate('study')}
+            disabled={!sessionReady}
+          >
+            세션 시작
+          </button>
 
-      {preview && preview.rematch > 0 && (
-        <button type="button" className="btn rematch" onClick={() => onNavigate('rematch')}>
-          재대결 <b>{preview.rematch}</b>
-          <span className="dim"> · 예전에 틀린 것만</span>
-        </button>
+          {preview && preview.rematch > 0 && (
+            <button type="button" className="btn rematch" onClick={() => onNavigate('rematch')}>
+              재대결 <b>{preview.rematch}</b>
+              <span className="dim"> · 예전에 틀린 것만</span>
+            </button>
+          )}
+        </>
       )}
 
       <nav className="home-nav">
-        {!isDiagnosticDone() && (
-          <button type="button" className="accent" onClick={() => onNavigate('diagnostic')}>
-            진입 진단 시작 <span className="chev">›</span>
-          </button>
-        )}
         <button type="button" onClick={() => onNavigate('report')}>
           진단 리포트 <span className="chev">›</span>
         </button>

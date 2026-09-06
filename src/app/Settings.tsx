@@ -65,7 +65,7 @@ function BackupSetting() {
       .then((ok) => {
         setAuthed(ok)
         setSignedIn(ok)
-        if (!ok) setError('로그인이 취소되었거나 실패했습니다.')
+        if (!ok) setError('로그인이 취소되었거나 실패했어요.')
       })
       .catch((err: unknown) => setError(err instanceof Error ? err.message : String(err)))
       .finally(() => setBusy('idle'))
@@ -104,7 +104,7 @@ function BackupSetting() {
             </button>
           </div>
           <span className="hint">
-            {lastSyncAt === null ? '아직 동기화하지 않았습니다.' : `마지막 동기화 ${formatSyncTime(lastSyncAt)}`}
+            {lastSyncAt === null ? '아직 동기화하지 않았어요.' : `마지막 동기화 ${formatSyncTime(lastSyncAt)}`}
           </span>
         </>
       ) : (
@@ -112,7 +112,7 @@ function BackupSetting() {
           <button type="button" onClick={handleSignIn} disabled={busy !== 'idle'}>
             {busy === 'signIn' ? '로그인 중…' : 'Google로 로그인'}
           </button>
-          <span className="hint">기기 간 학습 기록을 Google Drive 로 백업합니다.</span>
+          <span className="hint">기기 간 학습 기록을 Google Drive 로 백업해요.</span>
         </>
       )}
       {error !== null && <span className="hint error">{error}</span>}
@@ -159,8 +159,8 @@ function ResetSetting() {
         </button>
       )}
       <span className="hint">
-        이 기기의 학습 기록과{googleDrive.isAuthenticated() ? ' Google Drive 백업을' : ''} 모두 지웁니다.
-        되돌릴 수 없습니다.
+        이 기기의 학습 기록과{googleDrive.isAuthenticated() ? ' Google Drive 백업을' : ''} 모두 지워요.
+        되돌릴 수 없어요.
       </span>
       {error !== null && <span className="hint error">{error}</span>}
     </div>
@@ -238,7 +238,7 @@ export function Settings({ onBack }: { onBack: () => void }) {
               </button>
             ))}
           </div>
-          <span className="hint">한쪽 정원이 비면 다른 쪽이 채웁니다. 기본 7 : 3</span>
+          <span className="hint">한쪽 정원이 비면 다른 쪽이 채워요. 기본 7 : 3</span>
         </div>
 
         <div className="setting">
@@ -255,7 +255,7 @@ export function Settings({ onBack }: { onBack: () => void }) {
               </button>
             ))}
           </div>
-          <span className="hint">시스템은 기기 설정을 따릅니다.</span>
+          <span className="hint">시스템은 기기 설정을 따라요.</span>
         </div>
 
         <BackupSetting />

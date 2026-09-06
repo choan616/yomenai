@@ -21,12 +21,12 @@ export function Study({ kind = 'normal', onExit }: { kind?: SessionKind; onExit:
   }, [s.transitionSeq])
 
   if (s.status === 'loading') {
-    return <Centered>불러오는 중…</Centered>
+    return <Centered>불러오고 있어요…</Centered>
   }
   if (s.status === 'error') {
     return (
       <Centered>
-        <p>세션을 시작하지 못했습니다.</p>
+        <p>세션을 시작하지 못했어요.</p>
         <p className="dim">{s.error}</p>
         <button type="button" className="btn" onClick={onExit}>
           홈으로
@@ -38,8 +38,8 @@ export function Study({ kind = 'normal', onExit }: { kind?: SessionKind; onExit:
     if (s.progress.total === 0) {
       return (
         <Centered>
-          <p>다시 붙을 카드가 없습니다.</p>
-          <p className="dim">틀린 숙어가 쌓이면 여기서 다시 만납니다.</p>
+          <p>다시 볼 카드가 없어요.</p>
+          <p className="dim">틀린 숙어가 쌓이면 여기서 다시 만나요.</p>
           <button type="button" className="btn-primary" onClick={onExit}>
             홈으로
           </button>

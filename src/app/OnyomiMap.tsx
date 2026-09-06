@@ -65,9 +65,9 @@ export function OnyomiMap({ onBack }: { onBack: () => void }) {
 
       <div className="screen-body">
         {error ? (
-          <p className="empty">불러오지 못했습니다: {error}</p>
+          <p className="empty">불러오지 못했어요: {error}</p>
         ) : !summary ? (
-          <p className="empty">불러오는 중…</p>
+          <p className="empty">불러오고 있어요…</p>
         ) : (
           <>
             <div>
@@ -86,7 +86,7 @@ export function OnyomiMap({ onBack }: { onBack: () => void }) {
               <p className="section-title">{showAll ? '전체 쌍' : '학습 중인 쌍'}</p>
               {visible.length === 0 ? (
                 <p className="empty">
-                  {showAll ? '표시할 쌍이 없습니다.' : '오답률이 높은 음독이 아직 없습니다.'}
+                  {showAll ? '표시할 쌍이 없어요.' : '오답률이 높은 음독이 아직 없어요.'}
                 </p>
               ) : (
                 <ul className="rows">

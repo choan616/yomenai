@@ -49,14 +49,14 @@ export function Report({ onBack }: { onBack: () => void }) {
 
       <div className="screen-body">
         {error ? (
-          <p className="empty">불러오지 못했습니다: {error}</p>
+          <p className="empty">불러오지 못했어요: {error}</p>
         ) : !data ? (
-          <p className="empty">불러오는 중…</p>
+          <p className="empty">불러오고 있어요…</p>
         ) : data.totalReviews === 0 ? (
           <p className="empty">
-            아직 진단할 기록이 없습니다.
+            아직 볼 기록이 없어요.
             <br />
-            세션을 완료하면 오답 패턴이 여기 쌓입니다.
+            세션을 마치면 오답 패턴이 여기 쌓여요.
           </p>
         ) : (
           <ReportBody data={data} />
@@ -78,12 +78,12 @@ function ReportBody({ data }: { data: ReportData }) {
   return (
     <>
       <p className="report-lead">
-        읽기 <b>{data.totalReviews}</b>회 중 오답 <b>{data.totalWrong}</b>회
+        읽기 <b>{data.totalReviews}</b>회 중 오답 <b>{data.totalWrong}</b>회예요
         <span className="dim"> · 정답률 {accuracy}%</span>
         {top && (
           <>
             <br />
-            가장 잦은 오답은 <b>{MISTAKE_LABEL[top.type]}</b>
+            가장 잦은 건 <b>{MISTAKE_LABEL[top.type]}</b>이에요
             <span className="dim">
               {' '}
               — 전체 오답의 {Math.round((top.count / (data.totalWrong || 1)) * 100)}%
@@ -96,7 +96,7 @@ function ReportBody({ data }: { data: ReportData }) {
         <p className="section-title">오답 유형 분포</p>
         {data.mistakes.length === 0 ? (
           <p className="empty">
-            {data.totalWrong === 0 ? '오답이 없습니다.' : '유형이 붙은 오답이 없습니다.'}
+            {data.totalWrong === 0 ? '오답이 없어요.' : '유형이 붙은 오답이 없어요.'}
           </p>
         ) : (
           <div className="bars">
@@ -118,7 +118,7 @@ function ReportBody({ data }: { data: ReportData }) {
         {data.unclassified > 0 && (
           <p className="unclassified">
             유형을 못 붙인 오답 <b>{data.unclassified}</b>회
-            <span className="dim"> · 6종 어디에도 안 맞아 분포에서 빠졌다</span>
+            <span className="dim"> · 6종 어디에도 안 맞아 분포에서 빠졌어요</span>
           </p>
         )}
       </section>
@@ -130,7 +130,7 @@ function ReportBody({ data }: { data: ReportData }) {
           <span className="dim"> 회 — 한국 한자음에 이끌린 오답</span>
         </p>
         {data.koInterferenceIdioms.length === 0 ? (
-          <p className="dim">해당 숙어가 아직 없습니다.</p>
+          <p className="dim">해당 숙어가 아직 없어요.</p>
         ) : (
           <ul className="rows">
             {data.koInterferenceIdioms.map((it, i) => (
@@ -150,7 +150,7 @@ function ReportBody({ data }: { data: ReportData }) {
       <section>
         <p className="section-title">취약 음독</p>
         {data.weakOnyomi.length === 0 ? (
-          <p className="empty">오답률이 높은 음독이 아직 없습니다.</p>
+          <p className="empty">오답률이 높은 음독이 아직 없어요.</p>
         ) : (
           <ul className="rows">
             {data.weakOnyomi.map((w, i) => (
