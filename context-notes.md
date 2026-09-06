@@ -2108,3 +2108,23 @@ KanaInput 마운트를 유지(`readOnly`, `disabled` 와 달리 iOS 는 readonly
 세션 루프의 입력 체크를 `input.isVisible()` → `(isVisible && isEditable)` 로.
 피드백 중 입력이 readonly 로 남아 `fill()` 이 걸리던 걸 회피. `isEditable()` 단독은
 없는 요소를 auto-wait(테스트 타임아웃까지) 해서 hang — `isVisible()` 로 먼저 단락.
+
+---
+
+## 2026-09-06 — 뜻 카드가 읽기 카드보다 먼저 나오던 버그
+
+실기기 제보: 뜻 카드(읽기 あっしゅく 가 보이는 화면)가 "힌트가 문제 풀이보다 먼저
+나온다"는 느낌. 어휘 확장 모드 숙어는 `activeCardTypes('expansion') = ['reading',
+'meaning']` 로 한 세션에 읽기·뜻 두 장이 다 나온다. 그런데 `select.ts` 의 타이브레이커가
+`cmp(a.cardType, b.cardType)` 라 문자열 비교로 `'meaning' < 'reading'` → 같은 숙어의
+뜻 카드가 읽기 카드보다 앞섰다. 뜻 카드가 읽기를 보여주니 뒤에 올 읽기 카드의 답이 샜다.
+
+고침 — `CARD_ORDER = { reading: 0, meaning: 1 }` 로 같은 숙어면 읽기 → 뜻 순.
+`byOverdue` / `byIntroOrder` 둘 다. 뜻 카드는 이제 읽기를 이미 물은 뒤에만 온다.
+
+**"힌트(뜻 카드)는 언제 나오나" — 모드 배정(`mode.ts` assignMode, 뒤 단계가 이김):**
+1. 한국어 대조 — 동형동의(cat 1) → 교정(읽기만). 동형이의(2)·일본 고유(3) → 확장(읽기+뜻)
+2. "이 숙어, 뜻은 알고 있었어요?"(지연 검수 `ClassReviewPrompt`, 미검수 숙어가 풀에
+   처음 들어올 때) — 몰랐다 → 확장. 알았다 → 교정
+3. 세션 중 재배치 — 뜻 카드 FSRS 가 relearning(뜻 틀림) → 확장. 안정 → 교정
+세션 비율(설정 "모드 비율", 기본 7:3)이 확장 카드 수를 정한다. "읽기만"이면 뜻 카드 0.
