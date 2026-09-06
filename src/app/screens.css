@@ -247,6 +247,11 @@
   color: var(--text);
   font-weight: 600;
 }
+.seg button.danger {
+  border-color: var(--ng);
+  color: var(--ng);
+  font-weight: 600;
+}
 .setting.disabled {
   opacity: 0.5;
 }

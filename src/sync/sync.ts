@@ -41,3 +41,30 @@ export async function syncNow(
 
   return { uploaded: mine.length, downloaded }
 }
+
+export interface ResetResult {
+  /** 지운 로컬 이벤트 수 */
+  localCleared: number
+  /** 지운 Drive 동기화 파일 수 (로그인 안 됐으면 -1) */
+  driveDeleted: number
+}
+
+/**
+ * 학습 기록 초기화 — 로컬 이벤트 로그를 비우고, 로그인돼 있으면 Drive 동기화 파일도 지운다.
+ * append-only 원칙의 예외지만 사용자가 명시적으로 요청한 파괴적 동작이라 통째 삭제한다.
+ * Drive 파일을 안 지우면 다음 sync 때 되살아나므로 둘을 한 동작으로 묶는다.
+ */
+export async function resetLearning(
+  database: YomenaiDB,
+  drive: DriveClient = googleDrive,
+): Promise<ResetResult> {
+  const localCleared = await database.events.count()
+  await database.events.clear()
+
+  let driveDeleted = -1
+  if (drive.isAuthenticated()) {
+    driveDeleted = await drive.deleteSyncFiles()
+  }
+
+  return { localCleared, driveDeleted }
+}

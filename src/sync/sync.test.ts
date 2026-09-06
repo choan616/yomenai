@@ -6,7 +6,7 @@ import { IDBFactory, IDBKeyRange as FDBKeyRange } from 'fake-indexeddb'
 import { YomenaiDB } from '../db/schema.ts'
 import { appendEvent, listEvents, LOCAL_USER_ID, newEventId } from '../db/events.ts'
 import type { DriveClient, DriveFileMeta } from './googleDrive.ts'
-import { syncNow } from './sync.ts'
+import { resetLearning, syncNow } from './sync.ts'
 import type { MistakeType, ReviewEvent } from '../core/types.ts'
 
 const T0 = Date.UTC(2026, 0, 1)
@@ -61,6 +61,11 @@ class FakeDrive implements DriveClient {
   }
   async uploadOrReplace(fileName: string, content: string): Promise<void> {
     this.cloud.set(fileName, content)
+  }
+  async deleteSyncFiles(): Promise<number> {
+    const n = this.cloud.size
+    this.cloud.clear()
+    return n
   }
 }
 
@@ -122,5 +127,35 @@ describe('syncNow', () => {
     // 재동기화해도 멱등 — 중복이 생기지 않는다
     await syncNow(dbA, 'dev-a', driveA)
     expect(await idsOf(dbA)).toEqual(expected)
+  })
+})
+
+describe('resetLearning', () => {
+  it('로컬 이벤트를 비우고 Drive 파일을 지운다', async () => {
+    const db = freshDb()
+    for (let i = 0; i < 3; i++) await appendEvent(db, review({ at: T0 + i, idiomId: `x${i}`, deviceId: 'dev-a' }))
+    const cloud = new Map([
+      ['reviews-dev-a.json', '[]'],
+      ['reviews-dev-b.json', '[]'],
+    ])
+
+    const result = await resetLearning(db, new FakeDrive(cloud))
+
+    expect(result).toEqual({ localCleared: 3, driveDeleted: 2 })
+    expect(await listEvents(db, LOCAL_USER_ID)).toEqual([])
+    expect(cloud.size).toBe(0)
+  })
+
+  it('로그인 안 됐으면 로컬만 비우고 driveDeleted 는 -1', async () => {
+    const db = freshDb()
+    await appendEvent(db, review({ at: T0, idiomId: '1', deviceId: 'dev-a' }))
+    const drive = new FakeDrive(new Map([['reviews-dev-a.json', '[]']]))
+    drive.authed = false
+
+    const result = await resetLearning(db, drive)
+
+    expect(result.localCleared).toBe(1)
+    expect(result.driveDeleted).toBe(-1)
+    expect(await listEvents(db, LOCAL_USER_ID)).toEqual([])
   })
 })

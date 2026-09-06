@@ -60,6 +60,8 @@ export interface DriveClient {
   listSyncFiles(): Promise<DriveFileMeta[]>
   downloadFile(fileId: string): Promise<string>
   uploadOrReplace(fileName: string, content: string): Promise<void>
+  /** YomenaiSync 폴더의 동기화 파일을 전부 지운다 (학습 기록 초기화). 지운 개수를 돌려준다 */
+  deleteSyncFiles(): Promise<number>
 }
 
 let tokenClient: TokenClient | null = null
@@ -216,6 +218,15 @@ async function uploadOrReplace(fileName: string, content: string): Promise<void>
   if (!res.ok) throw new Error(`Drive 파일 생성 실패: ${res.status}`)
 }
 
+async function deleteSyncFiles(): Promise<number> {
+  const files = await listSyncFiles()
+  for (const f of files) {
+    const res = await fetch(`${DRIVE_API}/files/${f.id}`, { method: 'DELETE', headers: authHeaders() })
+    if (!res.ok && res.status !== 404) throw new Error(`Drive 파일 삭제 실패: ${res.status}`)
+  }
+  return files.length
+}
+
 export const googleDrive: DriveClient = {
   isAuthenticated,
   signIn,
@@ -224,4 +235,5 @@ export const googleDrive: DriveClient = {
   listSyncFiles,
   downloadFile,
   uploadOrReplace,
+  deleteSyncFiles,
 }

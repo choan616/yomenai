@@ -12,7 +12,7 @@ import { applyTheme, loadTheme, saveTheme, type Theme } from './theme.ts'
 import { db } from '../db/schema.ts'
 import { getDeviceId } from '../db/device.ts'
 import { googleDrive } from '../sync/googleDrive.ts'
-import { syncNow } from '../sync/sync.ts'
+import { resetLearning, syncNow } from '../sync/sync.ts'
 import { getLastSyncAt, setLastSyncAt, setSignedIn, wasSignedIn } from '../sync/syncState.ts'
 
 const STEP = 5
@@ -120,6 +120,53 @@ function BackupSetting() {
   )
 }
 
+/** 학습 기록 초기화 — 로컬 이벤트 로그 + Drive 백업 파일을 통째로 지운다. 되돌릴 수 없다 */
+function ResetSetting() {
+  const [armed, setArmed] = useState(false)
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const handleReset = () => {
+    setBusy(true)
+    setError(null)
+    void resetLearning(db(), googleDrive)
+      .then(() => {
+        // 세션 훅·홈 통계 등 곳곳의 파생 상태를 확실히 비우려고 통째로 새로고침한다
+        window.location.reload()
+      })
+      .catch((err: unknown) => {
+        setError(err instanceof Error ? err.message : String(err))
+        setBusy(false)
+        setArmed(false)
+      })
+  }
+
+  return (
+    <div className="setting">
+      <label>학습 기록 초기화</label>
+      {armed ? (
+        <div className="seg" role="group" aria-label="학습 기록 초기화 확인">
+          <button type="button" className="danger" onClick={handleReset} disabled={busy}>
+            {busy ? '초기화 중…' : '정말 초기화'}
+          </button>
+          <button type="button" onClick={() => setArmed(false)} disabled={busy}>
+            취소
+          </button>
+        </div>
+      ) : (
+        <button type="button" onClick={() => setArmed(true)}>
+          초기화
+        </button>
+      )}
+      <span className="hint">
+        이 기기의 학습 기록과{googleDrive.isAuthenticated() ? ' Google Drive 백업을' : ''} 모두 지웁니다.
+        되돌릴 수 없습니다.
+      </span>
+      {error !== null && <span className="hint error">{error}</span>}
+    </div>
+  )
+}
+
 export function Settings({ onBack }: { onBack: () => void }) {
   const [settings, setSettings] = useState<SettingsData>(loadSettings)
   const [theme, setThemeState] = useState<Theme>(loadTheme)
@@ -212,6 +259,7 @@ export function Settings({ onBack }: { onBack: () => void }) {
         </div>
 
         <BackupSetting />
+        <ResetSetting />
       </div>
     </section>
   )
