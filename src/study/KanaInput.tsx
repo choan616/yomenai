@@ -10,6 +10,17 @@ interface Props {
 export function KanaInput({ onSubmit, disabled }: Props) {
   const ref = useRef<HTMLInputElement>(null)
 
+  /**
+   * 빈/공백뿐인 값은 제출하지 않는다. 다음 문제로 넘어가면 입력창이 auto-focus 되는데,
+   * "입력→Enter" 리듬으로 빠르게 치는 사용자가 새 문제를 읽기 전에 Enter 를 눌러
+   * 빈 답이 오답으로 채점되던 버그를 막는다 (진단·세션 공통, context-notes 2026-09-06).
+   */
+  const submit = () => {
+    const value = ref.current?.value ?? ''
+    if (value.trim() === '') return
+    onSubmit(value)
+  }
+
   useEffect(() => {
     const el = ref.current
     if (!el) return
@@ -41,16 +52,11 @@ export function KanaInput({ onSubmit, disabled }: Props) {
         onKeyDown={(e) => {
           if (e.key === 'Enter' && !e.nativeEvent.isComposing) {
             e.preventDefault()
-            onSubmit(ref.current?.value ?? '')
+            submit()
           }
         }}
       />
-      <button
-        type="button"
-        className="btn-primary"
-        disabled={disabled}
-        onClick={() => onSubmit(ref.current?.value ?? '')}
-      >
+      <button type="button" className="btn-primary" disabled={disabled} onClick={submit}>
         확인
       </button>
     </div>
