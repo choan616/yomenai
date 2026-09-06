@@ -25,7 +25,7 @@ export function KanaInput({ onSubmit, disabled }: Props) {
   }, [])
 
   return (
-    <div className="answer-row">
+    <div className="answer-row input">
       <input
         ref={ref}
         className="kana-input"

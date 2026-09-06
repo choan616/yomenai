@@ -12,12 +12,14 @@ export function ClassReviewPrompt({ idiom, onAnswer }: Props) {
       <div className="card-head">
         <span className="tag">확인</span>
       </div>
-      <p className="prompt-q">이 숙어의 뜻을 이미 알고 계셨나요?</p>
-      <p className="headword" lang="ja">
-        {idiom.headword}
-      </p>
+      <div className="card-body">
+        <p className="prompt-q">이 숙어의 뜻을 이미 알고 계셨나요?</p>
+        <p className="headword" lang="ja">
+          {idiom.headword}
+        </p>
+      </div>
       <div className="card-bottom">
-        <div className="answer-row">
+        <div className="answer-row choice">
           <button type="button" className="btn" onClick={() => onAnswer(false)}>
             몰랐다
           </button>

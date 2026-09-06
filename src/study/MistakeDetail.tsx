@@ -37,14 +37,15 @@ export function MistakeDetail({ idiom, onClose }: Props) {
         </button>
       </div>
 
-      <p className="headword sm" lang="ja">
-        {idiom.headword}
-      </p>
-      <p className="reading-shown" lang="ja">
-        {idiom.reading}
-      </p>
+      <div className="card-body md-body">
+        <p className="headword sm" lang="ja">
+          {idiom.headword}
+        </p>
+        <p className="reading-shown" lang="ja">
+          {idiom.reading}
+        </p>
 
-      {parts === null ? (
+        {parts === null ? (
         <p className="dim md-note">불러오는 중…</p>
       ) : parts.length === 0 ? (
         <p className="dim md-note">이 숙어는 음독 분해 정보가 없습니다.</p>
@@ -76,13 +77,16 @@ export function MistakeDetail({ idiom, onClose }: Props) {
             </li>
           ))}
         </ul>
-      )}
+        )}
+      </div>
 
       <div className="card-bottom">
         <div className="answer-row">
-          <button type="button" className="btn-primary wide" onClick={onClose}>
+          <span className="slot" aria-hidden="true" />
+          <button type="button" className="btn-primary" onClick={onClose}>
             닫기
           </button>
+          <span className="slot" aria-hidden="true" />
         </div>
       </div>
     </div>

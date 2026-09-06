@@ -23,40 +23,46 @@ export function MeaningCard({ idiom, graded, onGrade, onNext }: Props) {
           <span className="tag muted">미검수</span>
         )}
       </div>
-      <p className="headword" lang="ja">
-        {idiom.headword}
-      </p>
-      <p className="reading-shown" lang="ja">
-        {idiom.reading}
-      </p>
-      {/* 확인 단계(뜻 확인 후)에만 소리를 보탠다 — 문제 풀이(뜻 떠올리기) 중엔 안 준다 */}
-      {(revealed || graded) && tts.available && (
-        <button type="button" className="tts-btn" onClick={() => tts.speak(idiom.reading)}>
-          <span aria-hidden="true">🔊</span> 소리 듣기
-        </button>
-      )}
+      <div className="card-body">
+        <p className="headword" lang="ja">
+          {idiom.headword}
+        </p>
+        <p className="reading-shown" lang="ja">
+          {idiom.reading}
+        </p>
+        {/* 확인 단계(뜻 확인 후)에만 소리를 보탠다 — 문제 풀이(뜻 떠올리기) 중엔 안 준다 */}
+        {(revealed || graded) && tts.available && (
+          <button type="button" className="tts-btn" onClick={() => tts.speak(idiom.reading)}>
+            <span aria-hidden="true">🔊</span> 소리 듣기
+          </button>
+        )}
 
-      {revealed || graded ? (
-        <p className="meaning">{meaning || '뜻 미등록'}</p>
-      ) : (
-        <p className="meaning placeholder">뜻을 떠올려 보세요</p>
-      )}
+        {revealed || graded ? (
+          <p className="meaning">{meaning || '뜻 미등록'}</p>
+        ) : (
+          <p className="meaning placeholder">뜻을 떠올려 보세요</p>
+        )}
+      </div>
 
       <div className="card-bottom">
         {graded ? (
           <div className="answer-row">
-            <button type="button" className="btn-primary wide" onClick={onNext}>
+            <span className="slot" aria-hidden="true" />
+            <button type="button" className="btn-primary" onClick={onNext}>
               다음
             </button>
+            <span className="slot" aria-hidden="true" />
           </div>
         ) : !revealed ? (
           <div className="answer-row">
-            <button type="button" className="btn-primary wide" onClick={() => setRevealed(true)}>
+            <span className="slot" aria-hidden="true" />
+            <button type="button" className="btn-primary" onClick={() => setRevealed(true)}>
               뜻 보기
             </button>
+            <span className="slot" aria-hidden="true" />
           </div>
         ) : (
-          <div className="answer-row">
+          <div className="answer-row choice">
             <button type="button" className="btn" onClick={() => onGrade(false)}>
               몰랐어요
             </button>

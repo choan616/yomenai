@@ -30,10 +30,12 @@ test('소리 듣기는 확인 단계에만 있고 ja-JP 로 발화한다', async
   // 문제 풀이 화면 — 소리 듣기가 없어야 한다
   await expect(page.getByRole('button', { name: /소리 듣기/ })).toHaveCount(0)
 
-  const reading = page.locator('.reading-shown')
+  // 읽기 피드백은 정답 읽기를 루비로 한자 위에 얹는다 (校正紙 컨셉).
+  // `.reading-shown` 은 뜻 카드 전용이라 여기서 기다리면 안 된다
+  const ruby = page.locator('.headword.has-ruby rt').first()
   await input.fill('aaa') // 오답이어도 상관없다 — 확인 단계 진입만 보면 된다
   await page.getByRole('button', { name: '확인' }).click()
-  await expect(reading).toBeVisible()
+  await expect(ruby).toBeVisible()
 
   // 확인 단계 — 소리 듣기가 나타난다
   const soundBtn = page.getByRole('button', { name: /소리 듣기/ })

@@ -25,9 +25,11 @@ export function ReadingCard({ idiom, feedback, onSubmit, onNext }: Props) {
       <div className="card-head">
         <span className="tag">읽기 · 밴드 {idiom.band}</span>
       </div>
-      <p className="headword" lang="ja">
-        {idiom.headword}
-      </p>
+      <div className="card-body">
+        <p className="headword" lang="ja">
+          {idiom.headword}
+        </p>
+      </div>
       <div className="card-bottom">
         <KanaInput key={idiom.idiomId} onSubmit={onSubmit} />
       </div>
@@ -58,42 +60,45 @@ function Feedback({
           <span aria-hidden="true">{correct ? '✓' : '✗'}</span>
           {correct ? '정답' : '오답'}
         </span>
+        <span className="tag muted band-tag">밴드 {idiom.band}</span>
       </div>
-      <p className="headword has-ruby" lang="ja">
-        {ruby.map((r, i) => (
-          <ruby key={i}>
-            {r.text}
-            <rt>{r.rt}</rt>
-          </ruby>
-        ))}
-      </p>
-      {tts.available && (
-        <button type="button" className="tts-btn" onClick={() => tts.speak(expected)}>
-          <span aria-hidden="true">🔊</span> 소리 듣기
-        </button>
-      )}
-      {correct && echo.length > 0 && (
-        <p className="echo">
-          {echo.map((e) => (
-            <span className="echo-item" key={e.kanji + e.base}>
-              <span lang="ja">
-                {e.kanji} {e.base}
-              </span>
-              <span className="echo-nth">{e.nth}번째</span>
-            </span>
+      <div className="card-body">
+        <p className="headword has-ruby" lang="ja">
+          {ruby.map((r, i) => (
+            <ruby key={i}>
+              {r.text}
+              <rt>{r.rt}</rt>
+            </ruby>
           ))}
         </p>
-      )}
-      {!correct && (
-        <p className="wrong-answer">
-          입력: <span lang="ja">{answer || '(빈칸)'}</span>
-          {mistakeType && <span className="tag">{MISTAKE_LABEL[mistakeType]}</span>}
-        </p>
-      )}
-      <ExampleSentence key={idiom.idiomId} idiomId={idiom.idiomId} />
+        {!correct && (
+          <p className="wrong-answer">
+            입력: <span lang="ja">{answer || '(빈칸)'}</span>
+            {mistakeType && <span className="tag">{MISTAKE_LABEL[mistakeType]}</span>}
+          </p>
+        )}
+        {tts.available && (
+          <button type="button" className="tts-btn" onClick={() => tts.speak(expected)}>
+            <span aria-hidden="true">🔊</span> 소리 듣기
+          </button>
+        )}
+        <ExampleSentence key={idiom.idiomId} idiomId={idiom.idiomId} />
+        {correct && echo.length > 0 && (
+          <p className="echo">
+            {echo.map((e) => (
+              <span className="echo-item" key={e.kanji + e.base}>
+                <span lang="ja">
+                  {e.kanji} {e.base}
+                </span>
+                <span className="echo-nth">{e.nth}번째</span>
+              </span>
+            ))}
+          </p>
+        )}
+      </div>
       <div className="card-bottom">
         {correct ? (
-          <div className="answer-row three">
+          <div className="answer-row">
             <button type="button" className="btn" onClick={() => onNext('hard')}>
               헷갈렸다
             </button>
@@ -109,9 +114,10 @@ function Feedback({
             <button type="button" className="btn" onClick={() => setDetail(true)}>
               자세히
             </button>
-            <button type="button" className="btn-primary wide" onClick={() => onNext()}>
+            <button type="button" className="btn-primary" onClick={() => onNext()}>
               다음
             </button>
+            <span className="slot" aria-hidden="true" />
           </div>
         )}
       </div>

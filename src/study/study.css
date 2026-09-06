@@ -27,9 +27,14 @@
   color: var(--text-faint);
 }
 
-/* ── 세션 ── */
+/* ── 세션 ── 3분할 고정 골격.
+   상단(진행률)과 하단(입력·액션)은 고정, 가운데만 가변이다. 페이지 자체는 스크롤하지
+   않는다 — 브라우저가 포커스된 입력을 보이게 하려고 화면을 밀어 올릴 여지를 없앤다.
+   키보드가 뜨면 index.html 의 interactive-widget=resizes-content 가 100dvh 를 줄여
+   하단 블록이 키보드 바로 위에 앉는다. */
 .study {
-  flex: 1;
+  height: 100dvh;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
   max-width: 560px;
@@ -37,6 +42,7 @@
   margin: 0 auto;
 }
 .study-bar {
+  flex: 0 0 auto;
   display: flex;
   align-items: center;
   gap: 12px;
@@ -63,30 +69,37 @@
 
 .study-main {
   flex: 1;
+  min-height: 0;
   display: flex;
   flex-direction: column;
 }
 
-/* ── 카드 ── 숙어 블록은 위·아래 여백을 반씩 나눠 중앙 상단, 입력·버튼은 맨 아래 */
+/* ── 카드 ── head(고정) · body(가변) · bottom(고정) 3단 */
 .card {
   flex: 1;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   padding: 20px;
 }
 .card-head {
+  flex: 0 0 auto;
   display: flex;
   gap: 8px;
   min-height: 28px;
   align-items: flex-start;
 }
-/* 숙어를 화면 중앙보다 살짝 위로 (PLAN §7 "중앙 상단") */
-.card > .headword,
-.card > .prompt-q {
-  margin-top: clamp(24px, 12vh, 120px);
-}
-.card > .card-bottom {
-  margin-top: auto;
+/* 가변 영역 — 숙어와 부속 정보(루비·예문·메아리)가 한 덩어리로 세로 중앙에 선다.
+   내용이 넘치면 페이지가 아니라 여기만 스크롤한다. 글자를 줄이지 않는 게 원칙이다
+   (자형 학습에 해롭다 — 재구성 결정 2026-09-06) */
+.card-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 12px 0;
 }
 .tag {
   font-size: 13px;
@@ -143,23 +156,37 @@
   font-size: 13px;
 }
 
-/* 하단 1/3 — 입력과 버튼. 세로 위치는 margin-top:auto 가 잡고, 가로는 카드 폭을 꽉 채운다
-   (align-self:end 는 교차축=가로라 내용 폭으로 줄어들며 왼쪽으로 흘러넘쳤다) */
+/* 하단 고정 블록 — 3분할의 맨 아래 칸. 페이지가 스크롤하지 않으므로 flex 배치만으로
+   바닥에 붙고, 키보드가 뜨면 줄어든 100dvh 를 따라 그 위로 올라온다.
+   safe-area 는 홈 인디케이터에 버튼이 물리지 않게 한다. */
 .card-bottom {
+  flex: 0 0 auto;
   align-self: stretch;
   padding-top: 16px;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
 }
+
+/* 진행 행 — [보조][주][보조] 3슬롯 고정. 없는 보조는 빈칸으로 자리를 지켜,
+   주 동작("다음")의 위치와 폭이 카드가 넘어가도 움직이지 않는다. 엄지가 한 자리에 머문다 */
 .answer-row {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr 1.4fr 1fr;
   gap: 10px;
-  /* 버튼만 있는 행은 오른쪽으로 모은다. 입력(flex:1)이 있는 행은 영향 없음 */
-  justify-content: flex-end;
+  align-items: center;
 }
-.answer-row.three > * {
-  flex: 1;
+/* 빈 슬롯 — 자리는 차지하되 보이지 않는다 */
+.slot {
+  visibility: hidden;
+}
+/* 이지선다 행 — 두 선택지가 같은 무게라 반씩 나눈다 */
+.answer-row.choice {
+  grid-template-columns: 1fr 1fr;
+}
+/* 입력 행 — 입력이 폭을 먹고 확인 버튼은 내용 폭 */
+.answer-row.input {
+  grid-template-columns: 1fr auto;
 }
 .kana-input {
-  flex: 1;
   min-width: 0;
   height: var(--tap);
   padding: 0 16px;
@@ -191,8 +218,9 @@
   border-color: var(--text);
   font-weight: 600;
 }
+/* 3슬롯 그리드에서는 폭을 슬롯이 정한다. wide 는 남겨두되 그리드를 거스르지 않는다 */
 .btn-primary.wide {
-  flex: 1;
+  width: 100%;
 }
 .btn-primary.big {
   height: 56px;
@@ -205,12 +233,25 @@
   cursor: default;
 }
 
-/* ── 피드백 — 색 + 아이콘 + 위치. 애니메이션 없음 (PLAN §7) ── */
-.feedback.is-ok {
+/* ── 피드백 — 색 + 아이콘 + 위치. 애니메이션 없음 (PLAN §7) ──
+   색은 카드 전면이 아니라 상단 띠에만 모은다. 전면을 칠하면 빈 면적까지 물들어 신호가
+   옅어지고 예문·메아리 가독성이 떨어진다. 좁은 띠가 더 또렷하다 (재구성 2026-09-06) */
+.card.feedback .card-head {
+  margin: -20px -20px 0;
+  padding: 12px 20px;
+  align-items: center;
+  border-bottom: 1px solid var(--border);
+}
+.card.feedback.is-ok .card-head {
   background: var(--ok-bg);
 }
-.feedback.is-ng {
+.card.feedback.is-ng .card-head {
   background: var(--ng-bg);
+  border-bottom-color: var(--ng);
+}
+/* 밴드 태그를 판정 반대편에 세운다 — 확인 단계에서도 난이도 맥락이 끊기지 않는다 */
+.card-head .band-tag {
+  margin-left: auto;
 }
 .verdict {
   display: inline-flex;
@@ -247,15 +288,15 @@
 }
 
 /* ── 오답 상세 ── 음독 분해 + 한국 한자음 대조 (PLAN §7). 셸 구간이라 느린 스크롤 허용 */
-.mistake-detail {
-  overflow-y: auto;
+/* 분해 목록은 길어질 수 있어 위에서부터 쌓는다 — 카드와 달리 중앙 정렬하지 않는다 */
+.md-body {
+  justify-content: flex-start;
 }
 .md-head {
   justify-content: space-between;
 }
 .headword.sm {
   font-size: clamp(36px, 12vw, 60px);
-  margin-top: clamp(12px, 4vh, 40px);
 }
 .md-note {
   text-align: center;

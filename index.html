@@ -3,10 +3,12 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <!-- maximum-scale/user-scalable=no: iOS 가 입력 포커스 시 화면을 확대하는 걸 막는다 -->
+    <!-- maximum-scale/user-scalable=no: iOS 가 입력 포커스 시 화면을 확대하는 걸 막는다.
+         interactive-widget=resizes-content: 소프트 키보드가 뜰 때 레이아웃 뷰포트 자체를 줄인다.
+         학습 카드가 100dvh 3분할이라, 이게 있어야 하단 입력·액션 블록이 키보드 위에 앉는다 -->
     <meta
       name="viewport"
-      content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"
+      content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, interactive-widget=resizes-content"
     />
     <title>yomenai — 読めない</title>
   </head>
