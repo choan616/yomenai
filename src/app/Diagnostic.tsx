@@ -130,9 +130,11 @@ export function Diagnostic({ onDone, onExit }: { onDone: () => void; onExit: () 
             <div className="card-head">
               <span className="tag">진입 진단 · 밴드 {q.band}</span>
             </div>
-            <p className="headword" lang="ja">
-              {q.headword}
-            </p>
+            <div className="card-body">
+              <p className="headword" lang="ja">
+                {q.headword}
+              </p>
+            </div>
             <div className="card-bottom">
               <KanaInput key={q.idiomId} onSubmit={submitReading} />
             </div>
@@ -143,15 +145,17 @@ export function Diagnostic({ onDone, onExit }: { onDone: () => void; onExit: () 
             <div className="card-head">
               <span className="tag">확인</span>
             </div>
-            <p className="prompt-q">이 숙어의 뜻을 알고 계셨나요?</p>
-            <p className="headword" lang="ja">
-              {q.headword}
-            </p>
-            <p className="reading-shown" lang="ja">
-              {q.reading}
-            </p>
+            <div className="card-body">
+              <p className="prompt-q">이 숙어의 뜻을 알고 계셨나요?</p>
+              <p className="headword" lang="ja">
+                {q.headword}
+              </p>
+              <p className="reading-shown" lang="ja">
+                {q.reading}
+              </p>
+            </div>
             <div className="card-bottom">
-              <div className="answer-row">
+              <div className="answer-row choice">
                 <button type="button" className="btn" onClick={() => answerKnown(false)}>
                   몰랐다
                 </button>
