@@ -46,7 +46,7 @@ function Feedback({
   feedback: ReadingFeedback
   onNext: (confidence?: Confidence) => void
 }) {
-  const { correct, expected, mistakeType, answer, echo, ruby } = feedback
+  const { correct, expected, mistakeType, answer, echo, ruby, observe } = feedback
   const [detail, setDetail] = useState(false)
 
   if (detail) {
@@ -93,6 +93,14 @@ function Feedback({
                 <span className="echo-nth">{e.nth}번째</span>
               </span>
             ))}
+          </p>
+        )}
+        {observe && (
+          <p className="observe">
+            <span lang="ja">
+              {observe.kanji} {observe.base}
+            </span>
+            , 지난번엔 틀렸는데 이번엔 맞혔어요
           </p>
         )}
       </div>

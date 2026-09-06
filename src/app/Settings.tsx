@@ -33,6 +33,12 @@ const THEMES: { label: string; value: Theme }[] = [
   { label: '다크', value: 'dark' },
 ]
 
+const OBSERVE_LEVELS: { label: string; value: SettingsData['observeLevel'] }[] = [
+  { label: '끔', value: 'off' },
+  { label: '보통', value: 'normal' },
+  { label: '자주', value: 'often' },
+]
+
 function formatSyncTime(at: number): string {
   return new Date(at).toLocaleString('ko-KR', {
     month: '2-digit',
@@ -256,6 +262,23 @@ export function Settings({ onBack }: { onBack: () => void }) {
             ))}
           </div>
           <span className="hint">시스템은 기기 설정을 따라요.</span>
+        </div>
+
+        <div className="setting">
+          <label>관찰 문구</label>
+          <div className="seg" role="group" aria-label="관찰 문구">
+            {OBSERVE_LEVELS.map((o) => (
+              <button
+                key={o.value}
+                type="button"
+                aria-pressed={settings.observeLevel === o.value}
+                onClick={() => update({ ...settings, observeLevel: o.value })}
+              >
+                {o.label}
+              </button>
+            ))}
+          </div>
+          <span className="hint">세션 중 "지난번엔 틀렸는데 이번엔 맞혔어요" 같은 한 줄. 기본은 보통이에요.</span>
         </div>
 
         <BackupSetting />

@@ -520,6 +520,17 @@
   color: var(--text-dim);
 }
 
+/* ── 루프 안 관찰 (Phase 9-C) — 정답 직후 스치는 격려 한 줄. 세션 요약 "발견"의 축소판.
+   메아리보다 살짝 또렷하게(text-dim) 두되, 여전히 조용하다 ── */
+.observe {
+  text-align: center;
+  color: var(--text-dim);
+  font-size: 14px;
+  line-height: 1.5;
+  margin: 12px auto 0;
+  max-width: 320px;
+}
+
 /* ── 음독 메아리 — 정답 직후 스치는 한 줄. 탭이 필요 없고 다음 카드에서 사라진다 ── */
 .echo {
   display: flex;

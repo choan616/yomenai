@@ -13,6 +13,7 @@ import {
 } from '../core/session.ts'
 import { classifyMistake } from '../core/mistakes.ts'
 import { onyomiEcho, type OnyomiEcho } from '../core/echo.ts'
+import { observeReading, type Observation } from '../core/observe.ts'
 import { rubyOf, type RubySegment } from '../core/ruby.ts'
 import { buildRematch } from '../core/session.ts'
 import type { Confidence } from '../core/scheduler.ts'
@@ -24,7 +25,7 @@ import { LOCAL_USER_ID } from '../db/events.ts'
 import { listEvents } from '../db/events.ts'
 import { loadBaseIdioms, loadKanji, type RuntimeIdiom } from '../dict/load.ts'
 import { mistakeContextFromKanji } from '../dict/mistakeContext.ts'
-import { loadSettings } from '../app/settings.ts'
+import { loadSettings, OBSERVE_GATE, type ObserveLevel } from '../app/settings.ts'
 
 /** 읽기 답안을 낸 직후의 판정 결과. 이벤트는 아직 안 쓴다 — 자신감 버튼을 기다린다 */
 export interface ReadingFeedback {
@@ -36,6 +37,8 @@ export interface ReadingFeedback {
   echo: OnyomiEcho[]
   /** 정답 읽기를 한자 위에 얹기 위한 조각 */
   ruby: RubySegment[]
+  /** 루프 안 관찰 한 줄 (Phase 9-C). 빈도 게이트를 통과했을 때만 채워진다 */
+  observe: Observation | null
 }
 
 export type StudyStatus =
@@ -99,6 +102,10 @@ export function useStudySession(kind: SessionKind = 'normal'): [StudyState, Stud
   const mistakes = useRef<MistakeContext | null>(null)
   const shownAt = useRef(0)
   const ctxBase = useRef({ userId: LOCAL_USER_ID, deviceId: getDeviceId() })
+  // 관찰 문구 빈도 게이트 (Phase 9-C) — 세션 시작 시 설정을 한 번 읽어 고정한다
+  const observeLevel = useRef<ObserveLevel>('normal')
+  const observeShown = useRef(0)
+  const cardsSinceObserve = useRef(0)
 
 
   const byId = useMemo(
@@ -119,7 +126,8 @@ export function useStudySession(kind: SessionKind = 'normal'): [StudyState, Stud
         setPool(loaded)
         setPriorEvents(events)
         mistakes.current = mistakeContextFromKanji(kanji)
-        const { sessionLimit, ratio } = loadSettings()
+        const { sessionLimit, ratio, observeLevel: lvl } = loadSettings()
+        observeLevel.current = lvl
         const now = Date.now()
         const built =
           kind === 'rematch'
@@ -158,6 +166,7 @@ export function useStudySession(kind: SessionKind = 'normal'): [StudyState, Stud
   const advance = useCallback(
     (correct: boolean) => {
       performance.mark('yomenai:advance')
+      cardsSinceObserve.current++
       setTransitionSeq((n) => n + 1)
       setResults((r) => [...r, correct])
       setFeedback(null)
@@ -182,17 +191,27 @@ export function useStudySession(kind: SessionKind = 'normal'): [StudyState, Stud
             { headword: idiom.headword, expected: idiom.reading, answer },
             mistakes.current,
           )
+      const pairsOf = (id: string) => byId.get(id)?.pairIds ?? []
       const echo =
         correct && session
-          ? onyomiEcho({
-              pairIds: idiom.pairIds,
-              before: session.state.onyomi,
-              sessionEvents,
-              pairsOf: (id) => byId.get(id)?.pairIds ?? [],
-            })
+          ? onyomiEcho({ pairIds: idiom.pairIds, before: session.state.onyomi, sessionEvents, pairsOf })
           : []
+
+      // 루프 안 관찰 — 정답일 때만, 빈도 게이트를 통과했을 때만
+      let observe: Observation | null = null
+      if (correct && session) {
+        const { gap, cap } = OBSERVE_GATE[observeLevel.current]
+        if (cardsSinceObserve.current >= gap && observeShown.current < cap) {
+          observe = observeReading({ pairIds: idiom.pairIds, before: session.state.onyomi, sessionEvents, pairsOf })
+          if (observe) {
+            observeShown.current++
+            cardsSinceObserve.current = 0
+          }
+        }
+      }
+
       const ruby = rubyOf(idiom.headword, idiom.reading, mistakes.current.lookup)
-      setFeedback({ correct, expected: idiom.reading, mistakeType, answer, echo, ruby })
+      setFeedback({ correct, expected: idiom.reading, mistakeType, answer, echo, ruby, observe })
     },
     [card, idiom, session, sessionEvents, byId],
   )

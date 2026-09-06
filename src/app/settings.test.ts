@@ -4,10 +4,24 @@ import { DEFAULT_SETTINGS, parseSettings } from './settings.ts'
 
 describe('parseSettings', () => {
   it('정상 값은 그대로 통과한다', () => {
-    expect(parseSettings({ sessionLimit: 25, ratio: { correction: 6, expansion: 4 } })).toEqual({
+    expect(
+      parseSettings({
+        sessionLimit: 25,
+        ratio: { correction: 6, expansion: 4 },
+        observeLevel: 'often',
+      }),
+    ).toEqual({
       sessionLimit: 25,
       ratio: { correction: 6, expansion: 4 },
+      observeLevel: 'often',
     })
+  })
+
+  it('observeLevel 은 off/normal/often 만, 나머지는 normal', () => {
+    expect(parseSettings({ observeLevel: 'off' }).observeLevel).toBe('off')
+    expect(parseSettings({ observeLevel: 'often' }).observeLevel).toBe('often')
+    expect(parseSettings({ observeLevel: 'weird' }).observeLevel).toBe('normal')
+    expect(parseSettings({}).observeLevel).toBe('normal')
   })
 
   it('세션 길이를 5~40 으로 클램프하고 반올림한다', () => {
