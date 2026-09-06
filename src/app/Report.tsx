@@ -68,16 +68,17 @@ export function Report({ onBack }: { onBack: () => void }) {
 
 function ReportBody({ data }: { data: ReportData }) {
   const top = data.mistakes[0]
+  // 정답률은 *실제* 오답으로 센다. 분류된 오답만 쓰면 미분류분이 정답으로 둔갑한다
   const accuracy =
     data.totalReviews > 0
-      ? Math.round(((data.totalReviews - data.totalMistakes) / data.totalReviews) * 100)
+      ? Math.round(((data.totalReviews - data.totalWrong) / data.totalReviews) * 100)
       : 100
   const maxCount = Math.max(1, ...data.mistakes.map((m) => m.count))
 
   return (
     <>
       <p className="report-lead">
-        읽기 <b>{data.totalReviews}</b>회 중 오답 <b>{data.totalMistakes}</b>회
+        읽기 <b>{data.totalReviews}</b>회 중 오답 <b>{data.totalWrong}</b>회
         <span className="dim"> · 정답률 {accuracy}%</span>
         {top && (
           <>
@@ -85,7 +86,7 @@ function ReportBody({ data }: { data: ReportData }) {
             가장 잦은 오답은 <b>{MISTAKE_LABEL[top.type]}</b>
             <span className="dim">
               {' '}
-              — 전체 오답의 {Math.round((top.count / (data.totalMistakes || 1)) * 100)}%
+              — 전체 오답의 {Math.round((top.count / (data.totalWrong || 1)) * 100)}%
             </span>
           </>
         )}
@@ -94,7 +95,9 @@ function ReportBody({ data }: { data: ReportData }) {
       <section>
         <p className="section-title">오답 유형 분포</p>
         {data.mistakes.length === 0 ? (
-          <p className="empty">오답이 없습니다.</p>
+          <p className="empty">
+            {data.totalWrong === 0 ? '오답이 없습니다.' : '유형이 붙은 오답이 없습니다.'}
+          </p>
         ) : (
           <div className="bars">
             {data.mistakes.map((m, i) => (
@@ -111,6 +114,12 @@ function ReportBody({ data }: { data: ReportData }) {
               </div>
             ))}
           </div>
+        )}
+        {data.unclassified > 0 && (
+          <p className="unclassified">
+            유형을 못 붙인 오답 <b>{data.unclassified}</b>회
+            <span className="dim"> · 6종 어디에도 안 맞아 분포에서 빠졌다</span>
+          </p>
         )}
       </section>
 

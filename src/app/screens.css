@@ -337,3 +337,13 @@
 .report .ko-big {
   font-variant-numeric: tabular-nums;
 }
+
+/* 분류기가 놓친 몫 — 숨기지 않고 분포 아래에 적는다 */
+.unclassified {
+  margin: 12px 0 0;
+  font-size: 13px;
+  color: var(--text-dim);
+}
+.unclassified b {
+  font-variant-numeric: tabular-nums;
+}

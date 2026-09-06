@@ -6,8 +6,13 @@ import type { ReplayState } from './replay.ts'
 import type { CardState, MistakeType } from './types.ts'
 import { buildReport } from './report.ts'
 
-function card(idiomId: string, reps: number, mistakes: Partial<Record<MistakeType, number>>): CardState {
-  const wrong = Object.values(mistakes).reduce((a, b) => a + b, 0)
+function card(
+  idiomId: string,
+  reps: number,
+  mistakes: Partial<Record<MistakeType, number>>,
+  /** 실제 오답 수. 안 주면 분류된 수와 같다고 본다 */
+  wrong = Object.values(mistakes).reduce((a, b) => a + b, 0),
+): CardState {
   return { idiomId, cardType: 'reading', card: { ...newCard(0), reps }, mistakes, wrong, lastAt: 0 }
 }
 
@@ -51,6 +56,11 @@ describe('buildReport', () => {
     expect(r.totalMistakes).toBe(5)
   })
 
+  it('실제 오답과 분류된 오답을 따로 센다', () => {
+    expect(r.totalWrong).toBe(5)
+    expect(r.unclassified).toBe(0)
+  })
+
   it('읽기 카드 reps 만 합산한다 (뜻 카드 제외)', () => {
     expect(r.totalReviews).toBe(9)
   })
@@ -75,6 +85,53 @@ describe('buildReport', () => {
       pairs,
       () => undefined,
     )
-    expect(empty).toMatchObject({ totalReviews: 0, totalMistakes: 0, mistakes: [], weakOnyomi: [], koInterferenceCount: 0 })
+    expect(empty).toMatchObject({
+      totalReviews: 0, totalWrong: 0, totalMistakes: 0, unclassified: 0,
+      mistakes: [], weakOnyomi: [], koInterferenceCount: 0,
+    })
+  })
+})
+
+describe('buildReport — 분류에 실패한 오답', () => {
+  /** 4회 채점에 오답 3회인데 유형이 붙은 건 1회뿐 */
+  function partial(): ReplayState {
+    return {
+      cards: new Map<string, CardState>([['1:reading', card('1', 4, { SOKUON: 1 }, 3)]]),
+      meaningKnown: new Map(),
+      onyomi: new Map(),
+      applied: 0,
+    }
+  }
+
+  const r = buildReport(partial(), pairs, () => undefined)
+
+  it('totalWrong 은 실제 오답을, totalMistakes 는 분류된 것만 센다', () => {
+    expect(r.totalWrong).toBe(3)
+    expect(r.totalMistakes).toBe(1)
+  })
+
+  it('차이를 unclassified 로 드러낸다 — 숨기면 정답률이 부풀려진다', () => {
+    expect(r.unclassified).toBe(2)
+  })
+
+  it('정답률을 totalWrong 으로 계산하면 25%, totalMistakes 로 하면 75% 가 된다', () => {
+    expect((r.totalReviews - r.totalWrong) / r.totalReviews).toBeCloseTo(0.25)
+    expect((r.totalReviews - r.totalMistakes) / r.totalReviews).toBeCloseTo(0.75)
+  })
+
+  it('뜻 카드의 오답은 읽기 집계에 안 섞인다', () => {
+    const withMeaning: ReplayState = {
+      cards: new Map<string, CardState>([
+        ['1:reading', card('1', 2, {}, 1)],
+        ['1:meaning', { idiomId: '1', cardType: 'meaning', card: { ...newCard(0), reps: 5 },
+          mistakes: {}, wrong: 4, lastAt: 0 }],
+      ]),
+      meaningKnown: new Map(),
+      onyomi: new Map(),
+      applied: 0,
+    }
+    const m = buildReport(withMeaning, pairs, () => undefined)
+    expect(m.totalReviews).toBe(2)
+    expect(m.totalWrong).toBe(1)
   })
 })

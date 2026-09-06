@@ -44,7 +44,18 @@ export interface NamedIdiom {
 export interface Report {
   /** 읽기 카드 채점 횟수 (reps 합) */
   totalReviews: number
+  /**
+   * 실제 오답 횟수. 정답률의 분모·분자는 이 값으로 계산해야 한다.
+   * `totalMistakes` 로 계산하면 분류 실패분이 정답으로 둔갑한다.
+   */
+  totalWrong: number
+  /** 유형이 붙은 오답 횟수. `totalWrong` 이하다 */
   totalMistakes: number
+  /**
+   * 유형을 못 붙인 오답 횟수 (`totalWrong - totalMistakes`).
+   * 숨기지 않고 드러낸다 — 분류기가 실사용에서 얼마나 놓치는지가 그 자체로 진단 정보다.
+   */
+  unclassified: number
   /** count 가 0 이 아닌 유형만, 많은 순 */
   mistakes: MistakeSlice[]
   weakOnyomi: WeakOnyomi[]
@@ -65,10 +76,12 @@ export function buildReport(
   const totalMistakes = mistakes.reduce((s, m) => s + m.count, 0)
 
   let totalReviews = 0
+  let totalWrong = 0
   const koIdioms: NamedIdiom[] = []
   for (const c of state.cards.values()) {
     if (c.cardType !== 'reading') continue
     totalReviews += c.card.reps
+    totalWrong += c.wrong
     if ((c.mistakes.KO_INTERFERENCE ?? 0) > 0) {
       const n = nameOf(c.idiomId)
       if (n) koIdioms.push({ id: c.idiomId, headword: n.headword, reading: n.reading })
@@ -95,7 +108,9 @@ export function buildReport(
 
   return {
     totalReviews,
+    totalWrong,
     totalMistakes,
+    unclassified: Math.max(0, totalWrong - totalMistakes),
     mistakes,
     weakOnyomi,
     koInterferenceCount: totals.KO_INTERFERENCE ?? 0,
