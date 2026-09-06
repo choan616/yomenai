@@ -79,8 +79,10 @@ export interface CardState {
   idiomId: string
   cardType: CardType
   card: Card
-  /** 오답 유형별 누적 횟수 */
+  /** 오답 유형별 누적 횟수. 분류에 실패한 오답은 여기 안 잡힌다 */
   mistakes: Partial<Record<MistakeType, number>>
+  /** 실제 오답 횟수. 유형 분류 성공 여부와 무관하다 */
+  wrong: number
   lastAt: number | null
 }
 

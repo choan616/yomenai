@@ -9,7 +9,7 @@ import { Report } from './app/Report.tsx'
 import { Settings } from './app/Settings.tsx'
 import { Study } from './study/Study.tsx'
 
-export type Screen = 'home' | 'study' | 'onyomi' | 'report' | 'diagnostic' | 'settings'
+export type Screen = 'home' | 'study' | 'rematch' | 'onyomi' | 'report' | 'diagnostic' | 'settings'
 
 export default function App() {
   const [screen, setScreen] = useState<Screen>('home')
@@ -18,6 +18,8 @@ export default function App() {
   switch (screen) {
     case 'study':
       return <Study onExit={home} />
+    case 'rematch':
+      return <Study kind="rematch" onExit={home} />
     case 'onyomi':
       return <OnyomiMap onBack={home} />
     case 'report':

@@ -44,7 +44,7 @@ function Feedback({
   feedback: ReadingFeedback
   onNext: (confidence?: Confidence) => void
 }) {
-  const { correct, expected, mistakeType, answer } = feedback
+  const { correct, expected, mistakeType, answer, echo, ruby } = feedback
   const [detail, setDetail] = useState(false)
 
   if (detail) {
@@ -59,16 +59,30 @@ function Feedback({
           {correct ? '정답' : '오답'}
         </span>
       </div>
-      <p className="headword" lang="ja">
-        {idiom.headword}
-      </p>
-      <p className="reading-shown" lang="ja">
-        {expected}
+      <p className="headword has-ruby" lang="ja">
+        {ruby.map((r, i) => (
+          <ruby key={i}>
+            {r.text}
+            <rt>{r.rt}</rt>
+          </ruby>
+        ))}
       </p>
       {tts.available && (
         <button type="button" className="tts-btn" onClick={() => tts.speak(expected)}>
           <span aria-hidden="true">🔊</span> 소리 듣기
         </button>
+      )}
+      {correct && echo.length > 0 && (
+        <p className="echo">
+          {echo.map((e) => (
+            <span className="echo-item" key={e.kanji + e.base}>
+              <span lang="ja">
+                {e.kanji} {e.base}
+              </span>
+              <span className="echo-nth">{e.nth}번째</span>
+            </span>
+          ))}
+        </p>
       )}
       {!correct && (
         <p className="wrong-answer">

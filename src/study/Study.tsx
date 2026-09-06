@@ -4,10 +4,10 @@ import { ClassReviewPrompt } from './ClassReviewPrompt.tsx'
 import { MeaningCard } from './MeaningCard.tsx'
 import { ReadingCard } from './ReadingCard.tsx'
 import { SessionSummary } from './SessionSummary.tsx'
-import { useStudySession } from './useStudySession.ts'
+import { useStudySession, type SessionKind } from './useStudySession.ts'
 
-export function Study({ onExit }: { onExit: () => void }) {
-  const [s, a] = useStudySession()
+export function Study({ kind = 'normal', onExit }: { kind?: SessionKind; onExit: () => void }) {
+  const [s, a] = useStudySession(kind)
 
   // 카드 전환 실측. transitionSeq 는 advance 때만 오르고, useStudySession 이 그 직전에
   // 'yomenai:advance' 를 마킹한다. 단일 rAF 로 DOM 커밋·레이아웃 뒤 페인트 직전에 measure 한다.
@@ -35,6 +35,17 @@ export function Study({ onExit }: { onExit: () => void }) {
     )
   }
   if (s.status === 'done') {
+    if (s.progress.total === 0) {
+      return (
+        <Centered>
+          <p>다시 붙을 카드가 없습니다.</p>
+          <p className="dim">틀린 숙어가 쌓이면 여기서 다시 만납니다.</p>
+          <button type="button" className="btn-primary" onClick={onExit}>
+            홈으로
+          </button>
+        </Centered>
+      )
+    }
     return <SessionSummary events={s.events} pool={s.pool} onExit={onExit} />
   }
 

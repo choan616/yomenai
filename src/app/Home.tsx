@@ -1,6 +1,6 @@
 // 홈 — 오늘 복습 수와 세션 시작. 그 아래 리포트·음독 맵·설정 진입점 (PLAN §7)
 import { useEffect, useState } from 'react'
-import { buildSession } from '../core/session.ts'
+import { buildSession, rematchCount } from '../core/session.ts'
 import { LOCAL_USER_ID, listEvents } from '../db/events.ts'
 import { db } from '../db/schema.ts'
 import { loadBaseIdioms } from '../dict/load.ts'
@@ -11,6 +11,8 @@ import type { Screen } from '../App.tsx'
 interface Preview {
   ready: number
   due: number
+  /** 예전에 틀린 읽기 카드 수 — 재대결 대상 */
+  rematch: number
 }
 
 export function Home({ onNavigate }: { onNavigate: (screen: Screen) => void }) {
@@ -31,6 +33,7 @@ export function Home({ onNavigate }: { onNavigate: (screen: Screen) => void }) {
         setPreview({
           ready: session.cards.length,
           due: session.cards.filter((c) => c.due).length,
+          rematch: rematchCount(pool, events),
         })
       } catch (e) {
         if (alive) setError(e instanceof Error ? e.message : String(e))
@@ -67,6 +70,13 @@ export function Home({ onNavigate }: { onNavigate: (screen: Screen) => void }) {
       >
         세션 시작
       </button>
+
+      {preview && preview.rematch > 0 && (
+        <button type="button" className="btn rematch" onClick={() => onNavigate('rematch')}>
+          재대결 <b>{preview.rematch}</b>
+          <span className="dim"> · 예전에 틀린 것만</span>
+        </button>
+      )}
 
       <nav className="home-nav">
         {!isDiagnosticDone() && (

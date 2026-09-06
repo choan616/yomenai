@@ -15,7 +15,7 @@ function emptyState(): ReplayState {
 }
 
 function put(state: ReplayState, idiomId: string, cardType: CardType, card: Card): void {
-  const entry: CardState = { idiomId, cardType, card, mistakes: {}, lastAt: T0 }
+  const entry: CardState = { idiomId, cardType, card, mistakes: {}, wrong: 0, lastAt: T0 }
   state.cards.set(cardKey(idiomId, cardType), entry)
 }
 

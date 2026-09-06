@@ -189,3 +189,76 @@ function base(idiomId: string, cardType: 'reading' | 'meaning', ctx: AnswerConte
     deletedAt: null,
   }
 }
+
+export interface RematchOptions {
+  now: number
+  limit: number
+}
+
+/**
+ * 재대결 세션 — 예전에 틀린 읽기 카드만 모은다. 기한을 무시한다.
+ *
+ * 복습 기한을 기다리지 않고 다시 붙는 게 이 세션의 전부라서, 정규 세션의 선택 로직
+ * (`selectSession`)을 타지 않는다. 대신 오답이 많은 순 → 최근에 틀린 순으로 세운다.
+ *
+ * **기한을 무시하는 대가.** 답안은 정규 이벤트로 기록되므로 FSRS 일정에 영향을 준다.
+ * 이르게 맞히면 안정도가 덜 오르고, 틀리면 정상적으로 lapse 가 잡힌다. 후자가 맞는
+ * 정보라서 그대로 둔다 — "연습용 채점"을 따로 두려면 이벤트 스키마에 값을 늘려야 하는데
+ * 스키마는 불변 조건이다.
+ */
+export function buildRematch(
+  pool: IdiomEntry[],
+  events: LearningEvent[],
+  options: RematchOptions,
+): Session {
+  const byId = new Map(pool.map((p) => [p.idiomId, p]))
+  const state = replay(events, { pairsOf: (id) => byId.get(id)?.pairIds ?? [] })
+
+  const scored: { item: SessionItem; wrong: number; lastWrongAt: number }[] = []
+  for (const [, card] of state.cards) {
+    if (card.cardType !== 'reading') continue
+    const entry = byId.get(card.idiomId)
+    if (entry === undefined) continue
+    if (card.wrong === 0) continue
+    scored.push({
+      item: {
+        idiomId: card.idiomId,
+        cardType: 'reading',
+        mode: assignMode({
+          category: entry.category,
+          meaningKnown: state.meaningKnown.get(card.idiomId),
+          meaningCard: state.cards.get(cardKey(card.idiomId, 'meaning'))?.card,
+        }).mode,
+        due: card.card.due.getTime() <= options.now,
+      },
+      wrong: card.wrong,
+      lastWrongAt: card.lastAt ?? 0,
+    })
+  }
+
+  scored.sort(
+    (a, b) =>
+      b.wrong - a.wrong ||
+      b.lastWrongAt - a.lastWrongAt ||
+      (a.item.idiomId < b.item.idiomId ? -1 : 1),
+  )
+
+  // 재대결은 확인 질문을 끼우지 않는다 — 이미 만난 숙어들이라 물어볼 게 없다
+  const cards: SessionCard[] = scored
+    .slice(0, options.limit)
+    .map(({ item }) => ({ ...item, needsClassReview: false }))
+
+  return { cards, state }
+}
+
+/** 재대결 후보 수. 홈에서 버튼을 띄울지 정하는 데 쓴다 */
+export function rematchCount(pool: IdiomEntry[], events: LearningEvent[]): number {
+  const byId = new Map(pool.map((p) => [p.idiomId, p]))
+  const state = replay(events, { pairsOf: (id) => byId.get(id)?.pairIds ?? [] })
+  let n = 0
+  for (const [, card] of state.cards) {
+    if (card.cardType !== 'reading' || !byId.has(card.idiomId)) continue
+    if (card.wrong > 0) n++
+  }
+  return n
+}

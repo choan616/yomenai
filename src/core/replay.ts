@@ -59,6 +59,7 @@ export function replay(events: LearningEvent[], options: ReplayOptions = {}): Re
       cardType: e.cardType,
       card: applyGrade(card, e.at, e.grade),
       mistakes: { ...(prev?.mistakes ?? {}) },
+      wrong: (prev?.wrong ?? 0) + (e.correct ? 0 : 1),
       lastAt: e.at,
     }
     if (e.mistakeType !== null) {

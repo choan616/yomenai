@@ -4,11 +4,13 @@ import { buildKoSiblingIndex, type MistakeContext } from './mistakes.ts'
 import { KANJI_FIXTURE } from './mistakes.fixture.ts'
 import { replay } from './replay.ts'
 import {
+  buildRematch,
   buildSession,
   isCorrectReading,
   recordMeaningAnswer,
   recordMeaningKnown,
   recordReadingAnswer,
+  rematchCount,
   type ClassSource,
   type IdiomEntry,
 } from './session.ts'
@@ -179,5 +181,106 @@ describe('buildSession → 기록 → 재생 왕복', () => {
     }
     // 방금 맞힌 카드는 기한이 안 됐으니 다시 안 나온다
     expect(second.cards).toHaveLength(0)
+  })
+})
+
+describe('buildRematch — 예전에 틀린 것만', () => {
+  const pool = [entry('a', 1, 'manual'), entry('b', 1, 'manual'), entry('c', 1, 'manual')]
+
+  /** 읽기 카드에 정답/오답을 순서대로 먹인다 */
+  function history(idiomId: string, results: boolean[], at = T0): LearningEvent[] {
+    return results.map((correct, i) =>
+      recordReadingAnswer({
+        item: { idiomId, cardType: 'reading', mode: 'correction', due: false },
+        headword: '学校',
+        reading: 'がっこう',
+        answer: correct ? 'がっこう' : 'がくこう',
+        ctx: { ...ctx, at: at + i * 60_000 },
+        mistakes,
+      }),
+    )
+  }
+
+  it('틀린 적 있는 숙어만 낸다', () => {
+    const events = [...history('a', [false]), ...history('b', [true], T0 + 3600_000)]
+    const { cards } = buildRematch(pool, events, { now: T0 + 7200_000, limit: 10 })
+    expect(cards.map((c) => c.idiomId)).toEqual(['a'])
+  })
+
+  it('많이 틀린 순으로 세운다', () => {
+    const events = [
+      ...history('a', [false]),
+      ...history('b', [false, false, false], T0 + 3600_000),
+      ...history('c', [false, false], T0 + 7200_000),
+    ]
+    const { cards } = buildRematch(pool, events, { now: T0 + 10800_000, limit: 10 })
+    expect(cards.map((c) => c.idiomId)).toEqual(['b', 'c', 'a'])
+  })
+
+  it('기한을 무시한다 — 방금 맞힌 카드도 틀린 적 있으면 다시 낸다', () => {
+    const events = history('a', [false, true])
+    const { cards } = buildRematch(pool, events, { now: T0, limit: 10 })
+    expect(cards).toHaveLength(1)
+    expect(cards[0].due).toBe(false) // 기한 전인데도 나왔다
+  })
+
+  it('읽기 카드만 낸다', () => {
+    const events = [
+      ...history('a', [false]),
+      recordMeaningAnswer({
+        item: { idiomId: 'b', cardType: 'meaning', mode: 'expansion', due: false },
+        correct: false,
+        ctx,
+      }),
+    ]
+    const { cards } = buildRematch(pool, events, { now: T0, limit: 10 })
+    expect(cards.map((c) => c.cardType)).toEqual(['reading'])
+  })
+
+  it('확인 질문을 끼우지 않는다 — 이미 만난 숙어들이다', () => {
+    const unconfirmed = [entry('a', 1, 'llm')]
+    const { cards } = buildRematch(unconfirmed, history('a', [false]), { now: T0, limit: 10 })
+    expect(cards.every((c) => !c.needsClassReview)).toBe(true)
+  })
+
+  it('limit 을 지킨다', () => {
+    const events = [
+      ...history('a', [false]),
+      ...history('b', [false], T0 + 3600_000),
+      ...history('c', [false], T0 + 7200_000),
+    ]
+    expect(buildRematch(pool, events, { now: T0, limit: 2 }).cards).toHaveLength(2)
+  })
+
+  it('풀에 없는 숙어는 건너뛴다', () => {
+    const { cards } = buildRematch([entry('a', 1, 'manual')], history('zzz', [false]), {
+      now: T0, limit: 10,
+    })
+    expect(cards).toEqual([])
+  })
+
+  it('틀린 게 없으면 빈 세션', () => {
+    expect(buildRematch(pool, history('a', [true]), { now: T0, limit: 10 }).cards).toEqual([])
+  })
+
+  it('rematchCount 는 카드 수와 일치한다', () => {
+    const events = [...history('a', [false]), ...history('b', [false, false], T0 + 3600_000)]
+    expect(rematchCount(pool, events)).toBe(2)
+    expect(buildRematch(pool, events, { now: T0, limit: 99 }).cards).toHaveLength(2)
+  })
+
+  it('분류에 실패한 오답도 센다 — mistakes 가 아니라 실제 오답 수를 본다', () => {
+    // 'あいうえお' 는 어느 유형에도 안 맞아 mistakeType 이 null 이다
+    const e = recordReadingAnswer({
+      item: { idiomId: 'a', cardType: 'reading', mode: 'correction', due: false },
+      headword: '学校',
+      reading: 'がっこう',
+      answer: 'あいうえお',
+      ctx,
+      mistakes,
+    })
+    expect(e.mistakeType).toBeNull()
+    expect(e.correct).toBe(false)
+    expect(rematchCount(pool, [e])).toBe(1)
   })
 })

@@ -7,7 +7,8 @@ import type { CardState, MistakeType } from './types.ts'
 import { buildReport } from './report.ts'
 
 function card(idiomId: string, reps: number, mistakes: Partial<Record<MistakeType, number>>): CardState {
-  return { idiomId, cardType: 'reading', card: { ...newCard(0), reps }, mistakes, lastAt: 0 }
+  const wrong = Object.values(mistakes).reduce((a, b) => a + b, 0)
+  return { idiomId, cardType: 'reading', card: { ...newCard(0), reps }, mistakes, wrong, lastAt: 0 }
 }
 
 const pairs = new Map<string, OnyomiPair>([
@@ -21,7 +22,7 @@ function state(): ReplayState {
       ['1:reading', card('1', 4, { KO_INTERFERENCE: 2, ONYOMI_CHOICE: 1 })],
       ['2:reading', card('2', 3, { KO_INTERFERENCE: 1 })],
       ['3:reading', card('3', 2, { RENDAKU: 1 })],
-      ['3:meaning', { idiomId: '3', cardType: 'meaning', card: { ...newCard(0), reps: 9 }, mistakes: {}, lastAt: 0 }],
+      ['3:meaning', { idiomId: '3', cardType: 'meaning', card: { ...newCard(0), reps: 9 }, mistakes: {}, wrong: 0, lastAt: 0 }],
     ]),
     meaningKnown: new Map(),
     onyomi: new Map([

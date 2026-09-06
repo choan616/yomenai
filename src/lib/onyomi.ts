@@ -148,3 +148,12 @@ function canonicalize(kanji: string, s: Surface, bases: BaseReading[]): Segment 
 export function pairId(kanji: string, base: string, kind: 'on' | 'kun'): string {
   return `${kanji}:${kind}:${base}`
 }
+
+/** `pairId` 의 역함수. 런타임이 사전을 더 불러오지 않고 쌍을 풀어 쓰게 한다 */
+export function parsePairId(id: string): { kanji: string; base: string; kind: 'on' | 'kun' } | null {
+  const parts = id.split(':')
+  if (parts.length !== 3) return null
+  const [kanji, kind, base] = parts
+  if (kanji === '' || base === '' || (kind !== 'on' && kind !== 'kun')) return null
+  return { kanji, base, kind }
+}

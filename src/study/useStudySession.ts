@@ -12,6 +12,9 @@ import {
   type SessionCard,
 } from '../core/session.ts'
 import { classifyMistake } from '../core/mistakes.ts'
+import { onyomiEcho, type OnyomiEcho } from '../core/echo.ts'
+import { rubyOf, type RubySegment } from '../core/ruby.ts'
+import { buildRematch } from '../core/session.ts'
 import type { Confidence } from '../core/scheduler.ts'
 import type { LearningEvent, MistakeType } from '../core/types.ts'
 import { appendEvent } from '../db/events.ts'
@@ -29,6 +32,10 @@ export interface ReadingFeedback {
   expected: string
   mistakeType: MistakeType | null
   answer: string
+  /** 정답일 때만. 방금 쓴 음독과 그걸 만난 횟수 (PLAN §6 "음독은 진단 도구") */
+  echo: OnyomiEcho[]
+  /** 정답 읽기를 한자 위에 얹기 위한 조각 */
+  ruby: RubySegment[]
 }
 
 export type StudyStatus =
@@ -69,7 +76,10 @@ export interface StudyActions {
   next: (confidence?: Confidence) => void
 }
 
-export function useStudySession(): [StudyState, StudyActions] {
+/** 정규 세션인지, 예전에 틀린 것만 모은 재대결인지 */
+export type SessionKind = 'normal' | 'rematch'
+
+export function useStudySession(kind: SessionKind = 'normal'): [StudyState, StudyActions] {
   const [session, setSession] = useState<Session | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [idx, setIdx] = useState(0)
@@ -110,7 +120,11 @@ export function useStudySession(): [StudyState, StudyActions] {
         setPriorEvents(events)
         mistakes.current = mistakeContextFromKanji(kanji)
         const { sessionLimit, ratio } = loadSettings()
-        const built = buildSession(loaded, events, { now: Date.now(), limit: sessionLimit, ratio })
+        const now = Date.now()
+        const built =
+          kind === 'rematch'
+            ? buildRematch(loaded, events, { now, limit: sessionLimit })
+            : buildSession(loaded, events, { now, limit: sessionLimit, ratio })
         setSession(built)
         setInClassReview(built.cards[0]?.needsClassReview ?? false)
         shownAt.current = performance.now()
@@ -121,7 +135,7 @@ export function useStudySession(): [StudyState, StudyActions] {
     return () => {
       alive = false
     }
-  }, [])
+  }, [kind])
 
   const card = session?.cards[idx]
   const idiom = card ? byId.get(card.idiomId) : undefined
@@ -168,9 +182,19 @@ export function useStudySession(): [StudyState, StudyActions] {
             { headword: idiom.headword, expected: idiom.reading, answer },
             mistakes.current,
           )
-      setFeedback({ correct, expected: idiom.reading, mistakeType, answer })
+      const echo =
+        correct && session
+          ? onyomiEcho({
+              pairIds: idiom.pairIds,
+              before: session.state.onyomi,
+              sessionEvents,
+              pairsOf: (id) => byId.get(id)?.pairIds ?? [],
+            })
+          : []
+      const ruby = rubyOf(idiom.headword, idiom.reading, mistakes.current.lookup)
+      setFeedback({ correct, expected: idiom.reading, mistakeType, answer, echo, ruby })
     },
-    [card, idiom],
+    [card, idiom, session, sessionEvents, byId],
   )
 
   const submitMeaning = useCallback(

@@ -312,3 +312,28 @@
   animation: fade-up 420ms ease-out both;
   animation-delay: calc(var(--i, 0) * 45ms + 160ms);
 }
+
+/* ── 재대결 진입 — 세션 시작 아래. 기한을 무시하고 예전에 틀린 것만 다시 낸다 ── */
+.btn.rematch {
+  width: 100%;
+  max-width: 320px;
+  padding: 12px 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  font-size: 15px;
+}
+.btn.rematch b {
+  color: var(--ng);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── 検査票 마감 — 수치는 자리를 맞추고, 구획은 얇은 규칙선으로 나눈다 ── */
+.report .section-title {
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+}
+.report .report-lead,
+.report .ko-big {
+  font-variant-numeric: tabular-nums;
+}
