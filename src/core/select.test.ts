@@ -160,6 +160,41 @@ describe('selectSession — 구성 규칙', () => {
     expect(picked.map((p) => p.cardType)).toEqual(['reading', 'meaning'])
   })
 
+  describe('seed — 제시 순서 섞기', () => {
+    const cands = Array.from({ length: 12 }, (_, i) =>
+      candidate(`c${String(i).padStart(2, '0')}`, 1, 'correction'),
+    )
+    const opts = { now: T0, limit: 12 }
+
+    it('seed 없으면 우선순위 순서 그대로 (결정론 유지)', () => {
+      const a = selectSession(cands, emptyState(), opts).map((p) => p.idiomId)
+      const b = selectSession(cands, emptyState(), opts).map((p) => p.idiomId)
+      expect(a).toEqual(b)
+      expect(a[0]).toBe('c00') // idiomId 오름차순
+    })
+
+    it('같은 seed → 같은 순서, 다른 seed → 대개 다른 순서', () => {
+      const s1a = selectSession(cands, emptyState(), { ...opts, seed: 111 }).map((p) => p.idiomId)
+      const s1b = selectSession(cands, emptyState(), { ...opts, seed: 111 }).map((p) => p.idiomId)
+      const s2 = selectSession(cands, emptyState(), { ...opts, seed: 222 }).map((p) => p.idiomId)
+      expect(s1a).toEqual(s1b)
+      expect(s1a).not.toEqual(s2)
+      expect([...s1a].sort()).toEqual([...s2].sort()) // 구성은 같다
+    })
+
+    it('섞어도 같은 숙어의 읽기 → 뜻 순서는 유지된다', () => {
+      const picked = selectSession(
+        [candidate('x', 1, 'expansion'), candidate('y', 1, 'expansion')],
+        emptyState(),
+        { now: T0, limit: 4, ratio: { correction: 0, expansion: 2 }, seed: 7 },
+      )
+      for (const id of ['x', 'y']) {
+        const types = picked.filter((p) => p.idiomId === id).map((p) => p.cardType)
+        expect(types).toEqual(['reading', 'meaning'])
+      }
+    })
+  })
+
   it('모드 비율 기본값 7:3 을 지킨다', () => {
     const candidates = [
       ...Array.from({ length: 20 }, (_, i) => candidate(`c${i}`, 1, 'correction')),

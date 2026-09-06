@@ -30,6 +30,47 @@ export interface SelectOptions {
   /** 신규 도입 밴드 범위. 기본은 밴드 0 건너뛰기 (PLAN §4) */
   minBand?: Band
   maxBand?: Band
+  /**
+   * 주면 뽑은 카드의 *제시 순서*를 이 시드로 섞는다 (숙어 단위 — 읽기·뜻은 붙어 이동).
+   * *어떤* 카드를 뽑을지는 안 바뀐다(진단 가치 유지). 실제 세션은 매번 다른 시드를 준다.
+   * 안 주면 우선순위 순서 그대로 — 테스트·시뮬레이션의 결정론을 유지한다 (2026-09-07).
+   */
+  seed?: number
+}
+
+/** mulberry32 — diagnostic.ts 와 같은 계열의 재현 가능한 난수 */
+function rng(seed: number): () => number {
+  let a = seed >>> 0
+  return () => {
+    a = (a + 0x6d2b79f5) >>> 0
+    let t = Math.imul(a ^ (a >>> 15), 1 | a)
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296
+  }
+}
+
+/**
+ * 숙어 단위로 섞는다 — 같은 숙어의 [읽기, 뜻] 카드는 붙어서 함께 이동하고 내부 순서는 유지.
+ * 우선순위(due 먼저 등)는 흐트러지지만, 진단은 "어떤 카드"가 나오냐로 하지 순서로 안 한다.
+ */
+function shuffleByIdiom(items: SessionItem[], seed: number): SessionItem[] {
+  const groups: SessionItem[][] = []
+  const idx = new Map<string, number>()
+  for (const it of items) {
+    const g = idx.get(it.idiomId)
+    if (g === undefined) {
+      idx.set(it.idiomId, groups.length)
+      groups.push([it])
+    } else {
+      groups[g].push(it)
+    }
+  }
+  const rand = rng(seed)
+  for (let i = groups.length - 1; i > 0; i--) {
+    const j = Math.floor(rand() * (i + 1))
+    ;[groups[i], groups[j]] = [groups[j], groups[i]]
+  }
+  return groups.flat()
 }
 
 const DEFAULT_RATIO = { correction: 7, expansion: 3 }
@@ -129,7 +170,8 @@ export function selectSession(
   let rest = options.limit - filled
   if (rest > 0) rest -= take('correction', rest)
   if (rest > 0) take('expansion', rest)
-  return picked
+
+  return options.seed === undefined ? picked : shuffleByIdiom(picked, options.seed)
 }
 
 /** 같은 숙어면 읽기 카드가 뜻 카드보다 먼저다 — 뜻 카드는 읽기를 보여주므로,

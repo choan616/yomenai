@@ -132,7 +132,8 @@ export function useStudySession(kind: SessionKind = 'normal'): [StudyState, Stud
         const built =
           kind === 'rematch'
             ? buildRematch(loaded, events, { now, limit: sessionLimit })
-            : buildSession(loaded, events, { now, limit: sessionLimit, ratio })
+            : // seed 로 제시 순서를 매 세션 섞는다 — 순서를 예측해 모르는 한자를 찍는 걸 막는다 (2026-09-07)
+              buildSession(loaded, events, { now, limit: sessionLimit, ratio, seed: now })
         setSession(built)
         setInClassReview(built.cards[0]?.needsClassReview ?? false)
         shownAt.current = performance.now()
