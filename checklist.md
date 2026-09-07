@@ -509,28 +509,24 @@ context-notes 2026-09-07 「지속의 유인」·「대조」 절 참조.
 (JMdict), 한자별 음훈독·한국 한자음(KANJIDIC2). 밴드도 제외 — nf 빈도 순위라 객관적이고,
 체감 난이도 교정은 감수보다 실사용 로그가 낫다.
 
-- [ ] **12-A · 사람이 만든 판정을 추적한다 (gitignore 예외)** — 다른 것보다 먼저
-  - 지금 `data/dict/` 가 통째로 무시돼 **Phase 3 수동 검수 355건이 커밋 안 돼 있다.**
-    `git ls-files data/` 가 빈 결과다. 이 기기가 날아가면 사라진다
-  - 재생성 가능한 산출물과 사람이 만든 원본을 가른다 —
-    `!data/dict/*-review.tsv`, `!data/dict/*-worklist*.tsv`, `!data/dict/*-overrides.json`
-  - **검증: `git ls-files data/dict` 에 검수 파일이 잡히고, `build:onyomi`·`build:bands` 를
-    다시 돌려도 `git status` 에 산출물이 안 뜬다**
-- [ ] **12-B · JmdictFurigana 대조 (사람 0명)** — `decompose` 신뢰도의 답을 사람 없이 얻는다
-  - `data/raw/` 에 `JmdictFurigana.json` 내려받기 (CC BY-SA, JMdict 승계. 커밋 안 함).
-    JMdict 234,814개 중 177,770개(75.7%) 해결분을 배포한다
-  - `tools/measure-furigana.ts` — 표제어+읽기로 조인해 `decompose` 의 **경계**와 대조.
-    `measure-tatoeba.ts` 처럼 산출물 안 남기는 일회성 실측 스크립트
-  - 산출 — 조인 가능 비율 / 일치율 / 불일치 목록. 밴드별·글자수별로 쪼갠다
-  - **정답지가 아니라 두 번째 의견이다.** JmdictFurigana 도 알고리즘 + 수작업 예외 목록이고
-    스스로 "not 100% accurate", "특수 표현을 잘못 자르는 문제"를 명시한다.
-    불일치 = 우리가 틀렸다가 아니라 = 사람이 볼 자리다
-  - **표면형까지만 준다.** 원형(はっ → はつ)과 음훈 구분은 우리 몫이라 대조 범위 밖이다.
-    다만 경계가 틀리면 원형도 반드시 틀리므로 지배적 위험은 걷힌다
-  - 커버리지는 실측해봐야 안다 — 미해결 24%가 주로 熟字訓·고유명사·가나 섞임이라
-    상용한자 한자-only 인 우리 코퍼스와는 잘 안 겹칠 것으로 본다
-  - **검증: 일치율 수치 산출 + 불일치 표본 20개 육안 확인, context-notes 에 수치 기록**
-- [ ] **12-C · 불일치분 검수 워크리스트** — 12-B 결과가 나온 뒤
+- [x] **12-A · 사람이 만든 판정을 추적한다 (gitignore 예외)** (2026-09-07, 커밋 `0fcccb8`)
+  - `data/dict/` 통째 무시 → `data/dict/*` + 예외. 디렉터리 무시로는 `!` 예외가 안 먹는다
+  - `!*-review.tsv` `!*-review-sample.tsv` `!*-worklist*.tsv` `!*-overrides.json`
+  - LLM 초벌(`korean-llm-draft.tsv`)은 재생성 가능이라 스코프 밖 (context-notes 같은 날 절)
+  - **검증 통과: `git ls-files data/dict` = 검수 4파일. `build:bands`·`build:onyomi` 재실행 후
+    `git status` 에 산출물 안 뜸**
+- [x] **12-B · JmdictFurigana 대조 (사람 0명)** (2026-09-07)
+  - `data/raw/JmdictFurigana.json` (release 2.3.1+2026-08-25, 236,255개, UTF-8 BOM).
+    `tools/measure-furigana.ts` — 내부 경계 오프셋 집합 대조, 산출물 안 남김
+  - **조인 98.16%** (JF 전체 75.7%보다 높다 — 상용한자 한자-only) · 경계 비교 가능 102,410 ·
+    **완전 일치 99.45%** · 우리가 더 촘촘 0.55% · **충돌 0** · JF 는 풀고 우리는 실패 2,430
+  - 육안 — `our_fail` 밴드 0~3 185건 전량 全部 熟字訓·当て字·특수독(버그 0). `our_finer` 밴드 0~3
+    16건은 連声 정답 or 熟字訓 과분할. **경계 위치가 어긋난 사례 0건** — 「신뢰도는 층마다 다르다」의
+    걱정이 반증됨. context-notes 같은 날 절에 수치 기록
+- [ ] **12-C · 불일치분 검수 워크리스트** — ~~12-B 결과가 나온 뒤~~
+  **12-B 충돌 0건이라 워크리스트에 올릴 게 없다.** 남은 판단은 "熟字訓 과분할 562건(밴드 0~3 은 16)을
+  decompose 가 거부/그룹화할지"와 "日本〜·文字〜 가족을 분해 대상에 넣을지" — 둘 다 경계 오류가
+  아니라 범위 문제라 성격이 다르다. 이 항목을 살릴지 사용자 판단 대기
   - `tools/build-decomp-worklist.ts` → `data/dict/decomp-worklist.tsv`.
     Phase 3 의 `build-review-worklist.ts` → `apply-korean-review.ts` 골격을 그대로 쓴다
   - 열 — `id headword reading band segmentation cost margin alt verdict note`.
