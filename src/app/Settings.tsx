@@ -14,6 +14,7 @@ import { getDeviceId } from '../db/device.ts'
 import { googleDrive } from '../sync/googleDrive.ts'
 import { resetLearning, syncNow } from '../sync/sync.ts'
 import { getLastSyncAt, setLastSyncAt, setSignedIn, wasSignedIn } from '../sync/syncState.ts'
+import { clearDiagnosticDone } from './diagnostic-state.ts'
 
 const STEP = 5
 
@@ -137,6 +138,8 @@ function ResetSetting() {
     setError(null)
     void resetLearning(db(), googleDrive)
       .then(() => {
+        // 기록이 비었으니 진입 진단도 다시 받을 수 있어야 한다. 안 지우면 영영 안 뜬다
+        clearDiagnosticDone()
         // 세션 훅·홈 통계 등 곳곳의 파생 상태를 확실히 비우려고 통째로 새로고침한다
         window.location.reload()
       })

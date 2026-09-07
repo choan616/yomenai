@@ -485,6 +485,15 @@ context-notes 2026-09-07 「지속의 유인」·「대조」 절 참조.
   **검증: 390×620 캡처에서 100% / 27 / 없음 정상 표시, 제목 안 잘림, 홈으로 도달 가능**
 - [x] **총 검증** — `npm test` 290 → **316**, `npm run e2e` 6스펙 통과(카드 전환 p95 10.3ms),
   `tsc -b`/`oxlint`/`build` 클린
+- [x] **진단 진입점이 동기화를 못 따라갔다** (2026-09-07, 사용자 보고) —
+  `yomenai:diagnosticDone` 이 localStorage 라 기기를 안 넘어간다. context-notes 같은 날 절
+  - `shouldOfferDiagnostic(done, level)` — 플래그가 없어도 `buildLevel` 판정이 섰으면 안 권한다
+  - 반대 방향도 같이 — `resetLearning` 이 플래그를 안 지워 초기화 뒤 진단이 영영 안 떴다.
+    `clearDiagnosticDone()` 추가
+  - 딸려 온 변화 — 진단을 건너뛰고 세션만 해도 진입점이 사라진다 (의도한 결과, 감시 대상)
+  - **검증: `diagnostic-state.test.ts` 5 · `tests/e2e/diagnostic-flag.spec.ts` —
+    처음엔 뜨고 → 세션 뒤엔 안 뜨고 → localStorage 를 비워도 안 뜨고 → 초기화 뒤엔 다시 뜬다.
+    `npm test` 316 → 321, `npm run e2e` 6 → 7스펙 통과**
 - [ ] **11-F · 실기기 체감 (사용자)** — 예고가 궁금증인지 소음인지, "3장만"을 실제로 누르게
   되는지, 읽히는 문장이 보상으로 느껴지는지, 요약 3블록이 대시보드로 읽히지 않는지.
   대조가 규칙을 눈에 들어오게 하는지. AI 가 대신 못 함

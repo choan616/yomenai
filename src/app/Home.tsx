@@ -4,7 +4,12 @@ import { buildSession, rematchCount } from '../core/session.ts'
 import { LOCAL_USER_ID, listEvents } from '../db/events.ts'
 import { db } from '../db/schema.ts'
 import { loadBaseIdioms } from '../dict/load.ts'
-import { isDiagnosticDone } from './diagnostic-state.ts'
+import { buildLevel } from '../core/level.ts'
+import {
+  isDiagnosticDone,
+  markDiagnosticDone,
+  shouldOfferDiagnostic,
+} from './diagnostic-state.ts'
 import { loadSettings, QUICK_SESSION_LIMIT } from './settings.ts'
 import type { Screen } from '../App.tsx'
 
@@ -18,7 +23,8 @@ interface Preview {
 export function Home({ onNavigate }: { onNavigate: (screen: Screen) => void }) {
   const [preview, setPreview] = useState<Preview | null>(null)
   const [error, setError] = useState<string | null>(null)
-  const needsDiagnostic = !isDiagnosticDone()
+  // 로그를 읽기 전엔 플래그만 보고, 읽고 나면 수준까지 보고 다시 정한다
+  const [needsDiagnostic, setNeedsDiagnostic] = useState(!isDiagnosticDone())
 
   useEffect(() => {
     let alive = true
@@ -36,6 +42,15 @@ export function Home({ onNavigate }: { onNavigate: (screen: Screen) => void }) {
           due: session.cards.filter((c) => c.due).length,
           rematch: rematchCount(pool, events),
         })
+
+        // 동기화로 받아온 기록만 있고 이 기기의 플래그는 비어 있을 수 있다 (플래그는 안 옮겨온다)
+        const bandOf = new Map(pool.map((p) => [p.idiomId, p.band]))
+        const level = buildLevel(events, (id) => bandOf.get(id))
+        if (!shouldOfferDiagnostic(isDiagnosticDone(), level)) {
+          // 다음 진입부터는 로그를 다 읽기 전에도 바로 정해지도록 플래그를 세워 둔다
+          markDiagnosticDone()
+          setNeedsDiagnostic(false)
+        }
       } catch (e) {
         if (alive) setError(e instanceof Error ? e.message : String(e))
       }
