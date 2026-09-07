@@ -1,0 +1,731 @@
+{
+ "_meta": {
+  "source": "JmdictFurigana (Doublevil), release 2.3.1+2026-08-25",
+  "rule": "JF 가 묶은 다자 구간을 decompose 가 쪼갰고 그 구간에 음운 변형(連濁·連声·促音·半濁)이 없으면 熟字訓 으로 거부",
+  "generatedAt": "2026-09-07T05:28:54.529Z",
+  "count": 103
+ },
+ "overrides": {
+  "1163720": {
+   "action": "reject",
+   "reason": "JUKUJIKUN",
+   "jf": "ひとり|しば|い",
+   "our": "ひと|り|しば|い",
+   "band": 4
+  },
+  "1163760": {
+   "action": "reject",
+   "reason": "JUKUJIKUN",
+   "jf": "ひとり|ね",
+   "our": "ひと|り|ね",
+   "band": 4
+  },
+  "1163820": {
+   "action": "reject",
+   "reason": "JUKUJIKUN",
+   "jf": "ひとり|ぶ|たい",
+   "our": "ひと|り|ぶ|たい",
+   "band": 4
+  },
+  "1163830": {
+   "action": "reject",
+   "reason": "JUKUJIKUN",
+   "jf": "ひとり|ばら",
+   "our": "ひと|り|ばら",
+   "band": 4
+  },
+  "1163870": {
+   "action": "reject",
+   "reason": "JUKUJIKUN",
+   "jf": "ひとり|むすめ",
+   "our": "ひと|り|むすめ",
+   "band": 1
+  },
+  "1163880": {
+   "action": "reject",
+   "reason": "JUKUJIKUN",
+   "jf": "ひとり|よう",
+   "our": "ひと|り|よう",
+   "band": 4
+  },
+  "1183000": {
+   "action": "reject",
+   "reason": "JUKUJIKUN",
+   "jf": "おとめ|ざ",
+   "our": "おと|め|ざ",
+   "band": 4
+  },
+  "1183010": {
+   "action": "reject",
+   "reason": "JUKUJIKUN",
+   "jf": "おとめ|ごころ",
+   "our": "おと|め|ごころ",
+   "band": 4
+  },
+  "1187120": {
+   "action": "reject",
+   "reason": "JUKUJIKUN",
+   "jf": "け|しょう|べや",
+   "our": "け|しょう|べ|や",
+   "band": 4
+  },
+  "1245350": {
+   "action": "reject",
+   "reason": "JUKUJIKUN",
+   "jf": "あき|べや",
+   "our": "あき|べ|や",
+   "band": 4
+  },
+  "1276380": {
+   "action": "reject",
+   "reason": "JUKUJIKUN",
+   "jf": "くち|じょうず",
+   "our": "くち|じょう|ず",
+   "band": 4
+  },
+  "1298700": {
+   "action": "reject",
+   "reason": "JUKUJIKUN",
+   "jf": "はけ",
+   "our": "は|け",
+   "band": 4
+  },
+  "1298710": {
+   "action": "reject",
+   "reason": "JUKUJIKUN",
+   "jf": "はけ|さき",
+   "our": "は|け|さき",
+   "band": 4
+  },
+  "1298720": {
+   "action": "reject",
+   "reason": "JUKUJIKUN",
+   "jf": "はけ|め",
+   "our": "は|け|め",
+   "band": 4
+  },
+  "1302930": {
+   "action": "reject",
+   "reason": "JUKUJIKUN",
+   "jf": "やまめ",
+   "our": "やま|め",
+   "band": 4
+  },
+  "1305050": {
+   "action": "reject",
+   "reason": "JUKUJIKUN",
+   "jf": "し|ごと|べや",
+   "our": "し|ごと|べ|や",
+   "band": 4
+  },
+  "1353320": {
+   "action": "reject",
+   "reason": "JUKUJIKUN",
+   "jf": "じょうず",
+   "our": "じょう|ず",
+   "band": 1
+  },
+  "1353340": {
+   "action": "reject",
+   "reason": "JUKUJIKUN",
+   "jf": "じょうず|もの",
+   "our": "じょう|ず|もの",
+   "band": 4
+  },
+  "1394760": {
+   "action": "reject",
+   "reason": "JUKUJIKUN",
+   "jf": "さほど",
+   "our": "さ|ほど",
+   "band": 4
+  },
+  "1439980": {
+   "action": "reject",
+   "reason": "JUKUJIKUN",
+   "jf": "あま|つ|おとめ",
+   "our": "あま|つ|おと|め",
+   "band": 4
+  },
+  "1455670": {
+   "action": "reject",
+   "reason": "JUKUJIKUN",
+   "jf": "ひとり|ごと",
+   "our": "ひと|り|ごと",
+   "band": 3
+  },
+  "1462470": {
+   "action": "reject",
+   "reason": "JUKUJIKUN",
+   "jf": "ふたり|とも",
+   "our": "ふた|り|とも",
+   "band": 4
+  },
+  "1462510": {
+   "action": "reject",
+   "reason": "JUKUJIKUN",
+   "jf": "ふたり|ぐみ",
+   "our": "ふた|り|ぐみ",
+   "band": 4
+  },
+  "1462520": {
+   "action": "reject",
+   "reason": "JUKUJIKUN",
+   "jf": "ふたり|ぶん",
+   "our": "ふた|り|ぶん",
+   "band": 4
+  },
+  "1462530": {
+   "action": "reject",
+   "reason": "JUKUJIKUN",
+   "jf": "ふたり|め",
+   "our": "ふた|り|め",
+   "band": 4
+  },
+  "1471000": {
+   "action": "reject",
+   "reason": "JUKUJIKUN",
+   "jf": "はとば",
+   "our": "は|と|ば",
+   "band": 3
+  },
+  "1576080": {
+   "action": "reject",
+   "reason": "JUKUJIKUN",
+   "jf": "ひとり|ご",
+   "our": "ひと|り|ご",
+   "band": 3
+  },
+  "1576150": {
+   "action": "reject",
+   "reason": "JUKUJIKUN",
+   "jf": "ひとり",
+   "our": "ひと|り",
+   "band": 0
+  },
+  "1576160": {
+   "action": "reject",
+   "reason": "JUKUJIKUN",
+   "jf": "ひとり|てん|か",
+   "our": "ひと|り|てん|か",
+   "band": 4
+  },
+  "1582670": {
+   "action": "reject",
+   "reason": "JUKUJIKUN",
+   "jf": "ふたり",
+   "our": "ふた|り",
+   "band": 0
+  },
+  "1596700": {
+   "action": "reject",
+   "reason": "JUKUJIKUN",
+   "jf": "そろばん",
+   "our": "そろ|ばん",
+   "band": 4
+  },
+  "1602030": {
+   "action": "reject",
+   "reason": "JUKUJIKUN",
+   "jf": "ひとり|たび",
+   "our": "ひと|り|たび",
+   "band": 4
+  },
+  "1612530": {
+   "action": "reject",
+   "reason": "JUKUJIKUN",
+   "jf": "ひとり|ひとり",
+   "our": "ひと|り|ひと|り",
+   "band": 3
+  },
+  "1626990": {
+   "action": "reject",
+   "reason": "JUKUJIKUN",
+   "jf": "ひとり|もの",
+   "our": "ひと|り|もの",
+   "band": 4
+  },
+  "1629550": {
+   "action": "reject",
+   "reason": "JUKUJIKUN",
+   "jf": "や|ね|うら|べや",
+   "our": "や|ね|うら|べ|や",
+   "band": 4
+  },
+  "1650920": {
+   "action": "reject",
+   "reason": "JUKUJIKUN",
+   "jf": "じょうろ",
+   "our": "じょ|う|ろ",
+   "band": 4
+  },
+  "1749140": {
+   "action": "reject",
+   "reason": "JUKUJIKUN",
+   "jf": "あいべや",
+   "our": "あい|べ|や",
+   "band": 3
+  },
+  "1782900": {
+   "action": "reject",
+   "reason": "JUKUJIKUN",
+   "jf": "はなし|じょうず",
+   "our": "はなし|じょう|ず",
+   "band": 4
+  },
+  "1786350": {
+   "action": "reject",
+   "reason": "JUKUJIKUN",
+   "jf": "おお|べや",
+   "our": "おお|べ|や",
+   "band": 3
+  },
+  "1823150": {
+   "action": "reject",
+   "reason": "JUKUJIKUN",
+   "jf": "べん|きょう|べや",
+   "our": "べん|きょう|べ|や",
+   "band": 4
+  },
+  "1844500": {
+   "action": "reject",
+   "reason": "JUKUJIKUN",
+   "jf": "さ|おとめ",
+   "our": "さ|おと|め",
+   "band": 1
+  },
+  "1918440": {
+   "action": "reject",
+   "reason": "JUKUJIKUN",
+   "jf": "こ|ども|べや",
+   "our": "こ|ども|べ|や",
+   "band": 4
+  },
+  "1930300": {
+   "action": "reject",
+   "reason": "JUKUJIKUN",
+   "jf": "ひとり|べや",
+   "our": "ひと|り|べ|や",
+   "band": 4
+  },
+  "1936470": {
+   "action": "reject",
+   "reason": "JUKUJIKUN",
+   "jf": "し|たく|べや",
+   "our": "し|たく|べ|や",
+   "band": 4
+  },
+  "1954080": {
+   "action": "reject",
+   "reason": "JUKUJIKUN",
+   "jf": "ひとり|み",
+   "our": "ひと|り|み",
+   "band": 4
+  },
+  "2022600": {
+   "action": "reject",
+   "reason": "JUKUJIKUN",
+   "jf": "どう|べや",
+   "our": "どう|べ|や",
+   "band": 4
+  },
+  "2040710": {
+   "action": "reject",
+   "reason": "JUKUJIKUN",
+   "jf": "ひとり|げい|こ",
+   "our": "ひと|り|げい|こ",
+   "band": 4
+  },
+  "2044900": {
+   "action": "reject",
+   "reason": "JUKUJIKUN",
+   "jf": "こう|さい|じょうず",
+   "our": "こう|さい|じょう|ず",
+   "band": 4
+  },
+  "2046490": {
+   "action": "reject",
+   "reason": "JUKUJIKUN",
+   "jf": "しゃ|こう|じょうず",
+   "our": "しゃ|こう|じょう|ず",
+   "band": 4
+  },
+  "2047090": {
+   "action": "reject",
+   "reason": "JUKUJIKUN",
+   "jf": "しょう|ばい|じょうず",
+   "our": "しょう|ばい|じょう|ず",
+   "band": 4
+  },
+  "2047260": {
+   "action": "reject",
+   "reason": "JUKUJIKUN",
+   "jf": "しょ|せい|じょうず",
+   "our": "しょ|せい|じょう|ず",
+   "band": 4
+  },
+  "2048520": {
+   "action": "reject",
+   "reason": "JUKUJIKUN",
+   "jf": "せっ|とく|じょうず",
+   "our": "せっ|とく|じょう|ず",
+   "band": 4
+  },
+  "2049440": {
+   "action": "reject",
+   "reason": "JUKUJIKUN",
+   "jf": "そろばん|かん|じょう",
+   "our": "そろ|ばん|かん|じょう",
+   "band": 4
+  },
+  "2052470": {
+   "action": "reject",
+   "reason": "JUKUJIKUN",
+   "jf": "ひとり|ふた|やく",
+   "our": "ひと|り|ふた|やく",
+   "band": 4
+  },
+  "2079060": {
+   "action": "reject",
+   "reason": "JUKUJIKUN",
+   "jf": "こ|べや",
+   "our": "こ|べ|や",
+   "band": 4
+  },
+  "2080190": {
+   "action": "reject",
+   "reason": "JUKUJIKUN",
+   "jf": "ひとり|ぶん",
+   "our": "ひと|り|ぶん",
+   "band": 4
+  },
+  "2112530": {
+   "action": "reject",
+   "reason": "JUKUJIKUN",
+   "jf": "うた|かるた",
+   "our": "うた|か|る|た",
+   "band": 4
+  },
+  "2145590": {
+   "action": "reject",
+   "reason": "JUKUJIKUN",
+   "jf": "おとめ|ざくら",
+   "our": "おと|め|ざくら",
+   "band": 4
+  },
+  "2181390": {
+   "action": "reject",
+   "reason": "JUKUJIKUN",
+   "jf": "ここのそじ",
+   "our": "ここの|そ|じ",
+   "band": 4
+  },
+  "2407400": {
+   "action": "reject",
+   "reason": "JUKUJIKUN",
+   "jf": "ひとり|かっ|て",
+   "our": "ひと|り|かっ|て",
+   "band": 4
+  },
+  "2413080": {
+   "action": "reject",
+   "reason": "JUKUJIKUN",
+   "jf": "かど|べや",
+   "our": "かど|べ|や",
+   "band": 4
+  },
+  "2533710": {
+   "action": "reject",
+   "reason": "JUKUJIKUN",
+   "jf": "ろうまん|し|そう",
+   "our": "ろう|まん|し|そう",
+   "band": 4
+  },
+  "2554320": {
+   "action": "reject",
+   "reason": "JUKUJIKUN",
+   "jf": "ふたり|べや",
+   "our": "ふた|り|べ|や",
+   "band": 4
+  },
+  "2574530": {
+   "action": "reject",
+   "reason": "JUKUJIKUN",
+   "jf": "ご|よう|べや",
+   "our": "ご|よう|べ|や",
+   "band": 4
+  },
+  "2576450": {
+   "action": "reject",
+   "reason": "JUKUJIKUN",
+   "jf": "おんな|べや",
+   "our": "おんな|べ|や",
+   "band": 4
+  },
+  "2576460": {
+   "action": "reject",
+   "reason": "JUKUJIKUN",
+   "jf": "おとこ|べや",
+   "our": "おとこ|べ|や",
+   "band": 4
+  },
+  "2580140": {
+   "action": "reject",
+   "reason": "JUKUJIKUN",
+   "jf": "おとめ|ご",
+   "our": "おと|め|ご",
+   "band": 4
+  },
+  "2580510": {
+   "action": "reject",
+   "reason": "JUKUJIKUN",
+   "jf": "やそ|がみ",
+   "our": "や|そ|がみ",
+   "band": 4
+  },
+  "2630270": {
+   "action": "reject",
+   "reason": "JUKUJIKUN",
+   "jf": "おとめ|だん|し",
+   "our": "おと|め|だん|し",
+   "band": 4
+  },
+  "2652170": {
+   "action": "reject",
+   "reason": "JUKUJIKUN",
+   "jf": "だれ|ひとり",
+   "our": "だれ|ひと|り",
+   "band": 4
+  },
+  "2659100": {
+   "action": "reject",
+   "reason": "JUKUJIKUN",
+   "jf": "そろばん|ずく",
+   "our": "そろ|ばん|ずく",
+   "band": 4
+  },
+  "2694490": {
+   "action": "reject",
+   "reason": "JUKUJIKUN",
+   "jf": "ひとり|おや|か|てい",
+   "our": "ひと|り|おや|か|てい",
+   "band": 4
+  },
+  "2694500": {
+   "action": "reject",
+   "reason": "JUKUJIKUN",
+   "jf": "ひとり|おや",
+   "our": "ひと|り|おや",
+   "band": 4
+  },
+  "2740840": {
+   "action": "reject",
+   "reason": "JUKUJIKUN",
+   "jf": "お|べや",
+   "our": "お|べ|や",
+   "band": 4
+  },
+  "2760090": {
+   "action": "reject",
+   "reason": "JUKUJIKUN",
+   "jf": "やそ|よろず",
+   "our": "や|そ|よろず",
+   "band": 4
+  },
+  "2779460": {
+   "action": "reject",
+   "reason": "JUKUJIKUN",
+   "jf": "ひとり|まい",
+   "our": "ひと|り|まい",
+   "band": 4
+  },
+  "2784780": {
+   "action": "reject",
+   "reason": "JUKUJIKUN",
+   "jf": "ね|べや",
+   "our": "ね|べ|や",
+   "band": 4
+  },
+  "2816050": {
+   "action": "reject",
+   "reason": "JUKUJIKUN",
+   "jf": "ひとり|しずか",
+   "our": "ひと|り|しずか",
+   "band": 4
+  },
+  "2827852": {
+   "action": "reject",
+   "reason": "JUKUJIKUN",
+   "jf": "とこ|じょうず",
+   "our": "とこ|じょう|ず",
+   "band": 4
+  },
+  "2831894": {
+   "action": "reject",
+   "reason": "JUKUJIKUN",
+   "jf": "い|しょう|べや",
+   "our": "い|しょう|べ|や",
+   "band": 4
+  },
+  "2831897": {
+   "action": "reject",
+   "reason": "JUKUJIKUN",
+   "jf": "もの|おき|べや",
+   "our": "もの|おき|べ|や",
+   "band": 4
+  },
+  "2833171": {
+   "action": "reject",
+   "reason": "JUKUJIKUN",
+   "jf": "しも|べや",
+   "our": "しも|べ|や",
+   "band": 4
+  },
+  "2837162": {
+   "action": "reject",
+   "reason": "JUKUJIKUN",
+   "jf": "ふたり|しずか",
+   "our": "ふた|り|しずか",
+   "band": 4
+  },
+  "2840291": {
+   "action": "reject",
+   "reason": "JUKUJIKUN",
+   "jf": "いくさ|じょうず",
+   "our": "いくさ|じょう|ず",
+   "band": 4
+  },
+  "2840491": {
+   "action": "reject",
+   "reason": "JUKUJIKUN",
+   "jf": "ひとり|やき|にく",
+   "our": "ひと|り|やき|にく",
+   "band": 4
+  },
+  "2840734": {
+   "action": "reject",
+   "reason": "JUKUJIKUN",
+   "jf": "めい|じん|じょうず",
+   "our": "めい|じん|じょう|ず",
+   "band": 4
+  },
+  "2840741": {
+   "action": "reject",
+   "reason": "JUKUJIKUN",
+   "jf": "りょう|り|じょうず",
+   "our": "りょう|り|じょう|ず",
+   "band": 4
+  },
+  "2843859": {
+   "action": "reject",
+   "reason": "JUKUJIKUN",
+   "jf": "べつ|べや",
+   "our": "べつ|べ|や",
+   "band": 4
+  },
+  "2844152": {
+   "action": "reject",
+   "reason": "JUKUJIKUN",
+   "jf": "たい|き|べや",
+   "our": "たい|き|べ|や",
+   "band": 4
+  },
+  "2844461": {
+   "action": "reject",
+   "reason": "JUKUJIKUN",
+   "jf": "しん|ろうまん|しゅ|ぎ",
+   "our": "しん|ろう|まん|しゅ|ぎ",
+   "band": 4
+  },
+  "2844757": {
+   "action": "reject",
+   "reason": "JUKUJIKUN",
+   "jf": "ひとり|いっ|ぴょう",
+   "our": "ひと|り|いっ|ぴょう",
+   "band": 4
+  },
+  "2844904": {
+   "action": "reject",
+   "reason": "JUKUJIKUN",
+   "jf": "そろばん|だま",
+   "our": "そろ|ばん|だま",
+   "band": 4
+  },
+  "2845178": {
+   "action": "reject",
+   "reason": "JUKUJIKUN",
+   "jf": "ぶぜん",
+   "our": "ぶ|ぜん",
+   "band": 4
+  },
+  "2848700": {
+   "action": "reject",
+   "reason": "JUKUJIKUN",
+   "jf": "じ|ぶん|ひとり",
+   "our": "じ|ぶん|ひと|り",
+   "band": 4
+  },
+  "2850589": {
+   "action": "reject",
+   "reason": "JUKUJIKUN",
+   "jf": "ひとり|しゃく|はち",
+   "our": "ひと|り|しゃく|はち",
+   "band": 4
+  },
+  "2855417": {
+   "action": "reject",
+   "reason": "JUKUJIKUN",
+   "jf": "ひとり|おや|かた",
+   "our": "ひと|り|おや|かた",
+   "band": 4
+  },
+  "2855480": {
+   "action": "reject",
+   "reason": "JUKUJIKUN",
+   "jf": "おとめ",
+   "our": "おと|め",
+   "band": 4
+  },
+  "2855504": {
+   "action": "reject",
+   "reason": "JUKUJIKUN",
+   "jf": "ひとり|く",
+   "our": "ひと|り|く",
+   "band": 4
+  },
+  "2859039": {
+   "action": "reject",
+   "reason": "JUKUJIKUN",
+   "jf": "ひとり|じ|かん",
+   "our": "ひと|り|じ|かん",
+   "band": 4
+  },
+  "2859167": {
+   "action": "reject",
+   "reason": "JUKUJIKUN",
+   "jf": "じょ|ちゅう|べや",
+   "our": "じょ|ちゅう|べ|や",
+   "band": 4
+  },
+  "2860055": {
+   "action": "reject",
+   "reason": "JUKUJIKUN",
+   "jf": "いくさ|おとめ",
+   "our": "いくさ|おと|め",
+   "band": 4
+  },
+  "2862481": {
+   "action": "reject",
+   "reason": "JUKUJIKUN",
+   "jf": "ひとり|めし",
+   "our": "ひと|り|めし",
+   "band": 4
+  },
+  "2869454": {
+   "action": "reject",
+   "reason": "JUKUJIKUN",
+   "jf": "ふたり|ひと|やく",
+   "our": "ふた|り|ひと|やく",
+   "band": 4
+  }
+ }
+}

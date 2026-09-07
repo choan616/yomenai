@@ -3,8 +3,10 @@ import { describe, it, expect } from 'vitest'
 import { readFileSync, existsSync } from 'node:fs'
 import { join } from 'node:path'
 import { DICT_DIR, type IdiomRecord } from './lib/dict.ts'
+import { bandOf } from '../src/lib/bands.ts'
 import { decompose, type KanjiReadings } from '../src/lib/onyomi.ts'
 import { buildMap, findCycles, findVariantCycles } from './build-onyomi-map.ts'
+import { loadDecompRejects } from './build-decomp-overrides.ts'
 
 const kanjiPath = join(DICT_DIR, 'kanji.json')
 const idiomsPath = join(DICT_DIR, 'idioms.json')
@@ -106,18 +108,30 @@ describe.runIf(hasDict)('decompose — 음운 변형 규칙별 대표 케이스'
 
 describe.runIf(hasDict)('전체 코퍼스 매핑 (data/dict)', () => {
   const { idioms } = JSON.parse(readFileSync(idiomsPath, 'utf8')) as { idioms: IdiomRecord[] }
-  const built = buildMap(idioms, kanji)
+  const rejectIds = loadDecompRejects()
+  const built = buildMap(idioms, kanji, rejectIds)
 
   it('매핑 실패율 스냅샷', () => {
     // 2026-09-04: sK/iK/oK 표기 표제어 제외 필터 추가로 코퍼스 107,532 → 106,803
+    // 2026-09-07 (Phase 12-C): JmdictFurigana 근거 熟字訓 거부 103건이 ok 에서 빠진다
     expect(built.stats.total).toBe(106803)
-    expect(built.stats.ok).toBe(102549)
+    expect(built.stats.ok).toBe(102446)
     expect(built.stats.byReason).toEqual({
       KATAKANA_READING: 498,
       UNKNOWN_KANJI: 0,
       NO_PARSE: 3756,
       BUDGET: 0,
+      JUKUJIKUN: 103,
     })
+  })
+
+  it('熟字訓 거부는 밴드 0~3 에 거의 없다 (핵심 코퍼스 영향 최소)', () => {
+    expect(rejectIds.size).toBe(103)
+    const b03 = [...rejectIds].filter((id) => {
+      const it = idioms.find((i) => i.id === id)!
+      return bandOf(it) <= 3
+    })
+    expect(b03.length).toBe(11)
   })
 
   it('학습 대상(밴드 0~3) 실패율은 2% 미만이다', () => {

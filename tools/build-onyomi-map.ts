@@ -5,6 +5,10 @@ import { DICT_DIR, type IdiomRecord } from './lib/dict.ts'
 import { bandOf, type Band } from '../src/lib/bands.ts'
 import { decompose, pairId, type FailReason, type KanjiReadings } from '../src/lib/onyomi.ts'
 import { surfaceCandidates } from '../src/lib/readings.ts'
+import { loadDecompRejects } from './build-decomp-overrides.ts'
+
+// decompose 실패 사유 + JmdictFurigana 근거 熟字訓 거부 (build-decomp-overrides.ts, Phase 12-C)
+type MapFailReason = FailReason | 'JUKUJIKUN'
 
 /** 저장용 압축 세그먼트 — [한자, 표면형, 원형, 음훈, 변형] */
 export type PackedSegment = [string, string, string, 'on' | 'kun', string[]]
@@ -23,24 +27,28 @@ export interface MapStats {
   total: number
   ok: number
   failed: number
-  byReason: Record<FailReason, number>
+  byReason: Record<MapFailReason, number>
   /** 밴드별 실패 수 / 전체 수 */
   byBand: Record<string, { total: number; ok: number; failed: number }>
   pairCount: number
   mixedCount: number
 }
 
-export function buildMap(idioms: IdiomRecord[], kanji: Record<string, KanjiReadings>) {
+export function buildMap(
+  idioms: IdiomRecord[],
+  kanji: Record<string, KanjiReadings>,
+  rejectIds: Set<string> = new Set(),
+) {
   const lookup = (k: string) => kanji[k]
   const byIdiom: Record<string, PackedSegment[]> = {}
   const pairs = new Map<string, PairRecord>()
-  const failures: { id: string; headword: string; reading: string; band: Band; reason: FailReason }[] = []
+  const failures: { id: string; headword: string; reading: string; band: Band; reason: MapFailReason }[] = []
 
   const stats: MapStats = {
     total: idioms.length,
     ok: 0,
     failed: 0,
-    byReason: { KATAKANA_READING: 0, UNKNOWN_KANJI: 0, NO_PARSE: 0, BUDGET: 0 },
+    byReason: { KATAKANA_READING: 0, UNKNOWN_KANJI: 0, NO_PARSE: 0, BUDGET: 0, JUKUJIKUN: 0 },
     byBand: {},
     pairCount: 0,
     mixedCount: 0,
@@ -51,6 +59,14 @@ export function buildMap(idioms: IdiomRecord[], kanji: Record<string, KanjiReadi
     const band = bandOf(it)
     const bs = stats.byBand[String(band)]
     bs.total++
+    // JmdictFurigana 가 한 덩어리로 본 熟字訓 을 decompose 가 억지로 쪼갠 경우 — 분해 자체를 거부한다
+    if (rejectIds.has(it.id)) {
+      stats.failed++
+      bs.failed++
+      stats.byReason.JUKUJIKUN++
+      failures.push({ id: it.id, headword: it.headword, reading: it.reading, band, reason: 'JUKUJIKUN' })
+      continue
+    }
     const d = decompose(it.headword, it.reading, lookup)
     if (!d.ok) {
       stats.failed++
@@ -123,7 +139,7 @@ function main() {
     kanji: Record<string, KanjiReadings>
   }
 
-  const { byIdiom, pairs, failures, stats } = buildMap(idioms, kanji)
+  const { byIdiom, pairs, failures, stats } = buildMap(idioms, kanji, loadDecompRejects())
 
   const cycles = findCycles(byIdiom)
   if (cycles.length > 0) throw new Error(`음독 그래프에 순환 참조 ${cycles[0].length}개 노드: ${cycles[0].slice(0, 5)}`)

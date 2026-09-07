@@ -523,10 +523,21 @@ context-notes 2026-09-07 「지속의 유인」·「대조」 절 참조.
   - 육안 — `our_fail` 밴드 0~3 185건 전량 全部 熟字訓·当て字·특수독(버그 0). `our_finer` 밴드 0~3
     16건은 連声 정답 or 熟字訓 과분할. **경계 위치가 어긋난 사례 0건** — 「신뢰도는 층마다 다르다」의
     걱정이 반증됨. context-notes 같은 날 절에 수치 기록
-- [ ] **12-C · 불일치분 검수 워크리스트** — ~~12-B 결과가 나온 뒤~~
-  **12-B 충돌 0건이라 워크리스트에 올릴 게 없다.** 남은 판단은 "熟字訓 과분할 562건(밴드 0~3 은 16)을
-  decompose 가 거부/그룹화할지"와 "日本〜·文字〜 가족을 분해 대상에 넣을지" — 둘 다 경계 오류가
-  아니라 범위 문제라 성격이 다르다. 이 항목을 살릴지 사용자 판단 대기
+- [x] **12-C · 熟字訓 과분할 거부 (범위 변경)** (2026-09-07) — 충돌 0건이라 원안(불일치 검수
+  워크리스트)은 폐기하고, "우리가 JF 보다 잘게 자른 562건" 중 **JF 가 묶은 다자 구간에 음운 변형이
+  하나도 없는" 것**을 熟字訓·当て字 로 거부하도록 바꿨다
+  - `tools/build-decomp-overrides.ts` → `data/dict/decomp-overrides.json` (커밋, 12-A 예외).
+    규칙 — JF 가 rt 로 2자+ 를 묶었고 그 구간 세그먼트에 `variants`(連濁·連声·促音·半濁) 가 없으면 거부.
+    天皇 てん\|皇のう(連声) 처럼 음운 파생 분해는 태그가 있어 살아남고, 部屋→べ\|や·如雨露(当て字) 는 거부됨
+  - **거부 103건 — 밴드 0:2 1:3 2:0 3:6 4:92.** 밴드 0~3 은 11건뿐 (一人·二人·上手·波止場·早乙女·
+    相部屋·大部屋·一人{娘,言,子,一人}). 밴드 4 는 一人〜/二人〜/〜部屋/〜上手 잡음
+  - `build-onyomi-map.ts` — `buildMap(idioms, kanji, rejectIds?)`, 실패 사유 `JUKUJIKUN` 추가.
+    파일 없으면(CI·JF 미다운로드) 빈 집합. `--validate` 로 드리프트 검사
+  - 파생 — `ok` 102,549 → 102,446, 고유 쌍 4,001 → 3,936 (人:kun:り 등 65쌍이 그 103건에만 있었음).
+    `build:runtime-dict` 재실행 → base 16,970 → 16,959, band4 −92, pairs.json 갱신
+  - **검증: `build-onyomi-map.test.ts` +1 (거부 103·밴드0~3 11), 스냅샷 갱신. `npm test` 325 ·
+    `npm run e2e` 7스펙(카드 전환 p95 10.6ms) · `tsc -b`/`oxlint`/`vite build` 클린 · `--validate` 통과**
+- [x] **12-B 부수** — `package.json` 에 `measure:furigana`·`build:decomp-overrides` 스크립트 등록
   - `tools/build-decomp-worklist.ts` → `data/dict/decomp-worklist.tsv`.
     Phase 3 의 `build-review-worklist.ts` → `apply-korean-review.ts` 골격을 그대로 쓴다
   - 열 — `id headword reading band segmentation cost margin alt verdict note`.
