@@ -14,7 +14,8 @@
   font-family: var(--font-ja);
   font-size: 44px;
   margin: 0;
-  letter-spacing: 0.04em;
+  letter-spacing: -0.04em;
+  font-weight: 700;
 }
 .home .tagline {
   color: var(--text-dim);

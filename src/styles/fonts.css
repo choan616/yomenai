@@ -3,9 +3,17 @@
 
 @font-face {
   font-family: 'Noto Sans JP';
-  /* base 가 '/' 가 아닌 배포(GitHub Pages 서브패스)는 Phase 7 에서 대응한다 */
   src: url('/fonts/NotoSansJP-subset.woff2') format('woff2');
   font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+/* 볼드는 별도 파일 — 서브셋도 Regular·Bold 를 각각 만든다 (build-fonts.ts).
+   합성 볼드는 획을 뭉개 자형을 왜곡한다(PLAN §7). .readable-text b · .md-cg-surface 가 쓴다 */
+@font-face {
+  font-family: 'Noto Sans JP';
+  src: url('/fonts/NotoSansJP-Bold-subset.woff2') format('woff2');
+  font-weight: 700;
   font-style: normal;
   font-display: swap;
 }

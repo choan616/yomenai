@@ -1,6 +1,7 @@
 // 학습 대상 문자 집합만 담은 일본어 서브셋 폰트를 만든다 (PLAN §7 "폰트 서브셋은 빌드타임 생성")
 // 한중일 한자는 코드포인트가 통합돼 있어, 폴백이 한 번이라도 나면 사용자가 한국 자형을 학습한다.
 // 그래서 서브셋이 학습 문자를 100% 덮는지 fontkit 으로 검증하고, 못 덮으면 빌드를 실패시킨다.
+// Regular·Bold 두 굵기를 같은 문자 집합으로 서브셋한다 — 합성 볼드는 획을 뭉개 자형을 왜곡한다.
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { create as createFont } from 'fontkit'
@@ -10,8 +11,13 @@ const RAW_FONTS = join(import.meta.dirname, '..', 'data', 'raw', 'fonts')
 const DICT_DIR = join(import.meta.dirname, '..', 'public', 'dict')
 const OUT_DIR = join(import.meta.dirname, '..', 'public', 'fonts')
 
-const SRC_JP = join(RAW_FONTS, 'NotoSansJP-Regular.otf')
 const SRC_KO = join(RAW_FONTS, 'Pretendard-Regular.woff2')
+
+/** 같은 문자 집합으로 서브셋할 일본어 원본. lang="ja" + 100% 커버라 한국 자형 폴백이 안 난다 */
+const JP_WEIGHTS = [
+  { label: 'Regular', src: join(RAW_FONTS, 'NotoSansJP-Regular.otf'), out: 'NotoSansJP-subset.woff2' },
+  { label: 'Bold', src: join(RAW_FONTS, 'NotoSansJP-Bold.otf'), out: 'NotoSansJP-Bold-subset.woff2' },
+]
 
 const withBand4 = process.argv.includes('--all')
 
@@ -50,44 +56,53 @@ function charSet(buf: Buffer): Set<number> {
   return new Set(font.characterSet)
 }
 
-const targets = targetCodePoints()
-const srcBuf = readFileSync(SRC_JP)
-const srcSet = charSet(srcBuf)
-
-// 서브셋 대상은 "원본이 실제로 가진 문자"로 한정한다. hb-subset 은 없는 문자를 조용히 버린다.
-const text = [...targets].filter((cp) => srcSet.has(cp)).map((cp) => String.fromCodePoint(cp)).join('')
-
-const outBuf = await subsetFont(srcBuf, text, { targetFormat: 'woff2' })
-
-mkdirSync(OUT_DIR, { recursive: true })
-writeFileSync(join(OUT_DIR, 'NotoSansJP-subset.woff2'), outBuf)
-writeFileSync(join(OUT_DIR, 'Pretendard-Regular.woff2'), readFileSync(SRC_KO))
-
-// ── 검증 ──────────────────────────────────────────────────────────────────
-const outSet = charSet(outBuf)
-const missingFromSource = [...targets].filter((cp) => !srcSet.has(cp))
-const missingFromOutput = [...targets].filter((cp) => srcSet.has(cp) && !outSet.has(cp))
-const covered = [...targets].filter((cp) => outSet.has(cp)).length
-const pct = ((covered / targets.size) * 100).toFixed(2)
-
 const show = (cps: number[]) =>
   cps.slice(0, 30).map((cp) => `${String.fromCodePoint(cp)}(U+${cp.toString(16).toUpperCase()})`).join(' ')
 
-console.log(`\npublic/fonts/`)
-console.log(`  NotoSansJP-subset.woff2  ${(outBuf.length / 1024).toFixed(0)} KB  (원본 ${(srcBuf.length / 1024 / 1024).toFixed(1)} MB)`)
-console.log(`  Pretendard-Regular.woff2  ${(readFileSync(SRC_KO).length / 1024).toFixed(0)} KB  (그대로 복사, 한글 완성형)`)
-console.log(`\n커버리지 ${pct}%  (${covered}/${targets.size})`)
+/** 한 굵기를 서브셋하고 커버리지를 검증한다. 폴백이 나는 문자가 있으면 false 를 돌려준다 */
+async function buildWeight(
+  weight: { label: string; src: string; out: string },
+  targets: Set<number>,
+): Promise<boolean> {
+  const srcBuf = readFileSync(weight.src)
+  const srcSet = charSet(srcBuf)
 
-if (missingFromSource.length > 0) {
-  console.error(`\n✗ 원본 폰트에 없는 학습 문자 ${missingFromSource.length}개 — 폴백이 발생한다:`)
-  console.error(`  ${show(missingFromSource)}`)
+  // 서브셋 대상은 "원본이 실제로 가진 문자"로 한정한다. hb-subset 은 없는 문자를 조용히 버린다.
+  const text = [...targets].filter((cp) => srcSet.has(cp)).map((cp) => String.fromCodePoint(cp)).join('')
+  const outBuf = await subsetFont(srcBuf, text, { targetFormat: 'woff2' })
+  writeFileSync(join(OUT_DIR, weight.out), outBuf)
+
+  const outSet = charSet(outBuf)
+  const missingFromSource = [...targets].filter((cp) => !srcSet.has(cp))
+  const missingFromOutput = [...targets].filter((cp) => srcSet.has(cp) && !outSet.has(cp))
+  const covered = [...targets].filter((cp) => outSet.has(cp)).length
+  const pct = ((covered / targets.size) * 100).toFixed(2)
+
+  console.log(`\n${weight.out}  ${(outBuf.length / 1024).toFixed(0)} KB  (원본 ${(srcBuf.length / 1024 / 1024).toFixed(1)} MB, ${weight.label})`)
+  console.log(`  커버리지 ${pct}%  (${covered}/${targets.size})`)
+
+  if (missingFromSource.length > 0) {
+    console.error(`  ✗ 원본에 없는 학습 문자 ${missingFromSource.length}개 — 폴백 발생: ${show(missingFromSource)}`)
+  }
+  if (missingFromOutput.length > 0) {
+    console.error(`  ✗ 서브셋에서 누락 ${missingFromOutput.length}개 (원본엔 있음, hb-subset 버그): ${show(missingFromOutput)}`)
+  }
+  return missingFromSource.length === 0 && missingFromOutput.length === 0
 }
-if (missingFromOutput.length > 0) {
-  console.error(`\n✗ 서브셋에서 누락된 문자 ${missingFromOutput.length}개 (원본엔 있음, hb-subset 버그):`)
-  console.error(`  ${show(missingFromOutput)}`)
+
+const targets = targetCodePoints()
+mkdirSync(OUT_DIR, { recursive: true })
+
+let allCovered = true
+for (const weight of JP_WEIGHTS) {
+  allCovered = (await buildWeight(weight, targets)) && allCovered
 }
-if (missingFromSource.length > 0 || missingFromOutput.length > 0) {
+
+writeFileSync(join(OUT_DIR, 'Pretendard-Regular.woff2'), readFileSync(SRC_KO))
+console.log(`\nPretendard-Regular.woff2  ${(readFileSync(SRC_KO).length / 1024).toFixed(0)} KB  (그대로 복사, 한글 완성형)`)
+
+if (!allCovered) {
   console.error(`\n검증 실패. 폴백 0 조건을 못 지킨다.`)
   process.exit(1)
 }
-console.log(`\n✓ 학습 대상 문자 100% 커버, 폴백 발생 0`)
+console.log(`\n✓ Regular·Bold 둘 다 학습 대상 문자 100% 커버, 폴백 발생 0`)
