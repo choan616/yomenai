@@ -148,16 +148,19 @@
    소프트 키보드가 없으니 입력창을 화면 맨 아래에 붙일 이유가 없다 — 카드를 세로 중앙으로
    모아 헤드워드 바로 아래에 입력창이 오게 한다 (2026-09-07). .study/.diag 셸은 그대로. */
 @media (min-width: 700px) and (hover: hover) and (pointer: fine) {
+  /* 카드는 내용 높이대로. 내부 스크롤(.card-body overflow) 을 끄고, 아주 긴 카드만
+     .study-main 전체가 스크롤한다. safe center 는 넘칠 때 위가 잘리는 걸 막는다 */
   .study-main {
-    justify-content: center;
+    justify-content: safe center;
+    overflow-y: auto;
   }
   .card {
     flex: 0 1 auto;
-    max-height: 100%;
     padding: 24px 20px 28px;
   }
   .card-body {
     flex: 0 1 auto;
+    overflow: visible;
     padding: 20px 0 4px;
   }
   /* 숙어를 카드 위쪽에 두되 과하게 크지 않게 */
