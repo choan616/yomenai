@@ -553,16 +553,24 @@ context-notes 2026-09-07 「지속의 유인」·「대조」 절 참조.
     회귀 확인이 된다
   - **검증: override 반영 후 `build:onyomi` 재실행 → `build-onyomi-map.test.ts` 통과
     (순환 없음·표면형 복원), `--validate` 정확도 수치 기록**
-- [ ] **12-D · 한국어 분류 층화 검수 (사람 필요)** — 여기만 대조할 외부 데이터셋이 없다
+- [~] **12-D · 한국어 뜻 층화 검수 (사람 필요)** — 대조할 외부 데이터셋이 없어 여기만 사람 몫
   - stdict 는 한국어 사전, JMdict 는 일본어 사전인데 **"이 한자어가 한국어와 같은 뜻인가"를
     이은 데이터셋은 아무도 안 만들었다.** 그래서 LLM 초벌을 돌렸고, 그래서 여기가 사람 몫이다
-  - 현황 실측 (2026-09-07, `public/dict/base.json` 16,970개) —
-    `manual` **348 (2.1%)** / `llm` 8,155 / `default` 8,463, `koMeaning` 13,448건 전부
-    **`verified: false`**. 초벌 일치율은 표본 150건 기준 90.7%
-  - 우선순위는 **동형이의(category 2) 7,273건** — 틀린 뜻을 보여주면 잘못 배운다
-  - "일본어 전문가"가 아니라 **한일 이중언어 화자**면 된다. 기존 파이프라인 재사용
-    (`build-review-worklist.ts` / `apply-korean-review.ts`)
-  - **검증: 층별 오류율 + `verified: true` 건수, 뜻 카드 `미검수` 뱃지가 실제로 줄어드는 것**
+  - **[x] 워크리스트 생성 도구** (2026-09-07) — `tools/build-korean-meaning-worklist.ts`
+    (`npm run build:korean-meaning-worklist`) → `data/dict/korean-meaning-worklist.tsv`.
+    `korean-class.json` 에서 `koMeaning` 있는 13,570건을 5개 층으로 가른다 —
+    P1 `2/default` 6,741 (동형이의·미검수, 틀린 뜻 위험 최대) / P2 `2/llm` 373 /
+    P3 `2/manual` 237 / P4 `1/llm` 6,102 / P5 `1/manual` 117. 전부 밴드 0~3
+    (`korean-class.json` 이 밴드 0~3만 만들어져서).
+    기본은 **층별 표본 30**(= 150행, 「층별 오류율」용), `--all` 로 우선순위 순 전체, `--sample=N`.
+    시드 20260907 결정론. 이전 파일의 채운 verdict 이어받음
+  - 사람은 `verdict`(o 맞음 / x 틀림→`fix` 에 고친 정의 / ~ 애매→`fix` 에 메모) +
+    필요시 `cat`(분류 1/2/3 교정 — default 잠정 2번에 사실은 1인 게 많다: 開閉·民心 류) 만 채운다.
+    한일 이중언어 화자면 됨
+  - **[ ] 되돌리는 apply 도구** — verdict → `korean-class.json` 의 `koMeaning.verified`/`definition`/
+    `category` 반영. Phase 3 `apply-korean-review.ts` 골격 재사용. **실사용 응답이 쌓인 뒤 만든다**
+  - **[ ] 실제 검수** (사람) — 표본 150건 라벨링 → 층별 오류율 기록 → 필요하면 `--all` 로 확대
+  - **검증(완료분): `tsc -b`/`oxlint` 클린, 150행 전부 `?`, 5개 층 각 30, 재실행 결정론·verdict 이어받기 확인**
 - [x] **12-E · `MISTAKE_ADVICE` 문헌 대조** (2026-09-07) — `RULE_MISTAKES` 4종 대상
   (ONYOMI_CHOICE·KO_INTERFERENCE 는 규칙 주장이 아님, OKURIGANA 미사용)
   - **RENDAKU** — 연탁 + 라이먼의 법칙, 정확. 예시 三日月 코퍼스 존재, `decompose` 도 `rendaku` 태그. 수정 없음
