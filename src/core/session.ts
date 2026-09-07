@@ -262,3 +262,70 @@ export function rematchCount(pool: IdiomEntry[], events: LearningEvent[]): numbe
   }
   return n
 }
+
+export interface FocusOptions {
+  /** 집중할 (한자, 음독) 쌍 */
+  pairId: string
+  now: number
+  limit: number
+}
+
+/**
+ * 집중 세션 — 한 (한자, 음독) 쌍을 쓰는 숙어의 읽기 카드만 모은다 (Phase 10).
+ *
+ * 리포트의 처방을 그 자리에서 실행하는 통로다. 재대결과 마찬가지로 **기한을 무시하고**
+ * `selectSession` 을 타지 않는다 — 이 세션의 전부가 "이 음독을 반복해서 만나는 것"이라
+ * 기한이나 모드 배분이 끼면 목적이 흐려진다.
+ *
+ * 재대결과 다른 점은 **아직 안 본 숙어도 넣는다**는 것이다. 처방이 "뚫으면 N개가 열린다"고
+ * 말했으니 그 N 개를 실제로 열어야 말이 맞는다.
+ *
+ * 정렬 — 틀린 적 있는 것(교정) → 아직 안 본 것(새로 여는 것) → 맞히기만 한 것(확인).
+ *
+ * 기한을 무시하는 대가는 `buildRematch` 와 같다. 답안이 정규 이벤트로 남아 FSRS 일정에
+ * 영향을 준다.
+ */
+export function buildFocus(
+  pool: IdiomEntry[],
+  events: LearningEvent[],
+  options: FocusOptions,
+): Session {
+  const byId = new Map(pool.map((p) => [p.idiomId, p]))
+  const state = replay(events, { pairsOf: (id) => byId.get(id)?.pairIds ?? [] })
+
+  const scored: { item: SessionItem; rank: number; wrong: number }[] = []
+  for (const entry of pool) {
+    if (!entry.pairIds.includes(options.pairId)) continue
+    const card = state.cards.get(cardKey(entry.idiomId, 'reading'))
+    const wrong = card?.wrong ?? 0
+    const rank = wrong > 0 ? 0 : card === undefined ? 1 : 2
+    scored.push({
+      item: {
+        idiomId: entry.idiomId,
+        cardType: 'reading',
+        mode: assignMode({
+          category: entry.category,
+          meaningKnown: state.meaningKnown.get(entry.idiomId),
+          meaningCard: state.cards.get(cardKey(entry.idiomId, 'meaning'))?.card,
+        }).mode,
+        due: card !== undefined && card.card.due.getTime() <= options.now,
+      },
+      rank,
+      wrong,
+    })
+  }
+
+  scored.sort(
+    (a, b) =>
+      a.rank - b.rank ||
+      b.wrong - a.wrong ||
+      (a.item.idiomId < b.item.idiomId ? -1 : a.item.idiomId > b.item.idiomId ? 1 : 0),
+  )
+
+  // 집중 세션도 확인 질문을 안 끼운다 — 지금 물어야 할 건 뜻이 아니라 이 음독이다
+  const cards: SessionCard[] = scored
+    .slice(0, options.limit)
+    .map(({ item }) => ({ ...item, needsClassReview: false }))
+
+  return { cards, state }
+}

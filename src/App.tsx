@@ -9,10 +9,20 @@ import { Report } from './app/Report.tsx'
 import { Settings } from './app/Settings.tsx'
 import { Study } from './study/Study.tsx'
 
-export type Screen = 'home' | 'study' | 'rematch' | 'onyomi' | 'report' | 'diagnostic' | 'settings'
+export type Screen =
+  | 'home'
+  | 'study'
+  | 'rematch'
+  | 'focus'
+  | 'onyomi'
+  | 'report'
+  | 'diagnostic'
+  | 'settings'
 
 export default function App() {
   const [screen, setScreen] = useState<Screen>('home')
+  // 집중 세션이 붙을 (한자, 음독) 쌍. 리포트의 처방이 정한다 (Phase 10)
+  const [focusPair, setFocusPair] = useState<string | null>(null)
   const home = () => setScreen('home')
 
   switch (screen) {
@@ -20,10 +30,25 @@ export default function App() {
       return <Study onExit={home} />
     case 'rematch':
       return <Study kind="rematch" onExit={home} />
+    case 'focus':
+      // 쌍 없이 이 화면에 올 경로는 없지만, 상태가 어긋나면 홈으로 떨어뜨린다
+      return focusPair === null ? (
+        <Home onNavigate={setScreen} />
+      ) : (
+        <Study kind="focus" focusPairId={focusPair} onExit={home} />
+      )
     case 'onyomi':
       return <OnyomiMap onBack={home} />
     case 'report':
-      return <Report onBack={home} />
+      return (
+        <Report
+          onBack={home}
+          onFocus={(pairId) => {
+            setFocusPair(pairId)
+            setScreen('focus')
+          }}
+        />
+      )
     case 'diagnostic':
       return <Diagnostic onDone={() => setScreen('report')} onExit={home} />
     case 'settings':

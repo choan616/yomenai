@@ -8,9 +8,18 @@ import { SessionSummary } from './SessionSummary.tsx'
 import { useStudySession, type SessionKind } from './useStudySession.ts'
 import { useViewportLock } from './useViewportLock.ts'
 
-export function Study({ kind = 'normal', onExit }: { kind?: SessionKind; onExit: () => void }) {
+export function Study({
+  kind = 'normal',
+  focusPairId,
+  onExit,
+}: {
+  kind?: SessionKind
+  /** `kind='focus'` 일 때 집중할 (한자, 음독) 쌍 */
+  focusPairId?: string
+  onExit: () => void
+}) {
   useViewportLock()
-  const [s, a] = useStudySession(kind)
+  const [s, a] = useStudySession(kind, focusPairId)
 
   // 카드 전환 실측. transitionSeq 는 advance 때만 오르고, useStudySession 이 그 직전에
   // 'yomenai:advance' 를 마킹한다. 단일 rAF 로 DOM 커밋·레이아웃 뒤 페인트 직전에 measure 한다.

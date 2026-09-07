@@ -49,3 +49,15 @@ export const BAND_LABEL: Record<Band, string> = {
   3: 'nf25~48  news2       N1 대 (주력)',
   4: '빈도 순위 없음        N1 초과 (선택)',
 }
+
+/**
+ * 밴드 옆에 병기하는 짧은 설명. UI 라벨은 자체 밴드명("밴드 2")을 쓰고 JLPT 는 설명에만
+ * 둔다는 PLAN §4 규칙을 지키기 위한 것이다. `BAND_LABEL` 은 nf 코드까지 있어 화면엔 길다.
+ */
+export const BAND_NOTE: Record<Band, string> = {
+  0: 'N3 이하',
+  1: 'N2 대',
+  2: 'N2~N1 경계',
+  3: 'N1 대',
+  4: 'N1 초과',
+}

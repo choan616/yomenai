@@ -15,7 +15,7 @@ import { classifyMistake } from '../core/mistakes.ts'
 import { onyomiEcho, type OnyomiEcho } from '../core/echo.ts'
 import { observeReading, type Observation } from '../core/observe.ts'
 import { rubyOf, type RubySegment } from '../core/ruby.ts'
-import { buildRematch } from '../core/session.ts'
+import { buildFocus, buildRematch } from '../core/session.ts'
 import type { Confidence } from '../core/scheduler.ts'
 import type { LearningEvent, MistakeType } from '../core/types.ts'
 import { appendEvent } from '../db/events.ts'
@@ -79,10 +79,16 @@ export interface StudyActions {
   next: (confidence?: Confidence) => void
 }
 
-/** 정규 세션인지, 예전에 틀린 것만 모은 재대결인지 */
-export type SessionKind = 'normal' | 'rematch'
+/**
+ * 정규 세션 / 예전에 틀린 것만 모은 재대결 / 한 음독만 모은 집중 세션.
+ * `focus` 는 `focusPairId` 를 같이 받아야 한다 (리포트의 처방이 정한다, Phase 10).
+ */
+export type SessionKind = 'normal' | 'rematch' | 'focus'
 
-export function useStudySession(kind: SessionKind = 'normal'): [StudyState, StudyActions] {
+export function useStudySession(
+  kind: SessionKind = 'normal',
+  focusPairId?: string,
+): [StudyState, StudyActions] {
   const [session, setSession] = useState<Session | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [idx, setIdx] = useState(0)
@@ -132,8 +138,10 @@ export function useStudySession(kind: SessionKind = 'normal'): [StudyState, Stud
         const built =
           kind === 'rematch'
             ? buildRematch(loaded, events, { now, limit: sessionLimit })
-            : // seed 로 제시 순서를 매 세션 섞는다 — 순서를 예측해 모르는 한자를 찍는 걸 막는다 (2026-09-07)
-              buildSession(loaded, events, { now, limit: sessionLimit, ratio, seed: now })
+            : kind === 'focus' && focusPairId !== undefined
+              ? buildFocus(loaded, events, { pairId: focusPairId, now, limit: sessionLimit })
+              : // seed 로 제시 순서를 매 세션 섞는다 — 순서를 예측해 모르는 한자를 찍는 걸 막는다 (2026-09-07)
+                buildSession(loaded, events, { now, limit: sessionLimit, ratio, seed: now })
         setSession(built)
         setInClassReview(built.cards[0]?.needsClassReview ?? false)
         shownAt.current = performance.now()
@@ -144,7 +152,7 @@ export function useStudySession(kind: SessionKind = 'normal'): [StudyState, Stud
     return () => {
       alive = false
     }
-  }, [kind])
+  }, [kind, focusPairId])
 
   const card = session?.cards[idx]
   const idiom = card ? byId.get(card.idiomId) : undefined

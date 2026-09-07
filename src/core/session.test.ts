@@ -4,6 +4,7 @@ import { buildKoSiblingIndex, type MistakeContext } from './mistakes.ts'
 import { KANJI_FIXTURE } from './mistakes.fixture.ts'
 import { replay } from './replay.ts'
 import {
+  buildFocus,
   buildRematch,
   buildSession,
   isCorrectReading,
@@ -282,5 +283,78 @@ describe('buildRematch — 예전에 틀린 것만', () => {
     expect(e.mistakeType).toBeNull()
     expect(e.correct).toBe(false)
     expect(rematchCount(pool, [e])).toBe(1)
+  })
+})
+
+describe('buildFocus — 한 음독만 모은 집중 세션', () => {
+  const PAIR = '発:on:はつ'
+  /** 주어진 쌍들을 쓰는 숙어 */
+  const withPairs = (idiomId: string, pairIds: string[]): IdiomEntry => ({
+    idiomId, band: 1, category: 1, classSource: 'manual', pairIds,
+  })
+  const pool = [
+    withPairs('a', [PAIR, '達:on:たつ']),
+    withPairs('b', [PAIR, '見:on:けん']),
+    withPairs('c', [PAIR, '表:on:ひょう']),
+    withPairs('z', ['他:on:た']), // 그 쌍을 안 쓰는 숙어
+  ]
+
+  function history(idiomId: string, results: boolean[], at = T0): LearningEvent[] {
+    return results.map((correct, i) =>
+      recordReadingAnswer({
+        item: { idiomId, cardType: 'reading', mode: 'correction', due: false },
+        headword: '学校',
+        reading: 'がっこう',
+        answer: correct ? 'がっこう' : 'がくこう',
+        ctx: { ...ctx, at: at + i * 60_000 },
+        mistakes,
+      }),
+    )
+  }
+
+  it('그 쌍을 쓰는 숙어만 낸다', () => {
+    const { cards } = buildFocus(pool, [], { pairId: PAIR, now: T0, limit: 10 })
+    expect(cards.map((c) => c.idiomId)).toEqual(['a', 'b', 'c'])
+    expect(cards.every((c) => c.cardType === 'reading')).toBe(true)
+  })
+
+  it('아직 안 본 숙어도 넣는다 — "뚫으면 N개가 열린다"의 N 을 실제로 연다', () => {
+    const { cards } = buildFocus(pool, history('a', [true, true]), {
+      pairId: PAIR, now: T0, limit: 10,
+    })
+    expect(cards.map((c) => c.idiomId)).toContain('b')
+    expect(cards.map((c) => c.idiomId)).toContain('c')
+  })
+
+  it('틀린 적 있는 것 → 안 본 것 → 맞히기만 한 것 순으로 세운다', () => {
+    const events = [
+      ...history('a', [true]), //           맞히기만 함
+      ...history('c', [false], T0 + 3600_000), // 틀린 적 있음
+      // b 는 기록 없음 (안 본 것)
+    ]
+    const { cards } = buildFocus(pool, events, { pairId: PAIR, now: T0 + 7200_000, limit: 10 })
+    expect(cards.map((c) => c.idiomId)).toEqual(['c', 'b', 'a'])
+  })
+
+  it('기한을 무시한다 — 방금 맞힌 카드도 나온다', () => {
+    const { cards } = buildFocus(pool, history('a', [true]), { pairId: PAIR, now: T0, limit: 10 })
+    expect(cards.map((c) => c.idiomId)).toContain('a')
+    expect(cards.find((c) => c.idiomId === 'a')!.due).toBe(false) // 기한 전인데도 나왔다
+  })
+
+  it('limit 을 넘지 않는다', () => {
+    const { cards } = buildFocus(pool, [], { pairId: PAIR, now: T0, limit: 2 })
+    expect(cards).toHaveLength(2)
+  })
+
+  it('확인 질문을 끼우지 않는다 — 지금 물어야 할 건 뜻이 아니라 이 음독이다', () => {
+    const unconfirmed = [withPairs('a', [PAIR])].map((e) => ({ ...e, classSource: 'llm' as const }))
+    const { cards } = buildFocus(unconfirmed, [], { pairId: PAIR, now: T0, limit: 10 })
+    expect(cards.every((c) => !c.needsClassReview)).toBe(true)
+  })
+
+  it('해당 쌍을 쓰는 숙어가 없으면 빈 세션', () => {
+    const { cards } = buildFocus(pool, [], { pairId: '無:on:む', now: T0, limit: 10 })
+    expect(cards).toHaveLength(0)
   })
 })

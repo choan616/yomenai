@@ -56,8 +56,16 @@ test('진입 진단 → 세션 → 리포트 전체 흐름을 완주한다', asy
   // ── 리포트 (진단 결과가 실려 있어야 한다) ──
   await page.getByRole('button', { name: '진단 리포트 보기' }).click()
   await expect(page.locator('.report')).toBeVisible()
-  await expect(page.locator('.report-lead')).toContainText('읽기')
-  await expect(page.locator('.report-lead')).toContainText('오답')
+  // 수준 — 밴드 사다리와 한 줄 판정 (Phase 10)
+  await expect(page.getByText('지금 수준')).toBeVisible()
+  // 진단 결과에 따라 "밴드 N까지 안정" 또는 "아직 말할 만큼 안 풀었어요" 중 하나가 온다
+  await expect(page.locator('.level .report-lead')).not.toBeEmpty()
+  await expect(page.locator('.level .stat-line')).toContainText('읽기')
+  await expect(page.locator('.level .stat-line')).toContainText('정답률')
+  expect(await page.locator('.ladder .bar-row').count()).toBeGreaterThanOrEqual(3)
+  // 처방 — 진단 직후는 표본이 적어 "더 봐야 한다"가 뜬다
+  await expect(page.getByText('다음에 볼 것')).toBeVisible()
+  await expect(page.locator('.rx-list > li').first()).toBeVisible()
   await expect(page.getByText('오답 유형 분포')).toBeVisible()
   await expect(page.locator('.ko-callout')).toBeVisible()
   await expect(page.getByText('취약 음독')).toBeVisible()
@@ -98,4 +106,6 @@ test('진입 진단 → 세션 → 리포트 전체 흐름을 완주한다', asy
   await page.getByRole('button', { name: /진단 리포트/ }).click()
   await expect(page.locator('.report')).toBeVisible()
   await expect(page.getByText('오답 유형 분포')).toBeVisible()
+  // 세션까지 마쳐 표본이 30회를 넘었으니 처방이 "더 봐야 한다"가 아닌 실제 항목으로 바뀐다
+  expect(await page.locator('.rx-list > li').count()).toBeGreaterThanOrEqual(1)
 })
