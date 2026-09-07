@@ -2721,3 +2721,52 @@ Phase 11 에서 내가 작성한 규칙 서술이라 검수를 안 거쳤다. `R
 
 수정 1건(SOKUON C2 축소 + ク·キ+サ 예외 명시). 나머지 3줄은 문헌상 정확, 예시도 규칙의
 실례가 맞음. CHOON 빈도 주장과 MIXED_READING 湯桶 코퍼스 부재는 기록만 하고 남긴다.
+
+## 2026-09-07 — 서비스 워커 + 오프라인
+
+### 증상과 원인
+
+`choan616.github.io/yomenai/` 진입 시 가끔 mmtm 첫 화면이 떴다. HTTP 캐시가 아니라
+**mmtm 서비스 워커**다. 두 앱이 같은 오리진 — mmtm 은 사용자 페이지라 루트(`/`), yomenai 는
+프로젝트 페이지라 `/yomenai/`. mmtm SW 는 스코프 `/` 라 오리진 전체를 가로채고, 오프라인
+우선 전략의 `navigateFallback` 이 `/yomenai/` 내비게이션에 mmtm `index.html` 을 돌려준다.
+간헐적인 건 SW 상태·네트워크 경쟁 타이밍 탓.
+
+yomenai 엔 SW 가 아예 없었다 — `vite-plugin-pwa` 가 devDep 에만 있고 `vite.config.ts` 에
+연결이 안 돼 있었다. 방어할 SW 가 없으니 mmtm SW 가 그대로 이겼다.
+
+### 대응 — yomenai 가 `/yomenai/` 스코프 SW 를 직접 등록
+
+`/yomenai/sw.js` 는 스코프가 `/yomenai/` 라, 그 경로의 페이지에 대해선 **더 좁은 등록이
+mmtm 의 루트 등록을 이긴다**(스코프 매칭은 최장 일치). `registerType: 'autoUpdate'` +
+`skipWaiting`/`clientsClaim` 으로 새 SW 가 프롬프트 없이 즉시 제어권을 잡아 mmtm SW 를
+빨리 밀어낸다. `injectRegister: 'script'` 라 앱 코드는 안 건드린다 (index.html 에
+`registerSW.js` 주입).
+
+**첫 배포 직후 첫 방문 1회**는 여전히 mmtm SW 가 응답을 한 번 줄 수 있다. 그다음 로드부터
+yomenai SW 가 제어하고, 이후 자가 치유된다.
+
+### 프리캐시 범위 — 첫 실행부터 오프라인
+
+`generateSW` 모드. 런타임 캐시(SWR)만 쓰면 **첫 방문에서 SW 가 클라이언트를 claim 하기
+전에 나간 `base.json` fetch 가 캐시를 안 거쳐** 첫-오프라인이 깨진다(실측함). 그래서
+핵심 사전을 프리캐시에 넣는다 —
+
+- 프리캐시(15개, 9.4MB): 앱 셸(js/css/html) + 폰트 3종 + `dict/{base,pairs,kanji,examples}.json`.
+  `maximumFileSizeToCacheInBytes: 6MB`(base.json ~5.5MB)
+- 런타임 캐시(StaleWhileRevalidate, `yomenai-dict-band4-v1`): `dict/band4.json`(19MB)만.
+  밴드 4 는 "선택 · N1 초과"라 켠 적 있을 때만 캐시된다
+- `cleanupOutdatedCaches` — 배포 때마다 프리캐시 리비전이 바뀌어 옛 캐시는 정리된다.
+  사전 내용이 바뀌어도 프리캐시 revision 으로 새로 받는다
+
+`devOptions.enabled: false` — `npm run dev` 와 e2e(webServer 가 `npm run dev`)에는 SW 가
+안 붙어 테스트에 영향 없다. CI(`npm run build` → `dist/` 통째 업로드)는 워크플로 변경 불필요.
+
+### 검증
+
+`vite preview` + Playwright 일회성 — SW 스코프 `http://…/yomenai/` 확인, 온라인에서
+"이번 세션 20장", `ctx.setOffline(true)` 후 리로드 → `読めない` 렌더 + "이번 세션 20장"
++ 세션 시작(安価)까지 콘솔 에러 0. `npm test` 325 · `npm run e2e` 7스펙 통과.
+
+영구 오프라인 e2e 스펙은 안 넣었다 — Playwright webServer 가 `npm run dev`(SW off)라
+`vite preview` 를 띄우는 별도 프로젝트/설정이 필요하다. 후속 후보.

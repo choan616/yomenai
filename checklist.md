@@ -267,6 +267,16 @@
   `public/dict`·`public/fonts` 를 그대로 씀
 - [x] 저장소 Settings → Pages → Source "GitHub Actions" 설정 완료 (2026-09-06).
   main 푸시마다 자동 배포, `choan616.github.io/yomenai/` 접속 확인
+- [x] **서비스 워커 + 오프라인** (2026-09-07) — mmtm(choan616.github.io 루트) SW 가 스코프 `/`
+  로 `/yomenai/` 진입을 가로채 mmtm 셸이 뜨는 버그. `vite-plugin-pwa`(이미 devDep)를
+  `vite.config.ts` 에 연결 — `registerType: 'autoUpdate'`, `injectRegister: 'script'`,
+  `scope`·`start_url` `/yomenai/`. `/yomenai/sw.js` 가 더 좁은 스코프라 그 경로에선 이긴다.
+  - 프리캐시 15개 9.4MB — 앱 셸 + 폰트 3종 + 핵심 사전(base 5.5MB·pairs·kanji·examples).
+    `band4.json`(19MB, 밴드 4 = 선택)만 런타임 캐시(StaleWhileRevalidate). `maximumFileSizeToCacheInBytes` 6MB
+  - `devOptions.enabled: false` — `npm run dev`·e2e 에는 SW 안 붙는다. CI 는 `dist/` 통째 배포라 워크플로 변경 없음
+  - **검증: `vite preview` + Playwright — SW 스코프 `/yomenai/` 확인, 오프라인 리로드에서
+    `読めない` 렌더 + "이번 세션 20장" + 세션 시작(安価)까지 콘솔 에러 0.
+    `npm test` 325 · `npm run e2e` 7스펙 · `tsc -b`/`oxlint`/`vite build` 클린**
 
 ---
 
