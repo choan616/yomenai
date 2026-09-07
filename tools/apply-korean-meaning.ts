@@ -5,19 +5,18 @@
 //   s  stdict_def 채택        → definition = stdict 정의, source: stdict, verified: true
 //   ~  애매 (fix 에 메모)     → 그대로 (verified false 유지)
 //   cat  분류 교정            → category 갱신
-import { existsSync, readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, readFileSync, readdirSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { DICT_DIR } from './lib/dict.ts'
 
 const VALIDATE = process.argv.includes('--validate')
 const CLASS_PATH = join(DICT_DIR, 'korean-class.json')
-const WORKLIST_PATH = join(DICT_DIR, 'korean-meaning-worklist.tsv')
+// 표본 파일 + flagged 파일 등 korean-meaning-worklist*.tsv 전부에서 verdict 를 읽는다
+const WORKLISTS = readdirSync(DICT_DIR).filter((f) => /^korean-meaning-worklist.*\.tsv$/.test(f))
 
-for (const p of [CLASS_PATH, WORKLIST_PATH]) {
-  if (!existsSync(p)) {
-    console.error(`${p} 가 없다.`)
-    process.exit(1)
-  }
+if (!existsSync(CLASS_PATH) || WORKLISTS.length === 0) {
+  console.error(`${CLASS_PATH} 또는 korean-meaning-worklist*.tsv 가 없다.`)
+  process.exit(1)
 }
 
 interface KoMeaning {
@@ -52,21 +51,32 @@ const stdictDef = new Map<string, string>()
   }
 }
 
-const wl = readFileSync(WORKLIST_PATH, 'utf8').split('\n')
-const wh = wl[0].split('\t')
-const col = Object.fromEntries(['verdict', 'cat', 'fix', 'tier', 'id'].map((k) => [k, wh.indexOf(k)]))
+// 여러 파일을 합친다 — id 당 마지막에 본 행이 이긴다
+const merged = new Map<string, { verdict: string; cat: string; fix: string; tier: string }>()
+for (const f of WORKLISTS) {
+  const lines = readFileSync(join(DICT_DIR, f), 'utf8').split('\n')
+  const wh = lines[0].split('\t')
+  const col = Object.fromEntries(['verdict', 'cat', 'fix', 'tier', 'id'].map((k) => [k, wh.indexOf(k)]))
+  if (col.id < 0) continue
+  for (const line of lines.slice(1)) {
+    if (!line.trim()) continue
+    const c = line.split('\t')
+    const id = c[col.id]
+    if (!id) continue
+    const verdict = (c[col.verdict] ?? '').trim()
+    const cat = (c[col.cat] ?? '').trim()
+    // 이미 verdict 가 있는데 이 파일엔 비었으면 덮지 않는다
+    const prev = merged.get(id)
+    if (prev && !/^[oxs~]$/.test(verdict) && !/^[123]$/.test(cat)) continue
+    merged.set(id, { verdict, cat, fix: (c[col.fix] ?? '').trim(), tier: c[col.tier] ?? '?' })
+  }
+}
+console.log(`검수 파일 ${WORKLISTS.length}개, 행 ${merged.size}개 병합`)
 
 const tally = { o: 0, x: 0, s: 0, '~': 0, cat: 0, skip: 0, missing: 0 }
 const perTier: Record<string, { o: number; x: number; s: number; '~': number }> = {}
 
-for (const line of wl.slice(1)) {
-  if (!line.trim()) continue
-  const c = line.split('\t')
-  const id = c[col.id]
-  const verdict = (c[col.verdict] ?? '').trim()
-  const cat = (c[col.cat] ?? '').trim()
-  const fix = (c[col.fix] ?? '').trim()
-  const tier = c[col.tier] ?? '?'
+for (const [id, { verdict, cat, fix, tier }] of merged) {
   const entry = cls.byId[id]
   if (!entry) {
     tally.missing++

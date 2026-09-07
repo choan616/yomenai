@@ -55,12 +55,8 @@ for (const it of todo) {
     cache[it.id] = { ko, glossEn: it.glossEn, model: MODEL, flags: qualityFlags(ko, it.glossEn) }
   } catch (e) {
     // 실패는 flag 로 남기고 계속 — 워크리스트가 잡는다
-    cache[it.id] = {
-      ko: '',
-      glossEn: it.glossEn,
-      model: MODEL,
-      flags: ['error', e instanceof Error ? e.message.slice(0, 40) : 'unknown'],
-    }
+    console.warn(`  ✗ ${it.headword}: ${e instanceof Error ? e.message.slice(0, 60) : e}`)
+    cache[it.id] = { ko: '', glossEn: it.glossEn, model: MODEL, flags: ['error'] }
   }
   if (++done % 50 === 0) {
     flush()

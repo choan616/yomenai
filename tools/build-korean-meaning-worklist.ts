@@ -30,10 +30,16 @@ interface MeaningEntry {
   flags: string[]
 }
 
-const OUT_PATH = join(DICT_DIR, 'korean-meaning-worklist.tsv')
+// --flagged 는 별도 파일로 — tier별 표본 파일과 나란히 둔다
+const OUT_PATH = join(
+  DICT_DIR,
+  process.argv.includes('--flagged') ? 'korean-meaning-worklist-flagged.tsv' : 'korean-meaning-worklist.tsv',
+)
 const sampleArg = process.argv.find((a) => a.startsWith('--sample='))?.split('=')[1]
 const wantAll = process.argv.includes('--all')
-const perTier = sampleArg ? Math.max(1, Number(sampleArg)) : wantAll ? Infinity : 30
+// --flagged: 표본 없이 품질 플래그(깨진 번역·cat 불일치 등)가 붙은 행 전량만. 최우선 검수 목록
+const flaggedOnly = process.argv.includes('--flagged')
+const perTier = sampleArg ? Math.max(1, Number(sampleArg)) : wantAll || flaggedOnly ? Infinity : 30
 const SEED = 20260907
 
 const need = (p: string) => {
@@ -82,12 +88,13 @@ for (const f of readdirSync(DICT_DIR).filter((f) => /^korean-(worklist.*|review-
   }
 }
 
-// 이전 작업 파일에서 채운 verdict·cat·fix 이어받기
+// 채운 verdict·cat·fix 이어받기 — 표본 파일과 flagged 파일 양쪽에서 (어느 쪽에 적어도 산다)
 const prior = new Map<string, { verdict: string; cat: string; fix: string }>()
-if (existsSync(OUT_PATH)) {
-  const lines = readFileSync(OUT_PATH, 'utf8').split('\n')
+for (const f of readdirSync(DICT_DIR).filter((f) => /^korean-meaning-worklist.*\.tsv$/.test(f))) {
+  const lines = readFileSync(join(DICT_DIR, f), 'utf8').split('\n')
   const h = lines[0].split('\t')
   const [vi, ci, fi, ii] = [h.indexOf('verdict'), h.indexOf('cat'), h.indexOf('fix'), h.indexOf('id')]
+  if (ii < 0) continue
   for (const l of lines.slice(1)) {
     const c = l.split('\t')
     const v = (c[vi] ?? '').trim()
@@ -150,12 +157,18 @@ function shuffle<T>(a: T[]): T[] {
 const byTier = new Map<number, Row[]>()
 for (const r of rows) (byTier.get(r.tier) ?? byTier.set(r.tier, []).get(r.tier)!).push(r)
 
-const picked: Row[] = []
-for (const [, list] of [...byTier].sort((a, b) => a[0] - b[0])) {
-  const kept = list.filter((r) => prior.has(r.id))
-  const rest = shuffle(list.filter((r) => !prior.has(r.id)))
-  const take = Number.isFinite(perTier) ? Math.max(0, perTier - kept.length) : Infinity
-  picked.push(...kept, ...rest.slice(0, take))
+let picked: Row[]
+if (flaggedOnly) {
+  // 플래그가 붙은 행 전량 (깨진 번역 · cat 불일치). 표본 안 뽑는다
+  picked = rows.filter((r) => r.flags.length > 0)
+} else {
+  picked = []
+  for (const [, list] of [...byTier].sort((a, b) => a[0] - b[0])) {
+    const kept = list.filter((r) => prior.has(r.id))
+    const rest = shuffle(list.filter((r) => !prior.has(r.id)))
+    const take = Number.isFinite(perTier) ? Math.max(0, perTier - kept.length) : Infinity
+    picked.push(...kept, ...rest.slice(0, take))
+  }
 }
 picked.sort((a, b) => a.tier - b.tier || a.k.category - b.k.category || priorityToBand(a.it.priority) - priorityToBand(b.it.priority) || a.it.headword.localeCompare(b.it.headword))
 
@@ -189,8 +202,31 @@ const body = picked.map((r) => {
 
 writeFileSync(OUT_PATH, header + '\n' + body.join('\n') + '\n')
 
-const mode = Number.isFinite(perTier) ? `tier별 표본 ${perTier}` : '전체'
+const mode = flaggedOnly ? '플래그 전량' : Number.isFinite(perTier) ? `tier별 표본 ${perTier}` : '전체'
 console.log(`→ ${OUT_PATH}  (${picked.length}행, ${mode}, 이어받은 verdict ${prior.size}건)`)
+
+// 플래그 분해 — 무엇을 왜 검수해야 하는지
+const FLAG_NOTE: Record<string, string> = {
+  error: '번역 실패 (빈 뜻)',
+  latin: '인코딩 깨짐 (<0x..>) 또는 영어 잔존 — 반드시 고침',
+  cyrillic: '키릴 문자 — 반드시 고침',
+  kana: '일본어 가나 잔존',
+  kanji: '한자 잔존 (괄호 병기는 대개 良性)',
+  untranslated: '영어 gloss 를 그대로 둠',
+  'many-senses': '뜻이 너무 잘게 나뉨',
+  long: '40자 초과',
+  empty: '빈 뜻',
+  'cat-mismatch': '수동 분류와 category 불일치',
+}
+const flagCount: Record<string, number> = {}
+for (const r of rows) for (const f of r.flags) flagCount[f in FLAG_NOTE ? f : 'error'] = (flagCount[f in FLAG_NOTE ? f : 'error'] ?? 0) + 1
+const flaggedRows = rows.filter((r) => r.flags.length > 0).length
+const qualityRows = rows.filter((r) => r.flags.some((f) => f !== 'cat-mismatch')).length
+console.log(`\n검수 필요 — 전체 ${flaggedRows}행 (번역 품질 ${qualityRows} + 분류 불일치 ${flagCount['cat-mismatch'] ?? 0}), 이번 파일 ${picked.filter((r) => r.flags.length > 0).length}행`)
+for (const [f, n] of Object.entries(flagCount).sort((a, b) => b[1] - a[1])) {
+  console.log(`   ${f.padEnd(13)} ${String(n).padStart(4)}   ${FLAG_NOTE[f] ?? ''}`)
+}
+
 const tierLabel: Record<number, string> = {
   1: '수동검수·동형이의 / 분류 불일치  최우선',
   2: '출력 이상 플래그  깨진 번역',
@@ -205,4 +241,4 @@ for (const [t, list] of [...byTier].sort((a, b) => a[0] - b[0])) {
   console.log(`  T${t} ${String(list.length).padStart(6)} / ${String(inFile).padStart(4)}   ${tierLabel[t]}`)
 }
 console.log(`\n검수 표기 — o 맞음 · x 틀림(fix) · ~ 애매(fix 메모) · s stdict_def 채택 · ? 미기입`)
-console.log(`전체는 --all, tier별 표본 크기는 --sample=N`)
+console.log(`깨진 것만 전량 보려면 --flagged · 전체 --all · tier별 표본 --sample=N`)

@@ -587,7 +587,12 @@ context-notes 2026-09-07 「지속의 유인」·「대조」 절 참조.
     Phase 3 manual_verdict/reason 병기. 180행(tier별 30). T1 수동·동형이의 298 / T2 깨진번역 125 /
     T3 수동 252 / T4 동형이의 7,014 / T5 일본고유 3,499 / T6 동형동의 6,025.
     verdict `o`/`x`/`~`/`s`(stdict 채택), `cat` 교정, `manual≠category` 플래그
-  - **[x] `tools/apply-korean-meaning.ts`** (`48bfe36`) — 워크리스트 verdict → `korean-class.json` 반영, `--validate`
+  - **[x] `tools/apply-korean-meaning.ts`** (`48bfe36`) — 워크리스트 verdict → `korean-class.json` 반영, `--validate`.
+    `korean-meaning-worklist*.tsv` 여러 파일에서 verdict 병합
+  - **[x] 검수 목록 노출** (2026-09-07) — 깨진 번역을 앱에서 안 가린다(수정 확인용, 사용자 요청).
+    대신 `build:korean-meaning-worklist -- --flagged` → `korean-meaning-worklist-flagged.tsv`
+    (플래그 붙은 행 191 = 번역 품질 131 + 분류 불일치 60, 표본 없이 전량). 도구가 플래그별
+    분해도 출력. 앱은 `미검수` 뱃지 그대로 (`verified:false` 는 텍스트를 가리지 않는다)
   - **[ ] 실제 검수** (사람) — `korean-meaning-worklist.tsv` verdict 채우기 → `apply:korean-meaning --validate`
     로 tier별 손댄 비율 → 필요하면 `--all`. **T2(깨진 번역 125건)부터.** AI 가 대신 못 함
   - **[구버전 폐기]** stdict 기반 `koMeaning` + 워크리스트 v1. `korean-meaning.json`·
