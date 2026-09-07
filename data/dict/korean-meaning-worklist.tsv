@@ -1,121 +1,181 @@
 verdict	cat	fix	tier	flags	manual	headword	reading	glossEn	llm_ko	stdict_def	manual_reason	category	classSource	band	id
-?			1	cat-mismatch	Y(2)	家族計画	かぞくけいかく	family planning		행복한 가정생활을 위해 부부의 생활 능력에 따라 자녀의 수나 출산의 간격을 계획적으로 조절하는 일.		1	llm	1	1192160
-?			1		Y(2)	女史	じょし	lady (of high social status; e.g. scholar, artist, critic, politician); Ms; Mrs; Miss		결혼한 여자를 높여 이르는 말.	일본어의 '女史'는 고위 여성 전문가나 관직을 지칭하는 고유명사적 용어인 반면, 한국 표준국어대사전의 '여사 (2)'는 결혼한 여성이라는 일반적인 존칭으로 뜻이 완전히 갈라져 동형이의에 해당합니다.	2	manual	0	1345130
-?			1		Y(2)	同意	どうい	agreement; consent; approval; assent		같은 뜻. 또는 뜻이 같음.	일본어의 '同意'는 법적·공식적 '동의/승인'을 뜻하는 반면, 한국 표준국어대사전의 '동의 (2)'는 철학적으로 '같은 뜻'이나 '뜻이 일치함'을 지칭하여 핵심 의미가 갈린다.	2	manual	0	1451850
-?			1		Y(2)	明治	めいじ	Meiji era (1868.9.8-1912.7.30)		정치를 밝게 잘함. 또는 그 정치.	일본어의 '明治'는 특정 역사 시대 (메이지 유신 이후 시기) 를 지칭하는 고유명사이지만, 한국 표준국어대사전의 '명치'는 '밝은 정치'라는 일반적 정의와 이를 뜻하는 명사 개념을 가리키며, 두 용어의 핵심 의미와 사용 범위가 완전히 다릅니다.	2	manual	0	1611970
-?			1		Y(2)	相撲	すもう	sumo (wrestling); sumo wrestler; rikishi		서로 마주 때림.	일본어의 '相撲'는 씨름이라는 구체적인 운동 명칭을 지칭하는 반면, 한국 표준국어대사전의 '상박'은 '서로 마주 때림'이라는 일반적인 동작이나 상태를 뜻하는 동형이의 관계입니다.	2	manual	0	1401360
-?			1		Y(2)	時半	じはん	half past (the hour)		아주 짧은 시간.	일본어의 '時半'은 시간 단위 (시각의 절반) 를 뜻하는 반면, 한국 표준국어대사전의 '시반'은 아주 짧은 시간을 뜻하는 별개의 어휘로 쓰임이 갈립니다.	2	manual	0	1658480
-?			1		Y(2)	安保	あんぽ	security (e.g. national security); US-Japan Security Treaty; campaign against the Japan-US Security Treaty (1959-60, 1970)		편안히 보전됨. 또는 편안히 보전함.	일본어의 '安保'는 국가 안보라는 고유 명사적 개념을 지칭하는 반면, 한국 표준국어대사전의 '안보 (2)'는 한자어로서 '편안히 보전됨'이라는 일반적 동사/형용사 의미를 가지는 동형이의 관계입니다.	2	manual	0	1154260
-?			1		Y(2)	役所	やくしょ	government office; public office		토목이나 건축 따위의 공사를 하는 곳.	일본어의 '役所'는 행정 기관을 뜻하는 반면 한국 표준국어대사전의 '역소'는 토목 공사 현장이라는 전혀 다른 의미를 지니므로 동형이의에 해당합니다.	2	manual	0	1538020
-?			1		Y(2)	外信	がいしん	external communication		외국으로부터 온 통신.	일본어의 '외신'은 외부 기관과의 소통 (external communication) 을 의미하는 반면, 한국 표준국어대사전의 '외신'은 외국으로부터 온 통신 (foreign news/communication) 을 지칭하여 핵심 의미가 다릅니다.	2	manual	0	1203840
-?			1		Y(2)	衣料	いりょう	clothing		옷감이나 옷을 통틀어 이르는 말.	일본어의 '衣料'는 옷감이나 원단을 뜻하는 반면, 한국 표준국어대사전의 표제어 '의료'는 의학과 치료를 뜻하므로 한자는 같지만 핵심 의미가 완전히 갈라져 동형이의에 해당합니다.	2	manual	0	1158830
-?			1		Y(2)	依頼	いらい	request; commission; entrusting (with a matter); dependence		굳게 믿고 의지함.	일본어의 '依頼'는 타인으로부터 도움을 청하거나 일을 맡아달라고 요청하는 행위 (request/commission) 를 뜻하지만, 한국 표준국어대사전의 '의뢰'는 '굳게 믿고 의지함'이라는 본래 의미로 정의되어 있어 핵심 의미가 갈린다.	2	manual	0	1155710
-?			1		Y(2)	人々	ひとびと	people; men and women; each person; everybody		여러 사람마다 각자.	일본어의 '人々'는 '사람들 (집단)'을 뜻하는 반면, 한국 표준국어대사전의 '인인'은 '각각/각자'라는 부사적 의미를 지닌 동형이의어 관계입니다.	2	manual	0	1580650
-?			1		Y(2)	一円	いちえん	one yen; throughout (an area); whole district		일정한 범위의 지역.	일본어의 '一円'은 화폐 단위인 '원'을 뜻하는 반면, 한국 표준국어대사전의 '일원'은 '하나의 지역'이라는 공간적 개념을 뜻하므로 핵심 의미가 다릅니다.	2	manual	0	1161130
-?			1		Y(2)	調理	ちょうり	cooking; food preparation		건강이 회복되도록 몸을 보살피고 병을 다스림.	일본어의 '調理'는 요리를 뜻하는 반면 한국 표준국어대사전의 '조리'는 병을 다스리는 의학 용어로 핵심 의미가 완전히 갈라져 동형이의에 해당합니다.	2	manual	0	1429310
-?			1		Y(2)	知事	ちじ	prefectural governor		고려 시대에, 각 도의 도통사(都統使) 밑에 딸린 오품에서 육품까지의 벼슬.	일본어의 '지사'는 현청장 (prefectural governor) 을 지칭하는 반면, 한국 표준국어대사전의 '지사'는 고려 시대의 관직 명칭을 뜻하므로 핵심 의미와 시대적 배경이 완전히 다릅니다.	2	manual	0	1420580
-?			1		Y(2)	次々	つぎつぎ	in succession; one by one		어떤 사물의 상태가 시간의 흐름에 따라 일정한 방향으로 조금씩 진행하는 모양.	일본어의 '次々'는 연속적으로 일어나는 동작을 강조하는 반면, 한국어의 '차차'는 상태가 서서히 변해가는 과정을 나타내므로 핵심 의미가 다릅니다.	2	manual	0	1597850
-?			1		Y(2)	追及	ついきゅう	investigation (e.g. into someone's guilt); questioning; pressing; hounding		뒤쫓기어 따라잡힘. 또는 뒤쫓아서 따라잡음.	추급은 일본어에서 '조사/질문'이라는 뜻으로 쓰이는 반면 한국어에서는 '뒤쫓아 따라잡다'라는 물리적 추격의 의미만 가지므로 핵심 의미가 갈렸다.	2	manual	0	1432480
-?			1		Y(2)	出向	しゅっこう	temporary transfer (of an employee); secondment; relocation; loan		출발하거나 길을 떠나 목적지로 향함.	일본어의 '출향'은 인력 이동 (임대/이전) 을 뜻하는 반면, 한국 표준국어대사전의 '출향'은 단순히 목적지로 향하거나 떠나는 일반적인 행위를 뜻하므로 핵심 의미가 다릅니다.	2	manual	0	1338870
-?			1		Y(2)	単独	たんどく	sole; single; solo; independence		단 한 사람.	일본어의 '단독'은 혼자라는 상태나 독립성을 뜻하는 반면, 한국 표준국어대사전의 '단독 (2)'은 특정 용법으로 '단 한 사람'이라는 구체적인 수량을 지칭하는 의미로 한정되어 있어 핵심 의미가 갈린다.	2	manual	0	1417780
-?			1		Y(2)	対局	たいきょく	(playing a) game (of go, shogi, etc.)		일의 어떤 국면에 마주함.	일본어의 '대국'은 바둑이나 쇼기 등 특정 게임의 대결을 지칭하는 고유 용어인 반면, 한국 표준국어대사전의 '대국'은 일의 국면이 맞서는다는 일반적인 추상적 의미를 가지므로 핵심 뜻과 주된 쓰임이 갈랐다.	2	manual	0	1655370
-?			1		Y(2)	当分	とうぶん	for the present; for the time being; for a while (from now); for some time (to come)		천태종에서, 장교(藏敎)·통교(通敎)·별교(別敎)·원교(圓敎)의 사교(四敎)에 각각 고유한 입장이 있음을 있는 그대로 해석하는 일.	일본어의 '当分'은 현재나 일정한 기간을 나타내는 시간적 개념인 반면, 한국 표준국어대사전의 '당분'은 천태종의 교리 해석이라는 종교적 전문 용어로 뜻이 완전히 다릅니다.	2	manual	0	1449230
-?			1		Y(2)	栄養	えいよう	nutrition; nourishment		지위가 높아지고 명망을 얻어 부모를 영화롭게 잘 모심.	일본어의 '영양'은 신체에 필요한 물질을 뜻하는 반면, 한국 표준국어대사전의 '영양 (榮養)'은 부모를 공경하여 명망을 얻는다는 도덕적 개념으로 한자의 핵심 의미가 완전히 갈라져 있습니다.	2	manual	0	1173990
-?			1		Y(2)	黒字	くろじ	(being in) the black; surplus; black letter		검은색의 글자. 또는 먹으로 쓴 글자.	일본어의 '黒字'는 회계상 흑자를 뜻하는 고유한 의미로 쓰이지만, 한국 표준국어대사전의 '黑字'는 검은색 글자라는 문자적 정의만 나열하여 두 단어의 실제 사용 의미와 범주가 다르다.	2	manual	0	1287710
-?			1	cat-mismatch	Y(1)	英訳	えいやく	English translation		영어로 번역함.		2	default	2	1174670
-?			1	cat-mismatch	Y(1)	全量	ぜんりょう	the whole amount; entire amount; total amount; total quantity		전체의 분량이나 수량.		2	default	2	1396380
-?			1	cat-mismatch	Y(1)	即席	そくせき	impromptu; improvised; extempore; ad-lib		어떤 일이 진행되는 바로 그 자리.		2	default	2	1404240
-?			1	cat-mismatch	Y(1)	即売	そくばい	selling on the spot		상품을 벌여 놓은 그 자리에서 당장 팔아 버림. 전시장이나 박람회 같은 데서 흔히 이루어진다.		2	default	2	1404300
-?			1	cat-mismatch	Y(1)	炭田	たんでん	coalfield; coal field		석탄이 묻혀 있는 땅.		2	default	2	1661270
-?			1	cat-mismatch	Y(1)	短文	たんぶん	short sentence; short piece of writing (e.g. passage, article, composition)		짧은 글.		2	default	3	1843470
-?			1	cat-mismatch	Y(1)	病弊	びょうへい	evil influence; ill effect		병통과 폐단을 아울러 이르는 말.		2	default	3	1622320
-?			3		Y(1)	家具	かぐ	furniture		집안 살림에 쓰는 기구. 주로 장롱·책장·탁자 따위와 같이 비교적 큰 제품을 이른다.		1	llm	0	1191870
-?			3		Y(1)	肝炎	かんえん	hepatitis		간에 생기는 염증을 통틀어 이르는 말. 발열·황달·전신 권태·소화 장애의 증상을 보이는데, 주된 원인은 음식물과 혈액을 통한 바이러스의 감염이며 그 밖에 약물, 알코올, 알레르기 따위가 원인인 것도 있다.		1	llm	0	1214640
-?			3		Y(1)	激戦	げきせん	fierce battle; hard-fought battle; hot contest; severe fight		세차게 싸움. 또는 세찬 싸움.		1	llm	0	1253680
-?			3		Y(1)	結果	けっか	result; consequence; outcome; effect		열매를 맺음. 또는 그 열매.	일본어의 '결과'는 사건이나 행동에 따른 최종적인 산출물 (outcome) 을 의미하는 반면, 한국 표준국어대사전의 '결과 (2)'는 식물에서 맺히는 열매라는 본래 뜻과 그 확장된 개념을 지칭하여 핵심 의미가 갈린다.	1	manual	0	1254690
-?			3		Y(1)	決断	けつだん	decision; determination		결정적인 판단을 하거나 단정을 내림. 또는 그런 판단이나 단정.		1	llm	0	1254370
-?			3		Y(1)	攻守	こうしゅ	offense and defense; offence and defence; batting and fielding		공격과 수비를 아울러 이르는 말.		1	llm	0	1279220
-?			3		Y(1)	公害	こうがい	pollution; public nuisance; contamination		산업이나 교통의 발달에 따라 사람이나 생물이 입게 되는 여러 가지 피해. 자동차의 매연, 공장의 폐수, 여러 종류의 쓰레기 따위로 인하여 공기와 물이 더럽혀지고 자연환경이 파괴되는 문제 따위를 이른다.		1	llm	0	1273420
-?			3		Y(1)	公団	こうだん	public corporation; public housing		국가적인 차원의 일정 사업을 수행하기 위하여 설립된 특수 법인의 하나. 한국 에너지 공단, 국민 건강 보험 공단 따위가 있다.	일본어의 '공단'은 공공기관을 지칭하는 일반 명사라면, 한국 표준국어대사전의 '공단 (2)'은 특정 목적의 특수 법인이라는 정의적 의미를 가진 전문 용어로 핵심 쓰임이 다릅니다.	1	manual	0	1274280
-?			3		Y(1)	課題	かだい	subject; theme; issue; matter		처리하거나 해결해야 할 문제.	일본어의 '課題'는 주로 논의 대상이나 주제를 뜻하는 반면, 한국 표준국어대사전의 '과제'는 반드시 해결해야 할 문제나 숙제를 지칭하여 핵심 의미가 갈린다.	1	manual	0	1195820
-?			3		Y(1)	交通	こうつう	traffic; transportation; communication; exchange (of ideas, etc.)		자동차·기차·배·비행기 따위를 이용하여 사람이 오고 가거나, 짐을 실어 나르는 일.	일본어의 '교통'은 사람과 물건의 이동뿐만 아니라 정보나 사상의 교류까지 포함하는 넓은 의미의 소통을 지칭하지만, 한국 표준국어대사전의 '교통'은 주로 자동차·기차 등 운송 수단을 이용한 사람의 왕래와 짐 실어 나르는 구체적인 이동 행위를 뜻하여 핵심 의미가 갈린다.	1	manual	0	1272280
-?			3		Y(1)	大戦	たいせん	great war; great battle; world war		여러 나라가 참가하여 넓은 지역에 걸쳐 큰 전쟁을 벌임. 또는 그런 전쟁.	일본어의 '大戦'은 특정 전쟁 (제 1 차/제 2 차 세계대전 등) 을 지칭하는 고유명사적 용어인 반면, 한국어의 '대전'은 전쟁 일반을 뜻하는 일반 명사이며, 일본어에서 '전쟁'을 통칭할 때는 주로 '전쟁'이나 '전쟁'이라는 한자어를 사용하므로 핵심 쓰임이 갈립니다.	1	manual	0	1414360
-?			3		Y(1)	生息	せいそく	inhabiting; living		살아 숨 쉼.	일본어의 '생식 (せいそく)'은 '살아 숨 쉬다'라는 동사적 의미를 가지지만, 한국어 표준국어대사전의 표제어 '생식 (2)'은 주로 생식 작용이나 번식을 뜻하며, 일본어에서 쓰이는 '인구 유지/살아남기'라는 의미는 한국에서는 별도의 단어 (예: 생존) 로 표현되어 핵심 의미가 갈립니다.	1	manual	0	1379220
-?			3		Y(1)	選択肢	せんたくし	choices; alternatives; options		미리 제시된 여러 개의 답 가운데에서 물음이나 지시에 따라 알맞은 답을 고르도록 하는 시험 형식.	일본어의 '선택지'는 일반적인 대안이나 옵션을 뜻하는 반면, 한국 표준국어대사전의 '선택지'는 시험 문제에서 정답을 고르는 특정 형식을 지칭하여 핵심 의미가 갈린다.	1	manual	0	1392330
-?			3		Y(1)	信用金庫	しんようきんこ	credit union		영세 상공인을 위한 금전 융통, 상호 신용계의 구성, 어음 할인, 대출 따위에 관한 일을 취급하는 금융 회사. 이용자가 목돈을 쓰고 푼돈으로 갚는 것이 특징이다. 2001년에 ‘상호 신용 금고법’이 ‘상호 저축 은행법’으로 개정되면서, 2002년에 ‘상호 저축 은행’으로 이름이 바뀌었다.	일본어의 '신용금고'는 현재 폐지된 금융기관을 지칭하는 고유명사인 반면, 한국 표준국어대사전의 정의는 과거의 기능과 특징을 설명한 일반 명사이며, 2002 년 이후에는 상호저축은행으로 명칭이 변경되어 실질적인 의미와 쓰임새가 갈라졌다.	1	manual	0	1813160
-?			3		Y(1)	王子	おうじ	prince; subordinate Kumano shrine		임금의 아들.	일본어의 'おうじ'는 신관이나 하급 신령을 지칭하는 고유명사적 용법으로 쓰이는 반면, 한국어의 '왕자'는 strictly '임금의 아들'이라는 일반 명사적 의미만을 가지므로 핵심 뜻이 갈린다.	1	manual	0	1181500
-?			3		Y(1)	外交	がいこう	diplomacy; selling (e.g. door-to-door); canvassing		다른 나라와 정치적, 경제적, 문화적 관계를 맺는 일.	일본어의 '가이코우'는 외교 행위뿐만 아니라 판매원 활동 등 상업적 canvassing 의 뜻까지 포함하는 반면, 한국 표준국어대사전의 '외교'는 국가 간 관계를 맺는 정치적 행위를 한정적으로 지칭하므로 핵심 의미가 갈린다.	1	manual	0	1203540
-?			3		Y(1)	電機	でんき	electrical machinery; appliances		전기의 힘으로 움직이는 기계.	일본어의 '電機'는 전기기기 전체를 지칭하는 일반명사라면, 한국어의 '전기'는 주로 '전기의 힘'이라는 물리적 개념을 뜻하므로 핵심 의미가 갈린다.	1	manual	0	1442990
-?			3		Y(1)	衝撃	しょうげき	impact; shock; impulse; (psychological) shock		물체에 급격히 가하여지는 힘.	일본어의 '충격'은 물리적 타격뿐만 아니라 심리적 충격이나 전기적 자극 등 확장된 의미로 쓰이는 반면, 한국 표준국어대사전의 '충격 (衝擊)'은 주로 물체에 급격히 가해지는 힘이라는 좁은 물리적 정의에 한정되어 있어 핵심 의미가 갈린다.	1	manual	0	1351510
-?			3		Y(1)	投機	とうき	speculation; venture; stockjobbing; gambling (on stocks)		기회를 틈타 큰 이익을 보려고 함. 또는 그 일.	일본어의 '투기'는 주식 등 금융상품을 매수·매도하여 차익을 노리는 행위 (speculation) 를 의미하는 반면, 한국 표준국어대사전의 '투기'는 기회를 틈타 큰 이익을 보려는 일반적인 행위를 뜻하며, 현대 한국어에서는 주로 불법적이거나 위험한 투쟁이나 도박적 행위를 지칭하는 부정적 뉘앙스를 강하게 띠어 핵심 쓰임이 갈렸다.	1	manual	0	1447120
-?			3		Y(1)	評価	ひょうか	valuation; appraisal; evaluation; assessment		물건값을 헤아려 매김. 또는 그 값.	일본어의 '평가'는 추상적인 가치 판단이나 성과 측정을 의미하는 반면, 한국 표준국어대사전의 '평가 (3)'는 구체적으로 물건의 가격을 헤아리는 행위나 그 가격 자체를 뜻하여 핵심 의미가 갈린다.	1	manual	0	1490010
-?			3		Y(1)	抗争	こうそう	rivalry; feud; conflict; dispute		맞서 싸움.	일본어의 '抗争'은 권력이나 의견에 맞서 싸우는 행위 (rivalry/conflict) 를 의미하지만, 한국 표준국어대사전의 '항쟁'은 특정 이념이나 목적을 위해 국가나 체제와 맞서 싸우는 정치적·사회적 투쟁이라는 더 구체적이고 격렬한 뉘앙스를 지니므로 핵심 의미가 갈린다.	1	manual	0	1278950
-?			3		Y(1)	収容所	しゅうようじょ	housing facility; detention facility; internment camp; prisoner-of-war camp		많은 사람을 집단적으로 한곳에 가두거나 모아 넣는 곳.	일본어의 '収容'은 수용소 (internment camp) 의 강제 구금 의미를 지니지만, 한국 표준국어대사전의 '收容'은 단순히 많은 사람을 모아 넣는 중립적 공간 개념으로 뜻이 갈린다.	1	manual	0	1330910
-?			3		Y(1)	増益	ぞうえき	increased (profit)		더하여져 늚. 또는 더하여 늘게 함.	일본어의 '증익'은 이익 증가라는 명사적 개념을 지칭하는 반면, 한국 표준국어대사전의 '증익'은 동사로서 '더하여 늘게 함'이라는 행위를 의미하며 주된 쓰임과 품사가 다릅니다.	1	manual	0	1662720
-?			3		Y(1)	実業	じつぎょう	industry; business		농업, 상업, 공업, 수산업과 같은 생산 경제에 관한 사업.	일본어의 '실업'은 산업/사업 (industry/business) 을 뜻하는 반면, 한국 표준국어대사전의 '실업'은 실직자 (unemployed person) 를 뜻하므로 핵심 의미가 완전히 다릅니다.	1	manual	0	1320940
-?			3		Y(1)	対抗	たいこう	opposition; rivalry; competition; antagonism		굽히거나 지지 않으려고 맞서서 버티거나 항거함.	일본어의 '대항'은 경쟁이나 맞서기 (rivalry/competition) 를 의미하는 반면, 한국 표준국어대사전의 '대항'은 굽히거나 지지 않으려는 저항 (resistance/opposition) 을 뜻하여 핵심 의미가 다릅니다.	1	manual	0	1410020
-?			3		Y(1)	薬品	やくひん	medicine; drug; chemical (agent); chemicals		병이나 상처 따위를 고치거나 예방하기 위하여 먹거나 바르거나 주사하는 물질.	일본어의 '약품'은 화학 물질이나 약품을 포괄하는 광의의 용어인 반면, 한국 표준국어대사전의 '약품'은 병을 고치거나 예방하기 위해 사용하는 특정 물질을 지칭하는 의학/약학 전문 용어로 핵심 의미가 다릅니다.	1	manual	0	1538280
-?			3		Y(1)	騒動	そうどう	riot; rebellion; turmoil; strife		사람들이 놀라거나 흥분하여 시끄럽게 법석거리고 떠들어 대는 일.	일본어의 '騒動'은 폭동이나 소요 사태를 뜻하는 반면, 한국 표준국어대사전의 '소동 (騷動)'은 사람들이 시끄럽게 떠드는 행위를 뜻하여 핵심 의미가 다릅니다.	1	manual	0	1403080
-?			3		Y(1)	交差点	こうさてん	crossing; intersection		서로 엇갈리거나 마주친 곳.		1	llm	1	1592970
-?			3		Y(1)	自作	じさく	one's own work; making by oneself; farming on one's own land; independent farmer		자기 스스로 만들거나 지음. 또는 그렇게 만든 것.		1	llm	1	1317760
-?			3		Y(1)	内幕	うちまく	lowdown; inside information; hidden circumstances; inside facts		겉으로 드러나지 아니한 일의 속 내용.		1	llm	2	1582570
-?			4			異様	いよう	strange; odd; peculiar; weird		모양이 다름.		2	llm	1	1158120
-?			4			自前	じまえ	paying one's own expenses; going into business for oneself; working independently; person who earns their own living		지금보다 이전.		2	llm	1	1318080
-?			4			転身	てんしん	changing (job, career, lifestyle, social position, beliefs, etc.)		다른 곳으로 몸을 옮김.		2	llm	1	1441230
-?			4			高所	こうしょ	high place; high ground; height; (high) altitude		높은 곳.		2	default	2	1657220
-?			4			侮辱	ぶじょく	insult; affront; slight; contempt (e.g. of court)		깔보고 욕되게 함.		2	default	2	1498260
-?			4			山系	さんけい	mountain range; mountain system		대륙적 규모에서 발달하는 최대급의 산지 계통. 대개 둘 이상의 산맥이 서로 밀접한 관계를 가지고 한 계통을 이룬다.		2	default	2	1658010
-?			4			欠損	けっそん	deficit; shortage; loss; being partially broken		어느 부분이 없거나 잘못되어서 불완전함.		2	default	2	1254040
-?			4			各種学校	かくしゅがっこう	miscellaneous school; legal category of schools including certain vocational schools, driving schools, cram schools, etc.		정규 학교가 담당하기 어려운 특수한 분야의 교육을 실시하는 교육 기관을 통틀어 이르는 말. 실업 학교, 예술 학교, 전수 학교, 국악 학교, 신학교 따위이다.		2	default	3	1613970
-?			4			南南西	なんなんせい	south-southwest; south-south-west		남쪽과 서남쪽 사이의 방위.		2	default	3	1599740
-?			4			代案	だいあん	alternative plan		어떤 안(案)을 대신하는 안.		2	default	3	1411610
-?			4			酸化防止剤	さんかぼうしざい	antioxidant		높은 온도에서 산화 반응을 일으키는 여러 가지 물질에 대하여 산소의 작용을 막아 주는 성질을 가진 물질. 페놀류, 아민류 따위가 있다.		2	default	3	1304310
-?			4			上下動	じょうげどう	vertical motion (in earthquakes)		지진이 일어날 때, 땅이 위아래로 움직이는 일. 보통의 지진은 수평 진동이지만 진앙 부근에서는 상하 진동이 많다.		2	default	3	1352740
-?			4			序文	じょぶん	preface; foreword; introduction		책이나 논문 따위의 첫머리에 내용이나 목적 따위를 간략하게 적은 글.		2	default	3	1345530
-?			4			善行	ぜんこう	good deed; good conduct; benevolence		착하고 어진 행실.		2	default	3	1394380
-?			4			外注	がいちゅう	outsourcing; contracting out; ordering with an outside supplier		자기 회사에서 만들 수 없는 제품이나 부품 따위를 다른 회사에 맡겨 만들게 함. 또는 그런 일.		2	default	3	1203950
-?			4			朝貢	ちょうこう	bringing tribute		종속국이 종주국에 때를 맞추어 예물을 바치던 일. 또는 그 예물.		2	default	3	1616620
-?			4			造林	ぞうりん	forestation; afforestation; reforestation		나무를 심거나 씨를 뿌리거나 하는 따위의 인위적인 방법으로 숲을 조성함. 또는 기존의 숲을 손질하거나 다시 살리거나 하는 따위의 관리를 함.		2	default	3	1403750
-?			4			座標	ざひょう	coordinate; coordinates		평면이나 공간 안의 임의의 점의 위치를 나타내는 수나 수의 짝. 직선 위의 한 점 <I>O</I>를 고정시켰을 때에, 그 위의 점 <I>P</I>와 <I>O</I>와의 거리가 <I>a</I>라면 <I>P</I>가 <I>O</I>의 오른쪽에 있는지 왼쪽에 있는지에 따른 <I>a</I> 또는 <I>－a</I>를 <I>O</I>를 원점으로 한 <I>P</I>의 좌표라고 한다.		2	default	3	1638190
-?			4			中位	ちゅうい	medium; mediocrity; average		중간 정도의 위치나 지위.		2	default	3	1423350
-?			4			中火	ちゅうび	medium flame (cooking); medium heat; medium fire		길을 가다가 점심을 먹음. 또는 그 점심.		2	default	3	1695550
-?			4			中継局	ちゅうけいきょく	relay station; translator station		방송국의 전파 수신이 곤란한 지역에 설치하여 본국(本局)의 방송 전파를 증폭한 후 방송하는 방송국.		2	default	3	1695900
-?			4			出超	しゅっちょう	excess of exports; favorable balance of trade; favourable balance of trade		‘수출 초과’를 줄여 이르는 말.		2	default	3	1339730
-?			4			下肢	かし	lower limbs; legs		‘다리’를 전문적으로 이르는 말.		2	default	3	1185140
-?			4			海産物	かいさんぶつ	marine products		바다에서 나는 동식물을 통틀어 이르는 말.		2	default	3	1201400
-?			4			賢母	けんぼ	wise mother		어진 어머니.		2	default	3	1260310
-?			4			偽善	ぎぜん	hypocrisy		겉으로만 착한 체함. 또는 그런 짓이나 일.		2	default	3	1224560
-?			4			勧進	かんじん	temple solicitation		남에게 권하여 불도(佛道)에 나아가게 함.		2	default	3	1211040
-?			4			懐古	かいこ	reminiscence; nostalgia; thinking fondly of the past; recalling the old days		옛 자취를 돌이켜 생각함.		2	default	3	1200550
-?			4			経度	けいど	longitude		성숙한 여성의 자궁에서 주기적으로 출혈하는 생리 현상. 임신하지 않는 경우 황체(黃體)에서 호르몬 분비가 감소하기 때문에 자궁 속막이 벗겨져서 일어난다. 보통 12~17세에 시작하여 50세 전후까지 계속되는데 임신 중이나 수유기를 빼놓고는 평균 28일의 간격을 두고 3~7일간 지속된다.		2	default	3	1251630
-?			4			観念的	かんねんてき	conceptual; ideational; notional; theoretical		관념에만 사로잡혀 있는 것.		2	default	3	1782630
-?			6			父親	ちちおや	father		‘아버지’를 정중히 이르는 말.		1	llm	0	1497680
-?			6			飛躍	ひやく	leap; jump; stepping out into the wider world; becoming active on a wider stage		나는 듯이 높이 뛰어오름.		1	llm	0	1485560
-?			6			首脳	しゅのう	head; leader; top; important part		어떤 조직, 단체, 기관의 가장 중요한 자리의 인물.		1	llm	0	1329360
-?			6			外国人	がいこくじん	foreigner; foreign citizen; foreign national; alien		다른 나라 사람.		1	llm	0	1203650
-?			6			援護	えんご	support; help; backing; covering (from enemy attack)		돕고 보살펴 줌.		1	llm	0	1588790
-?			6			衛星	えいせい	(natural) satellite; moon; (artificial) satellite		행성의 인력에 의하여 그 둘레를 도는 천체. 지구, 화성, 목성, 토성, 천왕성, 해왕성에 있으며 태양계에는 160개가 넘는 위성이 알려져 있다. 대표적으로 지구에는 달이 있다.		1	llm	0	1174760
-?			6			自身	じしん	(one's) self; oneself; yourself; himself		그 사람의 몸 또는 바로 그 사람을 이르는 말.		1	llm	0	1318000
-?			6			全会	ぜんかい	whole assembly		총회나 전원회의 따위의 전체 회의를 이르는 말.		1	llm	0	1824110
-?			6			座席	ざせき	seat (esp. in public places or places with assigned seating); seating		앉을 수 있게 마련된 자리.		1	llm	0	1291880
-?			6			注意	ちゅうい	attention; notice; heed; care		마음에 새겨 두고 조심함.		1	llm	0	1426530
-?			6			中止	ちゅうし	interruption; discontinuance; suspension; stoppage		하던 일을 중도에서 그만둠.		1	llm	0	1424410
-?			6			取得	しゅとく	obtaining (a qualification, right, object, etc.); acquisition (of land, property, etc.); gaining possession (of); getting		자기 것으로 만들어 가짐.		1	llm	0	1327070
-?			6			廃案	はいあん	rejected bill (project)		토의하지 않고 버려둔 의안이나 안건.		1	llm	0	1625510
-?			6			当社	とうしゃ	this company; this firm; this shrine		바로 그 회사. 또는 바로 이 회사.		1	llm	0	1449100
-?			6			競輪	けいりん	keirin; cycle racing event, usu. 2 km with a paced start and sprint finish		일정한 거리를 자전거를 타고 달려 빠르기를 겨루는 경기.		1	llm	1	1234240
-?			6			告知	こくち	notice; notification; announcement; disclosure		게시나 글을 통하여 알림.		1	llm	1	1286050
-?			6			空地	あきち	vacant land; unoccupied ground; empty lot; empty point		집이나 밭 따위가 없는 비어 있는 땅.		1	llm	1	1245340
-?			6			明暗	めいあん	light and darkness; light and shade		밝음과 어두움을 통틀어 이르는 말.		1	llm	1	1532380
-?			6			無限	むげん	infinity; infinitude; eternity; infinite		수(數), 양(量), 공간, 시간 따위에 제한이나 한계가 없음.		1	llm	1	1529880
-?			6			反感	はんかん	antipathy; antagonism; animosity; revulsion		반대하거나 반항하는 감정.		1	llm	1	1480260
-?			6			査定	さてい	assessment (of value, damages, etc.); revision (of a budget)		조사하거나 심사하여 결정함.		1	llm	1	1291450
-?			6			選手村	せんしゅむら	Olympic village; athlete's village		선수들이 집단으로 숙식할 수 있게 건물이나 시설을 갖추어 놓은 일정한 지역.		1	llm	1	1824340
-?			6			眼鏡	めがね	glasses; eyeglasses; spectacles; judgment		시력이 나쁜 눈을 잘 보이게 하기 위하여나 바람, 먼지, 강한 햇빛 따위를 막기 위하여 눈에 쓰는 물건.		1	llm	1	1577670
-?			6			延滞	えんたい	arrears; (being) overdue; delay (e.g. in payment); procrastination		정한 기한에 약속을 지키지 못하고 지체함.		1	llm	1	1176490
-?			6			外遊	がいゆう	foreign travel		외국에 나가 여행함.		1	llm	1	1204200
-?			6			二分	にぶん	halving; dividing (into two parts); bisection; the two equinoxes (vernal and autumnal)		둘로 나눔.		1	llm	1	1463100
-?			6			自治権	じちけん	autonomy; right of self-government		지방 자치 단체가 그 구역 안에서 가지는 공적 지배권. 넓은 의미로는 공공 단체의 자주적 사무 처리 기능을 포함하기도 한다.		1	llm	1	1658560
-?			6			作況指数	さっきょうしすう	rice-crop index		예상되는 작황을 평년에 비교하여 나타낸 지수.		1	llm	1	1657850
-?			6			中傷	ちゅうしょう	slander; libel; defamation; calumny		근거 없는 말로 남을 헐뜯어 명예나 지위를 손상함.		1	llm	1	1424500
-?			6			秋季	しゅうき	fall season; autumn season		가을의 시기.		1	llm	1	1659200
+?			1		Y(2)	空気	くうき	air; atmosphere; mood; situation	공기; 분위기	지구를 둘러싼 대기의 하층부를 구성하는 무색무취의 투명한 기체. 산소와 질소가 약 1 대 4의 비율로 혼합된 것을 주성분으로 하며, 그 밖에 소량의 아르곤·헬륨 따위의 불활성 가스와 이산화 탄소가 포함되어 있다. 동식물의 호흡, 소리의 전파 따위에 필수적이다.	일본어의 '공기'는 물리적 대기뿐만 아니라 분위기나 상황이라는 추상적 뉘앙스를 포함하는 반면, 한국 표준국어대사전의 정의는 산소와 질소가 주성분인 물리적 기체로서의 의미에 집중되어 있어 핵심 뜻이 갈린다.	2	manual	0	1245470
+?			1		Y(2)	南極	なんきょく	South Pole; the Antarctic; Antarctica	남극	자침(磁針)이 가리키는 남쪽 끝. 에스(S)로 표시한다.	한자는 동일하지만 한국에서는 지리학적 남극대륙을 뜻하는 반면 일본어 숙어 'なんきょく'는 자침이 가리키는 방향 (남쪽 끝) 을 의미하여 핵심 뜻이 갈린다.	2	manual	0	1460180
+?			1		Y(2)	大工	だいく	carpenter	목수	솜씨 좋은 장색(匠色).	일본어의 '大工'은 직업인 목공을 지칭하는 반면, 한국 표준국어대사전의 '대공 (3)'은 장인의 솜씨나 정신을 뜻하는 추상적 개념으로 핵심 의미가 다릅니다.	2	manual	0	1413690
+?			1		Y(2)	大丈夫	だいじょうぶ	safe; secure; sound; problem-free	괜찮음; 문제없음	건장하고 씩씩한 사내.	일본어의 '大丈夫'은 상황적 안전이나 문제없음을 뜻하는 관용구인 반면, 한국 표준국어대사전의 '대장부'는 신체적으로 건장하고 씩씩한 남성을 지칭하는 명사로서 핵심 의미가 완전히 갈라져 동형이의에 해당합니다.	2	manual	0	1414150
+?			1		Y(2)	勉強	べんきょう	study; diligence; working hard; experience	공부; 학문	억지로 하거나 시킴.	일본어의 '勉強'은 학습을 뜻하는 반면 한국 표준국어대사전의 '면강'은 억지로 하거나 시킴이라는 뜻으로 핵심 의미가 갈라져 동형이의에 해당합니다.	2	manual	0	1512670
+?			1		Y(2)	半面	はんめん	while; although; though; but	반면; 다른 쪽 면	한 면의 절반.	일본어의 '半面'은 대조적 상황을 나타내는 접속부사 (though/although) 로 쓰이는 반면, 한국어 표준국어대사전의 '반면'은 공간적 개념인 '한 면의 절반'을 뜻하는 명사이므로 핵심 의미가 완전히 갈라져 동형이의에 해당합니다.	2	manual	0	1479920
+?			1		Y(2)	思惑	おもわく	expectation; anticipation; prediction; forecast	생각; 속셈; 의도	분별이나 판단을 하지 못하여 망설임.	일본어의 '思惑'은 미래에 대한 기대나 예측을 뜻하는 반면, 한국 표준국어대사전의 '사혹'은 분별하지 못해 망설이는 부정적 상태를 뜻하므로 핵심 의미가 다릅니다.	2	manual	0	1309630
+?			1		Y(2)	神経	しんけい	nerve; nerves; sensitivity	신경; 신경계	신경 세포의 돌기가 모여 결합 조직으로 된 막에 싸여 끈처럼 된 구조. 뇌와 척수 그리고 우리 몸 각 부분 사이에 필요한 정보를 서로 전달하는 구실을 한다.	일본어의 '신경'은 감수성이나 예민함이라는 추상적 개념을 뜻하는 반면, 한국 표준국어대사전의 '신경'은 생물학적 구조물인 신경 세포와 그 기능을 지칭하는 구체적인 명사이므로 핵심 의미가 갈린다.	2	manual	0	1364520
+?			1		Y(2)	安保	あんぽ	security (e.g. national security); US-Japan Security Treaty; campaign against the Japan-US Security Treaty (1959-60, 1970)	안보; 미일 안보 조약	편안히 보전됨. 또는 편안히 보전함.	일본어의 '安保'는 국가 안보라는 고유 명사적 개념을 지칭하는 반면, 한국 표준국어대사전의 '안보 (2)'는 한자어로서 '편안히 보전됨'이라는 일반적 동사/형용사 의미를 가지는 동형이의 관계입니다.	2	manual	0	1154260
+?			1		Y(2)	役人	やくにん	government official	관료	관아나 육주비전에 속하여 물건을 운반하고 심부름을 하던 사람.	역인은 일본어에서 '정부 관료'를 뜻하는 반면 한국 표준국어대사전에서는 '물건 운반 및 심부름을 하던 하급 종사자'로 정의되어 사회적 지위와 역할이 근본적으로 다르다.	2	manual	0	1538050
+?			1		Y(2)	依頼	いらい	request; commission; entrusting (with a matter); dependence	요청; 의뢰	굳게 믿고 의지함.	일본어의 '依頼'는 타인으로부터 도움을 청하거나 일을 맡아달라고 요청하는 행위 (request/commission) 를 뜻하지만, 한국 표준국어대사전의 '의뢰'는 '굳게 믿고 의지함'이라는 본래 의미로 정의되어 있어 핵심 의미가 갈린다.	2	manual	0	1155710
+?			1		Y(2)	二人	ふたり	two persons; two people; pair; couple	두 사람	아버지와 어머니를 아울러 이르는 말.	한자는 동일하지만 일본어는 '사람 두 명'이라는 일반적 수량을 뜻하는 반면 한국 표준국어대사전의 이인 (二人) 은 아버지와 어머니를 아울러 이르는 특수한 가족 관계를 지칭하므로 핵심 의미가 갈린다.	2	manual	0	1582670
+?			1		Y(2)	一本	いっぽん	one long cylindrical thing; one film, TV show, etc.; one goal, home run, etc.; one telephone call	한 개; 한 번	다른 책. 또는 어느 책.	일본어의 '一本'은 물체의 개수를 세는 단위 (막대, 필름 등) 로 쓰이는 반면 한국 표준국어대사전의 '일본'은 특정 책이나 서적을 지칭하는 명사로 뜻이 완전히 다릅니다.	2	manual	0	1166600
+?			1		Y(2)	日産	にっさん	daily output; Nissan (Japanese car company)	닛산	하루 동안의 생산. 또는 그 생산량.	일본어의 'Nissan'은 자동차 회사명인 고유명사이며, 한국어의 '일산 (2)'은 생산량을 뜻하는 일반 명사로 핵심 의미가 다릅니다.	2	manual	0	1464090
+?			1		Y(2)	一円	いちえん	one yen; throughout (an area); whole district	1엔	일정한 범위의 지역.	일본어의 '一円'은 화폐 단위인 '원'을 뜻하는 반면, 한국 표준국어대사전의 '일원'은 '하나의 지역'이라는 공간적 개념을 뜻하므로 핵심 의미가 다릅니다.	2	manual	0	1161130
+?			1		Y(2)	切手	きって	stamp (postage); merchandise certificate	우표	일제 강점기에, ‘우표’를 이르던 말.	일본어의 '切手'는 우표 일반을 지칭하는 반면, 한국 표준국어대사전의 '절수'는 일제 강점기 당시에만 쓰였던 역사적 용어로 현재에는 통용되지 않아 핵심 쓰임이 갈렸다.	2	manual	0	1385070
+?			1		Y(2)	債券	さいけん	bond; debenture	채권	남에게 빌린 돈의 금액을 적는 장부.	일본어의 '債券'은 금융 용어로 채권을 의미하는 반면, 한국 표준국어대사전의 '채권'은 빚을 적는 장부라는 뜻으로 핵심 의미가 다릅니다.	2	manual	0	1292070
+?			1		Y(2)	把手	とって	handle; grip; knob	손잡이; 손잡이 부분	손을 잡음.	일본어의 '把手'는 물체의 손잡이를 가리키는 명사이지만, 한국어의 '파수'는 '손을 잡다'라는 동사적 의미를 지녀 핵심 뜻이 다릅니다.	2	manual	0	1598780
+?			1		Y(2)	風邪	かぜ	(common) cold; influenza; flu; ague	감기	육음(六淫)의 하나. 바람이 병의 원인으로 작용한 것을 이르는 말이다.	일본어의 '風邪'는 감기라는 구체적인 질병을 지칭하는 반면, 한국 표준국어대사전의 '풍사'는 바람이 병의 원인이 된다는 일반적인 개념이나 육음 중 하나를 뜻하며, 현대 한국어에서는 이 한자어를 거의 사용하지 않아 핵심 쓰임과 의미가 갈린다.	2	manual	0	1583720
+?			1		Y(2)	活動	かつどう	activity (of a person, organization, animal, volcano, etc.); action; operation; moving picture	활동; 작용	몸을 움직여 행동함.	일본어의 '활동'은 조직이나 사건의 진행을 뜻하는 명사 (action/operation) 인 반면, 한국 표준국어대사전의 '활동 (2)'은 몸을 움직여 행동하는 동사적 의미를 지니므로 핵심 의미가 갈린다.	2	manual	0	1208360
+?			1		Y(2)	当面	とうめん	current; urgent; pressing; impending	당분간; 현재	바로 눈앞에 당함.	일본어의 '당면'은 '직접적인 대면 상황'을 뜻하는 반면, 한국 표준국어대사전의 '당면 (3)'은 '바로 눈앞에 당함'이라는 추상적·비유적 의미를 지니므로 핵심 의미가 갈려 동형이의입니다.	2	manual	0	1449250
+?			1		Y(2)	戦車	せんしゃ	tank (military vehicle); chariot	전차	전쟁할 때에 쓰는 수레.	일본어의 '전차'는 현대식 탱크를 의미하는 반면 한국의 '전차'는 고대 전쟁용 수레를 뜻하므로 핵심 의미가 갈려 동형이의입니다.	2	manual	0	1390270
+?			1		Y(2)	気候	きこう	climate	기후	몸과 마음의 형편이라는 뜻으로, 웃어른께 올리는 편지에서 문안할 때 쓰는 말.	일본어의 '기후'는 날씨의 평균 상태를 뜻하는 반면, 한국 표준국어대사전의 '기후'는 몸과 마음의 형편을 묻는 문안 인사말이라는 핵심 의미가 완전히 다릅니다.	2	manual	0	1222170
+?			1		Y(2)	渋滞	じゅうたい	(traffic) congestion; traffic jam; gridlock; delay	교통 체증	일이 잘 진행되지 아니하고 늦어짐.	일본어의 '渋滞'는 교통 체증이라는 구체적인 물리적 현상을 지칭하는 반면, 한국 표준국어대사전의 '삽체'는 일이 잘 안 풀려 늦어지는 추상적인 상태를 뜻하며, 현대 한국어에서는 이 한자어를 거의 사용하지 않아 핵심 쓰임이 갈렸다.	2	manual	0	1335570
+?			1	cat-mismatch	Y(1)	趣向	しゅこう	plan; idea; design; plot	취향; 기미	하고 싶은 마음이 생기는 방향. 또는 그런 경향.		2	llm	1	1328970
+?			1	cat-mismatch	Y(1)	同病	どうびょう	the same sickness	같은 병	같은 병.		2	default	2	1453310
+?			1	cat-mismatch	Y(1)	英訳	えいやく	English translation	영역; 번역	영어로 번역함.		2	default	2	1174670
+?			1	cat-mismatch	Y(1)	左記	さき	undermentioned (statement); the following; at left	아래에 적은; 다음의	세로쓰기를 한 글에서, 본문의 왼쪽에 기록된 것.		2	default	2	1290860
+?			1	cat-mismatch	Y(1)	反射的	はんしゃてき	reflexive; reflecting	반사적인; 반사하는	어떤 자극에 순간적으로 무의식적 반응을 보이는 것.		2	default	3	1480470
+?			1	cat-mismatch	Y(1)	不平	ふへい	discontent; dissatisfaction; complaint; grievance	불만; 불평	마음에 들지 아니하여 못마땅하게 여김. 또는 못마땅한 것을 말이나 행동으로 드러냄.		2	default	3	1494790
+?			2	kanji		有無	うむ	existence or nonexistence; presence or absence; consent or refusal; yes or no	유무; 유무(有無)	있음과 없음.		1	llm	0	1541610
+?			2	kanji		大河	たいが	large river; epic (of a novel, drama, etc.); long-form; large-scale	큰 강; 대하(大河)	큰 강.		1	llm	1	1581490
+?			2	latin		熟知	じゅくち	being familiar with; having a thorough knowledge of; being well-informed about	완벽히 <0xEC><0x95><0x8E>; 통달	익숙하게 또는 충분히 앎.		1	llm	1	1337890
+?			2	kanji		還暦	かんれき	kanreki; one's 60th birthday (or 61st in the traditional age reckoning system) when one has lived through a full sexagenary cycle	환갑(還暦); 60세	육십갑자의 ‘갑(甲)’으로 되돌아온다는 뜻으로, 태어난 지 60돌이 되는 해. 또는 그 나이.		1	llm	1	1215160
+?			2	kanji		国歌	こっか	national anthem	국가(國歌)	나라를 대표·상징하는 노래. 그 나라의 이상이나 영예를 나타내며 주로 식전(式典)에서 연주·제창한다.		1	llm	1	1286220
+?			2	kanji		旧姓	きゅうせい	one's original family name; maiden name	옛 성(姓); 본명	일본이나 미국 따위의 여러 나라에서, 여성이 결혼 전 친가에서 쓰던 성.		1	llm	1	1230930
+?			2	kanji	Y(2)	三時	さんじ	3 o'clock; afternoon snack (eaten around 3 o'clock); three ages of Buddhism (following the death of Gautama Buddha; age of the true law, age of the copied law, and age of the degeneration of the law); three ages of the dharma	3시; 불교의 삼법(三法)	하루 중 세 번의 끼니. 또는 그 끼니때.	일본어의 '三時'는 불교의 세 시대를 지칭하는 전문 용어로 쓰이는 반면, 한국 표준국어대사전의 '삼시'는 하루 세 끼 식사라는 일상적 의미를 가지므로 핵심 뜻이 갈린다.	2	manual	0	1300520
+?			2	kanji		縁起	えんぎ	omen; sign of luck; origin; history	상서로움; 기원; 연기(緣起)	모든 현상이 생기(生起) 소멸 하는 법칙. 이에 따르면 모든 현상은 원인인 인(因)과 조건인 연(緣)이 상호 관계하여 성립하며, 인연이 없으면 결과도 없다.		2	llm	1	1177540
+?			2	latin		狂乱	きょうらん	fury; frenzy; madness; wildness	광란; 미쳐 날<0xEB><0x8E><0xA0>음	미친 듯이 어지럽게 날뜀.		2	default	2	1237660
+?			2	kanji		門扉	もんぴ	door(s) of a gate	문(門)의 문	문틀이나 창틀에 끼워서 여닫게 되어 있는 문이나 창의 한 짝.		2	default	2	1536270
+?			2	kanji		鎮魂	ちんこん	repose of a soul; ceremony for the repose of a departed soul	진혼(鎭魂); 영혼을 편안하게 함	죽은 사람의 넋을 달래어 고이 잠들게 함.		2	default	2	1432060
+?			2	latin		交遊	こうゆう	friendship; companionship; fraternity; comradeship	교류; 사<0xEA><0xB7><0x90>	서로 사귀어 놀거나 왕래함.		2	default	3	1272570
+?			2	kanji		大潮	おおしお	spring tide	대조(大潮)	음력 보름과 그믐 무렵에 밀물이 가장 높은 때.		2	default	3	1787060
+?			2	kanji		方丈	ほうじょう	square jō (approx. 10 sq feet); abbot's chamber; chief priest; Mount Fangzhang (said to be inhabited by immortals)	방장; 주지(住持)의 방	삼신산(三神山)의 하나. 동해에 있다고도 하며 지리산이라고도 한다.		2	default	3	1654980
+?			2	kanji		雅号	がごう	alias; pseudonym; pen name; nom de plume	호(號); 필명	문인이나 예술가 따위의 호나 별호를 높여 이르는 말.		2	default	3	1197910
+?			2	latin		粗大	そだい	coarse; rough; bulky	거<0xEC><0xB9><0xA2>; 부피가 큼	‘조대하다’의 어근.		2	default	3	1397020
+?			2	latin		旧交	きゅうこう	old friendship	옛 사<0xEA><0xB7><0x90>	오래전부터 사귄 교분. 또는 전부터 교분이 있는 사람.		2	default	3	1591470
+?			2	latin		渋柿	しぶがき	astringent persimmon	<0xEB><0x96><0xAB>은 감	맛이 떫은 감.		2	default	3	1335560
+?			2	kanji		全米	ぜんべい	all of the United States; the whole of the USA; all of North and South America; the entire Americas	전미(全米); 미국 전체	조의 열매를 찧은 쌀.		3	llm	0	1396190
+?			2	kanji		町長	ちょうちょう	town mayor	마을 장(長); 읍장	예전에, 물건을 만드는 것을 업으로 하던 사람.		3	llm	0	1428790
+?			2	kanji		公庫	こうこ	finance corporation	공庫	각 관아에서 쓰는 기구를 넣어 두던 창고.		3	llm	1	1273650
+?			2	kanji		都営	とえい	(under) metropolitan government management	도영(都営)의	새로 부임하는 감사가 감영에 이르던 일.		3	llm	1	1700920
+?			2	kanji		英和	えいわ	English-Japanese; English-Japanese dictionary	영한(英和); 영어-일본어	일정한 의미를 갖고 움직이는 대상을 촬영하여 영사기로 영사막에 재현하는 종합 예술.		3	llm	1	1174720
+?			2	kanji		県下	けんか	in the prefecture; prefectural	현(縣) 안	현재의 형편 아래. 주로 연설문 따위에서 쓴다.		3	llm	2	1258830
+?			2	kanji		宮司	ぐうじ	chief priest	궁사(宮司); 사찰의 주지	활을 만드는 사람.		3	llm	3	1228420
+?			2	kanji		年功	ねんこう	long service	연공(年功); 근속 연수			3	default	3	1468580
+?			2	kanji		氏子	うじこ	shrine parishioner	신사(神社)의 신도	활자의 자모를 만들기 위한 글자의 본.		3	llm	3	1311020
+?			2	kanji		県会	けんかい	prefectural assembly	현(縣) 회의	세상 사람에게 알려지는 것과 알려지지 아니하는 것.		3	llm	3	1258840
+?			2	kanji		旧盆	きゅうぼん	Bon Festival of the lunar calendar	구정(舊盆)	사람마다 똑같이 나누어 줌.		3	llm	3	1231290
+?			2	latin		縁側	えんがわ	engawa; external corridor on the outer side of traditional Japanese houses; bone at the base of a fin (esp. of a flatfish); meat at the base of a fin	<0xED><0x88><0x87>마루	‘연측하다’의 어근.		3	llm	3	1177630
+?			3		Y(1)	肝炎	かんえん	hepatitis	간염	간에 생기는 염증을 통틀어 이르는 말. 발열·황달·전신 권태·소화 장애의 증상을 보이는데, 주된 원인은 음식물과 혈액을 통한 바이러스의 감염이며 그 밖에 약물, 알코올, 알레르기 따위가 원인인 것도 있다.		1	llm	0	1214640
+?			3		Y(1)	攻守	こうしゅ	offense and defense; offence and defence; batting and fielding	공격과 수비	공격과 수비를 아울러 이르는 말.		1	llm	0	1279220
+?			3		Y(1)	貢献	こうけん	contribution (furthering a goal or cause); services (to a cause); paying tribute; tribute	공헌; 기여	힘을 써 이바지함.	일본어의 '공헌'은 주로 '기부나 헌신'을 뜻하는 반면, 한국어의 '공헌'은 '힘을 써 이바지함'이라는 행위 자체를 지칭하므로 핵심 의미가 갈린다.	1	manual	0	1282410
+?			3		Y(1)	交渉	こうしょう	negotiations; bargaining; discussions; talks	협상; 교섭	어떤 일을 이루기 위하여 서로 의논하고 절충함.	일본어의 '交渉'은 주로 타협이나 거래를 위한 논의를 뜻하는 반면, 한국 표준국어대사전의 '교섭' (원어 交涉) 은 특정 사안을 해결하기 위한 공식적인 의논과 절충을 강조하여 핵심 뉘앙스가 다릅니다.	1	manual	0	1272110
+?			3		Y(1)	法務	ほうむ	judicial affairs; clerical duty (in a temple)	법무; 사찰의 업무	법률에 관한 사무.	일본어의 '법무'는 사원 관리 등 종교적 직무를 뜻하는 반면, 한국어의 '법무'는 법률 관련 행정 사무를 뜻하여 핵심 의미가 다릅니다.	1	manual	0	1517450
+?			3		Y(1)	全体	ぜんたい	whole; entirety; to begin with; in the first place	전체; 전부	개개 또는 부분의 집합으로 구성된 것을 몰아서 하나의 대상으로 삼는 경우에 바로 그 대상.	일본어의 '全体'은 '전체적으로/대략적으로'라는 부사적·접속적 용법 (to begin with) 이 주된 의미로 쓰이는 반면, 한국어의 '전체'는 명사로서 '모든 부분의 집합'이라는 고유한 실체 의미를 지니므로 핵심 쓰임이 갈린다.	1	manual	0	1395660
+?			3		Y(1)	折衝	せっしょう	negotiation	협상	적의 전차(戰車)를 후퇴시킨다는 뜻으로, 이해관계가 서로 다른 상대와 교섭하거나 담판함을 이르는 말. 충(衝)은 전차의 하나이다.	일본어의 '折衝'은 교섭/담판이라는 추상적 개념을 지칭하는 반면, 한국 표준국어대사전의 '절충 (2)'은 본래 전차를 후퇴시키는 구체적인 군사적 행위를 뜻하며, 현대 한국어에서는 주로 타협이나 양보라는 다른 의미로 쓰이는 동형이의 관계입니다.	1	manual	0	1385950
+?			3		Y(1)	地下	ちか	underground; below the ground; world of the dead; the grave	지하; 지하 세계	땅속이나 땅속을 파고 만든 구조물의 공간.	일본어의 '地下'는 유령이나 죽은 자의 세계를 뜻하는 은유적 의미가 강하지만, 한국 표준국어대사전의 정의는 물리적 땅속 공간이나 구조물을 지칭하는 실제적 의미로 한정되어 있어 핵심 뜻이 갈린다.	1	manual	0	1420840
+?			3		Y(1)	集団	しゅうだん	group; mass	집단; 무리	여럿이 모여 이룬 모임.	일본어의 '집단'은 물리적 모임이나 군집을 뜻하는 반면, 한국 표준국어대사전의 '집단 (集團)'은 정치적·사회적 조직이나 특정 목적을 가진 단체를 지칭하는 데 주로 쓰이며, 일상적인 '모임'보다는 '조직화된 집단'이라는 뉘앙스가 강해 핵심 의미가 갈린다.	1	manual	0	1333730
+?			3		Y(1)	投機	とうき	speculation; venture; stockjobbing; gambling (on stocks)	투기; 사행성 투자	기회를 틈타 큰 이익을 보려고 함. 또는 그 일.	일본어의 '투기'는 주식 등 금융상품을 매수·매도하여 차익을 노리는 행위 (speculation) 를 의미하는 반면, 한국 표준국어대사전의 '투기'는 기회를 틈타 큰 이익을 보려는 일반적인 행위를 뜻하며, 현대 한국어에서는 주로 불법적이거나 위험한 투쟁이나 도박적 행위를 지칭하는 부정적 뉘앙스를 강하게 띠어 핵심 쓰임이 갈렸다.	1	manual	0	1447120
+?			3		Y(1)	抗争	こうそう	rivalry; feud; conflict; dispute	항쟁; 다툼; 투쟁	맞서 싸움.	일본어의 '抗争'은 권력이나 의견에 맞서 싸우는 행위 (rivalry/conflict) 를 의미하지만, 한국 표준국어대사전의 '항쟁'은 특정 이념이나 목적을 위해 국가나 체제와 맞서 싸우는 정치적·사회적 투쟁이라는 더 구체적이고 격렬한 뉘앙스를 지니므로 핵심 의미가 갈린다.	1	manual	0	1278950
+?			3		Y(1)	革命	かくめい	revolution; 58th year of the sexagenary cycle (in Onmyōdō)	혁명	헌법의 범위를 벗어나 국가 기초, 사회 제도, 경제 제도, 조직 따위를 근본적으로 고치는 일.	일본어의 '혁명'은 천체 운동에 따른 육십갑자 순서 (58 년) 를 뜻하는 전문 용어인 반면, 한국어의 '혁명'은 사회·정치적 체제 변화를 뜻하므로 핵심 의미가 완전히 다릅니다.	1	manual	0	1206500
+?			3		Y(1)	増益	ぞうえき	increased (profit)	증가한 이익	더하여져 늚. 또는 더하여 늘게 함.	일본어의 '증익'은 이익 증가라는 명사적 개념을 지칭하는 반면, 한국 표준국어대사전의 '증익'은 동사로서 '더하여 늘게 함'이라는 행위를 의미하며 주된 쓰임과 품사가 다릅니다.	1	manual	0	1662720
+?			3		Y(1)	経済的	けいざいてき	economic; financial; economical; thrifty	경제적인; 재정적인	인간의 생활에 필요한 재화나 용역을 생산·분배·소비하는 모든 활동에 관한 것.	일본어의 '경제적'은 경제 활동과 관련된 형용사 (financial/economic) 를 뜻하는 반면, 한국 표준국어대사전의 '경제적'은 생산·분배·소비 등 경제 현상 자체를 가리키는 명사적 용법으로 핵심 의미가 다릅니다.	1	manual	0	1609740
+?			3		Y(1)	転換	てんかん	conversion; diversion; changeover; commutation	전환; 변경	다른 방향이나 상태로 바뀌거나 바꿈.	일본어의 '転換'은 주로 전기/통신 분야의 회로 전환이나 개념의 변화를 뜻하는 반면, 한국 표준국어대사전의 '전환 (轉換)'은 방향이나 상태가 바뀌는 일반적인 의미를 지니며, 일본어에서 쓰이는 '변화'라는 뜻이 한국어에서는 '전환'보다 '변화'나 '교체' 등으로 표현되는 등 핵심 용례와 뉘앙스가 갈립니다.	1	manual	0	1441080
+?			3		Y(1)	原産	げんさん	place of origin; habitat	원산지; 서식지	어떤 고장에서 처음으로 생산되거나 자라남. 또는 그런 물건.		1	llm	1	1261470
+?			3		Y(1)	一代	いちだい	generation; lifetime; age	세대; 평생	한 시대나 한 세대 전체.		1	llm	1	1164590
+?			3		Y(1)	自己資本	じこしほん	net worth; owned capital	자기자본	기업의 소유자가 출자한 자본과 기업 내부에 축적된 적립금, 준비금 따위의 유보 자본을 합한 자본.		1	llm	1	1658550
+?			3		Y(1)	教習	きょうしゅう	training; instruction	교육; 훈련	학문이나 기예 따위를 가르쳐 익히게 함.		1	llm	1	1237170
+?			3		Y(3)	飢餓	きが	starvation; famine; hunger	기아; 굶주림	길러야 할 의무가 있는 사람이 남몰래 아이를 내다 버림. 또는 그렇게 버린 아이.		3	llm	0	1224090
+?			3		Y(3)	家元	いえもと	head of a school (of music, dance); head family of a school	가문의 우두머리; 학파의 계보를 잇는 사람	길가에 만들어 놓은 작은 공원이나 꽃밭 또는 잔디밭 따위를 통틀어 이르는 말.		3	llm	1	1191940
+?			3		Y(3)	卸売	おろしうり	wholesale; wholesaling	도매	권력이 있는 자가 사사로이 사람을 때리는 매.		3	llm	1	1589540
+?			3		Y(3)	鳴門	なると	strait with a roaring tidal ebb and flow; whirlpool; maelstrom; kamaboko with a spiral whirlpool-like pattern	나루토 해협	뛰어나게 잘 지은 글.		3	llm	2	1753350
+?			3		Y(3)	鉢植	はちうえ	potted plant; potting	화분	예전에, 여자들이 머리를 장식할 때 사용하던 나무 장식품. 주로 횡장 각배(橫長角背)의 빗이 많다.		3	llm	2	1477110
+?			3		Y(3)	儒教	じゅきょう	Confucianism	유교	삼시교(三時敎)의 하나. 대승의 법상종, 소승의 구사종의 교의를 이른다. 법상종에서는 모든 존재는 인연에 의하여 성립되므로 실체는 없지만 그것을 구성하는 요소인 법(法)은 있다고 하며, 구사종에서는 물심 현상의 본체가 삼세(三世)를 통하여 실제로 존재한다고 한다.		3	llm	2	1329510
+?			3		Y(3)	床上	ゆかうえ	on a floor; above floor level	바닥 위	가장 높은 정도나 등급.		3	llm	3	1799250
+?			3		Y(3)	上値	うわね	higher price; price rise	상승하는 가격	→ 상추.		3	llm	3	1353880
+?			3		Y(3)	田舎者	いなかもの	person from the countryside; countryman; countryfolk; provincial person	시골 사람; 지방 사람	조선 철종 때에 만든 구리 활자. 청조체(淸朝體)의 근대적 활자로, 약 8만 자를 만들었는데 조선 시대에 주조된 활자로서는 가장 나중에 만들어진 것이다. 운현궁에 보존되어 있으며, 인쇄본으로 ≪목재집(牧齋集)≫·≪양전편고(兩銓便攷)≫ 따위가 있다.		3	llm	3	1442770
+?			3		Y(3)	切干	きりぼし	dried daikon strips	말린 무 조각	‘절’을 속되게 이르는 말.		3	llm	3	1383960
+?			3		Y(3)	清朝	しんちょう	Qing dynasty (of China; 1644-1912); Ch'ing dynasty; Manchu dynasty; seichōtai	청나라	반가운 사자(使者)나 편지를 이르는 말. 푸른 새가 온 것을 보고 동방삭이 서왕모의 사자라고 한 한무(漢武)의 고사에서 유래한다.		3	llm	3	1750680
+?			4			狂気	きょうき	madness; insanity	광기; 정신병	미친 듯한 기미.		2	default	2	1237540
+?			4			配役	はいやく	casting (of a play, film, etc.); cast	배역; 출연진	배우에게 역할을 나누어 맡기는 일. 또는 그 역할.		2	default	2	1625750
+?			4			浮沈	ふちん	floating and sinking; rise and fall; ebb and flow; ups and downs	흥망성쇠; 오르내림	물 위에 떠올랐다 물속에 잠겼다 함.		2	default	2	1624570
+?			4			片側	かたがわ	one side	한쪽 면	어느 하나의 편이나 방향.		2	default	2	1511720
+?			4			鉱区	こうく	mining area; mine lot	광구	관청에서 어떤 광물의 채굴이나 시굴을 허가한 구역.		2	default	2	1631460
+?			4			開廷	かいてい	court session; trial	개정; 회기	법정을 열어 재판을 시작하는 일. 재판은 법정에서 하는 것이 원칙이지만 필요할 때 법원장의 권한으로 법원 외의 장소에서 행할 수 있다.		2	default	3	1202860
+?			4			功罪	こうざい	merits and demerits; good points and bad points; strengths and weaknesses	공과; 공로와 죄과	공로와 죄과를 아울러 이르는 말.		2	default	3	1275060
+?			4			軍国	ぐんこく	nation at war; militant nation	전쟁 국가	군대와 나라를 아울러 이르는 말.		2	default	3	1247980
+?			4			南欧	なんおう	Southern Europe	남유럽	‘남유럽’의 음역어.		2	default	3	1459990
+?			4			舞曲	ぶきょく	musical dance; music and dancing	무곡	춤을 출 때에 맞추어 추도록 연주하는 악곡을 통틀어 이르는 말.		2	default	3	1499120
+?			4			文語	ぶんご	written language; literary language; classical (or formal) written style based on Heian-period Japanese	문어체; 문학적 언어	일상적인 대화에서 쓰는 말이 아닌, 주로 글에서 쓰는 말.		2	default	3	1505370
+?			4			白状	はくじょう	confession	자백	스스로 자기의 죄상을 말함. 또는 그것을 적은 문서.		2	default	3	1475230
+?			4			弁償	べんしょう	compensation; indemnification; reparation; restitution	배상; 보상	남에게 진 빚을 갚음.		2	default	3	1512980
+?			4			不浄	ふじょう	unclean; dirty; impure; bathroom	부정함; 더러움; 생리혈	깨끗하지 못함. 또는 더러운 것.		2	default	3	1492980
+?			4			肥育	ひいく	fattening (cattle, pigs, etc.)	비육	주로 고기를 생산하기 위하여 운동을 제한하거나 질이 좋은 사료를 주어 가축을 살이 찌게 기름.		2	default	3	1626730
+?			4			死語	しご	dead language; extinct language; obsolete word; dated word	사어; 사어구	과거에는 쓰였으나 현재에는 쓰이지 아니하게 된 언어. 또는 그런 단어. 고대 그리스어, 고대 라틴어 따위가 있다.		2	default	3	1310840
+?			4			水源地	すいげんち	source (of a river, etc.)	물줄기 근원지	물이 흘러나오는 근원이 되는 곳. 산의 꼭대기 부근이나 선상지 말단의 용수대 따위이다.		2	default	3	1371470
+?			4			眼光	がんこう	sparkle of one's eyes; insight; discernment; penetration	눈빛; 통찰력	눈의 정기.		2	default	3	1217190
+?			4			御用	ごよう	(your) business; (your) concern; (your) need; (customer's) order	용건; 업무; (관청 등의) 공식적인 일	임금이 쓰는 것을 이르던 말.		2	default	3	1270720
+?			4			遠洋	えんよう	ocean; deep sea	원양; 깊은 바다	뭍에서 멀리 떨어진 큰 바다.		2	default	3	1178410
+?			4			有機肥料	ゆうきひりょう	organic fertilizer; organic fertiliser	유기질 비료	동·식물로 만들어져 유기 화합물이 들어 있는 비료. 녹비(綠肥), 어분, 퇴비, 콩깻묵 따위이다.		2	default	3	1947940
+?			4			遺留	いりゅう	leaving behind (after death); bequest; leaving behind; forgetting	유산; 남김	끼치어 둠.		2	default	3	1159650
+?			4			自習	じしゅう	self-study; teaching oneself; studying by oneself (at school) while the teacher is absent	자습	혼자의 힘으로 배워서 익힘.		2	default	3	1317900
+?			4			前項	ぜんこう	preceding clause; previous paragraph; antecedent (of a ratio)	앞 항; 앞 절	앞에 적혀 있는 사항.		2	default	3	1393000
+?			4			硝酸	しょうさん	nitric acid	질산	오가(五價) 질소의 산소산. 질소와 산소, 수소로 된 강한 무기산의 하나로, 무색의 액체이다. 자극적인 냄새가 나며, 공기 가운데서 연기를 낸다. 질산염, 물감, 폭약 따위를 만드는 데 쓴다. 화학식은 HNO<sub style='font-size:11px;'>3</sub>.		2	default	3	1351170
+?			4			退潮	たいちょう	ebb tide; waning fortunes	썰물; 쇠퇴	기운, 세력 따위가 줄어듦.		2	default	3	1779270
+?			4			海風	かいふう	sea breeze	바닷바람	바다에서 육지로 불어오는 바람.		2	default	3	1650280
+?			4			憲法裁判所	けんぽうさいばんしょ	constitutional court	헌법재판소	법령의 위헌 여부를 일정한 소송 절차에 따라 심판하기 위하여 설치한 특별 재판소. 법원의 제청에 의한 법률의 위헌 여부, 탄핵, 정당의 해산, 국가 기관 상호 간 또는 국가 기관과 지방 자치 단체 간 및 지방 자치 단체 상호 간의 권한 쟁의, 헌법 소원에 관한 것을 심판한다.		2	default	3	1992000
+?			4			訳文	やくぶん	translated sentence; translated passage; translation; version	번역문	번역한 글.		2	default	3	1739350
+?			4			譲与	じょうよ	transfer	양도	자기의 소유를 남에게 건네줌.		2	default	3	1635630
+?			5			本番	ほんばん	performance (as opposed to practice); going before an audience or on-air; take; game	본경기; 실제 상황	삼분 손익법에 의해서 얻어진 두 종류의 반음(半音) 가운데 좁은 반음.		3	llm	0	1523150
+?			5			県民	けんみん	resident of a prefecture; citizen of a prefecture	현민			3	default	0	1258920
+?			5			教諭	きょうゆ	(licensed) teacher	교사	교묘하게 아첨함.		3	llm	0	1237360
+?			5			梨子	なし	nashi (esp. Pyrus pyrifolia); Japanese pear; Asian pear	배			3	default	1	1549860
+?			5			北海道開発庁長官	ほっかいどうかいはつちょうちょうかん	Director General of Hokkaido Development Agency	홋카이도개발청장관			3	default	1	1520820
+?			5			山小屋	やまごや	mountain hut (esp. one that offers lodging to climbers and hikers); mountain cottage; mountain shanty	산장			3	default	1	1302940
+?			5			町並	まちなみ	townscape; street (of stores and houses); (look of) stores and houses on street	거리 풍경; 마을 모습	잔꾀를 부리지 아니하고 정정당당하게 싸우는 군대.		3	llm	1	1604000
+?			5			出前	でまえ	home delivery (of food); outside catering	배달	인용한 글이나 고사(故事), 성어(成語) 따위의 출처가 되는 서적.		3	llm	1	1339530
+?			5			労務	ろうむ	labor; labour; work; service	노무; 노동			3	default	1	1560610
+?			5			離職	りしょく	employment separation; leaving one's job; losing one's job	퇴직; 직장을 떠남			3	default	2	1821700
+?			5			予言	よげん	prediction; prophecy; prognostication; foretelling	예언; 예측			3	default	2	1584920
+?			5			一番手	いちばんて	first person (to do); person going first; first place; top position	첫 번째 사람; 선두	수식에서 특정 수치를 가지지 아니하고 어떤 값으로도 대신할 수 있는 수. 대개 문자로 나타낸다. 예를 들어 <I>3x+2x=5x</I>에서 <I>x</I>를 이른다.		3	llm	2	1166000
+?			5			八千代	やちよ	very long period; forever; eight thousand years	아주 오랜 시간; 영원			3	default	2	1476870
+?			5			能役者	のうやくしゃ	noh actor	노역사			3	default	3	1470310
+?			5			目玉商品	めだましょうひん	bargain goods; loss leader; eye-catching goods; featured product	대표 상품; 주력 상품			3	default	3	1611990
+?			5			不得手	ふえて	weak point; unskillfulness	약점; 미숙함			3	default	3	1494360
+?			5			粉々	こなごな	in very small pieces	가루가 되게; 조각나게	분하고 원통하게 여김.		3	llm	3	1593360
+?			5			雪達磨	ゆきだるま	snowman	눈사람			3	default	3	1386510
+?			5			手弁当	てべんとう	preparing one's own lunch; bringing one's own lunch; paying for one's own lunch; working without pay	개인 도시락; 무보수 노동			3	default	3	1698450
+?			5			時節柄	じせつがら	in these times; in times like these; the season being what it is	시기상; 때에 맞게	때에 따라 유행하는 상한병(傷寒病)이나 전염성 질환.		3	llm	3	1816620
+?			5			言語障害	げんごしょうがい	language disorder; speech disorder; speech impediment	언어 장애			3	default	3	1756560
+?			5			郵便為替	ゆうびんかわせ	postal money order	우편환			3	default	3	1542410
+?			5			一人言	ひとりごと	soliloquy; monologue; speaking to oneself	혼잣말			3	default	3	1455670
+?			5			重労働	じゅうろうどう	heavy labor; heavy labour; hard work; hard labor (in prison)	중노동; 고된 노동			3	default	3	1336990
+?			5			片目	かため	one eye; one of one's eyes; being blind in one eye; person who is blind in one eye	외안; 한쪽 눈	큰 나무를 나르기 쉽도록 자른 재목.		3	llm	3	1511830
+?			5			品薄	しなうす	shortage of stock; scarcity of goods; being in short supply	품절; 부족			3	default	3	1490660
+?			5			内地	ないち	within the borders of a country; domestic soil; inland; interior	본토; 내륙	‘얼마에서 얼마까지’의 뜻을 나타내는 말.		3	llm	3	1458840
+?			5			既製	きせい	ready-made; off the shelf	기성품; 즉석의	해마다 사람이 죽은 날에 지내는 제사.		3	llm	3	1220420
+?			5			緑内障	りょくないしょう	glaucoma	녹내장			3	default	3	1820090
+?			5			縁日	えんにち	temple festival; fair; fete day; day related to a particular deity and thought to bring divine blessing to those who celebrate it	축제일; 장날	여러 날을 계속함.		3	llm	3	1177670
+?			6			大使	たいし	ambassador	대사	나라를 대표하여 다른 나라에 파견되어 외교를 맡아보는 최고 직급. 또는 그런 사람. 주재국(駐在國)에 대하여 국가의 의사를 전달하는 임무를 가지며 국가의 원수와 그 권위를 대표한다.		1	llm	0	1413880
+?			6			代打	だいだ	pinch-hitting; pinch hitter; performing a duty in place of someone else; proxy	대타; 대신함	야구에서, 순번으로 정해져 있던 타자를 대신하여 공을 치는 일.		1	llm	0	1412050
+?			6			民家	みんか	private house	민가	일반 백성들이 사는 집.		1	llm	0	1528620
+?			6			配分	はいぶん	distribution; allotment	배분; 분배	몫몫이 별러 나눔.		1	llm	0	1473200
+?			6			普賢	ふげん	Samantabhadra (bodhisattva); Universal Compassion	보살명; 보편적 자비	사보살(四菩薩)의 하나. 석가모니여래의 오른쪽에 있는 보살로, 형상은 크게 흰 코끼리를 탄 모양과 연화대에 앉은 모양 두 가지가 있다. 불교의 진리와 수행의 덕을 맡았으며, 왼쪽의 문수보살과 함께 모든 보살의 으뜸이 되어 언제나 여래의 중생 제도를 돕는다.		1	llm	0	1497140
+?			6			先住	せんじゅう	original inhabitant; aboriginal; previous priest	원주민; 선주	이전부터 살고 있음.		1	llm	0	1853300
+?			6			勝敗	しょうはい	victory or defeat; outcome (of a game, battle, etc.)	승패; 경기 결과	승리와 패배를 아울러 이르는 말.		1	llm	0	1346220
+?			6			助成	じょせい	assisting; assistance; fostering; aiding	지원; 도움	도와서 이루게 함.		1	llm	0	1344700
+?			6			早朝	そうちょう	early morning	이른 아침	이른 아침.		1	llm	0	1400330
+?			6			打者	だしゃ	batter	타자	야구에서, 배트를 가지고 타석에서 공을 치는, 공격하는 편의 선수.		1	llm	0	1408900
+?			6			陛下	へいか	Your Majesty; His Majesty; Her Majesty	폐하	황제나 황후에 대한 경칭.		1	llm	0	1508740
+?			6			活用	かつよう	practical use; application; making good use of; putting to good use	활용; 응용; (문법) 활용	도구나 물건 따위를 충분히 잘 이용함.		1	llm	0	1208460
+?			6			将来	しょうらい	future; (future) prospects; bringing (from abroad, another region, etc.); bringing about	장래; 미래	다가올 앞날.		1	llm	0	1347710
+?			6			果汁	かじゅう	fruit juice	과일 주스	과일에서 배어 나오거나 과일을 짜서 나온 즙.		1	llm	1	1192990
+?			6			基幹	きかん	mainstay; nucleus; key	기반; 핵심	어떤 분야나 부문에서 가장 으뜸이 되거나 중심이 되는 부분.		1	llm	1	1219010
+?			6			女流	じょりゅう	woman (writer, artist, aviator, etc.)	여성 작가; 여성 예술가	어떤 전문적인 일에 능숙한 여자를 이르는 말.		1	llm	1	1345440
+?			6			同窓会	どうそうかい	alumni association; graduates' association; alumni meeting; class reunion	동창회	같은 학교를 졸업한 사람들이 모여 서로 친목을 도모하고 모교와의 연락을 하기 위하여 조직한 모임.		1	llm	1	1453000
+?			6			壁画	へきが	fresco; mural; wall painting	벽화	건물이나 동굴, 무덤 따위의 벽에 그린 그림.		1	llm	1	1509310
+?			6			書記官	しょきかん	secretary	서기관	일반직 4급 공무원의 직급. 부이사관의 아래, 사무관의 위이다.		1	llm	1	1701860
+?			6			植物園	しょくぶつえん	botanical garden	식물원	식물의 연구나 식물에 관한 지식을 보급하기 위하여 많은 종류의 식물을 모아 기르는 곳.		1	llm	1	1357310
+?			6			夜空	よぞら	night sky	밤하늘	밤의 하늘.		1	llm	1	1536670
+?			6			融通	ゆうずう	lending (money, commodities, etc.); finance; loan; adaptability	융통성; 자금 대여	금전, 물품 따위를 돌려씀.		1	llm	1	1584900
+?			6			掌握	しょうあく	grasping; seizing; holding; commanding	장악; 통제	손안에 잡아 쥔다는 뜻으로, 무엇을 마음대로 할 수 있게 됨을 이르는 말.		1	llm	1	1349660
+?			6			尊敬	そんけい	respect; esteem; reverence; honour	존경	남의 인격, 사상, 행위 따위를 받들어 공경함.		1	llm	1	1406400
+?			6			酒類	しゅるい	alcoholic drinks; liquor	주류	술의 종류.		1	llm	1	1329190
+?			6			着目	ちゃくもく	attention; giving one's attention; focusing	주목; 주의	어떤 일을 주의하여 봄. 또는 어떤 문제를 해결하기 위한 실마리를 잡음.		1	llm	1	1423260
+?			6			必然	ひつぜん	inevitable; necessary; certain; sure	필연; 반드시 그러함	사물의 관련이나 일의 결과가 반드시 그렇게 될 수밖에 없음.		1	llm	1	1487570
+?			6			図形	ずけい	figure; shape; graphic	도형; 모양	그림의 모양이나 형태.		1	llm	1	1370380
+?			6			発達	はったつ	development; growth; progress; advancement	발달; 성장	신체, 정서, 지능 따위가 성장하거나 성숙함.		1	llm	1	1477680
+?			6			賛美	さんび	praise; glorification; extolment	찬양; 칭송	아름답고 훌륭한 것이나 위대한 것 따위를 기리어 칭송함.		1	llm	3	1304240
