@@ -358,3 +358,34 @@ describe('buildFocus — 한 음독만 모은 집중 세션', () => {
     expect(cards).toHaveLength(0)
   })
 })
+
+describe('buildFocus — 대조 (표면형 번갈아)', () => {
+  const PAIR = '学:on:がく'
+  const withPairs = (idiomId: string, pairIds: string[]): IdiomEntry => ({
+    idiomId, band: 1, category: 1, classSource: 'manual', pairIds,
+  })
+  // p1~p3 은 표면형 'がく', q1~q2 는 'がっ' 라고 본다
+  const pool = ['p1', 'p2', 'p3', 'q1', 'q2'].map((id) => withPairs(id, [PAIR]))
+  const surfaceOf = (id: string) => (id.startsWith('q') ? 'がっ' : 'がく')
+
+  it('표면형 그룹 사이를 번갈아 낸다', () => {
+    const { cards } = buildFocus(pool, [], { pairId: PAIR, now: T0, limit: 10, surfaceOf })
+    expect(cards.map((c) => c.idiomId)).toEqual(['p1', 'q1', 'p2', 'q2', 'p3'])
+  })
+
+  it('자르기 전에 섞으므로 짧은 세션에도 양쪽이 들어온다', () => {
+    const { cards } = buildFocus(pool, [], { pairId: PAIR, now: T0, limit: 2, surfaceOf })
+    expect(cards.map((c) => c.idiomId)).toEqual(['p1', 'q1'])
+  })
+
+  it('표면형이 하나뿐이면 순서를 안 흔든다', () => {
+    const flat = () => 'がく'
+    const { cards } = buildFocus(pool, [], { pairId: PAIR, now: T0, limit: 10, surfaceOf: flat })
+    expect(cards.map((c) => c.idiomId)).toEqual(['p1', 'p2', 'p3', 'q1', 'q2'])
+  })
+
+  it('surfaceOf 를 안 주면 예전 정렬 그대로다', () => {
+    const { cards } = buildFocus(pool, [], { pairId: PAIR, now: T0, limit: 10 })
+    expect(cards.map((c) => c.idiomId)).toEqual(['p1', 'p2', 'p3', 'q1', 'q2'])
+  })
+})

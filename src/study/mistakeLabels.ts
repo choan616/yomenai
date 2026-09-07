@@ -33,3 +33,18 @@ export const MISTAKE_ADVICE: Record<MistakeType, string> = {
   // 분류기가 아직 안 내는 예약 유형 (types.ts 참조). exhaustive 라 채운다
   OKURIGANA: '한자에 붙는 가나를 어디서 끊는지의 자리예요.',
 }
+
+/**
+ * 규칙으로 고쳐지는 오답 유형. 해설과 대조가 실제로 값을 하는 곳이다.
+ *
+ * `ONYOMI_CHOICE`·`KO_INTERFERENCE` 는 뺐다 — 発을 はつ로 읽을지 ほつ로 읽을지는 어휘별로
+ * 정해진 것이라 규칙이 없고, 규칙이 없는 자리에까지 해설을 붙이면 글만 늘어 안 읽힌다
+ * (context-notes 2026-09-07).
+ */
+export const RULE_MISTAKES: ReadonlySet<MistakeType> = new Set<MistakeType>([
+  'SOKUON',
+  'RENDAKU',
+  'CHOON',
+  'MIXED_READING',
+  'OKURIGANA',
+])

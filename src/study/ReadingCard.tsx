@@ -27,7 +27,13 @@ export function ReadingCard({ idiom, feedback: fb, onSubmit, onNext }: Props) {
   }
 
   if (detail && fb) {
-    return <MistakeDetail idiom={idiom} onClose={() => setDetail(false)} />
+    return (
+      <MistakeDetail
+        idiom={idiom}
+        mistakeType={fb.mistakeType}
+        onClose={() => setDetail(false)}
+      />
+    )
   }
 
   return (

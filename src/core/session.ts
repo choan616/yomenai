@@ -268,6 +268,40 @@ export interface FocusOptions {
   pairId: string
   now: number
   limit: number
+  /**
+   * 그 숙어에서 이 쌍이 실제로 어떤 **표면형**으로 나타나는지 (`surfaceOfPair`).
+   *
+   * 주면 표면형이 갈리게 번갈아 낸다 — 発達 はっ 다음에 発言 はつ. 같은 유형만 연달아
+   * 주면 "이 자리엔 항상 촉음"이라는 과잉일반화가 생겨 새 오답이 만들어진다.
+   * 규칙의 *경계*는 대조로만 배운다 (context-notes 2026-09-07).
+   */
+  surfaceOf?: (idiomId: string) => string | null
+}
+
+/**
+ * 정렬을 유지한 채 표면형 그룹 사이를 번갈아 낸다.
+ *
+ * 그룹 안의 순서(틀린 것 먼저)는 그대로라 각 그룹의 앞머리부터 나가고, 그룹이 하나뿐이면
+ * 입력을 그대로 돌려준다 — 대조할 게 없는데 순서만 흔들지 않는다.
+ */
+function interleaveBySurface<T>(items: T[], surfaceOf: (item: T) => string | null): T[] {
+  const groups = new Map<string, T[]>()
+  for (const it of items) {
+    const key = surfaceOf(it) ?? ''
+    const g = groups.get(key)
+    if (g === undefined) groups.set(key, [it])
+    else g.push(it)
+  }
+  if (groups.size < 2) return items
+
+  const buckets = [...groups.values()]
+  const out: T[] = []
+  for (let i = 0; out.length < items.length; i++) {
+    for (const b of buckets) {
+      if (i < b.length) out.push(b[i])
+    }
+  }
+  return out
 }
 
 /**
@@ -322,8 +356,13 @@ export function buildFocus(
       (a.item.idiomId < b.item.idiomId ? -1 : a.item.idiomId > b.item.idiomId ? 1 : 0),
   )
 
+  // 대조는 자르기 *전에* 건다 — 뒤에 걸면 상위 N 개가 한쪽 표면형에 몰렸을 때 못 갈린다
+  const ordered = options.surfaceOf
+    ? interleaveBySurface(scored, (s) => options.surfaceOf!(s.item.idiomId))
+    : scored
+
   // 집중 세션도 확인 질문을 안 끼운다 — 지금 물어야 할 건 뜻이 아니라 이 음독이다
-  const cards: SessionCard[] = scored
+  const cards: SessionCard[] = ordered
     .slice(0, options.limit)
     .map(({ item }) => ({ ...item, needsClassReview: false }))
 
