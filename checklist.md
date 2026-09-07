@@ -498,6 +498,71 @@ context-notes 2026-09-07 「지속의 유인」·「대조」 절 참조.
   되는지, 읽히는 문장이 보상으로 느껴지는지, 요약 3블록이 대시보드로 읽히지 않는지.
   대조가 규칙을 눈에 들어오게 하는지. AI 가 대신 못 함
 
+---
+
+## Phase 12 — 사전 파생물 검증 (미착수, 2026-09-07 기록)
+
+**착수 전에 context-notes 2026-09-07 「신뢰도는 층마다 다르다」 절을 먼저 읽는다.**
+감수 범위를 한 번 좁힌 이력이 있어서, 그 근거를 모르면 도로 넓히게 된다.
+
+**감수 대상이 아닌 것 (사전 그대로라 사람이 볼 필요 없음)** — 표제어·읽기·품사·빈도
+(JMdict), 한자별 음훈독·한국 한자음(KANJIDIC2). 밴드도 제외 — nf 빈도 순위라 객관적이고,
+체감 난이도 교정은 감수보다 실사용 로그가 낫다.
+
+- [ ] **12-A · 사람이 만든 판정을 추적한다 (gitignore 예외)** — 다른 것보다 먼저
+  - 지금 `data/dict/` 가 통째로 무시돼 **Phase 3 수동 검수 355건이 커밋 안 돼 있다.**
+    `git ls-files data/` 가 빈 결과다. 이 기기가 날아가면 사라진다
+  - 재생성 가능한 산출물과 사람이 만든 원본을 가른다 —
+    `!data/dict/*-review.tsv`, `!data/dict/*-worklist*.tsv`, `!data/dict/*-overrides.json`
+  - **검증: `git ls-files data/dict` 에 검수 파일이 잡히고, `build:onyomi`·`build:bands` 를
+    다시 돌려도 `git status` 에 산출물이 안 뜬다**
+- [ ] **12-B · JmdictFurigana 대조 (사람 0명)** — `decompose` 신뢰도의 답을 사람 없이 얻는다
+  - `data/raw/` 에 `JmdictFurigana.json` 내려받기 (CC BY-SA, JMdict 승계. 커밋 안 함).
+    JMdict 234,814개 중 177,770개(75.7%) 해결분을 배포한다
+  - `tools/measure-furigana.ts` — 표제어+읽기로 조인해 `decompose` 의 **경계**와 대조.
+    `measure-tatoeba.ts` 처럼 산출물 안 남기는 일회성 실측 스크립트
+  - 산출 — 조인 가능 비율 / 일치율 / 불일치 목록. 밴드별·글자수별로 쪼갠다
+  - **정답지가 아니라 두 번째 의견이다.** JmdictFurigana 도 알고리즘 + 수작업 예외 목록이고
+    스스로 "not 100% accurate", "특수 표현을 잘못 자르는 문제"를 명시한다.
+    불일치 = 우리가 틀렸다가 아니라 = 사람이 볼 자리다
+  - **표면형까지만 준다.** 원형(はっ → はつ)과 음훈 구분은 우리 몫이라 대조 범위 밖이다.
+    다만 경계가 틀리면 원형도 반드시 틀리므로 지배적 위험은 걷힌다
+  - 커버리지는 실측해봐야 안다 — 미해결 24%가 주로 熟字訓·고유명사·가나 섞임이라
+    상용한자 한자-only 인 우리 코퍼스와는 잘 안 겹칠 것으로 본다
+  - **검증: 일치율 수치 산출 + 불일치 표본 20개 육안 확인, context-notes 에 수치 기록**
+- [ ] **12-C · 불일치분 검수 워크리스트** — 12-B 결과가 나온 뒤
+  - `tools/build-decomp-worklist.ts` → `data/dict/decomp-worklist.tsv`.
+    Phase 3 의 `build-review-worklist.ts` → `apply-korean-review.ts` 골격을 그대로 쓴다
+  - 열 — `id headword reading band segmentation cost margin alt verdict note`.
+    `segmentation` 은 `発=はっ(はつ,음) 達=たつ(たつ,음)` 처럼 사람이 읽을 수 있게 펼친다
+  - **`verdict` 는 경계만 적게 한다** (`はっ|たつ`). 자유 서술은 파싱이 안 되고,
+    원형은 경계에서 도구가 역산할 수 있다
+  - 표본 — 불일치분 전량 + **일치분에서 무작위 대조군 60**. 대조군이 없으면 "불일치 층
+    오류율 12%"가 전체 오류율인지 최악 구간인지 해석할 수 없다
+  - `tools/apply-decomp-review.ts` → 층별 오류율 리포트 + `data/dict/decomp-overrides.json`.
+    `build-onyomi-map.ts` 가 override 를 알고리즘보다 우선 적용 (Phase 3 의
+    "사람 verdict > 초벌 > 잠정값" 과 같은 규칙)
+  - `--validate` 모드 — 채워진 verdict 로 알고리즘 정확도를 재측정. 비용 함수를 손볼 때마다
+    회귀 확인이 된다
+  - **검증: override 반영 후 `build:onyomi` 재실행 → `build-onyomi-map.test.ts` 통과
+    (순환 없음·표면형 복원), `--validate` 정확도 수치 기록**
+- [ ] **12-D · 한국어 분류 층화 검수 (사람 필요)** — 여기만 대조할 외부 데이터셋이 없다
+  - stdict 는 한국어 사전, JMdict 는 일본어 사전인데 **"이 한자어가 한국어와 같은 뜻인가"를
+    이은 데이터셋은 아무도 안 만들었다.** 그래서 LLM 초벌을 돌렸고, 그래서 여기가 사람 몫이다
+  - 현황 실측 (2026-09-07, `public/dict/base.json` 16,970개) —
+    `manual` **348 (2.1%)** / `llm` 8,155 / `default` 8,463, `koMeaning` 13,448건 전부
+    **`verified: false`**. 초벌 일치율은 표본 150건 기준 90.7%
+  - 우선순위는 **동형이의(category 2) 7,273건** — 틀린 뜻을 보여주면 잘못 배운다
+  - "일본어 전문가"가 아니라 **한일 이중언어 화자**면 된다. 기존 파이프라인 재사용
+    (`build-review-worklist.ts` / `apply-korean-review.ts`)
+  - **검증: 층별 오류율 + `verified: true` 건수, 뜻 카드 `미검수` 뱃지가 실제로 줄어드는 것**
+- [ ] **12-E · `MISTAKE_ADVICE` 6줄 문헌 대조** — 분량 대비 효과가 가장 좋다
+  - Phase 11 에서 **내가 작성한 서술**이라 검수를 안 거쳤다. 사용자가 "규칙"으로 받아들이는
+    텍스트라 오류 비용이 크다. 촉음·연탁(라이먼의 법칙)·장음·重箱/湯桶
+  - 표준 음운론이라 전문가보다 문헌 대조로 충분할 수 있다. 6줄뿐이다
+  - **검증: 각 줄의 근거 문헌을 context-notes 에 적고, 예시 숙어가 실제로 그 규칙의 사례인지
+    코퍼스에서 확인**
+
 ## 확장 후보 (미착수, 실사용 후 판단)
 
 - [x] 오답 유형 enum 에 `OKURIGANA` 자리 예약 — 스키마 불변 조건이라 미리 넣음.
