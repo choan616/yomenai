@@ -10,6 +10,15 @@
   flex-direction: column;
   overflow-y: auto;
 }
+/* PC — 내부 스크롤 대신 문서가 스크롤 (index.css 의 html/body/#root height:auto 와 짝).
+   sticky screen-bar 는 스크롤 컨테이너가 문서로 바뀌어도 그대로 동작한다 */
+@media (min-width: 700px) and (hover: hover) and (pointer: fine) {
+  .screen {
+    flex: 0 0 auto;
+    min-height: 100%;
+    overflow-y: visible;
+  }
+}
 .screen-bar {
   display: flex;
   align-items: center;

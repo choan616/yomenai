@@ -100,6 +100,17 @@ body {
   flex-direction: column;
 }
 
+/* PC — 넓은 화면 + 마우스에선 셸 화면(.screen: 리포트·설정·음독맵)이 뷰포트에 묶여
+   내부 스크롤이 나는 대신, 문서 자체가 스크롤하게 푼다. .study/.diag 는 자체 height 라 영향 없음 */
+@media (min-width: 700px) and (hover: hover) and (pointer: fine) {
+  html,
+  body,
+  #root {
+    height: auto;
+    min-height: 100%;
+  }
+}
+
 button {
   font: inherit;
   color: inherit;
