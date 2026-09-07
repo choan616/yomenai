@@ -2846,3 +2846,26 @@ stdict 전용 필드(한국어 표제어·원어 한자)라 LLM 번역엔 의미
 
 `korean-meaning.json`·`.korean-meaning-cache.json` 은 gitignore 유지 (재생성 가능,
 `korean-llm-draft.tsv` 와 같은 취급). 배포 경로는 커밋된 `public/dict`.
+
+## 2026-09-07 — 영어 gloss 번역 실행 결과
+
+`build:korean-meaning` (gemma4:latest) 밴드 0~3 전량 17,217개, 약 110분 (건당 ~340→390ms,
+Ollama 웜업 후 빨라짐). `.korean-meaning-cache.json` 50건마다 flush — 30/60/90% 지점 카톡 보고.
+
+**품질 플래그 131개(0.76%)** — 예상보다 훨씬 깨끗하다.
+
+| 플래그 | 수 | 성격 |
+|---|---|---|
+| kanji | 86 | 대개 良性 — 한글 뒤 괄호 한자 병기("영한(英和)", "관제(官製)"). Sino-Korean 학습엔 오히려 도움. 소수만 진짜 문제(河童 를 "河童"로 남김) |
+| latin | 37 | **깨짐** — 희귀 한글 음절이 UTF-8 바이트 이스케이프로 샘("완벽히 `<0xEC><0x95><0x8E>`" = 앎). gemma4 OOV 토큰 처리 문제. 전부 플래그돼 워크리스트 T2 |
+| many-senses 6 / kana 2 / long 1 / error 1(浮遊, JSON Unterminated) / untranslated 1 | | |
+
+재적용 — `apply:korean-review --trust-llm` 는 `koMeaning` 을 `korean-meaning.json` 우선으로
+바꿨다. base.json koMeaning **~13,448(stdict) → 16,955/16,959(llm)**. **category 3 일본고유
+3,510개가 처음으로 뜻을 가진다** — 확장 모드가 이제 제대로 동작한다.
+
+`verified` 는 아직 0. 사람이 워크리스트 verdict 를 채우고 `apply:korean-meaning` 을 돌려야
+검수분만 true 가 된다. **T2(깨진 번역 125건)가 최우선** — `<0x..>` 패턴은 기계로도 찾을 수 있어
+빠르다. `--validate` 로 tier별 "손댄 비율"(x+s / o+x+s) 을 뽑으면 층별 오류율이 나온다.
+
+플래그 밖 표본은 카드용으로 적절 — 도안/스케치, 작은 칼/단도, 법치국, 부고, 적정량/적당한 양.
