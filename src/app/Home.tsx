@@ -64,90 +64,82 @@ export function Home({ onNavigate }: { onNavigate: (screen: Screen) => void }) {
 
   return (
     <main className="home">
-      <img
-        className="home-hero"
-        src={`${import.meta.env.BASE_URL}intro_bg.png`}
-        alt=""
-        decoding="async"
-      />
-      <div className="home-body">
-        <h1 lang="ja">読めない</h1>
-        <p className="tagline">뜻은 아는데 못 읽는 숙어를 바로잡아요</p>
+      <h1 lang="ja">読めない</h1>
+      <p className="tagline">뜻은 아는데 못 읽는 숙어를 바로잡아요</p>
 
-        {needsDiagnostic ? (
-          <>
-            <p className="home-stat">
-              <span className="dim">먼저 진단으로 시작 지점을 잡을게요</span>
-            </p>
-            <button
-              type="button"
-              className="btn-primary big"
-              onClick={() => onNavigate('diagnostic')}
-            >
-              진입 진단 시작
-            </button>
-            <button
-              type="button"
-              className="btn rematch"
-              onClick={() => onNavigate('study')}
-              disabled={!sessionReady}
-            >
-              세션 시작 <span className="dim"> · 진단 건너뛰기</span>
-            </button>
-          </>
-        ) : (
-          <>
-            <p className="home-stat">
-              {error ? (
-                <span className="dim">사전을 불러오지 못했어요</span>
-              ) : preview ? (
-                <>
-                  이번 세션 <b>{preview.ready}</b>장
-                  {preview.due > 0 && <span className="dim"> · 복습 기한 {preview.due}</span>}
-                </>
-              ) : (
-                <span className="dim">불러오는 중…</span>
-              )}
-            </p>
-
-            <button
-              type="button"
-              className="btn-primary big"
-              onClick={() => onNavigate('study')}
-              disabled={!sessionReady}
-            >
-              세션 시작
-            </button>
-
-            {/* 의욕 없는 날의 진입로. 20장이냐 안 하냐의 양자택일에서 "안 함"이 이긴다 (Phase 11) */}
-            {preview && preview.ready > QUICK_SESSION_LIMIT && (
-              <button type="button" className="btn quick" onClick={() => onNavigate('quick')}>
-                <b>{QUICK_SESSION_LIMIT}장</b>만
-                <span className="dim"> · 오늘은 짧게</span>
-              </button>
+      {needsDiagnostic ? (
+        <>
+          <p className="home-stat">
+            <span className="dim">먼저 진단으로 시작 지점을 잡을게요</span>
+          </p>
+          <button
+            type="button"
+            className="btn-primary big"
+            onClick={() => onNavigate('diagnostic')}
+          >
+            진입 진단 시작
+          </button>
+          <button
+            type="button"
+            className="btn rematch"
+            onClick={() => onNavigate('study')}
+            disabled={!sessionReady}
+          >
+            세션 시작 <span className="dim"> · 진단 건너뛰기</span>
+          </button>
+        </>
+      ) : (
+        <>
+          <p className="home-stat">
+            {error ? (
+              <span className="dim">사전을 불러오지 못했어요</span>
+            ) : preview ? (
+              <>
+                이번 세션 <b>{preview.ready}</b>장
+                {preview.due > 0 && <span className="dim"> · 복습 기한 {preview.due}</span>}
+              </>
+            ) : (
+              <span className="dim">불러오는 중…</span>
             )}
+          </p>
 
-            {preview && preview.rematch > 0 && (
-              <button type="button" className="btn rematch" onClick={() => onNavigate('rematch')}>
-                재대결 <b>{preview.rematch}</b>
-                <span className="dim"> · 예전에 틀린 것만</span>
-              </button>
-            )}
-          </>
-        )}
+          <button
+            type="button"
+            className="btn-primary big"
+            onClick={() => onNavigate('study')}
+            disabled={!sessionReady}
+          >
+            세션 시작
+          </button>
 
-        <nav className="home-nav">
-          <button type="button" onClick={() => onNavigate('report')}>
-            진단 리포트 <span className="chev">›</span>
-          </button>
-          <button type="button" onClick={() => onNavigate('onyomi')}>
-            음독 맵 <span className="chev">›</span>
-          </button>
-          <button type="button" onClick={() => onNavigate('settings')}>
-            설정 <span className="chev">›</span>
-          </button>
-        </nav>
-      </div>
+          {/* 의욕 없는 날의 진입로. 20장이냐 안 하냐의 양자택일에서 "안 함"이 이긴다 (Phase 11) */}
+          {preview && preview.ready > QUICK_SESSION_LIMIT && (
+            <button type="button" className="btn quick" onClick={() => onNavigate('quick')}>
+              <b>{QUICK_SESSION_LIMIT}장</b>만
+              <span className="dim"> · 오늘은 짧게</span>
+            </button>
+          )}
+
+          {preview && preview.rematch > 0 && (
+            <button type="button" className="btn rematch" onClick={() => onNavigate('rematch')}>
+              재대결 <b>{preview.rematch}</b>
+              <span className="dim"> · 예전에 틀린 것만</span>
+            </button>
+          )}
+        </>
+      )}
+
+      <nav className="home-nav">
+        <button type="button" onClick={() => onNavigate('report')}>
+          진단 리포트 <span className="chev">›</span>
+        </button>
+        <button type="button" onClick={() => onNavigate('onyomi')}>
+          음독 맵 <span className="chev">›</span>
+        </button>
+        <button type="button" onClick={() => onNavigate('settings')}>
+          설정 <span className="chev">›</span>
+        </button>
+      </nav>
     </main>
   )
 }
