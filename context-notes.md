@@ -2770,3 +2770,22 @@ yomenai SW 가 제어하고, 이후 자가 치유된다.
 
 영구 오프라인 e2e 스펙은 안 넣었다 — Playwright webServer 가 `npm run dev`(SW off)라
 `vite preview` 를 띄우는 별도 프로젝트/설정이 필요하다. 후속 후보.
+
+## 2026-09-07 — 참조 라이선스 기록 (Phase 12 + SW 작업)
+
+이번에 새로 끌어온 외부 리소스·의존성의 라이선스. 서비스화 판단 전 Phase 8
+"미검수·승계 범위 문의"와 같은 선상에서 미리 남긴다.
+
+| 리소스 | 위치 | 버전 | 라이선스 | 재배포 여부 | 비고 |
+|---|---|---|---|---|---|
+| **JmdictFurigana** | `data/raw/JmdictFurigana.json` (커밋 안 함) | release `2.3.1+2026-08-25` | **CC BY-SA 4.0** (JMdict 승계, EDRDG) | 원본은 X. 파생물 `data/dict/decomp-overrides.json`(커밋)에 숙어 id 103개 + 우리가 만든 표면형 문자열만. JmdictFurigana 텍스트 자체는 안 담김 | github.com/Doublevil/JmdictFurigana. 12-B 대조·12-C 거부 근거. 빌드타임 전용 |
+| **Noto Sans JP (Bold)** | `data/raw/fonts/NotoSansJP-Bold.otf` (커밋 안 함) | notofonts/noto-cjk, Regular 와 같은 릴리스 (`Sans/SubsetOTF/JP/`) | **SIL OFL 1.1** (`data/raw/fonts/NotoSansJP-LICENSE.txt`) | **O** — `public/fonts/NotoSansJP-Bold-subset.woff2` 커밋 + Pages 배포 | OFL 은 서브셋·변형 허용. Noto 는 Reserved Font Name 을 안 걸어서 내부 이름 `NotoSansJP-Bold` 유지 무방. 배포본에 OFL 사본을 같이 두는 게 안전 (지금은 원본 라이선스 파일만 data/raw 에 있고 커밋 안 됨 — 후속) |
+| **vite-plugin-pwa** | devDependency | `1.3.0` (`^1.0.3`) | **MIT** | 빌드 도구, 코드 미포함 | SW·manifest 생성 |
+| **Workbox** | `vite-plugin-pwa` 경유 (`workbox-build 7.4.1`) | 7.4.1 | **MIT** (Google) | **O** — 생성된 `dist/sw.js`·`dist/workbox-*.js` 에 런타임 코드 포함, Pages 배포 (커밋 안 함) | |
+| **intro_bg.png** | `public/intro_bg.png` (커밋함, 배경 제거본) | — | **미확인 — 사용자 제공** | 아직 코드 참조 없음. 추후 소개 화면에서 쓰면 배포됨 | 손그림/의뢰/AI 생성 여부와 라이선스는 사용자 확인 필요. 소개 화면에 넣기 전에 출처를 이 표에 채운다 |
+
+**후속 (서비스화 시):**
+- 배포본(`public/fonts/`)에 SIL OFL 1.1 전문 사본을 동봉. 지금은 `data/raw/fonts/NotoSansJP-LICENSE.txt`
+  가 커밋 대상이 아니다
+- CC BY-SA 승계 범위 문의(Phase 8)에 JmdictFurigana 도 포함 — 두 알고리즘 파생물의 SA 조항
+- `intro_bg.png` 출처 확정

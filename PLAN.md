@@ -37,6 +37,7 @@ GitHub Pages 정적 배포.
 | KANJIDIC2 (XML) | 한자 학년·획수·음훈독·한국 한자음(`korean_h`)·빈도(`freq`) | CC BY-SA 4.0 |
 | JMdict | 숙어 표제어·읽기·품사 태그·우선순위(`ke_pri`/`re_pri`) | CC BY-SA 4.0 |
 | jmdict-simplified | 위 둘의 JSON 변환본 + npm 타입 패키지 | 원본 승계 |
+| JmdictFurigana | `decompose` 경계 대조·熟字訓 거부 근거 (Phase 12-B/C, 빌드타임 전용) | CC BY-SA 4.0 (JMdict 승계) |
 | Tatoeba | 예문 (Phase 6, 채택 여부 미정) | CC BY (음성은 화자별 상이) |
 
 ### 배치 API
