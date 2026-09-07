@@ -29,7 +29,13 @@ const REVIEW_PATHS =
   worklists.length > 0 ? worklists.map((f) => join(DICT_DIR, f)) : [join(DICT_DIR, 'korean-review.tsv')]
 const MATCH_PATH = join(DICT_DIR, 'korean-match.json')
 const DRAFT_PATH = join(DICT_DIR, 'korean-llm-draft.tsv')
+const MEANING_PATH = join(DICT_DIR, 'korean-meaning.json')
 const TRUST_LLM = process.argv.includes('--trust-llm')
+
+// koMeaning 원본 — 있으면 JMdict 영어 gloss 번역(build:korean-meaning)을 쓴다. 없으면 stdict 정의로 폴백
+const meaningById: Record<string, { ko: string; glossEn: string[] }> = existsSync(MEANING_PATH)
+  ? (JSON.parse(readFileSync(MEANING_PATH, 'utf8')).byId as Record<string, { ko: string; glossEn: string[] }>)
+  : {}
 
 if (!existsSync(MATCH_PATH) || !REVIEW_PATHS.every(existsSync)) {
   console.error('korean-review.tsv / korean-match.json 이 없다. match:korean 을 먼저 실행한다.')
@@ -81,14 +87,18 @@ if (existsSync(DRAFT_PATH)) {
 type ClassSource = 'manual' | 'llm' | 'default'
 const dist = { 1: 0, 2: 0, 3: 0 }
 const bySource = { manual: 0, llm: 0, default: 0 }
+type KoMeaning = {
+  definition: string
+  glossEn?: string[]
+  source: 'stdict' | 'llm' | 'manual'
+  verified: false
+}
 const classById: Record<
   string,
-  {
-    category: 1 | 2 | 3
-    classSource: ClassSource
-    koMeaning: { word: string; origin: string; definition: string; source: 'stdict'; verified: false } | null
-  }
+  { category: 1 | 2 | 3; classSource: ClassSource; koMeaning: KoMeaning | null }
 > = {}
+let meaningLlm = 0
+let meaningStdict = 0
 for (const [id, e] of Object.entries(byId)) {
   let category: 1 | 2 | 3
   let classSource: ClassSource
@@ -104,25 +114,29 @@ for (const [id, e] of Object.entries(byId)) {
   }
   dist[category]++
   bySource[classSource]++
+
+  // koMeaning — 영어 gloss 번역 우선(카테고리 3 포함), 없으면 stdict 정의, 그것도 없으면 null
+  const llm = meaningById[id]
   const top = e.matches.find((m) => m.originMatch) ?? e.matches[0] ?? null
-  classById[id] = {
-    category,
-    classSource,
-    koMeaning:
-      category === 3 || !top
-        ? null
-        : { word: top.word, origin: top.origin, definition: top.definition, source: 'stdict', verified: false },
+  let koMeaning: KoMeaning | null = null
+  if (llm && llm.ko) {
+    koMeaning = { definition: llm.ko, glossEn: llm.glossEn, source: 'llm', verified: false }
+    meaningLlm++
+  } else if (category !== 3 && top) {
+    koMeaning = { definition: top.definition, source: 'stdict', verified: false }
+    meaningStdict++
   }
+  classById[id] = { category, classSource, koMeaning }
 }
 
 writeFileSync(
   join(DICT_DIR, 'korean-class.json'),
   JSON.stringify({
     _meta: {
-      source: 'stdict 대조 + 사람 검수(korean-review.tsv) + Ollama 초벌(korean-llm-draft.tsv)',
+      source: '분류: stdict 대조 + 사람 검수 + Ollama 초벌 / koMeaning: JMdict 영어 gloss 번역(build:korean-meaning) 우선, stdict 폴백',
       categories: { '1': '동형동의(교정)', '2': '동형이의(확장)', '3': '일본 고유(확장)' },
       trustLlm: TRUST_LLM,
-      note: 'koMeaning.verified 는 항상 false. classSource=llm/default 는 미확정',
+      note: 'koMeaning.verified 는 항상 false (apply:korean-meaning 이 검수분만 true 로). classSource=llm/default 는 미확정',
       generatedAt: new Date().toISOString(),
     },
     stats: {
@@ -140,5 +154,6 @@ console.log(
   `  사람 ${bySource.manual}건 / 초벌 ${bySource.llm}건${TRUST_LLM ? '' : '(미반영, --trust-llm 필요)'} / 잠정 ${bySource.default}건${bad ? ` / 잘못된 verdict ${bad}건` : ''}`,
 )
 console.log(`  최종 분류 — 동형동의 ${dist[1]} / 동형이의 ${dist[2]} / 일본고유 ${dist[3]}`)
+console.log(`  koMeaning — 영어 gloss 번역 ${meaningLlm} / stdict 폴백 ${meaningStdict} / 없음 ${Object.keys(classById).length - meaningLlm - meaningStdict}`)
 console.log(`  → ${join(DICT_DIR, 'korean-class.json')}`)
 if (unfilled > 0 && !TRUST_LLM) console.log(`  ⚠ 미검수 ${unfilled}건은 잠정 2번. verdict 채우거나 --trust-llm 사용.`)

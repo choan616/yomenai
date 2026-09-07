@@ -2789,3 +2789,60 @@ yomenai SW 가 제어하고, 이후 자가 치유된다.
   가 커밋 대상이 아니다
 - CC BY-SA 승계 범위 문의(Phase 8)에 JmdictFurigana 도 포함 — 두 알고리즘 파생물의 SA 조항
 - `intro_bg.png` 출처 확정
+
+## 2026-09-07 — 한국어 뜻: stdict 대조 → 영어 gloss 번역 (12-D 방향 변경)
+
+### 왜
+
+사용자 지적 — "일한사전에 표제어가 한국어로 풀이돼 있으면 그걸 인용하면 되지, 굳이
+국어사전과 비교해서 검수할 필요가 있나?" 전제가 어긋났다. **기계가 읽을 수 있고 라이선스가
+열린 일한사전이 없어서** stdict(한국어 사전)를 프록시로 썼던 거다. JMdict 다국어판에
+한국어 gloss 가 있지만 커버리지가 한 자릿수 %.
+
+stdict 를 거친 대가 —
+- **동형이의에서 틀린 뜻을 보여준다.** 大丈夫→"건장하고 씩씩한 사내"(실제 뜻은 "괜찮다"),
+  経済→"세상을 다스리고 백성을 구제함", 架空→"공중에 가설함", 工夫→"학문을 배우고 익힘"(=한국어 공부)
+- **백과사전식이라 카드에 안 맞는다.** 亜鉛 → 원자량·녹는점까지 100단어
+- **일본고유(category 3) ~3,600건엔 koMeaning 이 아예 null**
+
+→ **JMdict 영어 gloss 를 한국어로 옮겨 `koMeaning` 을 재생성한다.** 영어 gloss 는 *일본어
+단어* 를 설명하므로 위 3개가 다 풀린다. 분류(category 1/2/3)는 여전히 stdict 대조가
+답하는 질문이라 그 파이프라인(`match-korean`·category·classSource·Phase 3 수동 355건)은
+그대로 두고, `koMeaning` 텍스트만 교체한다.
+
+### 모델 선정 — 30개 라벨링 표본 비교 (내가 라벨링)
+
+| 모델 | 깔끔 | 잔노이즈 | 고쳐야 | 건당 | 17k 환산 | 판정 |
+|---|---|---|---|---|---|---|
+| **gemma4:latest** | ~26 | ~3 | ~1 | 584ms | ~3h | **채택** |
+| qwen3.5:latest | ~22 | ~4 | ~3 | 12,244ms | ~57h | 탈락 (느림) |
+| qwen3:8b | ~15 | ~6 | ~9 | 446ms | ~2h | 탈락 (출력 붕괴 — цин크·서브스피시즈·"弁当; 랜치"·"캐스케ント 달") |
+
+- gemma4:latest 실수는 잔노이즈 수준 — 工夫→"재주; 꾀; 아이디어"("아이디어" 외래어),
+  汽車→"증기기관차; 기차". 放心→"멍함; 정신을 놓음; 안심"은 오히려 JMdict 양쪽 뜻을 다 잡음
+- **Phase 3 에서 gemma4:26b 가 *분류* 로 출력 붕괴했던 것과 정반대** — 작은 gemma4:latest 는
+  *번역* 이라는 더 단순한 태스크에선 절제돼서 핵심 뜻 한 줄을 잘 뽑는다. 태스크가 다르면 모델 순위도 다르다
+- 프롬프트 — few-shot 5개(鉄道·大切·我慢·石鹸·二日, 표본과 안 겹침) + "핵심 뜻 하나,
+  갈리면 최대 2~3개" + "물질명·전문용어·고유명사는 한국 표준 표기" + "영어 남기지 말 것"
+
+### 파이프라인 (기존 4~8 뒤에 5.5~7.5 삽입)
+
+1~4 (match:korean → draft → build:review-worklist → apply:korean-review) 그대로.
+apply:korean-review 는 `koMeaning` 을 `korean-meaning.json`(있으면) → stdict → null 순으로 채운다.
+
+- **5.5 `build:korean-meaning`** — gemma4 번역 → `korean-meaning.json`. `.korean-meaning-cache.json`
+  로 재개(3h 실행 중 크래시 대비). 품질 플래그 부착
+- **6.5 `build:korean-meaning-worklist` v2** — glossEn + llm_ko + stdict_def + Phase 3
+  manual_verdict/manual_reason 를 한 줄에. 수동 검수분(355+200) 맨 앞, 플래그 우선.
+  verdict `o`/`x`/`~`/**`s`**(stdict 정의 채택). 수동 분류 노동이 안 버려진다 (사용자 결정 A)
+- **7.5 `apply:korean-meaning`** — verdict → korean-class.json 반영. `--validate` 층별 오류율
+
+### 스키마 — `koMeaning` 에서 word/origin 뺀다
+
+stdict 전용 필드(한국어 표제어·원어 한자)라 LLM 번역엔 의미 없다.
+`{word, origin, definition, source, verified}` → `{definition, glossEn, source, verified}`.
+`source` 를 `'stdict'` 리터럴에서 `'stdict'|'llm'|'manual'` 로 넓힌다 (CLAUDE.md 스키마 열거와 일치).
+영향: `load.ts` 타입 · `MeaningCard.tsx`(`|| .word` 폴백 제거) · `build-runtime-dict.ts` · `apply-korean-review.ts`.
+
+`korean-meaning.json`·`.korean-meaning-cache.json` 은 gitignore 유지 (재생성 가능,
+`korean-llm-draft.tsv` 와 같은 취급). 배포 경로는 커밋된 `public/dict`.

@@ -18,10 +18,11 @@ interface RawIdiom {
 }
 
 export interface KoMeaning {
-  word: string
-  origin: string
+  /** 화면에 뜨는 한국어 뜻. 지금은 JMdict 영어 gloss 를 옮긴 것 (source 'llm'), 검수되면 'manual' */
   definition: string
-  source: string
+  /** 번역 원본이 된 영어 gloss (오답 상세·검수 대조용). stdict 폴백 경로에는 없다 */
+  glossEn?: string[]
+  source: 'stdict' | 'llm' | 'manual'
   verified: boolean
 }
 

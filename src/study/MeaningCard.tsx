@@ -13,7 +13,7 @@ interface Props {
 
 export function MeaningCard({ idiom, graded, onGrade, onNext }: Props) {
   const [revealed, setRevealed] = useState(false)
-  const meaning = idiom.koMeaning?.definition?.trim() || idiom.koMeaning?.word?.trim()
+  const meaning = idiom.koMeaning?.definition?.trim()
 
   return (
     <div className={`card ${graded ? 'feedback is-ng' : ''}`}>

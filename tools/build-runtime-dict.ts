@@ -30,7 +30,7 @@ interface KoClass {
   category: 1 | 2 | 3
   classSource: 'manual' | 'llm' | 'default'
   koMeaning:
-    | { word: string; origin: string; definition: string; source: string; verified: boolean }
+    | { definition: string; glossEn?: string[]; source: 'stdict' | 'llm' | 'manual'; verified: boolean }
     | null
 }
 

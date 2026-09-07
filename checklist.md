@@ -563,24 +563,33 @@ context-notes 2026-09-07 「지속의 유인」·「대조」 절 참조.
     회귀 확인이 된다
   - **검증: override 반영 후 `build:onyomi` 재실행 → `build-onyomi-map.test.ts` 통과
     (순환 없음·표면형 복원), `--validate` 정확도 수치 기록**
-- [~] **12-D · 한국어 뜻 층화 검수 (사람 필요)** — 대조할 외부 데이터셋이 없어 여기만 사람 몫
-  - stdict 는 한국어 사전, JMdict 는 일본어 사전인데 **"이 한자어가 한국어와 같은 뜻인가"를
-    이은 데이터셋은 아무도 안 만들었다.** 그래서 LLM 초벌을 돌렸고, 그래서 여기가 사람 몫이다
-  - **[x] 워크리스트 생성 도구** (2026-09-07) — `tools/build-korean-meaning-worklist.ts`
-    (`npm run build:korean-meaning-worklist`) → `data/dict/korean-meaning-worklist.tsv`.
-    `korean-class.json` 에서 `koMeaning` 있는 13,570건을 5개 층으로 가른다 —
-    P1 `2/default` 6,741 (동형이의·미검수, 틀린 뜻 위험 최대) / P2 `2/llm` 373 /
-    P3 `2/manual` 237 / P4 `1/llm` 6,102 / P5 `1/manual` 117. 전부 밴드 0~3
-    (`korean-class.json` 이 밴드 0~3만 만들어져서).
-    기본은 **층별 표본 30**(= 150행, 「층별 오류율」용), `--all` 로 우선순위 순 전체, `--sample=N`.
-    시드 20260907 결정론. 이전 파일의 채운 verdict 이어받음
-  - 사람은 `verdict`(o 맞음 / x 틀림→`fix` 에 고친 정의 / ~ 애매→`fix` 에 메모) +
-    필요시 `cat`(분류 1/2/3 교정 — default 잠정 2번에 사실은 1인 게 많다: 開閉·民心 류) 만 채운다.
-    한일 이중언어 화자면 됨
-  - **[ ] 되돌리는 apply 도구** — verdict → `korean-class.json` 의 `koMeaning.verified`/`definition`/
-    `category` 반영. Phase 3 `apply-korean-review.ts` 골격 재사용. **실사용 응답이 쌓인 뒤 만든다**
-  - **[ ] 실제 검수** (사람) — 표본 150건 라벨링 → 층별 오류율 기록 → 필요하면 `--all` 로 확대
-  - **검증(완료분): `tsc -b`/`oxlint` 클린, 150행 전부 `?`, 5개 층 각 30, 재실행 결정론·verdict 이어받기 확인**
+- [~] **12-D · 한국어 뜻 — stdict 대조에서 영어 gloss 번역으로 전환 (2026-09-07 방향 변경)**
+  - **왜 바꾸나** — 애초에 stdict(한국어 사전)를 거친 건 "일한사전 데이터셋이 없어서"였다.
+    그런데 stdict 는 *한국어 단어* 를 정의한 거라 (1) 동형이의에서 틀린 뜻을 보여주고
+    (大丈夫→"건장한 사내", 経済→"세상을 다스림", 架空→"공중에 가설") (2) 백과사전식이라
+    카드에 안 맞고 (亜鉛 100단어) (3) 일본고유(category 3) ~3,600건엔 아예 없다.
+    → **JMdict 영어 gloss 를 한국어로 옮겨 `koMeaning` 을 다시 만든다.** 분류 파이프라인
+    (`match-korean`·category·classSource·Phase 3 수동 355건)은 안 건드린다 — 뜻 텍스트만 교체
+  - **모델 선정** (30개 라벨링 표본 비교) — `gemma4:latest` 채택. 깔끔 ~26/30, 건당 584ms
+    (17k → ~3h). qwen3.5 정확하나 12s/건(57h, 탈락), qwen3:8b 출력 붕괴(цин크·서브스피시즈, 탈락).
+    Phase 3 에서 gemma4:26b 가 *분류* 로 붕괴했던 것과 달리 작은 gemma4:latest 는 *번역* 에선 절제됨
+  - **[ ] `tools/build-korean-meaning.ts`** (`build:korean-meaning`) — `gemma4:latest` +
+    few-shot 5 프롬프트로 밴드 0~3 전량 번역 → `data/dict/korean-meaning.json`
+    (`{byId:{id:{ko,glossEn,model,flags}}}`). `.korean-meaning-cache.json` 로 재개.
+    품질 플래그(latin·cyrillic·kanji·kana·40자초과·`;`4개+·빈값·미번역)를 달아 워크리스트 앞으로
+  - **[ ] `koMeaning` 스키마** — `word`/`origin` 제거(stdict 전용), `{definition, glossEn, source, verified}`.
+    `source: 'stdict'|'llm'|'manual'`. `load.ts` 타입 · `MeaningCard.tsx` · `build-runtime-dict.ts` ·
+    `apply-korean-review.ts`(korean-meaning.json 우선, 없으면 stdict, 없으면 null)
+  - **[ ] 워크리스트 v2** — `build-korean-meaning-worklist.ts` 재작성. id 별로
+    `glossEn` + `llm_ko` + `stdict_def`(참고) + `manual_verdict`/`manual_reason`(Phase 3
+    분류 검수 기록 조인) 나란히. **수동 검수분(355 + 표본 200) 을 맨 앞**, 품질 플래그 우선.
+    verdict: `o`(맞음→verified) / `x`(틀림→`fix`) / `~`(애매) / **`s`(stdict 정의 채택→verified, source:stdict)**.
+    `cat` 로 분류 교정, `manual_verdict ≠ category` 는 별도 플래그
+  - **[ ] `tools/apply-korean-meaning.ts`** — 워크리스트 verdict → `korean-class.json` 의
+    `koMeaning.verified`/`definition`/`source`/`category` 반영. `--validate` 로 층별 오류율
+  - **[ ] 실제 검수** (사람) — 표본 라벨링 → 층별 오류율 → 필요하면 `--all`
+  - **[구버전 폐기]** stdict 기반 `koMeaning` + 그걸 검수하던 워크리스트 v1(150행 전부 `?`).
+    커밋 `0a6700f` 의 `korean-meaning-worklist.tsv` 는 v2 로 덮인다
 - [x] **12-E · `MISTAKE_ADVICE` 문헌 대조** (2026-09-07) — `RULE_MISTAKES` 4종 대상
   (ONYOMI_CHOICE·KO_INTERFERENCE 는 규칙 주장이 아님, OKURIGANA 미사용)
   - **RENDAKU** — 연탁 + 라이먼의 법칙, 정확. 예시 三日月 코퍼스 존재, `decompose` 도 `rendaku` 태그. 수정 없음
