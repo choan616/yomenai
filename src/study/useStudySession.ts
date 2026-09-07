@@ -16,6 +16,7 @@ import { onyomiEcho, type OnyomiEcho } from '../core/echo.ts'
 import { observeReading, type Observation } from '../core/observe.ts'
 import { rubyOf, type RubySegment } from '../core/ruby.ts'
 import { buildFocus, buildRematch } from '../core/session.ts'
+import { surfaceOfPair } from '../core/surface.ts'
 import type { Confidence } from '../core/scheduler.ts'
 import type { LearningEvent, MistakeType } from '../core/types.ts'
 import { appendEvent } from '../db/events.ts'
@@ -85,10 +86,22 @@ export interface StudyActions {
  */
 export type SessionKind = 'normal' | 'rematch' | 'focus'
 
-export function useStudySession(
-  kind: SessionKind = 'normal',
-  focusPairId?: string,
-): [StudyState, StudyActions] {
+export interface StudySessionOptions {
+  kind?: SessionKind
+  /** `kind='focus'` 일 때 집중할 (한자, 음독) 쌍 */
+  focusPairId?: string
+  /**
+   * 세션 길이를 설정값 대신 이 값으로. "3장만" 진입로가 쓴다 (Phase 11).
+   * 설정을 안 건드리므로 다음 세션은 다시 원래 길이로 돌아온다.
+   */
+  limit?: number
+}
+
+export function useStudySession({
+  kind = 'normal',
+  focusPairId,
+  limit: limitOverride,
+}: StudySessionOptions = {}): [StudyState, StudyActions] {
   const [session, setSession] = useState<Session | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [idx, setIdx] = useState(0)
@@ -135,13 +148,26 @@ export function useStudySession(
         const { sessionLimit, ratio, observeLevel: lvl } = loadSettings()
         observeLevel.current = lvl
         const now = Date.now()
+        const limit = limitOverride ?? sessionLimit
+        // byId(useMemo) 는 pool 상태가 반영된 다음 렌더에서야 채워지므로 여기선 직접 만든다
+        const loadedById = new Map(loaded.map((p) => [p.idiomId, p]))
+        const lookup = mistakes.current.lookup
         const built =
           kind === 'rematch'
-            ? buildRematch(loaded, events, { now, limit: sessionLimit })
+            ? buildRematch(loaded, events, { now, limit })
             : kind === 'focus' && focusPairId !== undefined
-              ? buildFocus(loaded, events, { pairId: focusPairId, now, limit: sessionLimit })
+              ? buildFocus(loaded, events, {
+                  pairId: focusPairId,
+                  now,
+                  limit,
+                  // 대조 — 표면형이 갈리게 번갈아 낸다 (Phase 11). 分解 실패면 null 이라 정렬만 유지된다
+                  surfaceOf: (id) => {
+                    const it = loadedById.get(id)
+                    return it ? surfaceOfPair(it.headword, it.reading, focusPairId, lookup) : null
+                  },
+                })
               : // seed 로 제시 순서를 매 세션 섞는다 — 순서를 예측해 모르는 한자를 찍는 걸 막는다 (2026-09-07)
-                buildSession(loaded, events, { now, limit: sessionLimit, ratio, seed: now })
+                buildSession(loaded, events, { now, limit, ratio, seed: now })
         setSession(built)
         setInClassReview(built.cards[0]?.needsClassReview ?? false)
         shownAt.current = performance.now()
@@ -152,7 +178,7 @@ export function useStudySession(
     return () => {
       alive = false
     }
-  }, [kind, focusPairId])
+  }, [kind, focusPairId, limitOverride])
 
   const card = session?.cards[idx]
   const idiom = card ? byId.get(card.idiomId) : undefined

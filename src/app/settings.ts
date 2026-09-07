@@ -65,3 +65,10 @@ export function saveSettings(s: Settings): void {
     // 프라이빗 모드 등 저장 불가 — 세션 한정으로 진행한다
   }
 }
+
+/**
+ * "3장만" 세션의 길이. `sessionLimit`(LIMIT_MIN 5) 아래라 설정으로는 못 만드는 값이고,
+ * 그게 의도다 — 기본 리듬은 그대로 두고 **의욕 없는 날의 진입로**만 따로 낸다.
+ * 9-B 가 진단에 쓴 논리(한 번의 약속 단위를 줄인다)를 세션에 적용한 것 (Phase 11).
+ */
+export const QUICK_SESSION_LIMIT = 3

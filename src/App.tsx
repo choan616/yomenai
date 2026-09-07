@@ -8,10 +8,12 @@ import { OnyomiMap } from './app/OnyomiMap.tsx'
 import { Report } from './app/Report.tsx'
 import { Settings } from './app/Settings.tsx'
 import { Study } from './study/Study.tsx'
+import { QUICK_SESSION_LIMIT } from './app/settings.ts'
 
 export type Screen =
   | 'home'
   | 'study'
+  | 'quick'
   | 'rematch'
   | 'focus'
   | 'onyomi'
@@ -28,6 +30,9 @@ export default function App() {
   switch (screen) {
     case 'study':
       return <Study onExit={home} />
+    case 'quick':
+      // 의욕 없는 날의 진입로. 설정을 안 건드리므로 다음 세션은 원래 길이로 돌아온다 (Phase 11)
+      return <Study limit={QUICK_SESSION_LIMIT} onExit={home} />
     case 'rematch':
       return <Study kind="rematch" onExit={home} />
     case 'focus':

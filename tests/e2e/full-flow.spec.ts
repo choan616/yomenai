@@ -73,6 +73,33 @@ test('진입 진단 → 세션 → 리포트 전체 흐름을 완주한다', asy
   // ── 홈: 진단을 마쳤으니 진입점이 사라진다 ──
   await page.getByRole('button', { name: '홈으로' }).click()
   await expect(page.getByRole('button', { name: '세션 시작' })).toBeVisible()
+
+  // ── "3장만" — 설정을 안 건드리고 이번만 짧게 (Phase 11) ──
+  await page.getByRole('button', { name: /3장만/ }).click()
+  await expect(page.locator('.study-bar .count')).toContainText('/ 3')
+  for (let i = 0; i < 40; i++) {
+    if (await page.getByText('세션 완료').isVisible().catch(() => false)) break
+    if (await page.locator('.card.feedback').isVisible().catch(() => false)) {
+      await clickIfVisible(page, '다음')
+      await page.waitForTimeout(20)
+      continue
+    }
+    if (await clickIfVisible(page, '알고 있었다')) continue
+    const qi = page.locator('.kana-input')
+    if (await qi.isVisible().catch(() => false)) {
+      await qi.fill('tadashii')
+      await qi.press('Enter')
+      await page.waitForTimeout(20)
+      continue
+    }
+    if (await clickIfVisible(page, '뜻 보기')) continue
+    if (await clickIfVisible(page, '알았어요')) continue
+    await page.waitForTimeout(30)
+  }
+  await expect(page.getByText('세션 완료')).toBeVisible({ timeout: 15_000 })
+  await page.getByRole('button', { name: '홈으로' }).click()
+  // 다음 세션은 다시 원래 길이로 돌아온다
+  await expect(page.getByRole('button', { name: '세션 시작' })).toBeVisible()
   await expect(page.getByRole('button', { name: /진입 진단 시작/ })).toHaveCount(0)
 
   // ── 세션 완주 ──

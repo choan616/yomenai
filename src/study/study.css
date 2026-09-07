@@ -629,3 +629,136 @@
   font-variant-numeric: tabular-nums;
   opacity: 0.75;
 }
+
+/* ── 세션 요약 추가분 (Phase 11) — 스태거를 8번째까지 잇는다 ── */
+.summary-screen > *:nth-child(7) {
+  animation-delay: 420ms;
+}
+.summary-screen > *:nth-child(8) {
+  animation-delay: 490ms;
+}
+
+/* 오늘 맞힌 것으로 읽히는 문장 — 학습의 증거를 점수가 아니라 읽히는 경험으로 준다 */
+.readable {
+  width: 100%;
+  max-width: 420px;
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--text-dim);
+  border-radius: var(--radius);
+  background: var(--surface);
+  text-align: left;
+}
+.readable-tag {
+  margin: 0 0 8px;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  color: var(--text-faint);
+}
+.readable-text {
+  margin: 0;
+  font-family: var(--font-ja);
+  font-size: 18px;
+  line-height: 1.85;
+}
+.readable-text b {
+  font-weight: 600;
+  border-bottom: 2px solid var(--text-dim);
+}
+.readable-src {
+  margin: 8px 0 0;
+  font-family: var(--font-ja);
+  font-size: 13px;
+  color: var(--text-dim);
+}
+
+/* 예고 — 끝맺지 않고 남겨두는 한 줄. 발견과 같은 골격이되 테두리 없이 가볍게 */
+.next-up {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  width: 100%;
+  max-width: 420px;
+  margin: 0;
+  font-size: 14px;
+  color: var(--text-dim);
+}
+.next-up-tag {
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  color: var(--text-faint);
+}
+.next-up-text b {
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── 오답 상세: 규칙 해설 + 대조 (Phase 11) ──
+   해설은 규칙형 오답에만 붙고, 대조 바로 위에서 "무엇을 볼지"를 가리킨다. */
+.md-rule {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin: 12px 0 0;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--surface-2);
+  font-size: 13px;
+  line-height: 1.65;
+  text-align: left;
+}
+.md-rule-text {
+  color: var(--text-dim);
+}
+
+.md-contrast {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.md-cg {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 10px;
+  margin: 0;
+  padding: 7px 10px;
+  border-radius: 8px;
+  background: var(--surface-2);
+  font-size: 14px;
+}
+/* 지금 틀린 숙어가 속한 쪽만 표시한다. 색이 아니라 테두리로 — 색은 오답에만 (PLAN §7) */
+.md-cg.now {
+  box-shadow: inset 2px 0 0 var(--text-dim);
+}
+.md-cg-surface {
+  font-family: var(--font-ja);
+  font-weight: 600;
+  min-width: 2.6em;
+}
+.md-cg-mark {
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  color: var(--text-faint);
+  min-width: 3.4em;
+}
+.md-cg-items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+}
+
+/* 요약이 길어졌다(발견 + 읽히는 문장 + 예고). 짧은 화면에서 잘리지 않게 —
+   .study 가 overflow:hidden 이라 이 층에서 스크롤을 열어준다.
+   `safe center` 는 넘칠 때만 위 정렬로 떨어져 윗부분이 잘리지 않는다 (Phase 11) */
+.summary-screen {
+  overflow-y: auto;
+  justify-content: safe center;
+}
+/* 스크롤을 열었으니 아무것도 줄지 않아야 한다. 안 그러면 .summary-stats 의
+   overflow:hidden 이 값(dd)을 잘라 라벨만 남는다 — 짧은 화면에서 실제로 났다 */
+.summary-screen > * {
+  flex-shrink: 0;
+}

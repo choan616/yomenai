@@ -5,7 +5,7 @@ import { LOCAL_USER_ID, listEvents } from '../db/events.ts'
 import { db } from '../db/schema.ts'
 import { loadBaseIdioms } from '../dict/load.ts'
 import { isDiagnosticDone } from './diagnostic-state.ts'
-import { loadSettings } from './settings.ts'
+import { loadSettings, QUICK_SESSION_LIMIT } from './settings.ts'
 import type { Screen } from '../App.tsx'
 
 interface Preview {
@@ -96,6 +96,14 @@ export function Home({ onNavigate }: { onNavigate: (screen: Screen) => void }) {
           >
             세션 시작
           </button>
+
+          {/* 의욕 없는 날의 진입로. 20장이냐 안 하냐의 양자택일에서 "안 함"이 이긴다 (Phase 11) */}
+          {preview && preview.ready > QUICK_SESSION_LIMIT && (
+            <button type="button" className="btn quick" onClick={() => onNavigate('quick')}>
+              <b>{QUICK_SESSION_LIMIT}장</b>만
+              <span className="dim"> · 오늘은 짧게</span>
+            </button>
+          )}
 
           {preview && preview.rematch > 0 && (
             <button type="button" className="btn rematch" onClick={() => onNavigate('rematch')}>
