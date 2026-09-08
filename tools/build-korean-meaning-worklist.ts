@@ -284,7 +284,9 @@ if (isBatch) {
   console.log(`  ${catLabel} ${total}건 중 검수 ${reviewed} · 남은 ${total - reviewed} · 이번 배치 ${picked.length}행` +
     (prior.size ? ` (이어받음 ${prior.size} + 신규 ${newCount})` : '') + `  [${bandStr}]`)
   if (brokenInBatch) console.log(`  ⚠ 깨진 번역 ${brokenInBatch}건 포함 — 배치 맨 앞`)
-  console.log(`\n  verdict 채우고: npm run apply:korean-meaning -- --validate`)
+  console.log(`\n  검수:      npm run review -- ${OUT_PATH.split(/[\\/]/).pop()?.replace(/^korean-meaning-worklist-|\.tsv$/g, '')}`)
+  console.log(`  반영:      npm run apply:korean-meaning   (--validate 는 손댄 비율만 볼 때, 반영 안 함)`)
+  console.log(`  배포용:    npm run build:runtime-dict`)
   console.log(`  다음 배치: npm run build:korean-meaning-worklist -- --batch${wantCategory ? ` --category=${wantCategory}` : ''}`)
   process.exit(0)
 }
