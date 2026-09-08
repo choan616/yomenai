@@ -1,0 +1,41 @@
+﻿verdict	cat	fix	tier	flags	manual	headword	reading	glossEn	llm_ko	stdict_def	manual_reason	category	classSource	band	id
+o			5			手元	てもと	at hand; on hand; nearby; close at hand	손에 닿는 곳; 손기술; 솜씨	경기도 중남부에 있는 시. 경부선 철도가 지나가며, 서울까지 전철이 연결되어 있다. 근래에 대규모 공장이 들어서면서 농업 도시에서 공업 도시로 발전하고 있다. 서호(西湖), 팔달문(八達門), 화홍문 따위의 명승지가 있다. 경기도의 도청 소재지이다. 면적은 121.05㎢.		3	llm	0	1327560
+o			5			受入	うけいれ	receiving; acceptance; reception; admission	수용; 접수	돈이나 물품 따위를 거두어들임. 또는 그 돈이나 물품.		3	llm	0	1329660
+o			5			手帳	てちょう	notebook; memo pad; (pocket) diary; certificate	수첩; 메모장	도장을 대신하여 손가락에 인주 따위를 묻혀 그 지문(指紋)을 찍은 것.		3	llm	0	1598330
+o			3		Y(3)	手前	てまえ	before oneself; in front of one; nearby; a bit before reaching (a location)	앞; 근처; (자신의) 입장; 저; 너	손이 떨리는 증상. 주로 알코올 의존자나 노인에게서 나타난다.		3	llm	0	1328030
+o			5			手紙	てがみ	letter; note	편지	→ 휴지.		3	llm	0	1327720
+o			5			手軽	てがる	easy; simple; informal; offhand	간편함; 쉬움	오경의 하나. 손이 싸늘하고 뻣뻣하여지는 증상이다. 수막염에서 볼 수 있다.		3	llm	0	1327530
+o			5			時々	ときどき	sometimes; occasionally; at times; from time to time	때때로; 가끔	‘시시거리다’의 어근.		3	llm	0	1598680
+o			5			市役所	しやくしょ	municipal office; council; city hall	시청			3	default	0	1308760
+o			5			時折	ときおり	sometimes; at intervals; occasionally; on occasion	때때로; 간간이	일정한 시기나 때.		3	llm	0	1598670
+o			5			市町村	しちょうそん	cities, towns and villages; municipalities	시·군·면			3	default	0	1308600
+o			5			食管法	しょっかんほう	law governing food quality	식량 관리법			3	default	0	1358420
+o			5			食糧庁	しょくりょうちょう	food agency	식량청; 일본의 행정부 농림수산성의 식량 행정을 맡는 외국(外局)의 하나			3	default	0	1839820
+o			5			新橋	しんばし	Shinbashi (Tokyo)	도쿄 신바시	종교를 믿음. 또는 그 종교.		3	llm	0	1608090
+o			5			信金	しんきん	credit union	신용금고	오릿과에 딸린 철새를 통틀어 이르는 말. 오리와 비슷하나 목이 길고 다리가 짧으며 강, 바다, 늪가에 산다. 가을에 한국에 와서 봄에 시베리아, 사할린, 알래스카 등지로 가는 겨울 철새이다. 쇠기러기, 큰기러기, 회색기러기 따위가 있다.		3	llm	0	1883730
+o			5			申入	もうしいれ	proposal; offer; report; proposition	신청; 제안; 보고	특정한 내용의 계약을 체결시킬 것을 목적으로 하는 의사 표시.		3	llm	0	1605130
+o			5			身長	しんちょう	height (of a person); stature	신장; 키	신을 넣어 두는 장.		3	llm	0	1365770
+o			5			神様	かみさま	God; god; deity; divinity	신; 신령	몸에 생긴 병.		3	llm	0	1364920
+o			5			新鋭	しんえい	young and energetic; up-and-coming; new and excellent; newly produced	신진; 신예	앓는 소리를 냄. 또는 그 소리.		3	llm	0	1361530
+o			5			心配	しんぱい	worry; concern; anxiety; uneasiness	걱정; 염려	→ 슴베.		3	llm	0	1360930
+o			5			十九	じゅうきゅう	nineteen; 19	열아홉; 19			3	default	0	1334560
+o			5			十四	じゅうし	fourteen; 14	열 넷	조선 태조 4년(1395)에 정도전의 제의에 따라 십위(十衛)를 개편한 군대 편제. 중군, 좌군, 우군에 속하게 하였는데 태종 18년(1418)에 십이사로 개편하였다.		3	llm	0	1579860
+o			5			十三	じゅうさん	thirteen; 13; king	열셋; 13			3	default	0	1334610
+o			5			十五	じゅうご	fifteen; 15	열다섯; 15			3	default	0	1334590
+o			5			十二	じゅうに	twelve; 12; queen	열둘; 12			3	default	0	1334890
+o			5			十一	じゅういち	eleven; 11; jack	열한			3	default	0	1334470
+o			5			十七	じゅうなな	seventeen; 17	열일곱			3	default	0	1579880
+o			5			十八	じゅうはち	eighteen; 18	열여덟			3	default	0	1335050
+o			5			十両	じゅうりょう	second highest division; wrestlers of the second highest division	스모의 계급 중 하나.			3	default	0	1335170
+o			5			市内	しない	in the city; within the city	시내	골짜기나 평지에서 흐르는 자그마한 내.		3	llm	0	1308640
+o			5			我々	われわれ	we	우리	감격하거나 탄식할 때 내는 소리.		3	llm	0	1607050
+o			5			安値	やすね	low price	싼 값	안전하게 잘 둠.		3	llm	0	1154080
+o			5			若手	わかて	young person	젊은 사람	어떤 정수를 나머지 없이 나눌 수 있는 정수를 원래의 수에 대하여 이르는 말. 예를 들어 3은 6의 약수이다.		3	llm	0	1324360
+o			5			若者	わかもの	young person; youngster; young people; (the) youth	젊은이; 청년	나이가 적은 아이.		3	llm	0	1324350
+o			5			御金	おかね	money	돈	→ 아귀.		3	llm	0	1001820
+o			5			言葉	ことば	language; dialect; word; phrase	말; 언어; 단어			3	default	0	1264540
+o			5			円高	えんだか	appreciation of the yen; strong yen	엔화 강세	보합산에서, ‘원금’을 이르는 말.		3	llm	0	1175820
+o			5			円相場	えんそうば	yen exchange rate	엔 외환 시세			3	default	0	1613600
+o			5			円安	えんやす	depreciation of the yen; weak yen	엔화 가치 하락	회의에 올려진 본디의 안.		3	llm	0	1175620
+o			5			予防	よぼう	prevention; protection (against); precaution	예방; 보호	남아 있는 향기라는 뜻으로, 떠나 버린 뒤나 죽은 뒤에 남은 명예를 이르는 말.		3	llm	0	1543660
+o			5			予報	よほう	forecast; prediction	예보; 예측	어른이, 가까이 있는 자기와 비슷한 나이 또래의 사람을 부를 때 쓰는 말.		3	llm	0	1543630

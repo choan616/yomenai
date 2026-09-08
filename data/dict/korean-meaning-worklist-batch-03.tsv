@@ -1,0 +1,41 @@
+﻿verdict	cat	fix	tier	flags	manual	headword	reading	glossEn	llm_ko	stdict_def	manual_reason	category	classSource	band	id
+o			5			東京証券取引所	とうきょうしょうけんとりひきじょ	Tokyo Stock Exchange; TSE	도쿄증권거래소			3	default	0	1999080
+o			5			同局	どうきょく	the said bureau (office, department, broadcasting station, channel, etc.); same bureau (office, department, broadcasting station, channel, etc.)	같은 부서; 같은 방송국	겨울에 피는 국화. 대개 12월에서 다음 해 1월에 걸쳐 노란 꽃이 피고 백려, 초상, 황금 따위의 품종이 있다.		3	llm	0	1452190
+o			5			同士	どうし	fellow; mutual; companion; comrade	동료; 같은 처지	같이 죽음.		3	llm	0	1452400
+o			5			同省	どうしょう	the said ministry; the same ministry	해당 부처	같은 성(姓).		3	llm	0	1452690
+o			5			同市	どうし	same city	같은 시	계절이 겨울인 때.		3	llm	0	1898260
+o			5			同店	どうてん	the same store; the same shop	같은 가게	점수가 같음. 또는 같은 점수.		3	llm	0	1453160
+o			3		Y(3)	同町	どうちょう	the same town; that town	같은 마을	한복의 저고리 깃 위에 조붓하게 덧대어 꾸미는 하얀 헝겊 오리.		3	llm	0	1453110
+o			5			都内	とない	within the (Tokyo) metropolitan area	도쿄 시내	어떤 도(道)의 구역 안.		3	llm	0	1445040
+o			5			廊下	ろうか	corridor; hallway; passageway	복도			3	default	0	1560670
+o			5			冷却	れいきゃく	cooling; refrigeration; cooling down (of a political conflict, etc.); calming down	냉각; 식힘			3	default	0	1556870
+o			5			冷凍	れいとう	freezing; cold storage; refrigeration	냉동; 냉장			3	default	0	1557170
+o			5			冷夏	れいか	cool summer; cold summer; cooler-than-normal summer	서늘한 여름			3	default	0	1757800
+o			5			冷戦	れいせん	cold war; the Cold War	냉전			3	default	0	1557060
+o			5			冷蔵庫	れいぞうこ	refrigerator; fridge	냉장고			3	default	0	1557110
+o			5			冷静	れいせい	calmness; composure; coolness; serenity	침착함; 평정심			3	default	0	1557050
+o			5			良人	おっと	husband	남편			3	default	0	1496480
+o			5			良好	りょうこう	good; fine; excellent; favorable	양호함; 좋음			3	default	0	1554550
+o			5			旅客	りょかく	passenger; traveller; traveler; tourist	승객; 여행객			3	default	0	1553140
+o			5			旅館	りょかん	ryokan; traditional Japanese inn	료칸; 전통 일본식 여관			3	default	0	1553130
+o			5			旅行	りょこう	travel; trip; journey; excursion	여행			3	default	0	1553170
+o			5			力士	りきし	sumo wrestler; rikishi; strong man; Deva king	스모 선수			3	default	0	1555000
+o			5			力説	りきせつ	emphasizing (a point, argument, etc.); stressing; insistence; arguing strongly (for, against)	강조함; 역설함			3	default	0	1555070
+o			5			連絡	れんらく	contacting; (making) contact; getting in touch; communication	연락; 연락처			3	default	0	1559900
+o			5			連立	れんりつ	coalition; alliance; union; standing side-by-side	연합; 연립			3	default	0	1559960
+o			5			連盟	れんめい	league; federation; union	연맹; 연합			3	default	0	1559870
+o			5			連邦	れんぽう	federation (of states); confederation; commonwealth; union	연방; 연합			3	default	0	1559790
+o			5			練習	れんしゅう	practice; training; drill; (an) exercise	연습; 훈련			3	default	0	1559160
+o			5			連勝	れんしょう	consecutive victories; series of victories; winning streak	연승			3	default	0	1559560
+o			5			連用	れんよう	continuous use; chronic use	연속적인 사용; 만성			3	default	0	1559880
+o			5			連日	れんじつ	day after day; every day	연일; 며칠 동안			3	default	0	1559720
+o			5			連載	れんさい	serialization; serialisation; serial story	연재			3	default	0	1559510
+o			5			連打	れんだ	repeated blows; striking repeatedly; barrage; consecutive hits (e.g. in boxing, baseball)	연타; 연속적인 공격			3	default	0	1559630
+o			5			連敗	れんぱい	consecutive defeats; series of defeats	연패			3	default	0	1559750
+o			5			連覇	れんぱ	successive championships	연속 우승			3	default	0	1559740
+o			5			連合	れんごう	union; combination; alliance; confederation	연합; 결합			3	default	0	1559450
+o			5			連合会	れんごうかい	association; federation	연합회			3	default	0	1559470
+o			5			連休	れんきゅう	consecutive holidays	연휴			3	default	0	1559380
+o			5			連携	れんけい	cooperation; coordination; collaboration; alignment	협력; 연계			3	default	0	1559400
+o			5			連帯	れんたい	solidarity; joint; collective	연대; 공동			3	default	0	1559660
+o			5			連続	れんぞく	continuation; succession; series; sequence	연속; 연속됨			3	default	0	1559610

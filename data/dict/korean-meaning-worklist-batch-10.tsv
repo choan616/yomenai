@@ -1,0 +1,41 @@
+﻿verdict	cat	fix	tier	flags	manual	headword	reading	glossEn	llm_ko	stdict_def	manual_reason	category	classSource	band	id
+o			5			引金	ひきがね	trigger (of a gun, etc.); trigger (for something); immediate cause	방아쇠; 계기	사람의 가치나 인격적인 됨됨이.		3	llm	0	1601570
+o			5			人柄	ひとがら	personality; character; personal appearance; gentility	인품; 성품	군대를 철수함.		3	llm	0	1369200
+o			5			一々	いちいち	one-by-one; separately; every single; each and every	하나하나; 일일이	‘하루’를 뜻하는 말.		3	llm	0	1587320
+o			5			日頃	ひごろ	usually; habitually; always; for a long time	평소; 일상	하룻밤을 오경(五更)으로 나눈 첫째 부분. 저녁 7시에서 9시 사이이다.		3	llm	0	1464070
+o			5			一階	いっかい	first floor; ground floor; one floor; one storey	1층	한 가지 꾀.		3	llm	0	1161380
+o			5			一枚	いちまい	one (thin, flat object); one sheet	한 장			3	default	0	1166710
+o			5			日米	にちべい	Japan and the United States; Japanese-American	일본과 미국	첫째가는 좋은 맛.		3	llm	0	1464380
+o			5			一番	いちばん	number one; first; first place; best	가장; 첫 번째	하나를 반으로 가름. 또는 그렇게 가른 반.		3	llm	0	1165970
+o			5			日本銀行	にっぽんぎんこう	Bank of Japan; BOJ	일본은행			3	default	0	1944790
+o			5			日本一	にほんいち	Japan's best; number one in Japan	일본 제일			3	default	0	1730040
+o			5			日付	ひづけ	date; dating	날짜	한 사람의 평범한 남자.		3	llm	0	1464340
+o			5			一生懸命	いっしょうけんめい	very hard; with utmost effort; as hard as one can; with all one's might	전력을 다하여; 온 힘을 다하여			3	default	0	1164010
+o			5			一億	いちおく	100,000,000; one hundred million; 10^8	일억			3	default	0	1161190
+o			5			一昨年	おととし	year before last	재작년			3	default	0	1576060
+o			5			一点	いってん	point; dot; speck; one point	점; 아주 작은 부분	물체에 힘이 작용할 때에 그 힘이 미치는 점.		3	llm	0	1165090
+o			5			一週間	いっしゅうかん	one week	일주일			3	default	0	1163270
+o			5			一票	いっぴょう	one vote; one ballot	한 표	예전에, 날품을 파는 일터에서 일용 노동자에게 하루의 고용을 계약하여 주던 표.		3	llm	0	1166110
+o			5			一応	いちおう	more or less; though not quite satisfactorily; after a fashion; pretty much	일단; 임시로			3	default	0	1161170
+o			5			一斉	いっせい	simultaneous; all at once	일제히; 한꺼번에	한 글자라는 뜻으로, 아주 적은 지식을 이르는 말.		3	llm	0	1164040
+o			5			日経	にっけい	Nikkei (newspaper, share index)	닛케이(신문, 주가 지수)	하룻밤을 오경(五更)으로 나눈 첫째 부분. 저녁 7시에서 9시 사이이다.		3	llm	0	1464000
+o			5			一緒	いっしょ	(doing) together; one lump; one mixture; the same category	함께; 같이	하나의 책.		3	llm	0	1163400
+o			5			妊娠	にんしん	pregnancy; conception; gestation	임신	육십갑자의 아홉째.		3	llm	0	1467350
+o			5			以内	いない	within; inside of; less than	이내; 안	해 질 무렵 멀리 보이는 푸르스름하고 흐릿한 기운.		3	llm	0	1155180
+o			5			子供	こども	child; children	아이	중국 춘추 시대 위나라의 유학자(B.C.520?~B.C.456?). 성은 단목(端木), 이름은 사(賜). 공문십철(孔門十哲)의 한 사람으로 언어에 뛰어났으며, 노나라와 위나라의 재상(宰相)을 지냈다.		3	llm	0	1307850
+o			5			自民	じみん	Liberal Democratic Party; LDP	자유민주당;일본의 정당의 이름;	통치자가 자식같이 여겨 사랑하는 국민.		3	llm	0	1658610
+o			5			自民党	じみんとう	Liberal Democratic Party; LDP	자유민주당의 줄임말			3	default	0	1608020
+o			5			自分	じぶん	myself; yourself; oneself; himself	자신; 자기	‘자분거리다’의 어근.		3	llm	0	1318610
+o			5			自分自身	じぶんじしん	oneself; myself	자기 자신			3	default	0	1318620
+o			5			自衛官	じえいかん	Japanese Self-Defense Force official; Self-Defense Force official	자위대 장교	중국 만리장성의 서쪽 끝에 있는 관문(關門). 서역과 연결되는 통상·군사 요충지로, 명나라 초기에 설치되었다.		3	llm	0	1658510
+o			5			場合	ばあい	case; occasion; situation; circumstances	경우; 경우			3	default	0	1355810
+o			5			障害者	しょうがいしゃ	disabled person; person with a (physical or mental) disability	장애인			3	default	0	1938570
+o			5			在宅	ざいたく	being at home; being in	재택; 집에 있음	재물과 집을 아울러 이르는 말.		3	llm	0	1296540
+o			5			財布	さいふ	wallet; purse; coin purse; billfold	지갑			3	default	0	1296970
+o			5			全世界	ぜんせかい	the whole world	전 세계			3	default	0	1395530
+o			5			電通大	でんつうだい	University of Electro-Communications	일본의 전자 통신 대학교			3	default	0	1443640
+o			5			絶望	ぜつぼう	despair; hopelessness	절망	간절히 바람.		3	llm	0	1386960
+o			5			切符	きっぷ	ticket	표; 티켓	살에 사무침.		3	llm	0	1385170
+o			5			絶好	ぜっこう	best; ideal; perfect	더할 나위 없이 좋음; 최적	자손이 끊어져 상속자가 없어짐. 또는 그런 집안.		3	llm	0	1386810
+o			5			絶対	ぜったい	absolutely; definitely; unconditionally; absolute	절대적인; 확실한	실처럼 가늘게 쪼갠 대오리. 갓이나 질이 좋은 패랭이, 삿자리 따위를 만드는 데 쓴다.		3	llm	0	1386840
+o			5			定年	ていねん	(compulsory) retirement age; age limit; (compulsory) retirement (on reaching retirement age); mandatory retirement	정년	장정이 된 나이. 남자의 나이 20세를 이른다.		3	llm	0	1435740

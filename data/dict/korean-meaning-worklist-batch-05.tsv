@@ -1,0 +1,41 @@
+﻿verdict	cat	fix	tier	flags	manual	headword	reading	glossEn	llm_ko	stdict_def	manual_reason	category	classSource	band	id
+o			5			六十	ろくじゅう	sixty; 60	육십			3	default	0	1824040
+o			5			六十四分音符	ろくじゅうしぶおんぷ	64th note; hemidemisemiquaver; semidemisemiquaver	64분음표			3	default	0	1561370
+o			5			六月	ろくがつ	June; sixth month of the lunar calendar	6월			3	default	0	1561330
+o			5			倫理	りんり	ethics; morals	윤리; 도덕			3	default	0	1555390
+o			5			留学	りゅうがく	studying abroad; (temporarily) studying at another school (to learn a specific skill)	유학			3	default	0	1552740
+o			5			留学生	りゅうがくせい	overseas student; exchange student	유학생			3	default	0	1552750
+o			5			理科	りか	science (natural sciences and related fields, incl. mathematics, engineering, medicine, etc.); faculties of science, engineering, medicine, etc. (at a university); science (as a school subject)	이과			3	default	0	1549900
+o			5			理屈	りくつ	theory; reason; logic; (unreasonable) argument	이치; 논리; 이론			3	default	0	1606240
+o			5			理念	りねん	(Platonic) ideal (of how things ought to be, e.g. human rights); foundational principle; idea; conception (e.g. of the university)	이념; 사상; 이상			3	default	0	1550060
+o			5			離党	りとう	secession from a political party	당을 떠남			3	default	0	1644490
+o			5			理論	りろん	theory	이론			3	default	0	1550160
+o			5			裏付	うらづけ	support (e.g. for an argument); backing; proof; evidence	뒷받침; 증거			3	default	0	1588450
+o			5			理事	りじ	director; trustee	이사회; 이사			3	default	0	1549980
+o			5			理想	りそう	ideal; ideals	이상; 이상향			3	default	0	1550020
+o			5			利率	りりつ	interest rate	이자율	수산화 칼륨, 정제수, 식물 기름, 크레솔을 섞어 만든 용액. 투명한 누런 갈색이며, 살균 방부제로서 피부나 기구를 소독하는 데에 쓰인다.		3	llm	0	1549680
+o			5			利息	りそく	interest (on a loan, deposit etc.)	이자			3	default	0	1549600
+o			5			利用	りよう	use; utilization; utilisation; application	이용; 활용			3	default	0	1549660
+o			5			利用者	りようしゃ	user; end-user; consumer; patron	이용자			3	default	0	1549670
+o			5			理由	りゆう	reason; grounds; pretext; excuse	이유; 까닭			3	default	0	1550140
+o			5			利益	りえき	profit; gains; benefit; advantage	이익; 이득			3	default	0	1549470
+o			5			利子	りし	interest (on a deposit, loan, etc.)	이자			3	default	0	1549560
+o			5			利害	りがい	advantages and disadvantages; interests (of parties)	이해관계; 이익			3	default	0	1549500
+o			5			理解	りかい	understanding; comprehension; appreciation; sympathy	이해; 깨달음			3	default	0	1549910
+o			5			離婚	りこん	divorce	이혼			3	default	0	1550880
+o			5			隣国	りんごく	neighbouring country; neighboring country; adjacent country	이웃 나라			3	default	0	1585210
+o			5			臨床	りんしょう	clinical (e.g. pathology, training, trial)	임상			3	default	0	1555640
+o			5			臨時	りんじ	temporary; provisional; interim; special	임시; 특별한			3	default	0	1555610
+o			5			臨海	りんかい	coastal; seaside; oceanfront; maritime	해안; 바닷가			3	default	0	1815680
+o			5			立法	りっぽう	(enactment of) legislation; lawmaking; legislative	입법; 법률 제정			3	default	0	1551840
+o			5			立体	りったい	solid body; three-dimensional object; multi-storey car park	입체; 다층			3	default	0	1551740
+o			5			立入	たちいり	entering; going into	출입			3	default	0	1891460
+o			5			立場	たちば	position; situation; viewpoint; standpoint	입장; 처지			3	default	0	1551710
+o			5			立地	りっち	choosing a site (e.g. for industry); deciding on a location; standpoint; position	입지; 위치			3	default	0	1837740
+o			5			立派	りっぱ	splendid; fine; handsome; elegant	훌륭함; 근사함; 보기 좋음			3	default	0	1551790
+o			5			立候補	りっこうほ	candidacy; standing as a candidate; bidding (to host an event, e.g. the Olympics)	출마; 후보직			3	default	0	1551650
+o			5			利権	りけん	interest; rights; concession	이권; 이해관계			3	default	0	1549520
+o			5			離脱	りだつ	withdrawal; secession; separation; breakaway	이탈; 철회			3	default	0	1550930
+o			5			買物	かいもの	shopping; purchased goods	장보기; 쇼핑	하나하나의 모든 물건.		3	llm	0	1589730
+o			5			買取	かいとり	purchase; buying; buying out; buying used articles as a company	매입; 구매	마음이 홀리어 정신이 황홀하게 됨.		3	llm	0	1473620
+o			5			面倒	めんどう	trouble; bother; difficulty; care	수고; 번거로움; 폐	얼굴이나 몸에 난 수염이나 잔털을 깎음.		3	llm	0	1533550

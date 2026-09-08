@@ -1,0 +1,41 @@
+﻿verdict	cat	fix	tier	flags	manual	headword	reading	glossEn	llm_ko	stdict_def	manual_reason	category	classSource	band	id
+o			5			列島	れっとう	archipelago; chain of islands	열도			3	default	0	1558390
+o			5			列車	れっしゃ	train; railway train	열차			3	default	0	1558370
+o			5			零時	れいじ	twelve o'clock; midnight; noon	자정; 정오			3	default	0	1557690
+o			5			領域	りょういき	territory; domain; field; area	영역; 범위			3	default	0	1554720
+o			5			領土	りょうど	territory; domain; dominion; possession	영토; 영역			3	default	0	1554790
+o			5			領内	りょうない	(within a) territory; domains	영토; 관할 구역			3	default	0	1644920
+o			5			例年	れいねん	average (normal, ordinary) year; every year; annually	예년; 평년; 매년			3	default	0	1556570
+o			5			例外	れいがい	exception	예외			3	default	0	1556410
+o			5			路上	ろじょう	on the road; on the street; in the street; on the way	길 위; 거리			3	default	0	1612340
+o			5			路線	ろせん	route (bus, train, air, etc.); line; line (taken by a group, organization, etc.); policy	노선; 경로; 흐름			3	default	0	1560040
+o			5			老衰	ろうすい	senility; senile decay; infirmity (through age)	노쇠; 늙음으로 인한 쇠퇴			3	default	0	1561120
+o			5			老人	ろうじん	old person; senior citizen; the aged; the elderly	노인			3	default	0	1561090
+o			5			老後	ろうご	old age	노년기			3	default	0	1561040
+o			5			論理	ろんり	logic	논리	사람으로서 마땅히 행하거나 지켜야 할 도리.		3	llm	0	1561850
+o			5			論文	ろんぶん	thesis; essay; treatise; paper	논문; 보고서	문덕(文德)이 성함.		3	llm	0	1561840
+o			5			論議	ろんぎ	discussion; argument; debate	논의; 토론	윤리와 의리를 아울러 이르는 말.		3	llm	0	1561660
+o			5			論者	ろんしゃ	advocate; disputant; debater; (present) writer	논하는 사람; 주장하는 사람	대를 이을 아들.		3	llm	0	1561720
+o			5			論争	ろんそう	dispute; controversy; debate; argument	논쟁; 다툼			3	default	0	1561760
+o			5			論戦	ろんせん	battle of words; debate; argument; dispute	논쟁; 말다툼	바퀴가 돎. 또는 바퀴처럼 돎.		3	llm	0	1561750
+o			5			料金	りょうきん	fee; charge; fare	요금; 비용			3	default	0	1554280
+o			5			料理	りょうり	cooking; cookery; cuisine; food	요리; 음식			3	default	0	1554310
+o			5			料理屋	りょうりや	restaurant	요리점; 식당			3	default	0	1554320
+o			5			療法	りょうほう	(method of) treatment; therapy; remedy; cure	요법; 치료법			3	default	0	1554470
+o			5			了承	りょうしょう	acknowledgement; acknowledgment; understanding; approval	승낙; 인정			3	default	0	1606280
+o			5			療養	りょうよう	recuperation; medical treatment	요양; 치료			3	default	0	1554480
+o			5			料亭	りょうてい	ryotei; traditional Japanese restaurant (esp. a luxurious one)	료테이; 고급 일본식 식당			3	default	0	1554300
+o			5			了解	りょうかい	comprehension; consent; understanding; agreement	이해; 승낙			3	default	0	1553310
+o			5			累積	るいせき	accumulation; cumulative; accumulated	누적			3	default	0	1556030
+o			5			流動	りゅうどう	flow	흐름			3	default	0	1552460
+o			5			流域	りゅういき	drainage basin; catchment basin; river basin; watershed	유역; 배수구역			3	default	0	1552230
+o			5			流入	りゅうにゅう	inflow; influx	유입			3	default	0	1552510
+o			5			流出	りゅうしゅつ	outflow; effluence; efflux; spillage	유출; 흘러나옴			3	default	0	1552350
+o			5			流通	りゅうつう	circulation (of money, goods, etc.); distribution; circulation (of air, water, etc.); ventilation	유통; 순환			3	default	0	1552440
+o			5			流行	りゅうこう	fashion; trend; vogue; craze	유행; 유행병			3	default	0	1585110
+o			5			流血	りゅうけつ	bloodshed	유혈			3	default	0	1552290
+o			5			陸軍	りくぐん	army	육군			3	default	0	1551020
+o			5			陸符	おか	hill; height; knoll; rising ground	언덕;			3	default	0	1588920
+o			5			陸上	りくじょう	(on) land; ground; shore; track and field	육상; 지상			3	default	0	1551050
+o			5			陸上競技	りくじょうきょうぎ	track and field; athletics	육상 경기			3	default	0	1551060
+o			5			陸上自衛隊	りくじょうじえいたい	Japan Ground Self-Defense Force; JGSDF	육상자위대			3	default	0	1644330

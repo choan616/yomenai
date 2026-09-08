@@ -1,0 +1,41 @@
+﻿verdict	cat	fix	tier	flags	manual	headword	reading	glossEn	llm_ko	stdict_def	manual_reason	category	classSource	band	id
+o			5			銘柄	めいがら	brand; make; description; trading name (on a stock exchange)	상표; 품목; 종목			3	default	0	1532850
+o			5			名前	なまえ	name; given name; first name	이름	남이 소유하고 있는 논밭.		3	llm	0	1531710
+o			5			目玉	めだま	eyeball; special feature; centerpiece; showpiece	눈알; 핵심; 주력 상품			3	default	0	1535370
+o			5			舞台	ぶたい	stage (of a theatre, concert hall, etc.); stage performance; stage production; theatrical production	무대; (활동의) 영역	통일 신라 말기에, 고구려의 부흥을 표방하며 후고구려를 세운 궁예가 송악으로 천도한 뒤 국호를 마진(摩震)으로 바꾸면서 사용한 연호(904~905).		3	llm	0	1499150
+o			5			文部省	もんぶしょう	Ministry of Education, Science and Culture (1871-2001)	문부성; 일본의 행정부의 하나(한국의 교육부)			3	default	0	1505580
+o			5			文相	ぶんしょう	Minister of Education, Science and Culture	문부과학성 대신	조선 시대에, 문과 출신으로서 육품부터 종삼품까지의 관리를 통틀어 이르는 말.		3	llm	0	1656050
+o			5			文化庁	ぶんかちょう	Agency for Cultural Affairs	문화청			3	default	0	1723090
+o			5			物語	ものがたり	story; tale; narrative; account	이야기; 설화			3	default	0	1502480
+o			5			味方	みかた	friend; ally; supporter; taking sides (with)	편; 지지하는 쪽	이십사방위의 하나. 정남(正南)에서 서로 30도 방위를 중심으로 한 15도 안의 방향이다.		3	llm	0	1527070
+o			5			弥生	やよい	third month of the lunar calendar; Yayoi period (ca. 300 BCE-300 CE); Yayoi culture; thick growth (of grass, etc.)	야요이(신석기 시대); 음력 3월	미년(未年)에 태어난 사람을 이르는 말.		3	llm	0	1537730
+o			5			民社党	みんしゃとう	Democratic Socialist Party	민사회당			3	default	0	1911080
+o			5			民主党	みんしゅとう	Democratic Party; Democratic Party of Japan (1998-2016); DPJ; Constitutional Democratic Party of Japan	민주당			3	default	0	1528880
+o			5			米国	べいこく	(United States of) America; USA; US	미국	쌀가루를 쪄서 띄운 누룩.		3	llm	0	1508900
+o			5			返事	へんじ	reply; answer; response	답장; 대답	일정한 방향으로 나아가던 파동이 다른 물체의 표면에 부딪쳐서 나아가던 방향을 반대로 바꾸는 현상.		3	llm	0	1512220
+o			5			方々	かたがた	people; (all) persons; everyone; ladies and gentlemen	여러분; 분들	잇달아 공중으로 뛰는 모양.		3	llm	0	1584100
+o			5			訪米	ほうべい	visit to the United States	미국 방문	격구에서 하는 셋째 동작. 몸을 말의 머리 쪽으로 비스듬히 눕는 듯이 하면서, 공채를 말 꼬리와 나란히 가도록 잡는 자세로 할흉(割胸) 다음에 한다.		3	llm	0	1518110
+o			5			防御	ぼうぎょ	defense; defence; safeguard; protection	방어; 보호	한 나라의 국민이 쓰는 말.		3	llm	0	1520330
+o			5			防衛庁	ぼうえいちょう	Japan Defense Agency (became Ministry of Defense in January 2007)	방위청; 일본의 행정부의 하나			3	default	0	1710250
+o			5			訪日	ほうにち	visit to Japan	일본 방문	제멋대로 거리낌없이 방탕하게 놂.		3	llm	0	1518100
+o			5			訪中	ほうちゅう	visit to China	중국 방문	방의 안. 또는 방 안에 들어앉은 사람들.		3	llm	0	1907970
+o			5			倍率	ばいりつ	magnification; leverage; amplification; scaling factor	배율; 배수			3	default	0	1473340
+o			5			背中	せなか	back (of the body)	등	이것도 저것도 아닌 중간을 배척함.		3	llm	0	1472800
+o			5			番組	ばんぐみ	program (e.g. TV); programme	방송 프로그램	몸과 마음이 답답하고 열이 나서 손과 발을 가만히 두지 못하는 짓.		3	llm	0	1482340
+o			5			法務省	ほうむしょう	Ministry of Justice	법무성; 일본의 행정부의 하나(한국의 법무부)			3	default	0	1517460
+o			5			弁務官	べんむかん	commissioner	판무관			3	default	0	1513130
+o			3		Y(3)	弁当	べんとう	bento; Japanese box lunch	도시락	반역을 꾀하는 무리.		3	llm	0	1513060
+o			5			普段	ふだん	usual; normal; everyday; habitual	평소; 평상시			3	default	0	1497180
+o			5			補正予算	ほせいよさん	revised budget; supplementary budget	추가 예산; 수정 예산			3	default	0	1690170
+o			5			補佐	ほさ	aid; help; assistance; assistant	보좌; 돕는 일	보호하여 도움.		3	llm	0	1603460
+o			5			本因坊	ほんいんぼう	Hon'inbō; Honinbo; grandmaster	혼인보; 바둑 우승자의 칭호 중 하나			3	default	0	1822740
+o			5			本当	ほんとう	truth; reality; actuality; fact	진실; 사실; 진짜	신자의 영혼에 대한 지도와 전교를 맡은 주임 신부가 상주하는 성당.		3	llm	0	1523060
+o			5			本気	ほんき	seriousness; earnestness; truth; sanctity	진심; 본심	기전체의 역사 서술에서, 왕의 사적(事跡)을 기록한 부분.		3	llm	0	1522370
+o			5			府警	ふけい	prefectural police (Osaka or Kyoto)	지방 경찰	‘부경하다’의 어근.		3	llm	0	1905870
+o			5			付近	ふきん	neighborhood; neighbourhood; vicinity; environs	근처; 주변	부군당에 모신 신령.		3	llm	0	1496240
+o			5			負担	ふたん	burden; load; responsibility; bearing (a cost, responsibility, etc.)	부담; 책임	‘부단하다’의 어근.		3	llm	0	1498130
+o			5			不十分	ふじゅうぶん	insufficient; inadequate; imperfect	불충분함; 부족함			3	default	0	1492740
+o			5			部屋	へや	room; chamber; apartment; flat	방; 거처	조선 시대에, 각 지방 관아에 있던 감옥.		3	llm	0	1499320
+o			3		Y(3)	負債	ふさい	debt; liabilities	부채; 채무	손으로 흔들어 바람을 일으키는 물건. 대오리로 살을 하고 종이나 헝겊 따위를 발라서 자루를 붙여 만든다. 태극선, 미선, 합죽선, 부들부채, 까치선 따위가 있다.		3	llm	0	1498080
+o			5			北陸	ほくりく	Hokuriku region (of Honshu; incl. Niigata, Toyama, Ishikawa and Fukui prefectures)	호쿠리쿠 지방			3	default	0	1521370
+o			5			北朝鮮	きたちょうせん	North Korea	북조선			3	default	0	1521200

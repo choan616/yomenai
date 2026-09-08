@@ -1,0 +1,41 @@
+﻿verdict	cat	fix	tier	flags	manual	headword	reading	glossEn	llm_ko	stdict_def	manual_reason	category	classSource	band	id
+o			5			女子大	じょしだい	women's college; women's university	여자대학교			3	default	0	1345170
+o			5			年々	ねんねん	year by year; annually; every year; from year to year	해마다; 매년			3	default	0	1582860
+o			5			年間	ねんかん	(period of) a year; during the era (of)	연간			3	default	0	1468380
+o			5			年寄	としより	old person; elderly person; senior citizen; trustee of the Japan Sumo Association	노인; 연장자			3	default	0	1598750
+o			5			年金	ねんきん	annuity; pension	연금			3	default	0	1468540
+o			5			年末	ねんまつ	end-of-year; year-end	연말			3	default	0	1469210
+o			5			年俸	ねんぽう	annual salary	연봉			3	default	0	1469170
+o			5			年生	ねんせい	nth-year student; nth-year pupil	학년			3	default	0	1468900
+o			5			年次	ねんじ	annual; yearly; year (e.g. of graduation, joining a company); nth year (student, employee, etc.)	연차; 연도			3	default	0	1468770
+o			5			年内	ねんない	remainder of the year; rest of the year	연내			3	default	0	1469060
+o			5			年収	ねんしゅう	annual income	연소득			3	default	0	1468830
+o			5			年齢	ねんれい	age; years	나이			3	default	0	1600240
+o			5			念頭	ねんとう	(on one's) mind; heed	마음에 둠; 염두에 둠			3	default	0	1469440
+o			5			念願	ねんがん	one's heart's desire; one's dearest wish	간절히 바라는 소원			3	default	0	1469390
+o			5			農相	のうしょう	Minister of Agriculture	일본 행정부의 하나인 농림부 장관	농업과 양잠을 아울러 이르는 말.		3	llm	0	1827160
+o			5			担保	たんぽ	security; guarantee; collateral; mortgage	담보; 보증	땅 넓이의 단위. 단(段)으로 끝나고 우수리가 없을 때 쓴다. 1단보는 남한에서는 300평으로 991.74㎡에 해당하나 북한에서는 30평으로 99.174㎡에 해당한다.		3	llm	0	1418210
+o			3		Y(3)	担任	たんにん	being in charge of (esp. a class or subject); taking charge of; class teacher; homeroom teacher	담당 교사; 담임	원래 정해진 임기를 다 마친 뒤에 다시 그 직위에 임용하지 않음. 또는 그런 일.		3	llm	0	1418200
+o			5			担当	たんとう	being in charge (of an area of responsibility); being responsible (for a work role, etc.)	담당; 책임	농토 1단보에 대한 수확이나 비료 따위의 양.		3	llm	0	1418160
+o			5			担当者	たんとうしゃ	person in charge (of an area of work, etc.); person responsible; contact (person)	담당자; 책임자			3	default	0	1418180
+o			5			党内	とうない	party-internal; within the party	당 내부	자신이 살아 있는 동안.		3	llm	0	1446020
+o			5			大筋	おおすじ	outline; summary; gist; basic points	대강; 개요	‘대근하다’의 어근.		3	llm	0	1413490
+o			5			大胆	だいたん	bold; daring; audacious	대담함; 과감함	‘대단하다’의 어근.		3	llm	0	1414500
+o			5			大山	たいざん	great mountain; large mountain	큰 산	불좌 또는 높은 좌대를 덮는 장식품. 나무나 쇠붙이로 만들어 법회 때 법사의 위를 덮는다. 원래는 인도에서 햇볕이나 비를 가리기 위하여 쓰던 우산 같은 것이었다.		3	llm	0	1785260
+o			5			大相撲	おおずもう	professional sumo wrestling	일본 씨름; 스모			3	default	0	1414400
+o			5			大手	おおて	major company; big company; front castle gate; force attacking the front of a castle	대기업; 주요 세력	대단한 것.		3	llm	0	1414010
+o			3		Y(3)	大野	おおの	large field	큰 들판	물을 담아서 무엇을 씻을 때 쓰는 둥글넓적한 그릇.		3	llm	0	1786530
+o			5			大切	たいせつ	important; significant; serious; crucial	중요함; 소중함	대의를 위하여 목숨을 바쳐 지키는 절개.		3	llm	0	1414340
+o			5			貸出用	かしだしよう	circulation or lending (e.g. library books)	대여용			3	default	0	1949630
+o			5			大台	おおだい	(major) mark; level; barrier; 100-yen unit (stock market)	큰 수준; 기준점; 100엔대	많이 다름.		3	llm	0	1643440
+o			5			大和	やまと	(ancient) Japan; Yamato kingdom; state of Yamato; Yamato (former province located in present-day Nara Prefecture)	일본의 옛 이름; 야마토;	큰 덕화(德化).		3	llm	0	1585330
+o			5			大詰	おおづめ	final scene; the end; finale	대단원; 마지막 장면			3	default	0	1786950
+o			5			大蔵	おおくら	Ministry of Finance	대장성의 줄임말; 일본 행정부의 하나(한국의 재정경제부)	대장일을 하는 기술직 노동자.		3	llm	0	1414420
+o			5			大蔵省	おおくらしょう	Ministry of Finance (1869-2001); Ministry of the Treasury (under the ritsuryō system)	대장성; 일본 행정부의 하나(한국의 재정경제부)			3	default	0	1414430
+o			5			大関	おおぜき	ōzeki (second highest rank in sumo)	오제키 (스모의 2위 계급)	조선 시대에, 호조에 속하여 대궐에서 쓰는 여러 가지 식품, 직조(織造)와 내진연(內進宴)에 관한 일을 맡아보던 관아. 태종 원년(1401)에 내부시를 고친 것으로, 고종 19년(1882)에 없앴다.		3	llm	0	1643790
+o			5			道筋	みちすじ	course (of a road, moving object, etc.); way; route; path	길; 과정; 흐름; 이치	‘도근거리다’의 어근.		3	llm	0	1454170
+o			5			都道府県	とどうふけん	prefectures (of Japan); largest administrative divisions of Japan: Tokyo-to, Osaka-fu, Kyoto-fu, Hokkaido and the remaining prefectures	일본의 행정구역 도,도,부,현(都道府県)			3	default	0	1445030
+o			5			都立	とりつ	metropolitan; managed by the Tokyo Metropolitan Government	도쿄도(都)가 세움	체조에서, 손으로 바닥을 짚고 발로 땅을 차서 거꾸로 서는 동작.		3	llm	0	1445090
+o			5			都民	とみん	resident of Tokyo; citizen of Tokyo; Tokyoite	도쿄 주민	섬에 사는 사람.		3	llm	0	1445060
+o			5			途上国	とじょうこく	developing country	개발도상국			3	default	0	1444880
+o			5			都議	とぎ	Metropolitan assemblyman	도쿄도 의원	유도나 태권도 따위를 할 때 입는 운동복.		3	llm	0	1897290

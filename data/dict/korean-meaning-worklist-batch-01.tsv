@@ -1,0 +1,41 @@
+﻿verdict	cat	fix	tier	flags	manual	headword	reading	glossEn	llm_ko	stdict_def	manual_reason	category	classSource	band	id
+o			5			歌舞伎	かぶき	kabuki; traditional form of drama and music performed by male actors wearing makeup mainly in white and red	가부키			3	default	0	1193420
+o			5			間近	まぢか	near; close (to); nearby; (drawing) near	가까움; 임박함	줄기와 뿌리를 아울러 이르는 말.		3	llm	0	1215400
+o			5			肝心	かんじん	essential; important; crucial; vital	가장 중요함; 핵심	간악한 마음.		3	llm	0	1590870
+o			5			減反	げんたん	reduction (of crop size); reduction of acreage (under cultivation)	감산; 경작지 축소			3	default	0	1263310
+o			3		Y(3)	個展	こてん	solo exhibition; one-man exhibition; one-woman exhibition	개인전	행실이나 태도의 잘못을 뉘우치고 마음을 바르게 고쳐먹음.		3	llm	0	1264990
+o			5			建設省	けんせつしょう	Ministry of Construction	일본 행정부의 건설성;			3	default	0	1630720
+o			5			建前	たてまえ	face; official stance; public position or attitude (as opposed to private thoughts); ceremony for the erection of the framework of a house	겉으로 드러내는 태도; 체면	수확 후의 마른논.		3	llm	0	1597110
+o			5			格好	かっこう	shape; form; figure; posture	모양; 자태; 분위기	포섭하여 보호함.		3	llm	0	1590480
+o			5			見方	みかた	viewpoint; point of view; way of looking (at something); view	관점; 보는 방식; 읽는 법; 견해	‘견사 방적’을 줄여 이르는 말.		3	llm	0	1260070
+o			5			見事	みごと	splendid; magnificent; excellent; fine	훌륭함; 멋짐	견(絹)과 사(紗)를 아울러 이르는 말.		3	llm	0	1259620
+o			5			肩書	かたがき	title (e.g. Doctor, Professor, Lord); job title; position (in a company); degree	직함; 칭호; 직위			3	default	0	1590360
+o			3		Y(3)	結構	けっこう	splendid; nice; wonderful; delightful	괜찮음; 꽤; 충분함	일정한 형태로 얼개를 만듦. 또는 그렇게 만든 물건.	일본어의 '結構'는 '괜찮다/좋다'라는 관용적 의미로 쓰이는 반면, 한국 표준국어대사전의 '결구'는 물리적 구조나 얼개를 만드는 본래 의미를 지닌 동형이의어입니다.	3	manual	0	1254760
+o			5			系列	けいれつ	series; sequence; system; succession	계열; 연속			3	default	0	1251080
+o			3		Y(3)	苦手	にがて	poor (at); weak (in); not very good (at); not one's cup of tea	서투름; 약함	산형과의 한해살이풀. 높이는 30~60cm이며, 잎은 어긋나고 잘게 갈라진 우상 복엽이다. 6~7월에 작고 흰 꽃이 복산형 화서로 가지 끝에 피고 열매는 둥글다. 잎과 줄기는 동부 유럽이 원산지로 절에서 많이 재배한다.		3	llm	0	1244470
+o			5			高裁	こうさい	High Court	고등재판소	옛날 성.		3	llm	0	1657210
+o			5			谷川	たにがわ	mountain stream	골짜기 강	산골짜기에서 나는 샘물.		3	llm	0	1416750
+o			5			公明党	こうめいとう	Komeito (Japanese political party)	공명당(일본의 정당)			3	default	0	1628770
+o			5			公定歩合	こうていぶあい	official discount (bank) rate	공정 금리			3	default	0	1631200
+o			5			共和党	きょうわとう	Republican Party	공화당			3	default	0	1235390
+o			5			故郷	ふるさと	hometown; birthplace; native place; one's old home	고향; 본래 살던 곳	향을 사르면서 스승에게 설법을 간청함.		3	llm	0	1603050
+o			3		Y(3)	過疎	かそ	underpopulation; low population density; depopulation	인구 감소; 과소화	과일과 채소를 아울러 이르는 말.		3	llm	0	1196220
+o			5			官房長官	かんぼうちょうかん	Chief Cabinet Secretary (Japan); Chief of Staff (to the President, Prime Minister, etc.); Cabinet Secretary; Executive Secretary	관방장관			3	default	0	1211820
+o			5			管内	かんない	within the jurisdiction (of); one's jurisdiction; in a pipe	관할 구역; 파이프 내부	관청의 안.		3	llm	0	1214190
+o			5			科学技術庁	かがくぎじゅつちょう	Science and Technology Agency (1956-2001)	과학기술청			3	default	0	1192730
+o			5			課税	かぜい	taxation	과세	중국 당나라 말기에, 각 번진(藩鎭)에서 매기던 화물의 통과세. 오대(五代)에는 널리 제도화되어 송나라 때에는 상세(商稅)의 하나가 되었다.		3	llm	0	1195790
+o			5			交付	こうふ	delivery; issuance; handing over; granting	교부; 건네줌	부녀자로서 해야 할 길쌈이나 바느질 따위에 재주가 있는 부인.		3	llm	0	1272520
+o			5			具合	ぐあい	condition; state; health; state (of health)	상태; 건강; 형편	어떤 일을 꾸미려고 세력이나 사람을 모음.		3	llm	0	1592500
+o			5			宮内庁	くないちょう	Imperial Household Agency	궁내청; 일본 행정부의 하나			3	default	0	1228480
+o			5			近所	きんじょ	neighbourhood; neighborhood; vicinity	근처; 이웃 동네	‘근소하다’의 어근.		3	llm	0	1242350
+o			5			根底	こんてい	root; basis; foundation	근본; 바탕	가까운 곳에 있는 땅.		3	llm	0	1290260
+o			5			今季	こんき	this season	이번 계절	조선 시대에, 금박(金箔)·은박(銀箔)·이금(泥金)·이은(泥銀)을 나라에 바치던 공계(貢契). 금이나 은을 그대로 바치지 않고 그 값어치만큼을 쌀로 환산하여 바쳤다.		3	llm	0	1657590
+o			5			今度	こんど	this time; now; next time; another time	이번; 다음; 얼마 안 되어	복숭아의 한 종류.		3	llm	0	1289370
+o			5			機器	きき	device; equipment; machinery; apparatus	기기; 장비	보일러에서 보낸 증기의 팽창과 응축을 이용하여 피스톤을 왕복 운동시킴으로써 동력을 얻는 기관.		3	llm	0	1220900
+o			5			記念	きねん	commemoration; celebration; remembrance; memory	기념; 추모	비는 마음.		3	llm	0	1223340
+o			3		Y(3)	期待	きたい	expectation; anticipation; hope; promising	기대; 기대감	무동(舞童)을 따라다니는 여자.		3	llm	0	1220570
+o			5			岐阜	ぎふ	Gifu (city, prefecture)	기후(일본의 지방명)	사람이나 동물의 몸을 싸고 있는 살이나 살가죽.		3	llm	0	1625240
+o			5			奇跡	きせき	miracle; wonder; marvel	기적	예전에, 기생으로 등록되어 있던 소속. 또는 기생들을 등록해 놓은 대장.		3	llm	0	1591250
+o			5			金持	かねもち	rich person; wealthy person	재산가; 부자	승려가 불상을 모시고 불도(佛道)를 닦으며 교법을 펴는 집.		3	llm	0	1242970
+o			5			企画	きかく	planning; plan; project; arrangements	기획; 계획	조선 시대의 승려(1376~1433). 속성은 유(劉). 처음 법명은 수이(守夷). 호는 득통(得通)·함허(涵虛)·무준(無準). 무학(無學)에게 법을 배우고, 세종의 청으로 대자 어찰(大慈御刹)에 있다가 세종 13년(1431)에 봉암사(鳳巖寺)를 중수하였다. 저서에 ≪현정론≫, ≪원각경소≫, ≪금강경오가해설의≫ 따위가 있다.		3	llm	0	1218150
+o			5			女房	にょうぼう	wife (esp. one's own wife); court lady; female court attache; woman who served at the imperial palace	아내; 궁녀;	남아 있는 향기라는 뜻으로, 떠나 버린 뒤나 죽은 뒤에 남은 명예를 이르는 말.		3	llm	0	1345420

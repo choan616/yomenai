@@ -1,0 +1,41 @@
+﻿verdict	cat	fix	tier	flags	manual	headword	reading	glossEn	llm_ko	stdict_def	manual_reason	category	classSource	band	id
+o			5			町内	ちょうない	neighborhood; neighbourhood; street; block	동네; 마을	법정의 안.		3	llm	0	1428800
+o			5			井戸	いど	water well	우물	양수임을 나타내는 부호 ‘+’를 이르는 말.		3	llm	0	1160330
+o			5			低価格	ていかかく	low price	저가			3	default	0	1434270
+o			5			提供者	ていきょうしゃ	donor; contributor; provider	제공자; 기여자	공사를 맡아서 행하는 사람 또는 회사.		3	llm	0	1943170
+o			5			早々	そうそう	as soon as ...; just after ...; immediately after ...; hurriedly	곧바로; 이윽고	이른 아침.		3	llm	0	1596420
+o			5			彫刻	ちょうこく	carving; engraving; sculpture	조각	한 물건에서 따로 떼어 내거나 떨어져 나온 작은 부분.		3	llm	0	1427980
+o			5			造反	ぞうはん	rebellion	반란	아침 끼니를 먹기 전에 간단하게 먹는 음식.		3	llm	0	1818590
+o			5			朝鮮民主主義人民共和国	ちょうせんみんしゅしゅぎじんみんきょうわこく	Democratic People's Republic of Korea (North Korea); DPRK	조선민주주의인민공화국			3	default	0	1428470
+o			5			朝鮮半島	ちょうせんはんとう	Korean peninsula	한반도			3	default	0	1428450
+o			5			阻止	そし	obstruction; prevention; hindrance; check	저지; 방해	어려서부터 지혜가 있음. 또는 그 지혜.		3	llm	0	1397820
+o			5			足元	あしもと	at one's feet; underfoot; one's step (as in "watch your step"); gait	발밑; 현재	주문을 읽으며 시주(施主)나 망인을 위하여 기원함.		3	llm	0	1586390
+o			5			足跡	あしあと	footprints; record of page visitors (e.g. in social networking sites)	발자국; 흔적	삶은 쇠족을 큼직하게 저미어 진장과 기름을 바르고 깨소금, 후춧가루 따위를 쳐서 한데 주물러 불에 구운 적.		3	llm	0	1581330
+o			5			終了後	しゅうりょうご	after the end (of something)	끝난 후			3	default	0	1659210
+o			5			終値	おわりね	closing price	증권 거래소에서의 마지막 가격; 종가	종문(宗門)의 교의(敎義)의 취지.		3	llm	0	1332930
+o			5			仲間	なかま	companion; fellow; friend; mate	동료; 친구; 일행	두 사물의 사이.		3	llm	0	1425790
+o			5			中島	なかじま	island in a pond or river	연못이나 강 속의 섬	예전에, 장판마다 돌아다니며 과일이나 나무 따위의 흥정을 붙이고 돈을 받던 사람.		3	llm	0	1425070
+o			5			重味	おもみ	weight; weight (e.g. of someone's words); burden; grandeur	무게; 중대함; 위엄	품질이 중간쯤 되는 쌀.		3	llm	0	1589410
+o			5			衆院	しゅういん	House of Representatives (lower house of the National Diet of Japan)	일본 의회 중의원	음양설(陰陽說)에서, 시대 변화의 큰 단위로 잡는 세 묶음의 육십갑자(六十甲子) 가운데 둘째 육십갑자의 60년. 한 시대가 왕성하게 지속하는 단계로 본다.		3	llm	0	1333250
+o			5			芝居	しばい	play; drama	연극; 희극	두 팔과 두 다리.		3	llm	0	1321630
+o			5			持味	もちあじ	inherent flavor; inherent flavour; natural taste; distinctive characteristic (of a person, work, etc.)	고유한 맛; 특유의 기질	어떤 식물에 맞고 안 맞는 땅의 성질.		3	llm	0	1658460
+o			5			地方自治体	ちほうじちたい	local authority; local government; locality; local self-governing body	지방 자치 단체			3	default	0	1763330
+o			5			地元	じもと	home area; home town; local	본래 살던 곳; 지역	지방 법원이나 가정 법원의 관할 아래에 있으면서 일정한 지역에 따로 떨어져 그곳의 법원 사무를 맡아 처리하는 하부 기관.		3	llm	0	1421060
+o			5			地裁	ちさい	district court	지방법원	더할 나위 없는 재능. 또는 그런 재능을 가진 사람.		3	llm	0	1421100
+o			5			津波	つなみ	tsunami; tidal wave	쓰나미; 해일	패하여 망함.		3	llm	0	1432220
+o			5			執行猶予	しっこうゆうよ	stay of execution; suspended sentence	집행유예			3	default	0	1319640
+o			5			知恵	ちえ	wisdom; wit; sagacity; sense	지혜	종이로 노를 꼬아 만든 신.		3	llm	0	1420530
+o			5			差止	さしとめ	prohibition; ban; suspension; injunction	금지; 중지	사물이나 공간, 지위 따위를 자기 몫으로 가짐. 또는 그 사물이나 공간.		3	llm	0	1291190
+o			5			着物	きもの	kimono; Japanese traditional clothing (esp. full-length); clothing; clothes	기모노; 일본의 전통의상의 하나			3	default	0	1423240
+o			5			天皇陛下	てんのうへいか	His Majesty the Emperor	일본의 천황을 높여 부르는 말			3	default	0	1439060
+o			5			締切	しめきり	deadline; closing; cut-off; closing (a door, window, etc.)	마감일; 마감	남의 안부를 물을 때, 그 사람의 기거(起居)나 건강 상태를 높여 이르는 말.		3	llm	0	1594590
+o			5			寸前	すんぜん	just before; on the verge of; on the brink of; just in front of	직전; 임박	얼마 되지 아니하는 밭.		3	llm	0	1373750
+o			5			最高裁	さいこうさい	Supreme Court	최고재판소의 줄임말			3	default	0	1293880
+o			5			抽選	ちゅうせん	lottery; raffle; drawing (of lots); balloting	추첨	가을철의 부채라는 뜻으로, 철이 지나서 쓸모없이 된 물건을 비유적으로 이르는 말.		3	llm	0	1426220
+o			5			追風	おいかぜ	tailwind; fair wind; favorable wind (favourable); favorable condition (favourable)	순풍; 유리한 상황	가을철에 부는 바람.		3	llm	0	1588800
+o			5			築地	ついじ	mud wall with a roof; roofed mud wall	지붕이 있는 진흙 벽	도술(道術)로 지맥(地脈)을 축소하여 먼 거리를 가깝게 하는 일.		3	llm	0	1717270
+o			5			春闘	しゅんとう	spring labor offensive; annual spring wage bargaining round	봄철 노동 운동; 임금 협상			3	default	0	1341120
+o			5			出方	でかた	attitude; approach; move; theater usher	태도; 방식	방목(榜目)에 적힌 과거 급제자의 이름을 부름. 또는 그 일.		3	llm	0	1340320
+o			5			出会	であい	meeting; rendezvous; encounter; meeting for the first time	만남; 우연한 만남	물품이 시장에 나와 돎.		3	llm	0	1338400
+o			5			出来高	できだか	yield; crop; production; volume	생산량; 수확량			3	default	0	1340520
+o			5			出来事	できごと	occurrence; happening; incident; event	일어난 일; 사건			3	default	0	1340570
