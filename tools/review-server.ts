@@ -1,6 +1,7 @@
 // 한국어 뜻 검수 전용 로컬 화면. `npm run review` → http://localhost:5178
 // korean-meaning-worklist*.tsv 를 한 건씩 보여주고 o/x/~/s + 뜻 직접 수정을 그 자리에서 TSV 에 쓴다.
 // apply:korean-meaning 파이프라인은 그대로 (같은 파일을 읽고 씀).
+// `npm run review -- batch-01` 처럼 파일명(일부만도 됨)을 주면 그 파일로 바로 연다.
 import { createServer } from 'node:http'
 import { readdirSync } from 'node:fs'
 import { join } from 'node:path'
@@ -12,6 +13,15 @@ const listFiles = () =>
   readdirSync(DICT_DIR)
     .filter((f) => /^korean-meaning-worklist.*\.tsv$/.test(f))
     .sort()
+
+// CLI 인자로 처음 열 파일 지정 — `npm run review -- batch-01` (파일명 일부만 써도 됨)
+const argFile = process.argv.slice(2).find((a) => !a.startsWith('-'))
+function defaultFile(files: string[]): string | undefined {
+  if (!files.length || !argFile) return files[0]
+  const hit = files.find((f) => f === argFile) ?? files.find((f) => f.includes(argFile))
+  if (!hit) console.warn(`'${argFile}' 에 맞는 워크리스트가 없다 — ${files[0]} 로 연다`)
+  return hit ?? files[0]
+}
 
 function loadGrid(file: string) {
   const grid = readTsv(join(DICT_DIR, file))
@@ -56,7 +66,7 @@ const server = createServer((req, res) => {
       const files = listFiles()
       const file = url.searchParams.get('file') && files.includes(url.searchParams.get('file')!)
         ? url.searchParams.get('file')!
-        : files[0]
+        : defaultFile(files)
       if (!file) return json(res, { files: [], rows: [], header: [] })
       const { header, rows } = loadGrid(file)
       return json(res, { files, file, header, rows, ...stats(file) })
@@ -94,7 +104,9 @@ function listen(port: number, triesLeft: number) {
   })
   server.listen(port, () => {
     console.log(`검수 화면 → http://localhost:${port}`)
-    console.log(`파일: ${listFiles().join(', ') || '(korean-meaning-worklist*.tsv 없음)'}`)
+    const files = listFiles()
+    if (!files.length) return console.log('파일: (korean-meaning-worklist*.tsv 없음)')
+    console.log(`파일: ${defaultFile(files)} 로 엶` + (files.length > 1 ? `  (전체 ${files.length}개, 화면에서 전환)` : ''))
   })
 }
 listen(PORT, 9)

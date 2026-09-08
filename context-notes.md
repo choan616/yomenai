@@ -2951,6 +2951,8 @@ T5·T6 20%. tier 4~6(~16,500건)은 전수 검수 대상이나 PLAN대로 보류
 - 진행률 출력 — `일본고유 3643건 중 검수 127 · 남은 3516 · 이번 배치 40`
 - `apply:korean-meaning` 은 `korean-meaning-worklist*.tsv` 를 이미 전부 병합하므로 batch
   파일이 쌓여도 자동 반영. batch tsv 는 `!data/dict/*-worklist*.tsv` 로 추적 대상(사람 판정)
+- 검수는 `npm run review -- batch-01` — 인자로 파일명(일부만도 됨) 주면 그 파일로 바로 연다.
+  Excel 대신 이걸 쓰면 2026-09-08 EUC-KR 사고를 안 겪는다 (서버가 `tsv.ts` 로 직접 read/write)
 
 ### 확인용 HTML — `npm run view:jp-unique` → `data/dict/jp-unique.html`
 
