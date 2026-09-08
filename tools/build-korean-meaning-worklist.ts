@@ -87,17 +87,27 @@ for (const f of readdirSync(DICT_DIR).filter((f) => /^korean-(worklist.*|review-
   }
 }
 
-// 채운 verdict·cat·fix 이어받기 — 표본 파일과 flagged 파일 양쪽에서 (어느 쪽에 적어도 산다)
-const prior = new Map<string, { verdict: string; cat: string; fix: string }>()
-for (const f of readdirSync(DICT_DIR).filter((f) => /^korean-meaning-worklist.*\.tsv$/.test(f))) {
-  const grid = readTsv(join(DICT_DIR, f))
+// 이 파일에서 채운 verdict·cat·fix·llm_ko 이어받기 (파일마다 독립 — 표본과 flagged 는 별개 검수면).
+// llm_ko 도 이어받되, 갓 번역한 값(korean-meaning.json)과 다를 때만 = 사람이 직접 고친 경우만 산다.
+const prior = new Map<string, { verdict: string; cat: string; fix: string; llmKo: string }>()
+if (existsSync(OUT_PATH)) {
+  const grid = readTsv(OUT_PATH)
   const h = grid[0]
-  const [vi, ci, fi, ii] = [h.indexOf('verdict'), h.indexOf('cat'), h.indexOf('fix'), h.indexOf('id')]
-  if (ii < 0) continue
-  for (const c of grid.slice(1)) {
-    const v = (c[vi] ?? '').trim()
-    if (c[ii] && /^[ox~s]$/.test(v)) {
-      prior.set(c[ii], { verdict: v, cat: (c[ci] ?? '').trim(), fix: (c[fi] ?? '').trim() })
+  const [vi, ci, fi, ki, ii] = [
+    h.indexOf('verdict'), h.indexOf('cat'), h.indexOf('fix'), h.indexOf('llm_ko'), h.indexOf('id'),
+  ]
+  if (ii >= 0) {
+    for (const c of grid.slice(1)) {
+      const v = (c[vi] ?? '').trim()
+      if (!c[ii] || !/^[ox~s]$/.test(v)) continue
+      const edited = (c[ki] ?? '').trim()
+      const fresh = (meaning[c[ii]]?.ko ?? '').replace(/\s+/g, ' ').trim()
+      prior.set(c[ii], {
+        verdict: v,
+        cat: (c[ci] ?? '').trim(),
+        fix: (c[fi] ?? '').trim(),
+        llmKo: edited && edited.replace(/\s+/g, ' ').trim() !== fresh ? edited : '',
+      })
     }
   }
 }
@@ -188,7 +198,8 @@ const body = picked.map((r) => {
     r.it.headword,
     r.it.reading,
     r.it.glossEn.slice(0, 4).join('; '),
-    r.m?.ko ?? '',
+    // 이어받은 사람 수정 > 현재 반영된 정의(korean-class.json) > 갓 번역한 것
+    p?.llmKo || r.k.koMeaning?.definition || r.m?.ko || '',
     stdictDef.get(r.id) ?? '',
     manual.get(r.id)?.reason ?? '',
     r.k.category,

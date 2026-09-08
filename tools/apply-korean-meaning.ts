@@ -52,8 +52,9 @@ const stdictDef = new Map<string, string>()
   }
 }
 
-// 여러 파일을 합친다 — id 당 마지막에 본 행이 이긴다.
-// llm_ko 를 같이 읽는다 — 사람이 그 칸을 직접 고치고 verdict 만 찍는 방식도 지원한다
+// 여러 파일을 합친다. 파일 순서(readdirSync = -flagged 먼저)대로, **먼저 본 실제 verdict 가 이긴다** —
+// 뒤 파일(표본 등)에 남은 중복 행이 앞 파일의 검수를 덮지 못하게 한다.
+// llm_ko 를 같이 읽는다 — 사람이 그 칸을 직접 고치고 verdict 만 찍는 방식도 지원한다.
 const merged = new Map<string, { verdict: string; cat: string; fix: string; llmKo: string; tier: string }>()
 for (const f of WORKLISTS) {
   const grid = readTsv(join(DICT_DIR, f))
@@ -68,6 +69,11 @@ for (const f of WORKLISTS) {
     const verdict = (c[col.verdict] ?? '').trim()
     const cat = (c[col.cat] ?? '').trim()
     const prev = merged.get(id)
+    // 이미 실제 verdict 를 잡았으면 유지하고, 뒤 파일에선 분류 교정만 받는다
+    if (prev && /^[oxs~]$/.test(prev.verdict)) {
+      if (/^[123]$/.test(cat)) prev.cat = cat
+      continue
+    }
     if (prev && !/^[oxs~]$/.test(verdict) && !/^[123]$/.test(cat)) continue
     merged.set(id, {
       verdict,
