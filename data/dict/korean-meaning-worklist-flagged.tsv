@@ -1,64 +1,57 @@
 ﻿verdict	cat	fix	tier	flags	manual	headword	reading	glossEn	llm_ko	stdict_def	manual_reason	category	classSource	band	id
-o			1	cat-mismatch	Y(2)	歌人	かじん	poet (of tanka poems)	일본의 단가 시인	노래를 잘 부르거나 잘 짓는 사람.		1	llm	0	1193340
-o			1	cat-mismatch	Y(2)	角度	かくど	angle	각도	생각의 방향이나 관점.		1	llm	0	1206190
-o			1	cat-mismatch	Y(2)	家族計画	かぞくけいかく	family planning	행복한 가정생활을 위해 부부의 생활 능력에 따라 자녀의 수나 출산의 간격을 계획적으로 조절하는 일.	행복한 가정생활을 위해 부부의 생활 능력에 따라 자녀의 수나 출산의 간격을 계획적으로 조절하는 일.		1	llm	1	1192160
-o			1	cat-mismatch	Y(2)	封筒	ふうとう	envelope	편지나 서류 따위를 넣기 위하여 종이로 만든 주머니.	편지나 서류 따위를 넣기 위하여 종이로 만든 주머니.		1	llm	1	1499690
-o			1	cat-mismatch	Y(1)	決別	けつべつ	separation; farewell; parting	기약 없는 이별을 함. 또는 그런 이별.	기약 없는 이별을 함. 또는 그런 이별.		2	llm	1	1254420
-o			1	cat-mismatch	Y(1)	自在	じざい	being able to do as one pleases; doing at will; pothook	자유로움; 제약 없음	저절로 있음.		2	llm	1	1317750
-o			1	cat-mismatch	Y(3)	低調	ていちょう	inactive; slow; sluggish; slack	저조함; 침체	가락이 낮음. 또는 그런 가락.		2	llm	1	1434610
-o			1	cat-mismatch	Y(1)	趣向	しゅこう	plan; idea; design; plot	취향; 기미	하고 싶은 마음이 생기는 방향. 또는 그런 경향.		2	llm	1	1328970
-o			1	cat-mismatch	Y(1)	刻々	こっこく	moment by moment; hour by hour	매 시각. 또는 낱낱의 시각.	매 시각. 또는 낱낱의 시각.		2	default	2	1285830
-o			1	cat-mismatch	Y(1)	共鳴	きょうめい	resonance; sympathy (with a view, idea, etc.)	남의 사상이나 감정, 행동 따위에 공감하여 자기도 그와 같이 따르려 함.	남의 사상이나 감정, 행동 따위에 공감하여 자기도 그와 같이 따르려 함.		2	default	2	1235190
-o			1	cat-mismatch	Y(1)	空砲	くうほう	empty gun; gun loaded with blanks; firing a blank	실탄을 넣지 않고 소리만 나게 하는 총질.	실탄을 넣지 않고 소리만 나게 하는 총질.		2	default	2	2582370
-o			1	cat-mismatch	Y(1)	同病	どうびょう	the same sickness	같은 병	같은 병.		2	default	2	1453310
-o			1	cat-mismatch	Y(1)	無論	むろん	of course; certainly; naturally	말할 것도 없음.	말할 것도 없음.		2	llm	2	1531080
-o			1	cat-mismatch	Y(1)	洋食	ようしょく	Western food; Western dish; Western cooking; Japanized Western cuisine	서양식 음식이나 식사.	서양식 음식이나 식사.		2	default	2	1546000
-o			1	cat-mismatch	Y(1)	洋酒	ようしゅ	Western wine and spirits; Western liquor	서양 술	서양에서 들여온 술.		2	default	2	1545980
-o			1	cat-mismatch	Y(1)	余命	よめい	remainder of one's life; one's remaining days; time left (to live)	얼마 남지 아니한 쇠잔한 목숨.	얼마 남지 아니한 쇠잔한 목숨.		2	default	2	1544570
-o			1	cat-mismatch	Y(1)	塩基	えんき	base	산과 반응하여 염을 만드는 물질. 물에 녹으면 하이드록시 이온을 낸다. 암모니아수, 잿물 따위가 있다.	산과 반응하여 염을 만드는 물질. 물에 녹으면 하이드록시 이온을 낸다. 암모니아수, 잿물 따위가 있다.		2	default	2	1178680
-o			1	cat-mismatch	Y(1)	英訳	えいやく	English translation	영어로 번역함.	영어로 번역함.		2	default	2	1174670
-o			1	cat-mismatch	Y(1)	王立	おうりつ	royal (institution)	국왕이나 왕족이 세움. 또는 그런 것.	국왕이나 왕족이 세움. 또는 그런 것.		2	default	2	1181710
-o			1	cat-mismatch	Y(1)	全量	ぜんりょう	the whole amount; entire amount; total amount; total quantity	전체 양; 총량	전체의 분량이나 수량.		2	default	2	1396380
-o			1	cat-mismatch	Y(1)	電信	でんしん	(electric) telegraph; telegraphy; telegraphic communication; telegram	문자나 숫자를 전기 신호로 바꾸어 전파나 전류로 보내는 통신.	문자나 숫자를 전기 신호로 바꾸어 전파나 전류로 보내는 통신.		2	default	2	1443560
-o			1	cat-mismatch	Y(1)	征服	せいふく	conquest; subjugation; overcoming (a difficulty); conquering (e.g. a mountain)	남의 나라나 이민족 따위를 정벌하여 복종시킴.	남의 나라나 이민족 따위를 정벌하여 복종시킴.		2	default	2	1375230
-o			1	cat-mismatch	Y(1)	足音	あしおと	(sound of) footsteps; sense or sign that something is approaching	발을 옮겨 디딜 때 발이 바닥에 닿아 나는 소리.	발을 옮겨 디딜 때 발이 바닥에 닿아 나는 소리.		2	default	2	1404770
-o			1	cat-mismatch	Y(1)	拙速	せっそく	rough-and-ready; knocked-up; hasty; slipshod	충분한 숙고 없이 너무 빠르고 경솔하게 행동하는 모습	어설프고 빠름. 또는 그런 태도.		2	default	2	1385300
-o			1	cat-mismatch	Y(1)	左記	さき	undermentioned (statement); the following; at left	세로쓰기를 한 글에서, 본문의 왼쪽에 기록된 것.	세로쓰기를 한 글에서, 본문의 왼쪽에 기록된 것.		2	default	2	1290860
-o			1	cat-mismatch	Y(1)	主犯	しゅはん	principal offence; principal offense; principal offender	형법에서, 자기의 의사에 따라 범죄를 실제로 저지른 사람. 단독 정범과 공동 정범으로 크게 나뉜다.	형법에서, 자기의 의사에 따라 범죄를 실제로 저지른 사람. 단독 정범과 공동 정범으로 크게 나뉜다.		2	default	2	1326110
-o			1	cat-mismatch	Y(1)	注入	ちゅうにゅう	pouring; injection	흘러 들어가도록 부어 넣음.	흘러 들어가도록 부어 넣음.		2	default	2	1426640
-o			1	cat-mismatch	Y(1)	即席	そくせき	impromptu; improvised; extempore; ad-lib	어떤 일이 진행되는 바로 그 자리.	어떤 일이 진행되는 바로 그 자리.		2	default	2	1404240
-o			1	cat-mismatch	Y(1)	即興	そっきょう	improvisation; improvised; impromptu; extempore	그 자리에서 바로 일어나는 감흥. 또는 그런 기분.	그 자리에서 바로 일어나는 감흥. 또는 그런 기분.		2	default	2	1404130
-o			1	cat-mismatch	Y(1)	即売	そくばい	selling on the spot	상품을 벌여 놓은 그 자리에서 당장 팔아 버림.	상품을 벌여 놓은 그 자리에서 당장 팔아 버림. 전시장이나 박람회 같은 데서 흔히 이루어진다.		2	default	2	1404300
-o			1	cat-mismatch	Y(1)	集散	しゅうさん	collection (gathering) and distribution	모여들었다 흩어졌다 함.	모여들었다 흩어졌다 함.		2	default	2	1659250
-o			1	cat-mismatch	Y(1)	執着	しゅうちゃく	attachment; adhesion; insistence; tenacity	집착; 어떤 것에 늘 마음이 쏠려 잊지 못하고 매달림.	어떤 것에 늘 마음이 쏠려 잊지 못하고 매달림.		2	default	2	1594740
-o			1	cat-mismatch	Y(1)	炭田	たんでん	coalfield; coal field	석탄이 묻혀 있는 땅.	석탄이 묻혀 있는 땅.		2	default	2	1661270
-o			1	cat-mismatch	Y(1)	講話	こうわ	lecture; discourse	강의하듯이 쉽게 풀어서 이야기함. 또는 그런 이야기.	강의하듯이 쉽게 풀어서 이야기함. 또는 그런 이야기.		2	default	3	1282380
-o			1	cat-mismatch	Y(1)	極刑	きょっけい	capital punishment; death penalty; maximum penalty; ultimate punishment	가장 무거운 형벌이라는 뜻으로, ‘사형’을 이르는 말.	가장 무거운 형벌이라는 뜻으로, ‘사형’을 이르는 말.		2	default	3	1240290
-o			1	cat-mismatch	Y(1)	難易	なんい	(relative) difficulty	어려움과 쉬움.	어려움과 쉬움.		2	default	3	1460870
-o			1	cat-mismatch	Y(1)	短文	たんぶん	short sentence; short piece of writing (e.g. passage, article, composition)	짧은 글	짧은 글.		2	default	3	1843470
-o			1	cat-mismatch	Y(1)	大漁	たいりょう	big catch (fishing); good haul	큰 수확; 큰 어획	물고기가 많이 잡힘.		2	default	3	1413450
-o			1	cat-mismatch	Y(1)	道化	どうけ	antics; buffoonery; clowning; clown	광대 놀이; 익살	도(道)로써 바른길로 이끎.		2	default	3	1454120
-o			1	cat-mismatch	Y(1)	同量	どうりょう	same amount	같은 분량.	같은 분량.		2	default	3	1687800
-o			1	cat-mismatch	Y(1)	刀剣	とうけん	sword; dagger; knife; bayonet	칼과 검(劍)을 아울러 이르는 말.	칼과 검(劍)을 아울러 이르는 말.		2	default	3	1446490
-o			1	cat-mismatch	Y(1)	万世	ばんせい	all ages; eternity	아주 오랜 세대.	아주 오랜 세대.		2	default	3	1526190
-o			1	cat-mismatch	Y(1)	反射的	はんしゃてき	reflexive; reflecting	반사적인; 어떤 자극에 순간적으로 무의식적 반응을 보이는 것.	어떤 자극에 순간적으로 무의식적 반응을 보이는 것.		2	default	3	1480470
-o			1	cat-mismatch	Y(1)	病弊	びょうへい	evil influence; ill effect	병폐; 병통과 폐단을 아울러 이르는 말.	병통과 폐단을 아울러 이르는 말.		2	default	3	1622320
-o			1	cat-mismatch	Y(1)	複眼	ふくがん	compound eye	겹눈	홑눈이 벌집 모양으로 여러 개 모여 된 눈. 절지동물이나 다모강 따위에서 볼 수 있다. 여러 방향에 있는 물체의 형태를 동시에 식별할 수 있으며 곤충은 색채를 판별할 수 있다.		2	default	3	1501310
-o			1	cat-mismatch	Y(1)	俸給	ほうきゅう	salary (esp. public employees); wages; pay	어떤 직장에서 계속적으로 일하는 사람이 그 일의 대가로 정기적으로 받는 일정한 보수.	어떤 직장에서 계속적으로 일하는 사람이 그 일의 대가로 정기적으로 받는 일정한 보수.		2	default	3	1515280
-o			1	cat-mismatch	Y(1)	不謹慎	ふきんしん	imprudent; indiscreet; immodest; indecent	경솔함; 부적절함; 조심하지 아니함.	삼가고 조심하지 아니함.		2	default	3	1492010
-o			1	cat-mismatch	Y(1)	不毛	ふもう	barren; sterile; infertile; unproductive (e.g. discussion)	황량함; 땅이 거칠고 메말라 식물이 나거나 자라지 아니함; 헛됨;	땅이 거칠고 메말라 식물이 나거나 자라지 아니함.		2	default	3	1495110
-o			1	cat-mismatch	Y(1)	不平	ふへい	discontent; dissatisfaction; complaint; grievance	마음에 들지 아니하여 못마땅하게 여김. 또는 못마땅한 것을 말이나 행동으로 드러냄.	마음에 들지 아니하여 못마땅하게 여김. 또는 못마땅한 것을 말이나 행동으로 드러냄.		2	default	3	1494790
-o			1	cat-mismatch	Y(1)	不確定	ふかくてい	uncertain; indefinite	일이나 계획 따위가 확실히 결정되어 있지 않음.	일이나 계획 따위가 확실히 결정되어 있지 않음.		2	default	3	1740390
-o			1	cat-mismatch	Y(1)	比類	ひるい	parallel; equal; match	비슷함; 견줄 만함	비슷한 종류.		2	default	3	1626940
-o			1	cat-mismatch	Y(1)	査問	さもん	inquiry; enquiry; hearing	조사하여 캐물음.	조사하여 캐물음.		2	default	3	1291470
-o			1	cat-mismatch	Y(1)	相思	そうし	mutual affection; mutual love	서로 생각하고 그리워함.	서로 생각하고 그리워함.		2	default	3	1660790
-o			1	cat-mismatch	Y(1)	庶民的	しょみんてき	popular; folksy; plebeian; ordinary	서민적인; 평범한	서민과 같은 것.		2	default	3	1343580
-o			1	cat-mismatch	Y(1)	性病	せいびょう	sexually transmitted disease; STD; sexually transmitted infection; STI	주로 불결한 성행위(性行爲)에 의하여 전염되는 병. 매독, 임질, 무른궤양, 클라미디아(chlamydia) 따위가 있다.	주로 불결한 성행위(性行爲)에 의하여 전염되는 병. 매독, 임질, 무른궤양, 클라미디아(chlamydia) 따위가 있다.		2	default	3	1375490
-o			1	cat-mismatch	Y(1)	盛土	もりど	embankment (for road, railway, etc.); raising the ground level; fill	흙을 쌓음.	흙을 쌓음.		2	default	3	1764400
-o			1	cat-mismatch	Y(1)	原著	げんちょ	the original work	번역하거나 번안한 것의 근본이 되는 저작.	번역하거나 번안한 것의 근본이 되는 저작.		2	default	3	1262130
-o			1	cat-mismatch	Y(2)	島内	とうない	on an island; on-island	어떤 도(道)의 구역 안.	어떤 도(道)의 구역 안.		3	llm	2	1446920
-o			1	cat-mismatch	Y(2)	英知	えいち	wisdom; intelligence; sagacity	지혜; 지성	왕비나 왕대비 또는 왕세자나 황태자의 명령서.		3	llm	2	1588680
-o			1	cat-mismatch	Y(1)	甘酢	あまず	sweet vinegar	달콤한 식초	감을 숙성시켜 만든 식초.		3	llm	3	1213540
+o			1		Y(1)	決別	けつべつ	separation; farewell; parting	기약 없는 이별을 함. 또는 그런 이별.	기약 없는 이별을 함. 또는 그런 이별.		2	llm	1	1254420
+o			1		Y(1)	自在	じざい	being able to do as one pleases; doing at will; pothook	자유로움; 제약 없음	저절로 있음.		2	llm	1	1317750
+o			1		Y(3)	低調	ていちょう	inactive; slow; sluggish; slack	저조함; 침체	가락이 낮음. 또는 그런 가락.		2	llm	1	1434610
+o			1		Y(1)	趣向	しゅこう	plan; idea; design; plot	취향; 기미	하고 싶은 마음이 생기는 방향. 또는 그런 경향.		2	llm	1	1328970
+o			1		Y(1)	刻々	こっこく	moment by moment; hour by hour	매 시각. 또는 낱낱의 시각.	매 시각. 또는 낱낱의 시각.		2	default	2	1285830
+o			1		Y(1)	共鳴	きょうめい	resonance; sympathy (with a view, idea, etc.)	남의 사상이나 감정, 행동 따위에 공감하여 자기도 그와 같이 따르려 함.	남의 사상이나 감정, 행동 따위에 공감하여 자기도 그와 같이 따르려 함.		2	default	2	1235190
+o			1		Y(1)	空砲	くうほう	empty gun; gun loaded with blanks; firing a blank	실탄을 넣지 않고 소리만 나게 하는 총질.	실탄을 넣지 않고 소리만 나게 하는 총질.		2	default	2	2582370
+o			1		Y(1)	同病	どうびょう	the same sickness	같은 병	같은 병.		2	default	2	1453310
+o			1		Y(1)	無論	むろん	of course; certainly; naturally	말할 것도 없음.	말할 것도 없음.		2	llm	2	1531080
+o			1		Y(1)	洋食	ようしょく	Western food; Western dish; Western cooking; Japanized Western cuisine	서양식 음식이나 식사.	서양식 음식이나 식사.		2	default	2	1546000
+o			1		Y(1)	洋酒	ようしゅ	Western wine and spirits; Western liquor	서양 술	서양에서 들여온 술.		2	default	2	1545980
+o			1		Y(1)	余命	よめい	remainder of one's life; one's remaining days; time left (to live)	얼마 남지 아니한 쇠잔한 목숨.	얼마 남지 아니한 쇠잔한 목숨.		2	default	2	1544570
+o			1		Y(1)	塩基	えんき	base	산과 반응하여 염을 만드는 물질. 물에 녹으면 하이드록시 이온을 낸다. 암모니아수, 잿물 따위가 있다.	산과 반응하여 염을 만드는 물질. 물에 녹으면 하이드록시 이온을 낸다. 암모니아수, 잿물 따위가 있다.		2	default	2	1178680
+o			1		Y(1)	英訳	えいやく	English translation	영어로 번역함.	영어로 번역함.		2	default	2	1174670
+o			1		Y(1)	王立	おうりつ	royal (institution)	국왕이나 왕족이 세움. 또는 그런 것.	국왕이나 왕족이 세움. 또는 그런 것.		2	default	2	1181710
+o			1		Y(1)	全量	ぜんりょう	the whole amount; entire amount; total amount; total quantity	전체 양; 총량	전체의 분량이나 수량.		2	default	2	1396380
+o			1		Y(1)	電信	でんしん	(electric) telegraph; telegraphy; telegraphic communication; telegram	문자나 숫자를 전기 신호로 바꾸어 전파나 전류로 보내는 통신.	문자나 숫자를 전기 신호로 바꾸어 전파나 전류로 보내는 통신.		2	default	2	1443560
+o			1		Y(1)	征服	せいふく	conquest; subjugation; overcoming (a difficulty); conquering (e.g. a mountain)	남의 나라나 이민족 따위를 정벌하여 복종시킴.	남의 나라나 이민족 따위를 정벌하여 복종시킴.		2	default	2	1375230
+o			1		Y(1)	足音	あしおと	(sound of) footsteps; sense or sign that something is approaching	발을 옮겨 디딜 때 발이 바닥에 닿아 나는 소리.	발을 옮겨 디딜 때 발이 바닥에 닿아 나는 소리.		2	default	2	1404770
+o			1		Y(1)	拙速	せっそく	rough-and-ready; knocked-up; hasty; slipshod	충분한 숙고 없이 너무 빠르고 경솔하게 행동하는 모습	어설프고 빠름. 또는 그런 태도.		2	default	2	1385300
+o			1		Y(1)	左記	さき	undermentioned (statement); the following; at left	세로쓰기를 한 글에서, 본문의 왼쪽에 기록된 것.	세로쓰기를 한 글에서, 본문의 왼쪽에 기록된 것.		2	default	2	1290860
+o			1		Y(1)	主犯	しゅはん	principal offence; principal offense; principal offender	형법에서, 자기의 의사에 따라 범죄를 실제로 저지른 사람. 단독 정범과 공동 정범으로 크게 나뉜다.	형법에서, 자기의 의사에 따라 범죄를 실제로 저지른 사람. 단독 정범과 공동 정범으로 크게 나뉜다.		2	default	2	1326110
+o			1		Y(1)	注入	ちゅうにゅう	pouring; injection	흘러 들어가도록 부어 넣음.	흘러 들어가도록 부어 넣음.		2	default	2	1426640
+o			1		Y(1)	即席	そくせき	impromptu; improvised; extempore; ad-lib	어떤 일이 진행되는 바로 그 자리.	어떤 일이 진행되는 바로 그 자리.		2	default	2	1404240
+o			1		Y(1)	即興	そっきょう	improvisation; improvised; impromptu; extempore	그 자리에서 바로 일어나는 감흥. 또는 그런 기분.	그 자리에서 바로 일어나는 감흥. 또는 그런 기분.		2	default	2	1404130
+o			1		Y(1)	即売	そくばい	selling on the spot	상품을 벌여 놓은 그 자리에서 당장 팔아 버림.	상품을 벌여 놓은 그 자리에서 당장 팔아 버림. 전시장이나 박람회 같은 데서 흔히 이루어진다.		2	default	2	1404300
+o			1		Y(1)	集散	しゅうさん	collection (gathering) and distribution	모여들었다 흩어졌다 함.	모여들었다 흩어졌다 함.		2	default	2	1659250
+o			1		Y(1)	執着	しゅうちゃく	attachment; adhesion; insistence; tenacity	집착; 어떤 것에 늘 마음이 쏠려 잊지 못하고 매달림.	어떤 것에 늘 마음이 쏠려 잊지 못하고 매달림.		2	default	2	1594740
+o			1		Y(1)	炭田	たんでん	coalfield; coal field	석탄이 묻혀 있는 땅.	석탄이 묻혀 있는 땅.		2	default	2	1661270
+o			1		Y(1)	講話	こうわ	lecture; discourse	강의하듯이 쉽게 풀어서 이야기함. 또는 그런 이야기.	강의하듯이 쉽게 풀어서 이야기함. 또는 그런 이야기.		2	default	3	1282380
+o			1		Y(1)	極刑	きょっけい	capital punishment; death penalty; maximum penalty; ultimate punishment	가장 무거운 형벌이라는 뜻으로, ‘사형’을 이르는 말.	가장 무거운 형벌이라는 뜻으로, ‘사형’을 이르는 말.		2	default	3	1240290
+o			1		Y(1)	難易	なんい	(relative) difficulty	어려움과 쉬움.	어려움과 쉬움.		2	default	3	1460870
+o			1		Y(1)	短文	たんぶん	short sentence; short piece of writing (e.g. passage, article, composition)	짧은 글	짧은 글.		2	default	3	1843470
+o			1		Y(1)	大漁	たいりょう	big catch (fishing); good haul	큰 수확; 큰 어획	물고기가 많이 잡힘.		2	default	3	1413450
+o			1		Y(1)	道化	どうけ	antics; buffoonery; clowning; clown	광대 놀이; 익살	도(道)로써 바른길로 이끎.		2	default	3	1454120
+o			1		Y(1)	同量	どうりょう	same amount	같은 분량.	같은 분량.		2	default	3	1687800
+o			1		Y(1)	刀剣	とうけん	sword; dagger; knife; bayonet	칼과 검(劍)을 아울러 이르는 말.	칼과 검(劍)을 아울러 이르는 말.		2	default	3	1446490
+o			1		Y(1)	万世	ばんせい	all ages; eternity	아주 오랜 세대.	아주 오랜 세대.		2	default	3	1526190
+o			1		Y(1)	反射的	はんしゃてき	reflexive; reflecting	반사적인; 어떤 자극에 순간적으로 무의식적 반응을 보이는 것.	어떤 자극에 순간적으로 무의식적 반응을 보이는 것.		2	default	3	1480470
+o			1		Y(1)	病弊	びょうへい	evil influence; ill effect	병폐; 병통과 폐단을 아울러 이르는 말.	병통과 폐단을 아울러 이르는 말.		2	default	3	1622320
+o			1		Y(1)	複眼	ふくがん	compound eye	겹눈	홑눈이 벌집 모양으로 여러 개 모여 된 눈. 절지동물이나 다모강 따위에서 볼 수 있다. 여러 방향에 있는 물체의 형태를 동시에 식별할 수 있으며 곤충은 색채를 판별할 수 있다.		2	default	3	1501310
+o			1		Y(1)	俸給	ほうきゅう	salary (esp. public employees); wages; pay	어떤 직장에서 계속적으로 일하는 사람이 그 일의 대가로 정기적으로 받는 일정한 보수.	어떤 직장에서 계속적으로 일하는 사람이 그 일의 대가로 정기적으로 받는 일정한 보수.		2	default	3	1515280
+o			1		Y(1)	不謹慎	ふきんしん	imprudent; indiscreet; immodest; indecent	경솔함; 부적절함; 조심하지 아니함.	삼가고 조심하지 아니함.		2	default	3	1492010
+o			1		Y(1)	不毛	ふもう	barren; sterile; infertile; unproductive (e.g. discussion)	황량함; 땅이 거칠고 메말라 식물이 나거나 자라지 아니함; 헛됨;	땅이 거칠고 메말라 식물이 나거나 자라지 아니함.		2	default	3	1495110
+o			1		Y(1)	不平	ふへい	discontent; dissatisfaction; complaint; grievance	마음에 들지 아니하여 못마땅하게 여김. 또는 못마땅한 것을 말이나 행동으로 드러냄.	마음에 들지 아니하여 못마땅하게 여김. 또는 못마땅한 것을 말이나 행동으로 드러냄.		2	default	3	1494790
+o			1		Y(1)	不確定	ふかくてい	uncertain; indefinite	일이나 계획 따위가 확실히 결정되어 있지 않음.	일이나 계획 따위가 확실히 결정되어 있지 않음.		2	default	3	1740390
+o			1		Y(1)	比類	ひるい	parallel; equal; match	비슷함; 견줄 만함	비슷한 종류.		2	default	3	1626940
+o			1		Y(1)	査問	さもん	inquiry; enquiry; hearing	조사하여 캐물음.	조사하여 캐물음.		2	default	3	1291470
+o			1		Y(1)	相思	そうし	mutual affection; mutual love	서로 생각하고 그리워함.	서로 생각하고 그리워함.		2	default	3	1660790
+o			1		Y(1)	庶民的	しょみんてき	popular; folksy; plebeian; ordinary	서민적인; 평범한	서민과 같은 것.		2	default	3	1343580
+o			1		Y(1)	性病	せいびょう	sexually transmitted disease; STD; sexually transmitted infection; STI	주로 불결한 성행위(性行爲)에 의하여 전염되는 병. 매독, 임질, 무른궤양, 클라미디아(chlamydia) 따위가 있다.	주로 불결한 성행위(性行爲)에 의하여 전염되는 병. 매독, 임질, 무른궤양, 클라미디아(chlamydia) 따위가 있다.		2	default	3	1375490
+o			1		Y(1)	盛土	もりど	embankment (for road, railway, etc.); raising the ground level; fill	흙을 쌓음.	흙을 쌓음.		2	default	3	1764400
+o			1		Y(1)	原著	げんちょ	the original work	번역하거나 번안한 것의 근본이 되는 저작.	번역하거나 번안한 것의 근본이 되는 저작.		2	default	3	1262130
 o			2	kanji		渡航	とこう	voyage; passage; travelling	배를 타고 바다를 건넘.	배를 타고 바다를 건넘.		1	llm	0	1444700
 o			2	kanji		慰霊	いれい	consoling the spirits of the dead	위령(慰靈); 죽은 영혼을 위로함	죽은 사람의 영혼을 위로함.		1	llm	0	1613270
 o			2	kanji		有無	うむ	existence or nonexistence; presence or absence; consent or refusal; yes or no	있음과 없음.	있음과 없음.		1	llm	0	1541610
@@ -184,6 +177,13 @@ o			2	latin		縁側	えんがわ	engawa; external corridor on the outer side of 
 o			2	latin		縁台	えんだい	bench	엔가와 내부에 놓여 휴식 및 활동을 위한 낮은 탁자	정토(淨土)에 왕생하는 사람은 모두 연꽃 속에서 난다고 하여 연꽃을 모태에 비유하여 이르는 말.		3	llm	3	1177640
 o			2	kanji		観月	かんげつ	moon viewing (esp. during the eight month of the lunar calendar)	마음으로 달의 아름다움과 신비로움을 관찰하고 사색한다			3	default	3	1214830
 o			2	latin		髪結	かみゆい	hairdresser; hairdressing	이발사·헤어스타일리스트			3	default	3	1651930
+o			3		Y(2)	歌人	かじん	poet (of tanka poems)	일본의 단가 시인	노래를 잘 부르거나 잘 짓는 사람.		1	llm	0	1193340
+o			3		Y(2)	角度	かくど	angle	각도	생각의 방향이나 관점.		1	llm	0	1206190
+o			3		Y(2)	家族計画	かぞくけいかく	family planning	행복한 가정생활을 위해 부부의 생활 능력에 따라 자녀의 수나 출산의 간격을 계획적으로 조절하는 일.	행복한 가정생활을 위해 부부의 생활 능력에 따라 자녀의 수나 출산의 간격을 계획적으로 조절하는 일.		1	llm	1	1192160
+o			3		Y(2)	封筒	ふうとう	envelope	편지나 서류 따위를 넣기 위하여 종이로 만든 주머니.	편지나 서류 따위를 넣기 위하여 종이로 만든 주머니.		1	llm	1	1499690
+o			3		Y(2)	島内	とうない	on an island; on-island	어떤 도(道)의 구역 안.	어떤 도(道)의 구역 안.		3	llm	2	1446920
+o			3		Y(2)	英知	えいち	wisdom; intelligence; sagacity	지혜; 지성	왕비나 왕대비 또는 왕세자나 황태자의 명령서.		3	llm	2	1588680
+o			3		Y(1)	甘酢	あまず	sweet vinegar	달콤한 식초	감을 숙성시켜 만든 식초.		3	llm	3	1213540
 o			3	many-senses	Y(3)	見返	みかえし	endpaper (of a book); end-paper; facing (material sewn on the inside edge of a garment); looking back	책의 끝 종이; (옷의) 안감; 되돌아봄; 극복	예전에, 갱(坑) 속에서 사용하던 나침반.		3	llm	3	1604410
 o			4	many-senses		文理	ぶんり	humanities and sciences; reason; logic; line of thought (in a piece of writing)	문과와 이과; 이성; 논리; 사상 흐름	글의 뜻을 깨달아 아는 힘.		2	default	3	1723400
 o			4	many-senses		松竹梅	しょうちくばい	pine, bamboo and plum (an auspicious grouping); high, middle and low (ranking); top, middle and bottom; upper, medium, lower	소나무, 대나무, 매실 (상서로운 조합); 높은 것, 중간 것, 낮은 것	소나무와 대나무와 매화나무를 아울러 이르는 말. 예로부터 세한삼우라고 하여 시나 그림의 소재로 많이 삼아 왔다.		2	default	3	1349920

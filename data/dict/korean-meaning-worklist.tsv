@@ -25,14 +25,14 @@
 ?			1		Y(2)	渋滞	じゅうたい	(traffic) congestion; traffic jam; gridlock; delay	교통 체증	일이 잘 진행되지 아니하고 늦어짐.	일본어의 '渋滞'는 교통 체증이라는 구체적인 물리적 현상을 지칭하는 반면, 한국 표준국어대사전의 '삽체'는 일이 잘 안 풀려 늦어지는 추상적인 상태를 뜻하며, 현대 한국어에서는 이 한자어를 거의 사용하지 않아 핵심 쓰임이 갈렸다.	2	manual	0	1335570
 ?			1	cat-mismatch	Y(1)	趣向	しゅこう	plan; idea; design; plot	취향; 기미	하고 싶은 마음이 생기는 방향. 또는 그런 경향.		2	llm	1	1328970
 ?			1	cat-mismatch	Y(1)	同病	どうびょう	the same sickness	같은 병	같은 병.		2	default	2	1453310
-?			1	cat-mismatch	Y(1)	英訳	えいやく	English translation	영어로 번역함.	영어로 번역함.		2	default	2	1174670
-?			1	cat-mismatch	Y(1)	左記	さき	undermentioned (statement); the following; at left	세로쓰기를 한 글에서, 본문의 왼쪽에 기록된 것.	세로쓰기를 한 글에서, 본문의 왼쪽에 기록된 것.		2	default	2	1290860
-?			1	cat-mismatch	Y(1)	反射的	はんしゃてき	reflexive; reflecting	반사적인; 어떤 자극에 순간적으로 무의식적 반응을 보이는 것.	어떤 자극에 순간적으로 무의식적 반응을 보이는 것.		2	default	3	1480470
-?			1	cat-mismatch	Y(1)	不平	ふへい	discontent; dissatisfaction; complaint; grievance	마음에 들지 아니하여 못마땅하게 여김. 또는 못마땅한 것을 말이나 행동으로 드러냄.	마음에 들지 아니하여 못마땅하게 여김. 또는 못마땅한 것을 말이나 행동으로 드러냄.		2	default	3	1494790
+?			1	cat-mismatch	Y(1)	英訳	えいやく	English translation	영역; 번역	영어로 번역함.		2	default	2	1174670
+?			1	cat-mismatch	Y(1)	左記	さき	undermentioned (statement); the following; at left	아래에 적은; 다음의	세로쓰기를 한 글에서, 본문의 왼쪽에 기록된 것.		2	default	2	1290860
+?			1	cat-mismatch	Y(1)	反射的	はんしゃてき	reflexive; reflecting	반사적인; 반사하는	어떤 자극에 순간적으로 무의식적 반응을 보이는 것.		2	default	3	1480470
+?			1	cat-mismatch	Y(1)	不平	ふへい	discontent; dissatisfaction; complaint; grievance	불만; 불평	마음에 들지 아니하여 못마땅하게 여김. 또는 못마땅한 것을 말이나 행동으로 드러냄.		2	default	3	1494790
 ?			2	kanji		有無	うむ	existence or nonexistence; presence or absence; consent or refusal; yes or no	있음과 없음.	있음과 없음.		1	llm	0	1541610
 ?			2	kanji		大河	たいが	large river; epic (of a novel, drama, etc.); long-form; large-scale	큰 강.	큰 강.		1	llm	1	1581490
 ?			2	latin		熟知	じゅくち	being familiar with; having a thorough knowledge of; being well-informed about	익숙하게 또는 충분히 앎.	익숙하게 또는 충분히 앎.		1	llm	1	1337890
-?			2	kanji		還暦	かんれき	kanreki; one's 60th birthday (or 61st in the traditional age reckoning system) when one has lived through a full sexagenary cycle	환갑(還?); 60세	육십갑자의 ‘갑(甲)’으로 되돌아온다는 뜻으로, 태어난 지 60돌이 되는 해. 또는 그 나이.		1	llm	1	1215160
+?			2	kanji		還暦	かんれき	kanreki; one's 60th birthday (or 61st in the traditional age reckoning system) when one has lived through a full sexagenary cycle	환갑; 만 60세가 되는 해	육십갑자의 ‘갑(甲)’으로 되돌아온다는 뜻으로, 태어난 지 60돌이 되는 해. 또는 그 나이.		1	llm	1	1215160
 ?			2	kanji		国歌	こっか	national anthem	나라를 대표·상징하는 노래. 그 나라의 이상이나 영예를 나타내며 주로 식전(式典)에서 연주·제창한다.	나라를 대표·상징하는 노래. 그 나라의 이상이나 영예를 나타내며 주로 식전(式典)에서 연주·제창한다.		1	llm	1	1286220
 ?			2	kanji		旧姓	きゅうせい	one's original family name; maiden name	일본에서, 여성이 결혼 전 친가에서 쓰던 성.	일본이나 미국 따위의 여러 나라에서, 여성이 결혼 전 친가에서 쓰던 성.		1	llm	1	1230930
 ?			2	kanji	Y(2)	三時	さんじ	3 o'clock; afternoon snack (eaten around 3 o'clock); three ages of Buddhism (following the death of Gautama Buddha; age of the true law, age of the copied law, and age of the degeneration of the law); three ages of the dharma	3시; 불교의 삼법(三法)	하루 중 세 번의 끼니. 또는 그 끼니때.	일본어의 '三時'는 불교의 세 시대를 지칭하는 전문 용어로 쓰이는 반면, 한국 표준국어대사전의 '삼시'는 하루 세 끼 식사라는 일상적 의미를 가지므로 핵심 뜻이 갈린다.	2	manual	0	1300520
@@ -56,7 +56,7 @@
 ?			2	kanji		宮司	ぐうじ	chief priest	일본 신사의 우두머리	활을 만드는 사람.		3	llm	3	1228420
 ?			2	kanji		年功	ねんこう	long service	연공; (오래 근속한) 공로; (여러해 솜씨를 익힌) 숙련			3	default	3	1468580
 ?			2	kanji		氏子	うじこ	shrine parishioner	신사(神社)의 신도	활자의 자모를 만들기 위한 글자의 본.		3	llm	3	1311020
-?			2	kanji		県会	けんかい	prefectural assembly	일본의 행정구역인 현(?)의 회의	세상 사람에게 알려지는 것과 알려지지 아니하는 것.		3	llm	3	1258840
+?			2	kanji		県会	けんかい	prefectural assembly	일본의 행정구역인 현(縣)의 회의	세상 사람에게 알려지는 것과 알려지지 아니하는 것.		3	llm	3	1258840
 ?			2	kanji		旧盆	きゅうぼん	Bon Festival of the lunar calendar	일본의 옛 명절	사람마다 똑같이 나누어 줌.		3	llm	3	1231290
 ?			2	latin		縁側	えんがわ	engawa; external corridor on the outer side of traditional Japanese houses; bone at the base of a fin (esp. of a flatfish); meat at the base of a fin	다다미가 깔린 마루 형태의 공간	‘연측하다’의 어근.		3	llm	3	1177630
 ?			3		Y(1)	肝炎	かんえん	hepatitis	간염	간에 생기는 염증을 통틀어 이르는 말. 발열·황달·전신 권태·소화 장애의 증상을 보이는데, 주된 원인은 음식물과 혈액을 통한 바이러스의 감염이며 그 밖에 약물, 알코올, 알레르기 따위가 원인인 것도 있다.		1	llm	0	1214640

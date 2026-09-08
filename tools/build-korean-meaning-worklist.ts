@@ -133,7 +133,9 @@ for (const [id, k] of Object.entries(byId)) {
   const m = meaning[id]
   const mv = manual.get(id)
   const flags = [...(m?.flags ?? [])]
-  const catMismatch = !!mv && mv.verdict !== k.category
+  // Phase 3 옛 분류(mv)와 현재 category 가 다르면 flag — 단, 이 행의 뜻 검수가 이미 찍혀 있으면
+  // (prior 에 있으면) 사람이 그때 category 도 봤다고 보고 확정 처리해 flag 를 뗀다
+  const catMismatch = !!mv && mv.verdict !== k.category && !prior.has(id)
   if (catMismatch) flags.push('cat-mismatch')
   const isManual = !!mv || k.classSource === 'manual'
   const broken = flags.some((f) => BROKEN.has(f))
@@ -167,8 +169,9 @@ for (const r of rows) (byTier.get(r.tier) ?? byTier.set(r.tier, []).get(r.tier)!
 
 let picked: Row[]
 if (flaggedOnly) {
-  // 플래그가 붙은 행 전량 (깨진 번역 · cat 불일치). 표본 안 뽑는다
-  picked = rows.filter((r) => r.flags.length > 0)
+  // 플래그가 붙은 행(깨진 번역 등) + 이미 검수 verdict 가 찍힌 행 전량. 표본 안 뽑는다.
+  // 검수한 행을 계속 담아 두어야 이 파일 하나가 "할 일 + 검수 기록" 노릇을 한다
+  picked = rows.filter((r) => r.flags.length > 0 || prior.has(r.id))
 } else {
   picked = []
   for (const [, list] of [...byTier].sort((a, b) => a[0] - b[0])) {
@@ -229,9 +232,12 @@ const FLAG_NOTE: Record<string, string> = {
 }
 const flagCount: Record<string, number> = {}
 for (const r of rows) for (const f of r.flags) flagCount[f in FLAG_NOTE ? f : 'error'] = (flagCount[f in FLAG_NOTE ? f : 'error'] ?? 0) + 1
-const flaggedRows = rows.filter((r) => r.flags.length > 0).length
 const qualityRows = rows.filter((r) => r.flags.some((f) => f !== 'cat-mismatch')).length
-console.log(`\n검수 필요 — 전체 ${flaggedRows}행 (번역 품질 ${qualityRows} + 분류 불일치 ${flagCount['cat-mismatch'] ?? 0}), 이번 파일 ${picked.filter((r) => r.flags.length > 0).length}행`)
+const doneInFile = picked.filter((r) => r.flags.length === 0 && prior.has(r.id)).length
+console.log(
+  `\n검수 필요 — 아직 ${qualityRows}행 (번역 품질 플래그) + 분류 불일치 ${flagCount['cat-mismatch'] ?? 0}` +
+    (doneInFile ? ` · 검수 완료 기록 ${doneInFile}행 포함` : ''),
+)
 for (const [f, n] of Object.entries(flagCount).sort((a, b) => b[1] - a[1])) {
   console.log(`   ${f.padEnd(13)} ${String(n).padStart(4)}   ${FLAG_NOTE[f] ?? ''}`)
 }
