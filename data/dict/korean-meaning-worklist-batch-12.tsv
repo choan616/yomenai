@@ -1,0 +1,41 @@
+﻿verdict	cat	fix	tier	flags	manual	headword	reading	glossEn	llm_ko	stdict_def	manual_reason	category	classSource	band	id
+o			5			沖縄	おきなわ	Okinawa (city, prefecture)	오키나와			3	default	0	1182580
+o			5			取引	とりひき	transactions; dealings; business	거래; 업무	인재를 골라 씀.		3	llm	0	1599120
+o			5			取組	とりくみ	effort; initiative; dealing with; grappling with	매매계약; 대전; 겨루기	범죄 사실을 밝히기 위하여 혐의자나 죄인을 조사함.		3	llm	0	1599040
+o			5			取締法	とりしまりほう	control law	단속법			3	default	0	1659030
+o			5			値段	ねだん	price; cost	가격	낭비나 사치의 시초.		3	llm	0	1600160
+o			5			値上	ねあげ	price increase; rise in price; wage increase	가격 인상; 임금 인상	초상을 치름.		3	llm	0	1600030
+o			5			値下	ねさげ	price reduction; price cut; reduction in price; markdown	가격 인하; 할인	통치 아래.		3	llm	0	1600100
+o			5			親類	しんるい	relative; relation; kin	친척			3	default	0	1365420
+o			5			親方	おやかた	master; boss; chief; foreman	장인; 스승; 책임자	→ 안방.		3	llm	0	1365360
+o			5			台所	だいどころ	kitchen; financial situation; finances	부엌; 살림	천지개벽 이전의 혼돈하던 때.		3	llm	0	1412640
+o			5			台湾	たいわん	Taiwan	대만	열심히 하려는 마음이 없고 게으름.		3	llm	0	1412840
+o			5			土壇場	どたんば	last moment; eleventh hour; platform made of dirt used to perform executions (decapitations) in the Edo period	위급한 순간; 마지막 순간; 막부의 처형대에서 유래			3	default	0	1445460
+o			5			土俵	どひょう	(wrestling) ring; forum (e.g. for discussion); sandbag; gabion	흙판; (논쟁 등의) 장; 스모 경기장	고양잇과의 동물. 살쾡이와 비슷한데 몸의 길이는 1미터 정도이며, 잿빛을 띤 적갈색 또는 잿빛을 띤 갈색에 짙은 반점이 있다. 앞발보다 뒷발이 길고 귀가 크고 뾰족하다. 토끼, 노루, 영양 따위를 잡아먹는데 나무를 잘 타고 헤엄을 잘 친다. 깊은 삼림에 사는데 한국 북부, 몽골, 러시아 시베리아·사할린, 중국, 중앙아시아, 북아메리카, 알프스 이북의 유럽 등지에 분포한다.		3	llm	0	1445550
+o			5			通産相	つうさんしょう	Minister of International Trade and Industry	일본 행정부 통상산업성의 장관			3	default	0	1942950
+o			5			通産省	つうさんしょう	Ministry of International Trade and Industry (1949-2001); MITI	통상산업성; 일본의 행정부의 하나			3	default	0	1610370
+o			5			特捜	とくそう	special investigation	특별 수사	‘특수하다’의 어근.		3	llm	0	1789140
+o			5			派手	はで	showy; loud; flashy; gaudy	화려함; 번쩍거림	손을 잡음.		3	llm	0	1471140
+o			5			阪神	はんしん	Osaka-Kobe; Hanshin (company name: railway, dept. store, baseball team, etc.)	한신(지역명 또는 회사명); 오사카시와 고베시			3	default	0	1297130
+o			5			波乱	はらん	disturbance; trouble; commotion; uproar	파란; 변동	광물을 원료로 하여 만든 유약(釉藥). 사기그릇의 겉에 올려 불에 구우면 밝은 윤기가 나고 쇠 그릇에 올려서 구우면 사기그릇의 잿물처럼 된다.		3	llm	0	1601100
+o			5			破壊	はかい	destruction; disruption; (application) crash	파괴; 붕괴			3	default	0	1471250
+o			5			編集	へんしゅう	editing; compilation	편집; 편집함	편견을 고집하고, 남의 말을 듣지 않음.		3	llm	0	1603240
+o			5			偏差値	へんさち	deviation value (usu. scaled to mean of 50, standard deviation of 10, and often used for academic grades); deviation; T-score; standard score	표준 점수; 편차 값			3	default	0	1611480
+o			5			包丁	ほうちょう	kitchen knife; cooking; food	식칼	소나 개, 돼지 따위를 잡는 일을 직업으로 하는 사람.		3	llm	0	1515530
+o			5			彼女	かのじょ	she; her; girlfriend	그녀; 여자친구			3	default	0	1483150
+o			5			彼等	かれら	they; them	그들			3	default	0	1483090
+o			5			何度	なんど	how many times; how many degrees (temperature, angle, etc.)	몇 번; 몇 도	‘하’를 강조하여 이르는 말.		3	llm	0	1189170
+o			5			下町	したまち	low-lying part of a city (usu. containing shops, factories, etc.); Shitamachi (low-lying area of eastern Tokyo near Tokyo Bay, incl. Asakusa, Shitaya, Kanda, Fukugawa, Honjo, Nihonbashi, Kyobashi and surrounds)	도시의 낮은 지역; 상점가	음력으로 그달의 하순에 드는 정일(丁日)을 이르는 말. 흔히 이날을 피하여 연제사나 담제(禫祭) 따위를 지낸다.		3	llm	0	1185940
+o			5			何回	なんかい	how many times	몇 번	윗사람이 회답을 내림. 또는 그런 일.		3	llm	0	1188650
+o			5			割合	わりあい	rate; ratio; percentage; proportion	비율; 비율적			3	default	0	1606810
+o			5			合間	あいま	interval; break; pause; spare moment	사이; 틈			3	default	0	1284670
+o			5			合弁	ごうべん	joint management; pool; gamopetalous; sympetalous	합작; 공동 경영	합하여 변화함.		3	llm	0	1285250
+o			5			行革	ぎょうかく	administrative reform	행정 개혁의 줄임말			3	default	0	1281860
+o			5			解説	かいせつ	explanation; commentary; exposition; elucidation	해설; 설명	바닷속에서 눈이 내리는 것과 같이 보이는 빛의 그림자. 플랑크톤의 유체가 떠 있는 것으로 추정한다.		3	llm	0	1199080
+o			5			県警	けんけい	prefectural police	일본의 현(県)의 경찰 본부의 줄임말	그릇 속이 빔.		3	llm	0	1258860
+o			5			県立	けんりつ	prefectural; managed by a prefectural government	일본의 행정구역 현(県)이 설립함			3	default	0	1258940
+o			5			県議	けんぎ	prefectural assembly member	일본 현(県) 의원	깊고 미묘한 뜻. 또는 현묘(玄妙)한 교의(敎義).		3	llm	0	1258850
+o			5			県知事	けんちじ	prefectural governor	일본의 현(県)지사			3	default	0	1258870
+o			5			県内	けんない	within the prefecture	현내			3	default	0	1258910
+o			5			県庁	けんちょう	prefectural office	현청			3	default	0	1258880
+o			5			混迷	こんめい	turmoil; chaos; confusion	혼미; 혼란; 어지러움	의식이 흐림. 또는 그런 상태.		3	llm	0	1290540

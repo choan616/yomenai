@@ -1,0 +1,41 @@
+﻿verdict	cat	fix	tier	flags	manual	headword	reading	glossEn	llm_ko	stdict_def	manual_reason	category	classSource	band	id
+o			5			参院	さんいん	House of Councillors (upper house of the National Diet of Japan)	일본 의회 참의원의 줄임말	음양설에서, 상원(上元)·중원(中元)·하원(下元)의 세 가지 갑자를 이르는 말.		3	llm	0	1302080
+o			5			囲碁	いご	go (board game)	바둑	위험한 고비나 시기.		3	llm	0	1155990
+o			5			国々	くにぐに	countries; (various) nations	나라들			3	default	0	1592260
+o			5			国務省	こくむしょう	Department of State (US); State Department	국무성;			3	default	0	1287130
+o			5			国務長官	こくむちょうかん	Secretary of State	국무장관			3	default	0	1287150
+o			5			国土庁	こくどちょう	(Japanese) National Land Agency	국토청			3	default	0	1657450
+o			5			国内	こくない	within the country; inside the county; domestic; home	국내	묘지나 절 따위의 구역 안.		3	llm	0	1286930
+o			5			国対	こくたい	Committee of the National Diet	국회 대책위원회의 줄임말			3	default	0	1657430
+o			5			国税局	こくぜいきょく	revenue office; taxation bureau	국세청			3	default	0	1286760
+o			5			増税	ぞうぜい	tax increase	증세	병을 앓을 때 나타나는 여러 가지 상태나 모양.		3	llm	0	1403280
+o			5			娯楽	ごらく	amusement; entertainment; recreation; pleasure	오락; 즐거움	우리나라의 이름난 다섯 산. 동의 금강산, 서의 묘향산, 남의 지리산, 북의 백두산, 중앙의 삼각산을 이른다.		3	llm	0	1269290
+o			5			実態調査	じったいちょうさ	fact-finding investigation; investigation into actual conditions; fact-finding survey	실태 조사			3	default	0	1658750
+o			5			対米	たいべい	relating to the USA; toward America; with America	미국에 관한; 미국을 향한	약과, 다식과, 매잡과, 만두과 따위를 통틀어 이르는 말.		3	llm	0	1655360
+o			5			専門	せんもん	speciality; specialty; special subject of study; area of expertise	전문; 전문 분야	‘맹상군’의 본명.		3	llm	0	1389880
+o			5			将棋	しょうぎ	shogi; Japanese chess	일본 장기	→ 쟁기.		3	llm	0	1347640
+o			5			恋愛	れんあい	love; romance; tender passion; emotion	연애; 사랑			3	default	0	1558800
+o			5			恋人	こいびと	lover; sweetheart; boyfriend; girlfriend	연인			3	default	0	1558920
+o			5			抜本的	ばっぽんてき	drastic; radical	근본적인; 급진적인			3	default	0	1478300
+o			5			教徒	きょうと	believer; adherent	신도; 추종자	옷감, 종이, 머리털 따위를 자르는 기구. 날이 있는 두 개의 쇠를 교차시켜 가운데 사북을 박고, 지레의 원리를 이용하여 다리를 벌렸다 오므렸다 하여 자른다.		3	llm	0	1237290
+o			5			教師	きょうし	teacher; instructor	교사	교묘하고 간사함. 또는 그런 말이나 행동.		3	llm	0	1237130
+o			5			教授	きょうじゅ	professor; teaching; instruction	교수	교묘한 수단이나 솜씨. 또는 그런 수단이나 솜씨가 있는 사람.		3	llm	0	1237160
+o			5			教養	きょうよう	(understanding or appreciation of) culture; (one's) education; cultivation; sophistication	교양; 학식	서로 사양함.		3	llm	0	1237370
+o			5			教員	きょういん	teacher; instructor; teaching staff; faculty member	교원	도시의 주변에 있는 들.		3	llm	0	1236980
+o			5			教訓	きょうくん	lesson; precept; teachings; moral	교훈; 가르침	학교의 이념이나 목표를 간명하게 나타낸 표어.		3	llm	0	1237080
+o			5			教会	きょうかい	church; congregation	교회	서로 만남.		3	llm	0	1237030
+o			5			既成	きせい	established; existing; accomplished; accepted	기정; 이미 만들어진	기이한 소리.		3	llm	0	1220390
+o			5			来年	らいねん	next year	내년			3	default	0	1548220
+o			5			来月	らいげつ	next month	다음 달			3	default	0	1547900
+o			5			来日	らいにち	coming to Japan; visit to Japan; arrival in Japan	일본에 옴			3	default	0	1548200
+o			5			来週	らいしゅう	next week	다음 주			3	default	0	1548010
+o			5			来春	らいしゅん	next spring	내년 봄			3	default	0	1585040
+o			3		Y(3)	楽観	らっかん	optimism; taking an optimistic view	낙관	서예에서, 붓을 네 손가락으로 쥐고 엄지손가락으로 붓의 위쪽을 누르면서 글씨를 쓰는 방법.		3	llm	0	1207310
+o			5			様々	さまざま	various; varied; diverse; all sorts of	여러 가지; 다양함	어린아이가 우는 소리를 내며 자꾸 보채는 모양.		3	llm	0	1593830
+o			5			横綱	よこづな	yokozuna (highest rank in sumo); grand champion; best in its field; crème de la crème	요코즈나; 씨름의 최고 계급 이름			3	default	0	1180740
+o			5			欧州	おうしゅう	Europe	유럽	통일 신라 시대에, 전국을 나눈 9개의 주. 상주(尙州), 양주(良州), 강주(康州), 웅주(熊州), 전주(全州), 무주(武州), 한주(漢州), 삭주(朔州), 명주(溟州)를 이른다.		3	llm	0	1181190
+o			5			歴代	れきだい	successive generations; successive emperors	역대			3	default	0	1558220
+o			5			歴訪	れきほう	round of calls; tour of visitation	방문; 순방			3	default	0	1558300
+o			5			歴史	れきし	history	역사			3	default	0	1558050
+o			5			歴史的	れきしてき	historical; traditional; historic	역사적인			3	default	0	1558160
+o			5			残念	ざんねん	regrettable; unfortunate; disappointing; vexing	유감스러움; 안타까움			3	default	0	1304680
