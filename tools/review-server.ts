@@ -82,10 +82,22 @@ const server = createServer((req, res) => {
   }
 })
 
-server.listen(PORT, () => {
-  console.log(`검수 화면 → http://localhost:${PORT}`)
-  console.log(`파일: ${listFiles().join(', ') || '(korean-meaning-worklist*.tsv 없음)'}`)
-})
+// 이미 떠 있으면(EADDRINUSE) 다음 포트로. 오래된 인스턴스가 남아 있어도 그냥 뜬다
+function listen(port: number, triesLeft: number) {
+  server.once('error', (e: NodeJS.ErrnoException) => {
+    if (e.code === 'EADDRINUSE' && triesLeft > 0) {
+      console.log(`${port} 사용 중 — ${port + 1} 로`)
+      listen(port + 1, triesLeft - 1)
+    } else {
+      throw e
+    }
+  })
+  server.listen(port, () => {
+    console.log(`검수 화면 → http://localhost:${port}`)
+    console.log(`파일: ${listFiles().join(', ') || '(korean-meaning-worklist*.tsv 없음)'}`)
+  })
+}
+listen(PORT, 9)
 
 const HTML = /* html */ `<!doctype html><html lang="ko"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">

@@ -18,6 +18,7 @@
 | `PLAN.md` | 계획서 — 목적, 확정 결정, 아키텍처, Phase 로드맵 |
 | `checklist.md` | Phase별 작업 체크리스트와 검증 기준 |
 | `context-notes.md` | 결정 이력과 근거, 미확정 사항 |
+| `docs/tools.md` | 터미널 명령어 — 파이프라인 단계별 + 뜻 검수 절차 |
 | `CLAUDE.md` | 이 프로젝트 전용 규칙 (전역 CLAUDE.md에 추가 적용) |
 
 ## 현재 상태
