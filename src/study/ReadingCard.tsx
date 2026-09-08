@@ -26,18 +26,13 @@ export function ReadingCard({ idiom, feedback: fb, onSubmit, onNext }: Props) {
     onNext(c)
   }
 
-  if (detail && fb) {
-    return (
-      <MistakeDetail
-        idiom={idiom}
-        mistakeType={fb.mistakeType}
-        onClose={() => setDetail(false)}
-      />
-    )
-  }
-
+  // 오답 상세는 카드를 교체하지 않고 그 위에 덮는다 (.card 기준 absolute).
+  // 카드를 언마운트하면 KanaInput 이 리마운트되며 방금 낸 답이 사라진다 — 그대로 둔다.
   return (
     <div className={`card${fb ? ` feedback ${fb.correct ? 'is-ok' : 'is-ng'}` : ''}`}>
+      {detail && fb && (
+        <MistakeDetail idiom={idiom} mistakeType={fb.mistakeType} onClose={() => setDetail(false)} />
+      )}
       <div className="card-head">
         {fb ? (
           <>

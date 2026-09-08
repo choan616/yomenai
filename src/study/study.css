@@ -127,6 +127,7 @@
   display: flex;
   flex-direction: column;
   padding: 20px;
+  position: relative; /* 오답 상세(.mistake-detail) 오버레이 기준 */
 }
 .card-head {
   flex: 0 0 auto;
@@ -371,6 +372,14 @@
 }
 
 /* ── 오답 상세 ── 음독 분해 + 한국 한자음 대조 (PLAN §7). 셸 구간이라 느린 스크롤 허용 */
+/* 카드를 교체하지 않고 그 위에 덮는다 — 아래 카드(와 입력창)를 마운트한 채로 둔다 */
+.mistake-detail {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background: var(--bg);
+  overflow-y: auto;
+}
 /* 분해 목록은 길어질 수 있어 위에서부터 쌓는다 — 카드와 달리 중앙 정렬하지 않는다 */
 .md-body {
   justify-content: flex-start;
