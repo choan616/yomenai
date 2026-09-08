@@ -14,10 +14,11 @@
 //   s  stdict_def 채택     → 그 정의로 교체, verified:true, source:stdict (수동 분류 노동 보존)
 //   ?  미기입
 // cat  분류(1 동형동의 / 2 동형이의 / 3 일본고유)가 틀렸으면 고친 값. 비우면 그대로.
-import { existsSync, readFileSync, writeFileSync, readdirSync } from 'node:fs'
+import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
 import { priorityToBand } from '../src/lib/bands.ts'
 import { DICT_DIR, type IdiomRecord } from './lib/dict.ts'
+import { readTsv, writeTsvBom } from './lib/tsv.ts'
 
 interface KoClass {
   category: 1 | 2 | 3
@@ -65,11 +66,10 @@ const stdictDef = new Map<string, string>()
 {
   const p = join(DICT_DIR, 'korean-review.tsv')
   if (existsSync(p)) {
-    const lines = readFileSync(p, 'utf8').split('\n')
-    const h = lines[0].split('\t')
+    const grid = readTsv(p)
+    const h = grid[0]
     const [di, ii] = [h.indexOf('ko_definition'), h.indexOf('id')]
-    for (const l of lines.slice(1)) {
-      const c = l.split('\t')
+    for (const c of grid.slice(1)) {
       if (c[ii]) stdictDef.set(c[ii], (c[di] ?? '').replace(/\s+/g, ' '))
     }
   }
@@ -78,11 +78,10 @@ const stdictDef = new Map<string, string>()
 // Phase 3 수동 분류 verdict + 근거 — korean-worklist*.tsv 의 채워진 verdict + korean-review-sample.tsv 라벨
 const manual = new Map<string, { verdict: 1 | 2 | 3; reason: string }>()
 for (const f of readdirSync(DICT_DIR).filter((f) => /^korean-(worklist.*|review-sample)\.tsv$/.test(f))) {
-  const lines = readFileSync(join(DICT_DIR, f), 'utf8').split('\n')
-  const h = lines[0].split('\t')
+  const grid = readTsv(join(DICT_DIR, f))
+  const h = grid[0]
   const [vi, ii, ri] = [h.indexOf('verdict'), h.indexOf('id'), h.indexOf('llm_reason')]
-  for (const l of lines.slice(1)) {
-    const c = l.split('\t')
+  for (const c of grid.slice(1)) {
     const v = (c[vi] ?? '').trim()
     if (c[ii] && /^[123]$/.test(v)) manual.set(c[ii], { verdict: Number(v) as 1 | 2 | 3, reason: (c[ri] ?? '').replace(/\s+/g, ' ') })
   }
@@ -91,12 +90,11 @@ for (const f of readdirSync(DICT_DIR).filter((f) => /^korean-(worklist.*|review-
 // 채운 verdict·cat·fix 이어받기 — 표본 파일과 flagged 파일 양쪽에서 (어느 쪽에 적어도 산다)
 const prior = new Map<string, { verdict: string; cat: string; fix: string }>()
 for (const f of readdirSync(DICT_DIR).filter((f) => /^korean-meaning-worklist.*\.tsv$/.test(f))) {
-  const lines = readFileSync(join(DICT_DIR, f), 'utf8').split('\n')
-  const h = lines[0].split('\t')
+  const grid = readTsv(join(DICT_DIR, f))
+  const h = grid[0]
   const [vi, ci, fi, ii] = [h.indexOf('verdict'), h.indexOf('cat'), h.indexOf('fix'), h.indexOf('id')]
   if (ii < 0) continue
-  for (const l of lines.slice(1)) {
-    const c = l.split('\t')
+  for (const c of grid.slice(1)) {
     const v = (c[vi] ?? '').trim()
     if (c[ii] && /^[ox~s]$/.test(v)) {
       prior.set(c[ii], { verdict: v, cat: (c[ci] ?? '').trim(), fix: (c[fi] ?? '').trim() })
@@ -200,7 +198,7 @@ const body = picked.map((r) => {
   ].join('\t')
 })
 
-writeFileSync(OUT_PATH, header + '\n' + body.join('\n') + '\n')
+writeTsvBom(OUT_PATH, header + '\n' + body.join('\n') + '\n')
 
 const mode = flaggedOnly ? '플래그 전량' : Number.isFinite(perTier) ? `tier별 표본 ${perTier}` : '전체'
 console.log(`→ ${OUT_PATH}  (${picked.length}행, ${mode}, 이어받은 verdict ${prior.size}건)`)

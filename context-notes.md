@@ -2895,3 +2895,31 @@ Ollama 웜업 후 빨라짐). `.korean-meaning-cache.json` 50건마다 flush —
 `OKURIGANA` 오답 유형 enum 슬롯은 **그대로 둔다** — append-only 이벤트 로그라 제거가 더
 churn 이고, 슬롯 유지 비용은 0. yomenai 안에서 분류기가 이걸 낼 일은 이제 거의 없다.
 checklist "확장 후보" 항목(코퍼스 필터 완화 / 훈독 모드 분리 / 훈독 오답 버킷)은 앱 B 로 이관.
+
+## 2026-09-08 — 1차 검수 반영 + Excel 인코딩 사고 복구
+
+사용자가 `korean-meaning-worklist-flagged.tsv`(191행, 깨진 번역 + 분류 불일치)를 Excel 로
+열어 전수 검수했다. `llm_ko` 칸을 직접 고치고 verdict 를 `o` 로 찍는 방식.
+
+### 사고 — Excel 이 UTF-8 TSV 를 EUC-KR 로 저장
+
+`file` 이 "ISO-8859" 로 잡고 UTF-8 로 읽으면 한글이 전부 모지바케. 처음엔 복구 불가로 봤으나
+**`TextDecoder('euc-kr')` 로 디코드하면 U+FFFD 0개로 완전 복구.** Excel(한국어 Windows)의
+"텍스트(탭으로 분리)" 저장이 CP949/EUC-KR ANSI 라서, UTF-8 로 착각해 읽었던 게 원인.
+헤드워드의 비상용 한자 몇 개(`刻々` 등)만 CP949 에 없어 `?` 가 됐지만 `id`·`verdict`·`llm_ko`
+는 무손실.
+
+### 후속 조치
+
+- `tools/lib/tsv.ts` — `readTsv`/`readTextAuto`: BOM 으로 UTF-8/UTF-16LE/BE 판별, BOM 없으면
+  UTF-8 fatal 디코드 시도 후 실패 시 EUC-KR 폴백. `writeTsvBom`: 출력에 UTF-8 BOM(Excel 더블클릭 대비).
+  `build-korean-meaning-worklist.ts`·`apply-korean-meaning.ts` 가 이걸 쓴다
+- `apply-korean-meaning.ts` **인라인 수정 지원** — `fix` 칸이 비어도 `llm_ko` 가 현재
+  `definition` 과 다르면(사람이 직접 고침) 그 텍스트를 채택(`source: manual`). 사용자 워크플로에 맞춤
+- 기각 — 파일 다른 이름으로 만들기 / PDF 변환 / 수동 재작성 (복구돼서 불필요)
+
+### 반영 결과
+
+`apply:korean-meaning` — verdict `o` 191, **인라인 수정 151** (T1 46/60, T2 105/125).
+T2(깨진 번역) 84%가 실제로 손봐야 했다 — flagged 집합이라 당연. `build:runtime-dict` →
+`base.json` verified **0 → 187** (나머지 4는 밴드 4), `source: manual` 147.

@@ -1,192 +1,192 @@
-verdict	cat	fix	tier	flags	manual	headword	reading	glossEn	llm_ko	stdict_def	manual_reason	category	classSource	band	id
-?			1	cat-mismatch	Y(2)	歌人	かじん	poet (of tanka poems)	가요인; 시인	노래를 잘 부르거나 잘 짓는 사람.		1	llm	0	1193340
-?			1	cat-mismatch	Y(2)	角度	かくど	angle	각도	생각의 방향이나 관점.		1	llm	0	1206190
-?			1	cat-mismatch	Y(2)	家族計画	かぞくけいかく	family planning	가족 계획	행복한 가정생활을 위해 부부의 생활 능력에 따라 자녀의 수나 출산의 간격을 계획적으로 조절하는 일.		1	llm	1	1192160
-?			1	cat-mismatch	Y(2)	封筒	ふうとう	envelope	봉투	편지나 서류 따위를 넣기 위하여 종이로 만든 주머니.		1	llm	1	1499690
-?			1	cat-mismatch	Y(1)	決別	けつべつ	separation; farewell; parting	결별; 이별	기약 없는 이별을 함. 또는 그런 이별.		2	llm	1	1254420
-?			1	cat-mismatch	Y(1)	自在	じざい	being able to do as one pleases; doing at will; pothook	자유로움; 제약 없음	저절로 있음.		2	llm	1	1317750
-?			1	cat-mismatch	Y(3)	低調	ていちょう	inactive; slow; sluggish; slack	저조함; 침체	가락이 낮음. 또는 그런 가락.		2	llm	1	1434610
-?			1	cat-mismatch	Y(1)	趣向	しゅこう	plan; idea; design; plot	취향; 기미	하고 싶은 마음이 생기는 방향. 또는 그런 경향.		2	llm	1	1328970
-?			1	cat-mismatch	Y(1)	刻々	こっこく	moment by moment; hour by hour	순간순간; 시간마다	매 시각. 또는 낱낱의 시각.		2	default	2	1285830
-?			1	cat-mismatch	Y(1)	共鳴	きょうめい	resonance; sympathy (with a view, idea, etc.)	공명; 공감	남의 사상이나 감정, 행동 따위에 공감하여 자기도 그와 같이 따르려 함.		2	default	2	1235190
-?			1	cat-mismatch	Y(1)	空砲	くうほう	empty gun; gun loaded with blanks; firing a blank	공포	실탄을 넣지 않고 소리만 나게 하는 총질.		2	default	2	2582370
-?			1	cat-mismatch	Y(1)	同病	どうびょう	the same sickness	같은 병	같은 병.		2	default	2	1453310
-?			1	cat-mismatch	Y(1)	無論	むろん	of course; certainly; naturally	물론; 당연히	말할 것도 없음.		2	llm	2	1531080
-?			1	cat-mismatch	Y(1)	洋食	ようしょく	Western food; Western dish; Western cooking; Japanized Western cuisine	양식	서양식 음식이나 식사.		2	default	2	1546000
-?			1	cat-mismatch	Y(1)	洋酒	ようしゅ	Western wine and spirits; Western liquor	서양 술	서양에서 들여온 술.		2	default	2	1545980
-?			1	cat-mismatch	Y(1)	余命	よめい	remainder of one's life; one's remaining days; time left (to live)	남은 생명; 수명	얼마 남지 아니한 쇠잔한 목숨.		2	default	2	1544570
-?			1	cat-mismatch	Y(1)	塩基	えんき	base	염기	산과 반응하여 염을 만드는 물질. 물에 녹으면 하이드록시 이온을 낸다. 암모니아수, 잿물 따위가 있다.		2	default	2	1178680
-?			1	cat-mismatch	Y(1)	英訳	えいやく	English translation	영역; 번역	영어로 번역함.		2	default	2	1174670
-?			1	cat-mismatch	Y(1)	王立	おうりつ	royal (institution)	왕립	국왕이나 왕족이 세움. 또는 그런 것.		2	default	2	1181710
-?			1	cat-mismatch	Y(1)	全量	ぜんりょう	the whole amount; entire amount; total amount; total quantity	전체 양; 총량	전체의 분량이나 수량.		2	default	2	1396380
-?			1	cat-mismatch	Y(1)	電信	でんしん	(electric) telegraph; telegraphy; telegraphic communication; telegram	전신	문자나 숫자를 전기 신호로 바꾸어 전파나 전류로 보내는 통신.		2	default	2	1443560
-?			1	cat-mismatch	Y(1)	征服	せいふく	conquest; subjugation; overcoming (a difficulty); conquering (e.g. a mountain)	정복; 극복	남의 나라나 이민족 따위를 정벌하여 복종시킴.		2	default	2	1375230
-?			1	cat-mismatch	Y(1)	足音	あしおと	(sound of) footsteps; sense or sign that something is approaching	발소리; 다가오는 기척	발을 옮겨 디딜 때 발이 바닥에 닿아 나는 소리.		2	default	2	1404770
-?			1	cat-mismatch	Y(1)	拙速	せっそく	rough-and-ready; knocked-up; hasty; slipshod	서투름; 엉성함	어설프고 빠름. 또는 그런 태도.		2	default	2	1385300
-?			1	cat-mismatch	Y(1)	左記	さき	undermentioned (statement); the following; at left	아래에 적은; 다음의	세로쓰기를 한 글에서, 본문의 왼쪽에 기록된 것.		2	default	2	1290860
-?			1	cat-mismatch	Y(1)	主犯	しゅはん	principal offence; principal offense; principal offender	주범; 주된 범죄	형법에서, 자기의 의사에 따라 범죄를 실제로 저지른 사람. 단독 정범과 공동 정범으로 크게 나뉜다.		2	default	2	1326110
-?			1	cat-mismatch	Y(1)	注入	ちゅうにゅう	pouring; injection	주입	흘러 들어가도록 부어 넣음.		2	default	2	1426640
-?			1	cat-mismatch	Y(1)	即席	そくせき	impromptu; improvised; extempore; ad-lib	즉석의; 임시의	어떤 일이 진행되는 바로 그 자리.		2	default	2	1404240
-?			1	cat-mismatch	Y(1)	即興	そっきょう	improvisation; improvised; impromptu; extempore	즉흥	그 자리에서 바로 일어나는 감흥. 또는 그런 기분.		2	default	2	1404130
-?			1	cat-mismatch	Y(1)	即売	そくばい	selling on the spot	즉석 판매	상품을 벌여 놓은 그 자리에서 당장 팔아 버림. 전시장이나 박람회 같은 데서 흔히 이루어진다.		2	default	2	1404300
-?			1	cat-mismatch	Y(1)	集散	しゅうさん	collection (gathering) and distribution	집결; 분산	모여들었다 흩어졌다 함.		2	default	2	1659250
-?			1	cat-mismatch	Y(1)	執着	しゅうちゃく	attachment; adhesion; insistence; tenacity	집착; 고착	어떤 것에 늘 마음이 쏠려 잊지 못하고 매달림.		2	default	2	1594740
-?			1	cat-mismatch	Y(1)	炭田	たんでん	coalfield; coal field	탄광	석탄이 묻혀 있는 땅.		2	default	2	1661270
-?			1	cat-mismatch	Y(1)	講話	こうわ	lecture; discourse	강연; 강설	강의하듯이 쉽게 풀어서 이야기함. 또는 그런 이야기.		2	default	3	1282380
-?			1	cat-mismatch	Y(1)	極刑	きょっけい	capital punishment; death penalty; maximum penalty; ultimate punishment	사형	가장 무거운 형벌이라는 뜻으로, ‘사형’을 이르는 말.		2	default	3	1240290
-?			1	cat-mismatch	Y(1)	難易	なんい	(relative) difficulty	난이도	어려움과 쉬움.		2	default	3	1460870
-?			1	cat-mismatch	Y(1)	短文	たんぶん	short sentence; short piece of writing (e.g. passage, article, composition)	짧은 글	짧은 글.		2	default	3	1843470
-?			1	cat-mismatch	Y(1)	大漁	たいりょう	big catch (fishing); good haul	큰 수확; 큰 어획	물고기가 많이 잡힘.		2	default	3	1413450
-?			1	cat-mismatch	Y(1)	道化	どうけ	antics; buffoonery; clowning; clown	광대 놀이; 익살	도(道)로써 바른길로 이끎.		2	default	3	1454120
-?			1	cat-mismatch	Y(1)	同量	どうりょう	same amount	동량	같은 분량.		2	default	3	1687800
-?			1	cat-mismatch	Y(1)	刀剣	とうけん	sword; dagger; knife; bayonet	도검	칼과 검(劍)을 아울러 이르는 말.		2	default	3	1446490
-?			1	cat-mismatch	Y(1)	万世	ばんせい	all ages; eternity	만세; 영원	아주 오랜 세대.		2	default	3	1526190
-?			1	cat-mismatch	Y(1)	反射的	はんしゃてき	reflexive; reflecting	반사적인; 반사하는	어떤 자극에 순간적으로 무의식적 반응을 보이는 것.		2	default	3	1480470
-?			1	cat-mismatch	Y(1)	病弊	びょうへい	evil influence; ill effect	병폐; 해로운 영향	병통과 폐단을 아울러 이르는 말.		2	default	3	1622320
-?			1	cat-mismatch	Y(1)	複眼	ふくがん	compound eye	복안	홑눈이 벌집 모양으로 여러 개 모여 된 눈. 절지동물이나 다모강 따위에서 볼 수 있다. 여러 방향에 있는 물체의 형태를 동시에 식별할 수 있으며 곤충은 색채를 판별할 수 있다.		2	default	3	1501310
-?			1	cat-mismatch	Y(1)	俸給	ほうきゅう	salary (esp. public employees); wages; pay	봉급	어떤 직장에서 계속적으로 일하는 사람이 그 일의 대가로 정기적으로 받는 일정한 보수.		2	default	3	1515280
-?			1	cat-mismatch	Y(1)	不謹慎	ふきんしん	imprudent; indiscreet; immodest; indecent	경솔함; 부적절함	삼가고 조심하지 아니함.		2	default	3	1492010
-?			1	cat-mismatch	Y(1)	不毛	ふもう	barren; sterile; infertile; unproductive (e.g. discussion)	황량함; 헛됨	땅이 거칠고 메말라 식물이 나거나 자라지 아니함.		2	default	3	1495110
-?			1	cat-mismatch	Y(1)	不平	ふへい	discontent; dissatisfaction; complaint; grievance	불만; 불평	마음에 들지 아니하여 못마땅하게 여김. 또는 못마땅한 것을 말이나 행동으로 드러냄.		2	default	3	1494790
-?			1	cat-mismatch	Y(1)	不確定	ふかくてい	uncertain; indefinite	불확실함; 정해지지 않음	일이나 계획 따위가 확실히 결정되어 있지 않음.		2	default	3	1740390
-?			1	cat-mismatch	Y(1)	比類	ひるい	parallel; equal; match	비슷함; 견줄 만함	비슷한 종류.		2	default	3	1626940
-?			1	cat-mismatch	Y(1)	査問	さもん	inquiry; enquiry; hearing	심문; 조사	조사하여 캐물음.		2	default	3	1291470
-?			1	cat-mismatch	Y(1)	相思	そうし	mutual affection; mutual love	상호 애정; 서로 사랑함	서로 생각하고 그리워함.		2	default	3	1660790
-?			1	cat-mismatch	Y(1)	庶民的	しょみんてき	popular; folksy; plebeian; ordinary	서민적인; 평범한	서민과 같은 것.		2	default	3	1343580
-?			1	cat-mismatch	Y(1)	性病	せいびょう	sexually transmitted disease; STD; sexually transmitted infection; STI	성병	주로 불결한 성행위(性行爲)에 의하여 전염되는 병. 매독, 임질, 무른궤양, 클라미디아(chlamydia) 따위가 있다.		2	default	3	1375490
-?			1	cat-mismatch	Y(1)	盛土	もりど	embankment (for road, railway, etc.); raising the ground level; fill	성토; 흙을 쌓음	흙을 쌓음.		2	default	3	1764400
-?			1	cat-mismatch	Y(1)	原著	げんちょ	the original work	원저	번역하거나 번안한 것의 근본이 되는 저작.		2	default	3	1262130
-?			1	cat-mismatch	Y(2)	島内	とうない	on an island; on-island	섬 안	어떤 도(道)의 구역 안.		3	llm	2	1446920
-?			1	cat-mismatch	Y(2)	英知	えいち	wisdom; intelligence; sagacity	지혜; 지성	왕비나 왕대비 또는 왕세자나 황태자의 명령서.		3	llm	2	1588680
-?			1	cat-mismatch	Y(1)	甘酢	あまず	sweet vinegar	달콤한 식초	감을 숙성시켜 만든 식초.		3	llm	3	1213540
-?			2	kanji		渡航	とこう	voyage; passage; travelling	渡航; 여행	배를 타고 바다를 건넘.		1	llm	0	1444700
-?			2	kanji		慰霊	いれい	consoling the spirits of the dead	위령(慰靈); 죽은 영혼을 위로함	죽은 사람의 영혼을 위로함.		1	llm	0	1613270
-?			2	kanji		有無	うむ	existence or nonexistence; presence or absence; consent or refusal; yes or no	유무; 유무(有無)	있음과 없음.		1	llm	0	1541610
-?			2	latin		披露	ひろう	announcement; presentation; demonstration; displaying	베<0xED><0x92><0x82>; 공개	문서 따위를 펴 보임.		1	llm	0	1483490
-?			2	latin		国民総生産	こくみんそうせいさん	gross national product; GNP	국민총생산(GNP)	일정 기간 동안 한 나라의 국민이 생산한 재화와 용역의 부가 가치를 시장 가격으로 평가한 총액. 보통 1년간을 단위로 하며, 그 나라의 경제 규모를 재는 척도가 된다.		1	llm	0	1287100
-?			2	kanji		湾岸	わんがん	gulf coast; bay coast	만(灣)가 있는 해안	만의 연안(沿岸).		1	llm	0	1562810
-?			2	latin		交際	こうさい	company; friendship; association; society	교제; 사<0xEA><0xB7><0x90>	서로 사귀어 가까이 지냄.		1	llm	1	1271990
-?			2	kanji		大河	たいが	large river; epic (of a novel, drama, etc.); long-form; large-scale	큰 강; 대하(大河)	큰 강.		1	llm	1	1581490
-?			2	kanji		同人	どうじん	same person; said person; the person in question; coterie	동인(同人); 같은 취미를 가진 사람들	같은 사람.		1	llm	1	1582350
-?			2	latin		放浪	ほうろう	wandering; roaming; drifting	방랑; 떠<0xEB><0x8F><0x8E>	정한 곳 없이 이리저리 떠돌아다님.		1	llm	1	1516900
-?			2	kanji		本願	ほんがん	long-cherished desire; Amida Buddha's original vow	원망; 본원(本願)	본디부터 가진 큰 소원.		1	llm	1	1522360
-?			2	kanji		部局	ぶきょく	department; bureau; section; part	부서; 부局	관공서 등에서 사무를 분담하여 다루는 곳. 국(局), 부(部), 과(課) 따위를 통틀어 이르는 말이다.		1	llm	1	1622120
-?			2	kanji		師事	しじ	studying under; looking up to; apprenticing oneself to	스승 밑에서 배움; 사사(師事)	스승으로 섬김. 또는 스승으로 삼고 가르침을 받음.		1	llm	1	1308880
-?			2	kanji		三省	さんせい	frequent reflection; frequent meditation	삼省; 자주 반성함	매일 세 번 자신을 반성함.		1	llm	1	1300870
-?			2	latin		熟知	じゅくち	being familiar with; having a thorough knowledge of; being well-informed about	완벽히 <0xEC><0x95><0x8E>; 통달	익숙하게 또는 충분히 앎.		1	llm	1	1337890
-?			2	latin		親密	しんみつ	intimacy; friendship	친밀함; 사<0xEA><0xB7><0x90>	지내는 사이가 매우 친하고 가까움.		1	llm	1	1365390
-?			2	kanji		抗日	こうにち	resistance against Japanese aggression; anti-Japanese (campaign, movement, etc.)	반일(反日)	일본 제국주의에 맞서 싸움.		1	llm	1	1278970
-?			2	kanji		懸賞	けんしょう	offering a prize; prize competition; prize; reward	懸賞; 상금	무엇을 모집하거나 구하거나 사람을 찾는 일 따위에 현금이나 물품 따위를 내걺. 또는 그 현금이나 물품.		1	llm	1	1257690
-?			2	kanji		還暦	かんれき	kanreki; one's 60th birthday (or 61st in the traditional age reckoning system) when one has lived through a full sexagenary cycle	환갑(還暦); 60세	육십갑자의 ‘갑(甲)’으로 되돌아온다는 뜻으로, 태어난 지 60돌이 되는 해. 또는 그 나이.		1	llm	1	1215160
-?			2	kanji		国歌	こっか	national anthem	국가(國歌)	나라를 대표·상징하는 노래. 그 나라의 이상이나 영예를 나타내며 주로 식전(式典)에서 연주·제창한다.		1	llm	1	1286220
-?			2	kanji		旧姓	きゅうせい	one's original family name; maiden name	옛 성(姓); 본명	일본이나 미국 따위의 여러 나라에서, 여성이 결혼 전 친가에서 쓰던 성.		1	llm	1	1230930
-?			2	error		浮遊	ふゆう	floating; drifting; suspension; wandering (about)		물 위나 물속, 또는 공기 중에 떠다님.		1	llm	2	1625100
-?			2	latin		停泊	ていはく	anchorage; anchoring; mooring	정박; <0xEB><0x8B><0xBB>을 내림	배가 닻을 내리고 머무름.		1	llm	2	1435060
-?			2	kanji	Y(2)	三時	さんじ	3 o'clock; afternoon snack (eaten around 3 o'clock); three ages of Buddhism (following the death of Gautama Buddha; age of the true law, age of the copied law, and age of the degeneration of the law); three ages of the dharma	3시; 불교의 삼법(三法)	하루 중 세 번의 끼니. 또는 그 끼니때.	일본어의 '三時'는 불교의 세 시대를 지칭하는 전문 용어로 쓰이는 반면, 한국 표준국어대사전의 '삼시'는 하루 세 끼 식사라는 일상적 의미를 가지므로 핵심 뜻이 갈린다.	2	manual	0	1300520
-?			2	kanji		女形	おんながた	onnagata; male actor in female kabuki roles; female partner (in a relationship)	여장(女裝); 남성이 여성 역할을 하는 배우	여자처럼 보이는 남자 모습.		2	llm	1	1580250
-?			2	kanji		反米	はんべい	anti-American	반미(反米)	미국에 반대함. 또는 미국에 반대되는 것.		2	llm	1	1480960
-?			2	kanji		有事	ゆうじ	emergency	유사(有事); 비상사태	‘유사하다’의 어근.		2	llm	1	1745430
-?			2	kanji		縁起	えんぎ	omen; sign of luck; origin; history	상서로움; 기원; 연기(緣起)	모든 현상이 생기(生起) 소멸 하는 법칙. 이에 따르면 모든 현상은 원인인 인(因)과 조건인 연(緣)이 상호 관계하여 성립하며, 인연이 없으면 결과도 없다.		2	llm	1	1177540
-?			2	latin		狂乱	きょうらん	fury; frenzy; madness; wildness	광란; 미쳐 날<0xEB><0x8E><0xA0>음	미친 듯이 어지럽게 날뜀.		2	default	2	1237660
-?			2	kanji		門扉	もんぴ	door(s) of a gate	문(門)의 문	문틀이나 창틀에 끼워서 여닫게 되어 있는 문이나 창의 한 짝.		2	default	2	1536270
-?			2	kanji		鎮魂	ちんこん	repose of a soul; ceremony for the repose of a departed soul	진혼(鎭魂); 영혼을 편안하게 함	죽은 사람의 넋을 달래어 고이 잠들게 함.		2	default	2	1432060
-?			2	kanji		開城	かいじょう	surrender of a castle; surrender of a fortress; capitulation of a stronghold	성(城)을 함락시키다; 항복	성문을 엶.		2	default	3	1202780
-?			2	latin		工賃	こうちん	labor cost; charge; wages; pay	공임; 품<0xEC><0x82><0xAF>	직공들이 품을 판 대가.		2	default	3	1278190
-?			2	kanji		官製	かんせい	government-manufactured	관제(官製)	정부가 경영하는 기업체나 관청에서 물건을 만듦. 또는 그렇게 만든 물품.		2	default	3	1211720
-?			2	latin		交遊	こうゆう	friendship; companionship; fraternity; comradeship	교류; 사<0xEA><0xB7><0x90>	서로 사귀어 놀거나 왕래함.		2	default	3	1272570
-?			2	kanji,kana		大老	たいろう	(Edo-period) chief minister	대노(幕府の重臣)	세상에서 존경받는 어진 노인.		2	default	3	1785590
-?			2	kanji		大喪	たいそう	funeral service of a Japanese emperor; Imperial mourning	황실의 큰 상(喪)	임금의 상사(喪事).		2	default	3	1890670
-?			2	kanji		大潮	おおしお	spring tide	대조(大潮)	음력 보름과 그믐 무렵에 밀물이 가장 높은 때.		2	default	3	1787060
-?			2	kanji		無印	むじるし	unlabeled; unbranded	무지(無字); 상표가 없는	도장이 찍혀 있지 않음.		2	default	3	2001130
-?			2	kanji		物種	ものだね	origin; fundamental element	종(種); 근본 요소	물건의 종류.		2	default	3	1722890
-?			2	kanji		半官半民	はんかんはんみん	semi-governmental; semi-official	반(半)정부적; 반(半)공식적	정부와 민간인이 공동으로 자본을 대어 회사, 시설, 단체 따위를 설립·경영하는 일.		2	default	3	1479080
-?			2	kanji		半農	はんのう	part-time farming	반농(半農); 부분적인 농업	다른 생업을 겸한 농업.		2	default	3	1479840
-?			2	kanji		方丈	ほうじょう	square jō (approx. 10 sq feet); abbot's chamber; chief priest; Mount Fangzhang (said to be inhabited by immortals)	방장; 주지(住持)의 방	삼신산(三神山)의 하나. 동해에 있다고도 하며 지리산이라고도 한다.		2	default	3	1654980
-?			2	latin		浮動	ふどう	floating	부동; 떠<0xEB>둥거림	물이나 공기 중에 떠서 움직임.		2	default	3	1497530
-?			2	kanji		悲歌	ひか	elegy; dirge; mournful melody	비가(悲歌); 애가	슬프고 애잔한 노래.		2	default	3	1689100
-?			2	kanji		死線	しせん	borderline between life and death; verge of death; deadline (boundary around a prison which prisoners were not allowed to cross)	사망선; 생사(生死)의 경계	죽을 고비.		2	default	3	1767780
-?			2	kanji		三宝	さんぼう	the Three Jewels; the Triple Gem; Triratna; the Three Treasures	삼보(三寶): 부처, 법, 승가	세 가지 보배라는 뜻으로, 귀와 입과 눈을 이르는 말.		2	default	3	1579430
-?			2	kanji		成鳥	せいちょう	adult bird	성조(成鳥)	다 자라 생식 능력을 가진 새.		2	default	3	1764280
-?			2	kanji		輸液	ゆえき	transfusion	수액(輸液)	쇼크, 탈수증, 영양실조 따위에, 혈액과 삼투압이 같은 다량의 액체를 주입하는 일. 생리적 식염수·링거액 따위의 여러 가지 전해질 용액을 쓰며, 영양 보급의 목적으로는 과당(果糖) 용액·포도당 용액 따위를 쓴다.		2	default	3	1538800
-?			2	kanji		僧堂	そうどう	temple meditation hall or certain other temple structures	승가(僧伽)의 명상실; 사찰 건물	선원에서, 승려가 좌선하며 기거하는 집. 대개 절의 안쪽 오른편에 있는데 선원에서 가장 중요하게 여기는 장소로서 엄격한 규칙이 있다.		2	default	3	1398190
-?			2	latin		眼中	がんちゅう	(one's) consideration; (taking) notice; interest; attention	눈에 <0xEB><0x9D><0x94>; 관심	눈의 안.		2	default	3	1804010
-?			2	kanji		雅号	がごう	alias; pseudonym; pen name; nom de plume	호(號); 필명	문인이나 예술가 따위의 호나 별호를 높여 이르는 말.		2	default	3	1197910
-?			2	kanji		冶金	やきん	metallurgy	야금(冶金)	광석에서 금속을 골라내는 일이나 골라낸 금속을 정제(精製)·합금(合金)·특수 처리하여 여러 가지 목적에 맞는 금속 재료를 만드는 일.		2	default	3	1536310
-?			2	kanji		五体	ごたい	the whole body; the five styles of writing Chinese characters; the five parts of the body (head, two hands and two feet; or head, neck, chest, hands and feet)	오체; 오방(五方)	사람의 온몸.		2	default	3	1268500
-?			2	kanji		油性	ゆせい	oil-based	유성(油性)	기름의 성질.		2	default	3	1695050
-?			2	kanji		引導	いんどう	last words recited to the newly departed; requiem; converting people to Buddhism	진신(薦導); 영가	이끌어 지도함.		2	default	3	1169650
-?			2	latin		紫紺	しこん	dark purple; bluish purple	짙은 남색; 자<0xEC><0xA4><0x8F>빛	자줏빛과 진남빛을 아울러 이르는 말.		2	default	3	1311690
-?			2	kanji		前史	ぜんし	prehistory	선사(先史)	역사(歷史) 이전.		2	default	3	1393070
-?			2	latin		除夜	じょや	New Year's Eve	섣달그<0xEB><0xAF><0x90>	섣달그믐날 밤.		2	default	3	1345800
-?			2	latin		粗大	そだい	coarse; rough; bulky	거<0xEC><0xB9><0xA2>; 부피가 큼	‘조대하다’의 어근.		2	default	3	1397020
-?			2	kanji		種付	たねつけ	mating	종지(種指); 교배	주로 가축 따위를 교미시키는 일.		2	default	3	1686540
-?			2	kanji		種族	しゅぞく	race; tribe; ethnic group; species	종족; 민족; 종(種)	같은 종류의 생물 전체를 이르는 말.		2	default	3	1328840
-?			2	latin		舟橋	ふなばし	pontoon bridge	<0xEB><0x97><0x8F>목 다리	작은 배를 한 줄로 여러 척 띄워 놓고 그 위에 널판을 건너질러 깐 다리.		2	default	3	1333210
-?			2	latin		漂泊	ひょうはく	roaming; drifting about; wandering; drifting (with the current, on the tide, etc.)	떠<0xEB><0x8F><0x8E>; 방랑	풍랑을 만난 배가 물 위에 정처 없이 떠돎.		2	default	3	1617220
-?			2	latin		香魚	あゆ	ayu (Plecoglossus altivelis); sweetfish	민물고기; <0xEC><0x95><0xB3>물고기	잉어의 한 품종. 비늘은 등지느러미 바로 아랫부분에만 있으며 성장 속도가 빠르다.		2	default	3	1586720
-?			2	kanji,kana		喜寿	きじゅ	77th birthday	기축(七十七歳の祝い)	나이 일흔일곱 살을 달리 이르는 말.		2	default	3	1218840
-?			2	latin		旧交	きゅうこう	old friendship	옛 사<0xEA><0xB7><0x90>	오래전부터 사귄 교분. 또는 전부터 교분이 있는 사람.		2	default	3	1591470
-?			2	latin		渋柿	しぶがき	astringent persimmon	<0xEB><0x96><0xAB>은 감	맛이 떫은 감.		2	default	3	1335560
-?			2	kanji		虚無	きょむ	nihility; nothingness	공허; 무(無)	아무것도 없이 텅 빔.		2	default	3	1232810
-?			2	kanji		能楽	のうがく	noh play	노(能) 음악			3	default	0	1470140
-?			2	untranslated		四百	よんひゃく	400; four hundred	400	달이 아주 이지러졌다는 뜻으로, 음력 초하룻날을 이르는 말. 또는 그날의 달을 이르는 말.		3	llm	0	1767090
-?			2	kanji		一首	いっしゅ	one tanka; one poem	한 수(詩)	혼자의 몫. 또는 혼자의 힘.		3	llm	0	1163190
-?			2	kanji		全米	ぜんべい	all of the United States; the whole of the USA; all of North and South America; the entire Americas	전미(全米); 미국 전체	조의 열매를 찧은 쌀.		3	llm	0	1396190
-?			2	kanji		町長	ちょうちょう	town mayor	마을 장(長); 읍장	예전에, 물건을 만드는 것을 업으로 하던 사람.		3	llm	0	1428790
-?			2	kanji		布団	ふとん	futon; Japanese bedding consisting of a mattress and a duvet; round cushion used for Zen meditation (traditionally made of woven bulrush leaves)	요(寢具); 좌식 매트리스	부들로 둥글게 틀어 만든 방석.		3	llm	0	1496890
-?			2	kanji		公庫	こうこ	finance corporation	공庫	각 관아에서 쓰는 기구를 넣어 두던 창고.		3	llm	1	1273650
-?			2	kanji		都営	とえい	(under) metropolitan government management	도영(都営)의	새로 부임하는 감사가 감영에 이르던 일.		3	llm	1	1700920
-?			2	kanji		府立	ふりつ	prefectural; managed by an urban prefecture (Osaka or Kyoto)	부립의; 현(縣)에서 운영하는			3	default	1	1611460
-?			2	kanji		府県	ふけん	prefectures (of Japan, excl. Tokyo and Hokkaido)	현(縣); 도도부현			3	default	1	1496900
-?			2	kanji		砂防	さぼう	erosion control	사방(砂防); 토사 유출 방지	이십사방위의 하나. 정남(正南)에서 동으로 30도 방위를 중심으로 한 15도 각도 안의 방향이다.		3	llm	1	1291630
-?			2	kanji		省令	しょうれい	ministerial ordinance	성령(省令)	영묘(靈妙)한 성정(性情).		3	llm	1	1351150
-?			2	kanji		小結	こむすび	wrestler of the fourth highest rank	사부(師父)급 레슬러	물 따위가 막힌 것을 통하게 터놓음.		3	llm	1	1348020
-?			2	kanji		英和	えいわ	English-Japanese; English-Japanese dictionary	영한(英和); 영어-일본어	일정한 의미를 갖고 움직이는 대상을 촬영하여 영사기로 영사막에 재현하는 종합 예술.		3	llm	1	1174720
-?			2	kanji		正教	せいきょう	orthodoxy; (Greek) orthodox church	정교(正敎); 정통 교리	구세군 계급의 하나. 부교의 위이다.		3	llm	1	1376930
-?			2	kanji		鳥居	とりい	torii (Shinto shrine archway)	신사(神社)의 문	‘조것01’을 구어적으로 이르는 말. ‘조것’에 서술격 조사 ‘이다’가 붙은 형태인 ‘조것이다’는 ‘조거다’로 줄어서 ‘조거’의 형태가 유지되고, ‘조것’에 주격 조사 ‘이’나 보격 조사 ‘이’가 붙은 형태인 ‘조것이’는 ‘조게’의 형태로 바뀐다.		3	llm	1	1430280
-?			2	kanji		川柳	せんりゅう	senryū; comic haiku; humorous seventeen-mora poem	세녀(川柳); 해학적인 하이쿠	내의 흐름.		3	llm	1	1390110
-?			2	latin		希少	きしょう	scarce; rare	희소함; 드<0xEB><0xAC><0xBE>	기뻐서 웃음.		3	llm	1	1222880
-?			2	latin		可哀想	かわいそう	poor; pitiable; pathetic; pitiful	가<0xEC><0x97><0xBE>음; 딱함			3	default	2	1590740
-?			2	kanji		郡部	ぐんぶ	rural districts; counties	군(郡) 지역	군붓과의 연체동물. 껍데기의 길이는 4~7cm, 지름은 5cm 정도로, 갈색 또는 회색을 띤 갈색이며 껍데기는 8개가 살 속에 묻혀 있는 형태로 타원형이고, 둥글고 자질구레한 돌기가 나 있다. 조간대의 바위 위에 붙어 살며 한국, 일본 등지에 분포한다.		3	llm	2	1249250
-?			2	kanji		踏絵	ふみえ	fumi-e; fumie; tablet bearing Christian images, on which Edo-period authorities forced suspected Christians to trample; allegiance test	신앙심 시험 (踏絵)			3	default	2	1745070
-?			2	kanji		長唄	ながうた	long epic song with shamisen accompaniment (developed in Edo in the early 17th century)	장가(長歌) (삼현금 반주를 곁들인 긴 노래)	‘맏파’를 속되게 이르는 말.		3	llm	2	1607380
-?			2	kanji		県下	けんか	in the prefecture; prefectural	현(縣) 안	현재의 형편 아래. 주로 연설문 따위에서 쓴다.		3	llm	2	1258830
-?			2	kanji		県営	けんえい	(under) prefectural management	현(縣)에서 운영하는	‘겨울’을 달리 이르는 말.		3	llm	2	1258820
-?			2	kanji		宮司	ぐうじ	chief priest	궁사(宮司); 사찰의 주지	활을 만드는 사람.		3	llm	3	1228420
-?			2	kanji		年功	ねんこう	long service	연공(年功); 근속 연수			3	default	3	1468580
-?			2	kanji		隷書	れいしょ	clerical script (ancient, highly angular style of kanji)	예서(隷書)			3	default	3	1628220
-?			2	kanji		名人芸	めいじんげい	masterful performance; virtuosity	명인(名人)의 솜씨; 기예			3	default	3	1752140
-?			2	kanji		米審	べいしん	Rice Price Deliberative Council	미(米) 가격 심의회	일이 확실하지 아니하여 늘 마음을 놓을 수 없는 데가 있음.		3	llm	3	1907540
-?			2	latin		四川	しせん	Sichuan (China); Szechuan; Szechwan	쓰<0xEC><0xB4><0xA8>	사철의 하늘. 곧 봄의 창천(蒼天), 여름의 호천(昊天), 가을의 민천(旻天), 겨울의 상천(上天)을 통틀어 이른다.		3	llm	3	1307290
-?			2	kanji		序二段	じょにだん	jonidan; second lowest division	초초(序二段)			3	default	3	1952510
-?			2	latin		細身	ほそみ	narrow (blade); slender (figure, build); thin	날씬함; 가<0xEB><0x83><0x98>픔	대대로 한 가문이나 왕가를 섬기는 신하.		3	llm	3	1295660
-?			2	kanji		小唄	こうた	kouta; traditional ballad accompanied by shamisen	소가(小唄); 일본의 전통 노래	싸움에서 피해가 적게 패함.		3	llm	3	1744150
-?			2	latin		手拍子	てびょうし	beating time with one's hands; clapping to the beat; making a careless move (in go, shogi, etc.); responding to an opponent's move without proper thought	손<0xEB><0xBC><0x89> 치기; (바둑 등에서) 경솔한 수			3	default	3	1328270
-?			2	kanji		氏子	うじこ	shrine parishioner	신사(神社)의 신도	활자의 자모를 만들기 위한 글자의 본.		3	llm	3	1311020
-?			2	latin		一回転	いっかいてん	one revolution; one rotation	한 바퀴 <0xEB><0x8F><0x8E>; 한 회전	여러 회(回)를 통하여 승부를 겨루는 경기에서, 맨 첫 번째 경기.		3	llm	3	1575960
-?			2	latin		切株	きりかぶ	tree stump; stubble (rice, etc.)	나무 그루터기; <0xEB><0x82><0x9F>알	음의 장단이나 강약 따위가 반복될 때의 그 규칙적인 음의 흐름.		3	llm	3	1591790
-?			2	kanji		精華	せいか	essence; quintessence; flower; glory	정수; 정수(精華)	상칭면(相稱面)이 적은 꽃이 상칭면이 많은 꽃으로 변화하였을 때의 현상을 이르는 말. 디기탈리스, 박하 따위처럼 화서의 꼭대기 위쪽으로 향하여 달린 큰 꽃에서 잘 일어난다.		3	llm	3	1628110
-?			2	latin		知日	ちにち	being knowledgeable about Japan; being well versed in Japanese affairs	일본에 대해 잘 <0xEC><0x95><0x8E>	천도교의 제2세 교조 해월(海月) 최시형이 제1세 교조에게 심법을 이어받았음을 기념하는 날. 조선 철종 14년(1863) 8월 14일이다.		3	llm	3	1800110
-?			2	latin		天引	てんびき	deduction in advance (of tax, interest, etc.)	선납; 미리 <0xEB><0xBA><0x8C>	천 길이라는 뜻으로, 산이나 바다가 매우 높거나 깊음을 이르는 말.		3	llm	3	1598490
-?			2	kanji		河童	かっぱ	kappa; mythical water-dwelling creature; excellent swimmer; cucumber	河童; 물에 사는 신화 속 생물	‘하동거리다’의 어근.		3	llm	3	1193540
-?			2	kanji		県勢	けんせい	prefectural strengths (conditions, resources)	현세(縣勢); 지방의 세력이나 상황	지금 이 세상.		3	llm	3	1630800
-?			2	kanji		県会	けんかい	prefectural assembly	현(縣) 회의	세상 사람에게 알려지는 것과 알려지지 아니하는 것.		3	llm	3	1258840
-?			2	latin		厚手	あつで	thick (paper, cloth, etc.); heavy	두꺼움; <0xEB><0xB9><0xB3><0xEB><0xB9>감	두둑한 보수.		3	llm	3	1275470
-?			2	kanji		内堀	うちぼり	inner moat; moat within the castle walls	내성(內堀); 성벽 안의 해자			3	default	3	1588250
-?			2	kanji		内弟子	うちでし	private pupil; apprentice	내문제자; 사사(師事)하는 제자			3	default	3	1458940
-?			2	latin		単三	たんさん	AA battery; AA cell	AA 건전지	꿀풀과의 여러해살이풀. 줄기는 높이가 40~80cm로 전체에 털이 나 있으며, 잎은 넓은 타원형이다. 5~6월에 푸른 자주색의 잔꽃이 피고 열매는 삭과(蒴果)로 9월에 익는다. 뿌리는 적색으로, 약용한다. 중국이 원산지이다.		3	llm	3	1417440
-?			2	latin		戸板	といた	sliding door (esp. when removed from its frame and used for carrying things or people); large flounder	문짝; 큰 <0xEB><0x84><0x99>치	‘호조 판서’를 줄여 이르는 말.		3	llm	3	1267070
-?			2	kanji		旧盆	きゅうぼん	Bon Festival of the lunar calendar	구정(舊盆)	사람마다 똑같이 나누어 줌.		3	llm	3	1231290
-?			2	latin,long		気丈	きじょう	stout-hearted; firm; courageous; brave	기개가 <0xEA><0xBC><0xBF><0xEA><0xBC><0xBF>함; 씩씩함	옷의 길이.		3	llm	3	1222320
-?			2	kanji		焼畑	やきばた	land made arable by the slash-and-burn method; swidden; slash-and-burn farming	화전(火田); 화전 농법	소를 사고파는 장.		3	llm	3	1663330
-?			2	latin		真田	さなだ	plait; braid	<0xEB><0x95><0x8B>은 머리	‘떨림’의 전 용어.		3	llm	3	1364170
-?			2	latin		縁側	えんがわ	engawa; external corridor on the outer side of traditional Japanese houses; bone at the base of a fin (esp. of a flatfish); meat at the base of a fin	<0xED><0x88><0x87>마루	‘연측하다’의 어근.		3	llm	3	1177630
-?			2	latin		縁台	えんだい	bench	<0xED><0x88><0x87>마루; 벤치	정토(淨土)에 왕생하는 사람은 모두 연꽃 속에서 난다고 하여 연꽃을 모태에 비유하여 이르는 말.		3	llm	3	1177640
-?			2	kanji		観月	かんげつ	moon viewing (esp. during the eight month of the lunar calendar)	월령(月令)에 달을 감상함			3	default	3	1214830
-?			2	latin		髪結	かみゆい	hairdresser; hairdressing	머리 <0xEB><0x95><0x8B>기; 헤어 스타일링			3	default	3	1651930
-?			3	many-senses	Y(3)	見返	みかえし	endpaper (of a book); end-paper; facing (material sewn on the inside edge of a garment); looking back	책의 끝 종이; (옷의) 안감; 되돌아봄; 극복	예전에, 갱(坑) 속에서 사용하던 나침반.		3	llm	3	1604410
-?			4	many-senses		文理	ぶんり	humanities and sciences; reason; logic; line of thought (in a piece of writing)	문과와 이과; 이성; 논리; 사상 흐름	글의 뜻을 깨달아 아는 힘.		2	default	3	1723400
-?			4	many-senses		松竹梅	しょうちくばい	pine, bamboo and plum (an auspicious grouping); high, middle and low (ranking); top, middle and bottom; upper, medium, lower	소나무, 대나무, 매실 (상서로운 조합); 높은 것, 중간 것, 낮은 것	소나무와 대나무와 매화나무를 아울러 이르는 말. 예로부터 세한삼우라고 하여 시나 그림의 소재로 많이 삼아 왔다.		2	default	3	1349920
-?			4	many-senses		太白	たいはく	Venus (planet); thick silk thread; refined sugar; white rice jelly	금성; 굵은 비단실; 정제된 설탕; 떡; 고구마의 종류	강원특별자치도 남부에 있는 시(市). 태백 탄광 지역의 중심지이며 국내에서 무연탄이 가장 많이 난다. 명승지로 용연굴(龍淵窟)이 있다. 면적은 303.52㎢.		2	default	3	1787350
-?			5	many-senses		一丁	いっちょう	one leaf (of a book bound in Japanese style); one block of tofu; one serving (in a restaurant); one long and narrow thing (e.g. a gun, scissors, spade, hoe, inkstick, palanquin, candle, jinrikisha, shamisen, oar)	한 장; 한 덩이; 한 차례; (길이 단위) 초	어떤 것의 크기, 모양, 범위, 시간 따위가 하나로 정하여져 있음.		3	llm	2	1164780
-?			6	many-senses		前後	ぜんご	front and rear; front and back; before and behind; back and forth	앞뒤; 전후; 근처; 약	앞과 뒤를 아울러 이르는 말.		1	llm	0	1392910
+﻿verdict	cat	fix	tier	flags	manual	headword	reading	glossEn	llm_ko	stdict_def	manual_reason	category	classSource	band	id
+o			1	cat-mismatch	Y(2)	歌人	かじん	poet (of tanka poems)	일본의 단가 시인	노래를 잘 부르거나 잘 짓는 사람.		1	llm	0	1193340
+o			1	cat-mismatch	Y(2)	角度	かくど	angle	각도	생각의 방향이나 관점.		1	llm	0	1206190
+o			1	cat-mismatch	Y(2)	家族計?	かぞくけいかく	family planning	행복한 가정생활을 위해 부부의 생활 능력에 따라 자녀의 수나 출산의 간격을 계획적으로 조절하는 일.	행복한 가정생활을 위해 부부의 생활 능력에 따라 자녀의 수나 출산의 간격을 계획적으로 조절하는 일.		1	llm	1	1192160
+o			1	cat-mismatch	Y(2)	封筒	ふうとう	envelope	편지나 서류 따위를 넣기 위하여 종이로 만든 주머니.	편지나 서류 따위를 넣기 위하여 종이로 만든 주머니.		1	llm	1	1499690
+o			1	cat-mismatch	Y(1)	決別	けつべつ	separation; farewell; parting	기약 없는 이별을 함. 또는 그런 이별.	기약 없는 이별을 함. 또는 그런 이별.		2	llm	1	1254420
+o			1	cat-mismatch	Y(1)	自在	じざい	being able to do as one pleases; doing at will; pothook	자유로움; 제약 없음	저절로 있음.		2	llm	1	1317750
+o			1	cat-mismatch	Y(3)	低調	ていちょう	inactive; slow; sluggish; slack	저조함; 침체	가락이 낮음. 또는 그런 가락.		2	llm	1	1434610
+o			1	cat-mismatch	Y(1)	趣向	しゅこう	plan; idea; design; plot	취향; 기미	하고 싶은 마음이 생기는 방향. 또는 그런 경향.		2	llm	1	1328970
+o			1	cat-mismatch	Y(1)	刻?	こっこく	moment by moment; hour by hour	매 시각. 또는 낱낱의 시각.	매 시각. 또는 낱낱의 시각.		2	default	2	1285830
+o			1	cat-mismatch	Y(1)	共鳴	きょうめい	resonance; sympathy (with a view, idea, etc.)	남의 사상이나 감정, 행동 따위에 공감하여 자기도 그와 같이 따르려 함.	남의 사상이나 감정, 행동 따위에 공감하여 자기도 그와 같이 따르려 함.		2	default	2	1235190
+o			1	cat-mismatch	Y(1)	空砲	くうほう	empty gun; gun loaded with blanks; firing a blank	실탄을 넣지 않고 소리만 나게 하는 총질.	실탄을 넣지 않고 소리만 나게 하는 총질.		2	default	2	2582370
+o			1	cat-mismatch	Y(1)	同病	どうびょう	the same sickness	같은 병	같은 병.		2	default	2	1453310
+o			1	cat-mismatch	Y(1)	無論	むろん	of course; certainly; naturally	말할 것도 없음.	말할 것도 없음.		2	llm	2	1531080
+o			1	cat-mismatch	Y(1)	洋食	ようしょく	Western food; Western dish; Western cooking; Japanized Western cuisine	서양식 음식이나 식사.	서양식 음식이나 식사.		2	default	2	1546000
+o			1	cat-mismatch	Y(1)	洋酒	ようしゅ	Western wine and spirits; Western liquor	서양 술	서양에서 들여온 술.		2	default	2	1545980
+o			1	cat-mismatch	Y(1)	余命	よめい	remainder of one's life; one's remaining days; time left (to live)	얼마 남지 아니한 쇠잔한 목숨.	얼마 남지 아니한 쇠잔한 목숨.		2	default	2	1544570
+o			1	cat-mismatch	Y(1)	?基	えんき	base	산과 반응하여 염을 만드는 물질. 물에 녹으면 하이드록시 이온을 낸다. 암모니아수, 잿물 따위가 있다.	산과 반응하여 염을 만드는 물질. 물에 녹으면 하이드록시 이온을 낸다. 암모니아수, 잿물 따위가 있다.		2	default	2	1178680
+o			1	cat-mismatch	Y(1)	英?	えいやく	English translation	영어로 번역함.	영어로 번역함.		2	default	2	1174670
+o			1	cat-mismatch	Y(1)	王立	おうりつ	royal (institution)	국왕이나 왕족이 세움. 또는 그런 것.	국왕이나 왕족이 세움. 또는 그런 것.		2	default	2	1181710
+o			1	cat-mismatch	Y(1)	全量	ぜんりょう	the whole amount; entire amount; total amount; total quantity	전체 양; 총량	전체의 분량이나 수량.		2	default	2	1396380
+o			1	cat-mismatch	Y(1)	電信	でんしん	(electric) telegraph; telegraphy; telegraphic communication; telegram	문자나 숫자를 전기 신호로 바꾸어 전파나 전류로 보내는 통신.	문자나 숫자를 전기 신호로 바꾸어 전파나 전류로 보내는 통신.		2	default	2	1443560
+o			1	cat-mismatch	Y(1)	征服	せいふく	conquest; subjugation; overcoming (a difficulty); conquering (e.g. a mountain)	남의 나라나 이민족 따위를 정벌하여 복종시킴.	남의 나라나 이민족 따위를 정벌하여 복종시킴.		2	default	2	1375230
+o			1	cat-mismatch	Y(1)	足音	あしおと	(sound of) footsteps; sense or sign that something is approaching	발을 옮겨 디딜 때 발이 바닥에 닿아 나는 소리.	발을 옮겨 디딜 때 발이 바닥에 닿아 나는 소리.		2	default	2	1404770
+o			1	cat-mismatch	Y(1)	拙速	せっそく	rough-and-ready; knocked-up; hasty; slipshod	충분한 숙고 없이 너무 빠르고 경솔하게 행동하는 모습	어설프고 빠름. 또는 그런 태도.		2	default	2	1385300
+o			1	cat-mismatch	Y(1)	左記	さき	undermentioned (statement); the following; at left	세로쓰기를 한 글에서, 본문의 왼쪽에 기록된 것.	세로쓰기를 한 글에서, 본문의 왼쪽에 기록된 것.		2	default	2	1290860
+o			1	cat-mismatch	Y(1)	主犯	しゅはん	principal offence; principal offense; principal offender	형법에서, 자기의 의사에 따라 범죄를 실제로 저지른 사람. 단독 정범과 공동 정범으로 크게 나뉜다.	형법에서, 자기의 의사에 따라 범죄를 실제로 저지른 사람. 단독 정범과 공동 정범으로 크게 나뉜다.		2	default	2	1326110
+o			1	cat-mismatch	Y(1)	注入	ちゅうにゅう	pouring; injection	흘러 들어가도록 부어 넣음.	흘러 들어가도록 부어 넣음.		2	default	2	1426640
+o			1	cat-mismatch	Y(1)	?席	そくせき	impromptu; improvised; extempore; ad-lib	어떤 일이 진행되는 바로 그 자리.	어떤 일이 진행되는 바로 그 자리.		2	default	2	1404240
+o			1	cat-mismatch	Y(1)	?興	そっきょう	improvisation; improvised; impromptu; extempore	그 자리에서 바로 일어나는 감흥. 또는 그런 기분.	그 자리에서 바로 일어나는 감흥. 또는 그런 기분.		2	default	2	1404130
+o			1	cat-mismatch	Y(1)	??	そくばい	selling on the spot	상품을 벌여 놓은 그 자리에서 당장 팔아 버림.	상품을 벌여 놓은 그 자리에서 당장 팔아 버림. 전시장이나 박람회 같은 데서 흔히 이루어진다.		2	default	2	1404300
+o			1	cat-mismatch	Y(1)	集散	しゅうさん	collection (gathering) and distribution	모여들었다 흩어졌다 함.	모여들었다 흩어졌다 함.		2	default	2	1659250
+o			1	cat-mismatch	Y(1)	執着	しゅうちゃく	attachment; adhesion; insistence; tenacity	집착; 어떤 것에 늘 마음이 쏠려 잊지 못하고 매달림.	어떤 것에 늘 마음이 쏠려 잊지 못하고 매달림.		2	default	2	1594740
+o			1	cat-mismatch	Y(1)	炭田	たんでん	coalfield; coal field	석탄이 묻혀 있는 땅.	석탄이 묻혀 있는 땅.		2	default	2	1661270
+o			1	cat-mismatch	Y(1)	講話	こうわ	lecture; discourse	강의하듯이 쉽게 풀어서 이야기함. 또는 그런 이야기.	강의하듯이 쉽게 풀어서 이야기함. 또는 그런 이야기.		2	default	3	1282380
+o			1	cat-mismatch	Y(1)	極刑	きょっけい	capital punishment; death penalty; maximum penalty; ultimate punishment	가장 무거운 형벌이라는 뜻으로, ‘사형’을 이르는 말.	가장 무거운 형벌이라는 뜻으로, ‘사형’을 이르는 말.		2	default	3	1240290
+o			1	cat-mismatch	Y(1)	難易	なんい	(relative) difficulty	어려움과 쉬움.	어려움과 쉬움.		2	default	3	1460870
+o			1	cat-mismatch	Y(1)	短文	たんぶん	short sentence; short piece of writing (e.g. passage, article, composition)	짧은 글	짧은 글.		2	default	3	1843470
+o			1	cat-mismatch	Y(1)	大漁	たいりょう	big catch (fishing); good haul	큰 수확; 큰 어획	물고기가 많이 잡힘.		2	default	3	1413450
+o			1	cat-mismatch	Y(1)	道化	どうけ	antics; buffoonery; clowning; clown	광대 놀이; 익살	도(道)로써 바른길로 이끎.		2	default	3	1454120
+o			1	cat-mismatch	Y(1)	同量	どうりょう	same amount	같은 분량.	같은 분량.		2	default	3	1687800
+o			1	cat-mismatch	Y(1)	刀?	とうけん	sword; dagger; knife; bayonet	칼과 검(劍)을 아울러 이르는 말.	칼과 검(劍)을 아울러 이르는 말.		2	default	3	1446490
+o			1	cat-mismatch	Y(1)	万世	ばんせい	all ages; eternity	아주 오랜 세대.	아주 오랜 세대.		2	default	3	1526190
+o			1	cat-mismatch	Y(1)	反射的	はんしゃてき	reflexive; reflecting	반사적인; 어떤 자극에 순간적으로 무의식적 반응을 보이는 것.	어떤 자극에 순간적으로 무의식적 반응을 보이는 것.		2	default	3	1480470
+o			1	cat-mismatch	Y(1)	病弊	びょうへい	evil influence; ill effect	병폐; 병통과 폐단을 아울러 이르는 말.	병통과 폐단을 아울러 이르는 말.		2	default	3	1622320
+o			1	cat-mismatch	Y(1)	複眼	ふくがん	compound eye	겹눈	홑눈이 벌집 모양으로 여러 개 모여 된 눈. 절지동물이나 다모강 따위에서 볼 수 있다. 여러 방향에 있는 물체의 형태를 동시에 식별할 수 있으며 곤충은 색채를 판별할 수 있다.		2	default	3	1501310
+o			1	cat-mismatch	Y(1)	俸給	ほうきゅう	salary (esp. public employees); wages; pay	어떤 직장에서 계속적으로 일하는 사람이 그 일의 대가로 정기적으로 받는 일정한 보수.	어떤 직장에서 계속적으로 일하는 사람이 그 일의 대가로 정기적으로 받는 일정한 보수.		2	default	3	1515280
+o			1	cat-mismatch	Y(1)	不謹?	ふきんしん	imprudent; indiscreet; immodest; indecent	경솔함; 부적절함; 조심하지 아니함.	삼가고 조심하지 아니함.		2	default	3	1492010
+o			1	cat-mismatch	Y(1)	不毛	ふもう	barren; sterile; infertile; unproductive (e.g. discussion)	황량함; 땅이 거칠고 메말라 식물이 나거나 자라지 아니함; 헛됨;	땅이 거칠고 메말라 식물이 나거나 자라지 아니함.		2	default	3	1495110
+o			1	cat-mismatch	Y(1)	不平	ふへい	discontent; dissatisfaction; complaint; grievance	마음에 들지 아니하여 못마땅하게 여김. 또는 못마땅한 것을 말이나 행동으로 드러냄.	마음에 들지 아니하여 못마땅하게 여김. 또는 못마땅한 것을 말이나 행동으로 드러냄.		2	default	3	1494790
+o			1	cat-mismatch	Y(1)	不確定	ふかくてい	uncertain; indefinite	일이나 계획 따위가 확실히 결정되어 있지 않음.	일이나 계획 따위가 확실히 결정되어 있지 않음.		2	default	3	1740390
+o			1	cat-mismatch	Y(1)	比類	ひるい	parallel; equal; match	비슷함; 견줄 만함	비슷한 종류.		2	default	3	1626940
+o			1	cat-mismatch	Y(1)	査問	さもん	inquiry; enquiry; hearing	조사하여 캐물음.	조사하여 캐물음.		2	default	3	1291470
+o			1	cat-mismatch	Y(1)	相思	そうし	mutual affection; mutual love	서로 생각하고 그리워함.	서로 생각하고 그리워함.		2	default	3	1660790
+o			1	cat-mismatch	Y(1)	庶民的	しょみんてき	popular; folksy; plebeian; ordinary	서민적인; 평범한	서민과 같은 것.		2	default	3	1343580
+o			1	cat-mismatch	Y(1)	性病	せいびょう	sexually transmitted disease; STD; sexually transmitted infection; STI	주로 불결한 성행위(性行爲)에 의하여 전염되는 병. 매독, 임질, 무른궤양, 클라미디아(chlamydia) 따위가 있다.	주로 불결한 성행위(性行爲)에 의하여 전염되는 병. 매독, 임질, 무른궤양, 클라미디아(chlamydia) 따위가 있다.		2	default	3	1375490
+o			1	cat-mismatch	Y(1)	盛土	もりど	embankment (for road, railway, etc.); raising the ground level; fill	흙을 쌓음.	흙을 쌓음.		2	default	3	1764400
+o			1	cat-mismatch	Y(1)	原著	げんちょ	the original work	번역하거나 번안한 것의 근본이 되는 저작.	번역하거나 번안한 것의 근본이 되는 저작.		2	default	3	1262130
+o			1	cat-mismatch	Y(2)	島?	とうない	on an island; on-island	어떤 도(道)의 구역 안.	어떤 도(道)의 구역 안.		3	llm	2	1446920
+o			1	cat-mismatch	Y(2)	英知	えいち	wisdom; intelligence; sagacity	지혜; 지성	왕비나 왕대비 또는 왕세자나 황태자의 명령서.		3	llm	2	1588680
+o			1	cat-mismatch	Y(1)	甘酢	あまず	sweet vinegar	달콤한 식초	감을 숙성시켜 만든 식초.		3	llm	3	1213540
+o			2	kanji		渡航	とこう	voyage; passage; travelling	배를 타고 바다를 건넘.	배를 타고 바다를 건넘.		1	llm	0	1444700
+o			2	kanji		慰?	いれい	consoling the spirits of the dead	위령(慰靈); 죽은 영혼을 위로함	죽은 사람의 영혼을 위로함.		1	llm	0	1613270
+o			2	kanji		有無	うむ	existence or nonexistence; presence or absence; consent or refusal; yes or no	있음과 없음.	있음과 없음.		1	llm	0	1541610
+o			2	latin		披露	ひろう	announcement; presentation; demonstration; displaying	보임; 공개; 드러남	문서 따위를 펴 보임.		1	llm	0	1483490
+o			2	latin		?民?生産	こくみんそうせいさん	gross national product; GNP	일정 기간 동안 한 나라의 국민이 생산한 재화와 용역의 부가 가치를 시장 가격으로 평가한 총액. 보통 1년간을 단위로 하며, 그 나라의 경제 규모를 재는 척도가 된다.(GNP)	일정 기간 동안 한 나라의 국민이 생산한 재화와 용역의 부가 가치를 시장 가격으로 평가한 총액. 보통 1년간을 단위로 하며, 그 나라의 경제 규모를 재는 척도가 된다.		1	llm	0	1287100
+o			2	kanji		?岸	わんがん	gulf coast; bay coast	만(灣)가 있는 해안	만의 연안(沿岸).		1	llm	0	1562810
+o			2	latin		交際	こうさい	company; friendship; association; society	서로 사귀어 가까이 지냄.	서로 사귀어 가까이 지냄.		1	llm	1	1271990
+o			2	kanji		大河	たいが	large river; epic (of a novel, drama, etc.); long-form; large-scale	큰 강.	큰 강.		1	llm	1	1581490
+o			2	kanji		同人	どうじん	same person; said person; the person in question; coterie	동인(同人); 같은 취미를 가진 사람들	같은 사람.		1	llm	1	1582350
+o			2	latin		放浪	ほうろう	wandering; roaming; drifting	정한 곳 없이 이리저리 떠돌아다님.	정한 곳 없이 이리저리 떠돌아다님.		1	llm	1	1516900
+o			2	kanji		本願	ほんがん	long-cherished desire; Amida Buddha's original vow	본디부터 가진 큰 소원.	본디부터 가진 큰 소원.		1	llm	1	1522360
+o			2	kanji		部局	ぶきょく	department; bureau; section; part	관공서 등에서 사무를 분담하여 다루는 곳. 국(局), 부(部), 과(課) 따위를 통틀어 이르는 말이다.	관공서 등에서 사무를 분담하여 다루는 곳. 국(局), 부(部), 과(課) 따위를 통틀어 이르는 말이다.		1	llm	1	1622120
+o			2	kanji		師事	しじ	studying under; looking up to; apprenticing oneself to	스승으로 섬김. 또는 스승으로 삼고 가르침을 받음.	스승으로 섬김. 또는 스승으로 삼고 가르침을 받음.		1	llm	1	1308880
+o			2	kanji		三省	さんせい	frequent reflection; frequent meditation	꾸준히 자신을 반성함.	매일 세 번 자신을 반성함.		1	llm	1	1300870
+o			2	latin		熟知	じゅくち	being familiar with; having a thorough knowledge of; being well-informed about	익숙하게 또는 충분히 앎.	익숙하게 또는 충분히 앎.		1	llm	1	1337890
+o			2	latin		親密	しんみつ	intimacy; friendship	지내는 사이가 매우 친하고 가까움.	지내는 사이가 매우 친하고 가까움.		1	llm	1	1365390
+o			2	kanji		抗日	こうにち	resistance against Japanese aggression; anti-Japanese (campaign, movement, etc.)	일본에 맞서 싸움.	일본 제국주의에 맞서 싸움.		1	llm	1	1278970
+o			2	kanji		懸賞	けんしょう	offering a prize; prize competition; prize; reward	무엇을 모집하거나 구하거나 사람을 찾는 일 따위에 현금이나 물품 따위를 내걺. 또는 그 현금이나 물품.	무엇을 모집하거나 구하거나 사람을 찾는 일 따위에 현금이나 물품 따위를 내걺. 또는 그 현금이나 물품.		1	llm	1	1257690
+o			2	kanji		還?	かんれき	kanreki; one's 60th birthday (or 61st in the traditional age reckoning system) when one has lived through a full sexagenary cycle	환갑(還?); 60세	육십갑자의 ‘갑(甲)’으로 되돌아온다는 뜻으로, 태어난 지 60돌이 되는 해. 또는 그 나이.		1	llm	1	1215160
+o			2	kanji		?歌	こっか	national anthem	나라를 대표·상징하는 노래. 그 나라의 이상이나 영예를 나타내며 주로 식전(式典)에서 연주·제창한다.	나라를 대표·상징하는 노래. 그 나라의 이상이나 영예를 나타내며 주로 식전(式典)에서 연주·제창한다.		1	llm	1	1286220
+o			2	kanji		?姓	きゅうせい	one's original family name; maiden name	일본에서, 여성이 결혼 전 친가에서 쓰던 성.	일본이나 미국 따위의 여러 나라에서, 여성이 결혼 전 친가에서 쓰던 성.		1	llm	1	1230930
+o			2	error		浮遊	ふゆう	floating; drifting; suspension; wandering (about)	물 위나 물속, 또는 공기 중에 떠다님.	물 위나 물속, 또는 공기 중에 떠다님.		1	llm	2	1625100
+o			2	latin		停泊	ていはく	anchorage; anchoring; mooring	배가 닻을 내리고 머무름.	배가 닻을 내리고 머무름.		1	llm	2	1435060
+o			2	kanji	Y(2)	三時	さんじ	3 o'clock; afternoon snack (eaten around 3 o'clock); three ages of Buddhism (following the death of Gautama Buddha; age of the true law, age of the copied law, and age of the degeneration of the law); three ages of the dharma	3시; 불교의 삼법(三法)	하루 중 세 번의 끼니. 또는 그 끼니때.	일본어의 '三時'는 불교의 세 시대를 지칭하는 전문 용어로 쓰이는 반면, 한국 표준국어대사전의 '삼시'는 하루 세 끼 식사라는 일상적 의미를 가지므로 핵심 뜻이 갈린다.	2	manual	0	1300520
+o			2	kanji		女形	おんながた	onnagata; male actor in female kabuki roles; female partner (in a relationship)	가부키에서 남성이 여성 역할을 하는 배우; 여자 역할을 하는 파트너	여자처럼 보이는 남자 모습.		2	llm	1	1580250
+o			2	kanji		反米	はんべい	anti-American	미국에 반대함. 또는 미국에 반대되는 것.	미국에 반대함. 또는 미국에 반대되는 것.		2	llm	1	1480960
+o			2	kanji		有事	ゆうじ	emergency	유사(有事); 비상사태	‘유사하다’의 어근.		2	llm	1	1745430
+o			2	kanji		?起	えんぎ	omen; sign of luck; origin; history	상서로움; 기원; 연기(緣起)	모든 현상이 생기(生起) 소멸 하는 법칙. 이에 따르면 모든 현상은 원인인 인(因)과 조건인 연(緣)이 상호 관계하여 성립하며, 인연이 없으면 결과도 없다.		2	llm	1	1177540
+o			2	latin		狂?	きょうらん	fury; frenzy; madness; wildness	미친 듯이 어지럽게 날뜀.	미친 듯이 어지럽게 날뜀.		2	default	2	1237660
+o			2	kanji		門扉	もんぴ	door(s) of a gate	문, 대문	문틀이나 창틀에 끼워서 여닫게 되어 있는 문이나 창의 한 짝.		2	default	2	1536270
+o			2	kanji		?魂	ちんこん	repose of a soul; ceremony for the repose of a departed soul	죽은 사람의 넋을 달래어 고이 잠들게 함.	죽은 사람의 넋을 달래어 고이 잠들게 함.		2	default	2	1432060
+o			2	kanji		開城	かいじょう	surrender of a castle; surrender of a fortress; capitulation of a stronghold	성(城)을 함락시키다; 항복	성문을 엶.		2	default	3	1202780
+o			2	latin		工賃	こうちん	labor cost; charge; wages; pay	직공들이 품을 판 대가.	직공들이 품을 판 대가.		2	default	3	1278190
+o			2	kanji		官製	かんせい	government-manufactured	정부가 경영하는 기업체나 관청에서 물건을 만듦. 또는 그렇게 만든 물품.	정부가 경영하는 기업체나 관청에서 물건을 만듦. 또는 그렇게 만든 물품.		2	default	3	1211720
+o			2	latin		交遊	こうゆう	friendship; companionship; fraternity; comradeship	서로 사귀어 놀거나 왕래함.	서로 사귀어 놀거나 왕래함.		2	default	3	1272570
+o			2	kanji,kana		大老	たいろう	(Edo-period) chief minister	대노; 일본 에도 시대의 벼슬 이름; 막부 정무의 최고위 비상설 직책	세상에서 존경받는 어진 노인.		2	default	3	1785590
+o			2	kanji		大喪	たいそう	funeral service of a Japanese emperor; Imperial mourning	일본 조정의 상사(喪事).	임금의 상사(喪事).		2	default	3	1890670
+o			2	kanji		大潮	おおしお	spring tide	대조(大潮); 음력 보름과 그믐 무렵에 밀물이 가장 높은 때.	음력 보름과 그믐 무렵에 밀물이 가장 높은 때.		2	default	3	1787060
+o			2	kanji		無印	むじるし	unlabeled; unbranded	무지(無字); 상표가 없는	도장이 찍혀 있지 않음.		2	default	3	2001130
+o			2	kanji		物種	ものだね	origin; fundamental element	종(種); 근본 요소	물건의 종류.		2	default	3	1722890
+o			2	kanji		半官半民	はんかんはんみん	semi-governmental; semi-official	정부와 민간인이 공동으로 자본을 대어 회사, 시설, 단체 따위를 설립·경영하는 일.	정부와 민간인이 공동으로 자본을 대어 회사, 시설, 단체 따위를 설립·경영하는 일.		2	default	3	1479080
+o			2	kanji		半農	はんのう	part-time farming	다른 생업을 겸한 농업.	다른 생업을 겸한 농업.		2	default	3	1479840
+o			2	kanji		方丈	ほうじょう	square j? (approx. 10 sq feet); abbot's chamber; chief priest; Mount Fangzhang (said to be inhabited by immortals)	방장; 주지(住持)의 방	삼신산(三神山)의 하나. 동해에 있다고도 하며 지리산이라고도 한다.		2	default	3	1654980
+o			2	latin		浮動	ふどう	floating	물이나 공기 중에 떠서 움직임.	물이나 공기 중에 떠서 움직임.		2	default	3	1497530
+o			2	kanji		悲歌	ひか	elegy; dirge; mournful melody	슬프고 애잔한 노래.	슬프고 애잔한 노래.		2	default	3	1689100
+o			2	kanji		死線	しせん	borderline between life and death; verge of death; deadline (boundary around a prison which prisoners were not allowed to cross)	죽을 고비.	죽을 고비.		2	default	3	1767780
+o			2	kanji		三?	さんぼう	the Three Jewels; the Triple Gem; Triratna; the Three Treasures	삼보(三寶): 부처, 법, 승가	세 가지 보배라는 뜻으로, 귀와 입과 눈을 이르는 말.		2	default	3	1579430
+o			2	kanji		成鳥	せいちょう	adult bird	다 자라 생식 능력을 가진 새.	다 자라 생식 능력을 가진 새.		2	default	3	1764280
+o			2	kanji		輸液	ゆえき	transfusion	쇼크, 탈수증, 영양실조 따위에, 혈액과 삼투압이 같은 다량의 액체를 주입하는 일. 생리적 식염수·링거액 따위의 여러 가지 전해질 용액을 쓰며, 영양 보급의 목적으로는 과당(果糖) 용액·포도당 용액 따위를 쓴다.	쇼크, 탈수증, 영양실조 따위에, 혈액과 삼투압이 같은 다량의 액체를 주입하는 일. 생리적 식염수·링거액 따위의 여러 가지 전해질 용액을 쓰며, 영양 보급의 목적으로는 과당(果糖) 용액·포도당 용액 따위를 쓴다.		2	default	3	1538800
+o			2	kanji		僧堂	そうどう	temple meditation hall or certain other temple structures	선원에서, 승려가 좌선하며 기거하는 집. 대개 절의 안쪽 오른편에 있는데 선원에서 가장 중요하게 여기는 장소로서 엄격한 규칙이 있다.	선원에서, 승려가 좌선하며 기거하는 집. 대개 절의 안쪽 오른편에 있는데 선원에서 가장 중요하게 여기는 장소로서 엄격한 규칙이 있다.		2	default	3	1398190
+o			2	latin		眼中	がんちゅう	(one's) consideration; (taking) notice; interest; attention	눈에 띔; 관심	눈의 안.		2	default	3	1804010
+o			2	kanji		雅?	がごう	alias; pseudonym; pen name; nom de plume	문인이나 예술가 따위의 호나 별호를 높여 이르는 말.	문인이나 예술가 따위의 호나 별호를 높여 이르는 말.		2	default	3	1197910
+o			2	kanji		冶金	やきん	metallurgy	광석에서 금속을 골라내는 일이나 골라낸 금속을 정제(精製)·합금(合金)·특수 처리하여 여러 가지 목적에 맞는 금속 재료를 만드는 일.	광석에서 금속을 골라내는 일이나 골라낸 금속을 정제(精製)·합금(合金)·특수 처리하여 여러 가지 목적에 맞는 금속 재료를 만드는 일.		2	default	3	1536310
+o			2	kanji		五?	ごたい	the whole body; the five styles of writing Chinese characters; the five parts of the body (head, two hands and two feet; or head, neck, chest, hands and feet)	사람의 온몸.	사람의 온몸.		2	default	3	1268500
+o			2	kanji		油性	ゆせい	oil-based	기름의 성질.	기름의 성질.		2	default	3	1695050
+o			2	kanji		引導	いんどう	last words recited to the newly departed; requiem; converting people to Buddhism	이끌어 지도함.	이끌어 지도함.		2	default	3	1169650
+o			2	latin		紫紺	しこん	dark purple; bluish purple	자줏빛과 진남빛을 아울러 이르는 말.	자줏빛과 진남빛을 아울러 이르는 말.		2	default	3	1311690
+o			2	kanji		前史	ぜんし	prehistory	역사(歷史) 이전.	역사(歷史) 이전.		2	default	3	1393070
+o			2	latin		除夜	じょや	New Year's Eve	섣달그믐날 밤	섣달그믐날 밤.		2	default	3	1345800
+o			2	latin		粗大	そだい	coarse; rough; bulky	거칠고 큼, 굵고 투박함.	‘조대하다’의 어근.		2	default	3	1397020
+o			2	kanji		種付	たねつけ	mating	종지(種指); 교배; 주로 가축 따위를 교미시키는 일. 	주로 가축 따위를 교미시키는 일.		2	default	3	1686540
+o			2	kanji		種族	しゅぞく	race; tribe; ethnic group; species	종족; 민족; 종(種)	같은 종류의 생물 전체를 이르는 말.		2	default	3	1328840
+o			2	latin		舟橋	ふなばし	pontoon bridge	작은 배를 한 줄로 여러 척 띄워 놓고 그 위에 널판을 건너질러 깐 다리. 뗏목 다리	작은 배를 한 줄로 여러 척 띄워 놓고 그 위에 널판을 건너질러 깐 다리.		2	default	3	1333210
+o			2	latin		漂泊	ひょうはく	roaming; drifting about; wandering; drifting (with the current, on the tide, etc.)	떠돎; 방랑	풍랑을 만난 배가 물 위에 정처 없이 떠돎.		2	default	3	1617220
+o			2	latin		香魚	あゆ	ayu (Plecoglossus altivelis); sweetfish	민물고기; 향어	잉어의 한 품종. 비늘은 등지느러미 바로 아랫부분에만 있으며 성장 속도가 빠르다.		2	default	3	1586720
+o			2	kanji,kana		喜?	きじゅ	77th birthday	77번째 생일; 나이 일흔일곱 살을 달리 이르는 말; 희수	나이 일흔일곱 살을 달리 이르는 말.		2	default	3	1218840
+o			2	latin		?交	きゅうこう	old friendship	추억을 공유하며 따뜻함과 깊은 정을 나눌 수 있는 관계'	오래전부터 사귄 교분. 또는 전부터 교분이 있는 사람.		2	default	3	1591470
+o			2	latin		??	しぶがき	astringent persimmon	떫은 감	맛이 떫은 감.		2	default	3	1335560
+o			2	kanji		?無	きょむ	nihility; nothingness	아무것도 없이 텅 빔.	아무것도 없이 텅 빔.		2	default	3	1232810
+o			2	kanji		能?	のうがく	noh play	일본의 전통 연극 형식인 노(能)에 쓰이는 음악;			3	default	0	1470140
+o			2	untranslated		四百	よんひゃく	400; four hundred	숫자 400	달이 아주 이지러졌다는 뜻으로, 음력 초하룻날을 이르는 말. 또는 그날의 달을 이르는 말.		3	llm	0	1767090
+o			2	kanji		一首	いっしゅ	one tanka; one poem	한 수; 일본의 단가나 시를 셀 때 쓰는 단위인 수;	혼자의 몫. 또는 혼자의 힘.		3	llm	0	1163190
+o			2	kanji		全米	ぜんべい	all of the United States; the whole of the USA; all of North and South America; the entire Americas	전미(全米); 미국 전체	조의 열매를 찧은 쌀.		3	llm	0	1396190
+o			2	kanji		町長	ちょうちょう	town mayor	마을 장(長); 읍장	예전에, 물건을 만드는 것을 업으로 하던 사람.		3	llm	0	1428790
+o			2	kanji		布?	ふとん	futon; Japanese bedding consisting of a mattress and a duvet; round cushion used for Zen meditation (traditionally made of woven bulrush leaves)	요(침구); 이불	부들로 둥글게 틀어 만든 방석.		3	llm	0	1496890
+o			2	kanji		公庫	こうこ	finance corporation	공공의 창고	각 관아에서 쓰는 기구를 넣어 두던 창고.		3	llm	1	1273650
+o			2	kanji		都?	とえい	(under) metropolitan government management	일본의 행정구역인 도(都)에서 운영함.	새로 부임하는 감사가 감영에 이르던 일.		3	llm	1	1700920
+o			2	kanji		府立	ふりつ	prefectural; managed by an urban prefecture (Osaka or Kyoto)	일본의 행정구역인 부(府)에서 세운			3	default	1	1611460
+o			2	kanji		府?	ふけん	prefectures (of Japan, excl. Tokyo and Hokkaido)	일본의 행정구역인 부(府)와 현(縣); 			3	default	1	1496900
+o			2	kanji		砂防	さぼう	erosion control	사방(砂防); 토사 유출 방지	이십사방위의 하나. 정남(正南)에서 동으로 30도 방위를 중심으로 한 15도 각도 안의 방향이다.		3	llm	1	1291630
+o			2	kanji		省令	しょうれい	ministerial ordinance	일본의 행정부의 장인 성(省)의 법률로 정하여 지시하는 명령	영묘(靈妙)한 성정(性情).		3	llm	1	1351150
+o			2	kanji		小結	こむすび	wrestler of the fourth highest rank	일본 씨름 스모에서 리키시 계급 중 네 번 째 계급.	물 따위가 막힌 것을 통하게 터놓음.		3	llm	1	1348020
+o			2	kanji		英和	えいわ	English-Japanese; English-Japanese dictionary	영일(英和); 영어-일본어	일정한 의미를 갖고 움직이는 대상을 촬영하여 영사기로 영사막에 재현하는 종합 예술.		3	llm	1	1174720
+o			2	kanji		正?	せいきょう	orthodoxy; (Greek) orthodox church	정교(正敎); 정통 교리	구세군 계급의 하나. 부교의 위이다.		3	llm	1	1376930
+o			2	kanji		鳥居	とりい	torii (Shinto shrine archway)	신사(神社)의 문; 도리이	‘조것01’을 구어적으로 이르는 말. ‘조것’에 서술격 조사 ‘이다’가 붙은 형태인 ‘조것이다’는 ‘조거다’로 줄어서 ‘조거’의 형태가 유지되고, ‘조것’에 주격 조사 ‘이’나 보격 조사 ‘이’가 붙은 형태인 ‘조것이’는 ‘조게’의 형태로 바뀐다.		3	llm	1	1430280
+o			2	kanji		川柳	せんりゅう	senry?; comic haiku; humorous seventeen-mora poem	서민층 사이에서 성행한 5·7·5의 세 구(句)로 된 풍자·익살을 주로 한 짧은 시	내의 흐름.		3	llm	1	1390110
+o			2	latin		希少	きしょう	scarce; rare	희소함; 드묾	기뻐서 웃음.		3	llm	1	1222880
+o			2	latin		可哀想	かわいそう	poor; pitiable; pathetic; pitiful	가엾음; 딱함			3	default	2	1590740
+o			2	kanji		郡部	ぐんぶ	rural districts; counties	일본의 행정구역인 군(郡) 지역	군붓과의 연체동물. 껍데기의 길이는 4~7cm, 지름은 5cm 정도로, 갈색 또는 회색을 띤 갈색이며 껍데기는 8개가 살 속에 묻혀 있는 형태로 타원형이고, 둥글고 자질구레한 돌기가 나 있다. 조간대의 바위 위에 붙어 살며 한국, 일본 등지에 분포한다.		3	llm	2	1249250
+o			2	kanji		踏?	ふみえ	fumi-e; fumie; tablet bearing Christian images, on which Edo-period authorities forced suspected Christians to trample; allegiance test	일본의 에도 시대에 기독교를 금지하기 위해 성모마리아상?예수십자가상 등을 목판 또는 동판?황동판에 새겨서 발로 밟게 해서 신자가 아님을 증명하도록 했던 일.			3	default	2	1745070
+o			2	kanji		長唄	ながうた	long epic song with shamisen accompaniment (developed in Edo in the early 17th century)	일본의 에도 시대에 발생한 샤미센에 맞추어 부르는 긴 속요(俗謠)	‘맏파’를 속되게 이르는 말.		3	llm	2	1607380
+o			2	kanji		?下	けんか	in the prefecture; prefectural	일본의 행정구역인 현(縣)의 안	현재의 형편 아래. 주로 연설문 따위에서 쓴다.		3	llm	2	1258830
+o			2	kanji		??	けんえい	(under) prefectural management	일본의 행정구역인 현(縣)에서 운영하는	‘겨울’을 달리 이르는 말.		3	llm	2	1258820
+o			2	kanji		宮司	ぐうじ	chief priest	일본 신사의 우두머리	활을 만드는 사람.		3	llm	3	1228420
+o			2	kanji		年功	ねんこう	long service	연공; (오래 근속한) 공로; (여러해 솜씨를 익힌) 숙련			3	default	3	1468580
+o			2	kanji		隷書	れいしょ	clerical script (ancient, highly angular style of kanji)	한자 서체의 하나; 예서(隷書)			3	default	3	1628220
+o			2	kanji		名人芸	めいじんげい	masterful performance; virtuosity	명인(名人)의 솜씨; 기예			3	default	3	1752140
+o			2	kanji		米審	べいしん	Rice Price Deliberative Council	쌀값 및 기타 주요 식량 가격 결정에 관한 기본 사항을 조사?심의하여, 필수 사항을 농림수산대신에게 건의하는 자문기관	일이 확실하지 아니하여 늘 마음을 놓을 수 없는 데가 있음.		3	llm	3	1907540
+o			2	latin		四川	しせん	Sichuan (China); Szechuan; Szechwan	중국의 쓰촨 지방	사철의 하늘. 곧 봄의 창천(蒼天), 여름의 호천(昊天), 가을의 민천(旻天), 겨울의 상천(上天)을 통틀어 이른다.		3	llm	3	1307290
+o			2	kanji		序二段	じょにだん	jonidan; second lowest division	일본 씨름 스모에서 맨 아래에서 두 번째 계급			3	default	3	1952510
+o			2	latin		細身	ほそみ	narrow (blade); slender (figure, build); thin	(만듦새가) 가느다람;.(몸매가) 호리호리함; (폭이) 좁음	대대로 한 가문이나 왕가를 섬기는 신하.		3	llm	3	1295660
+o			2	kanji		小唄	こうた	kouta; traditional ballad accompanied by shamisen	일본 에도시대 말기 샤미센에 맞춰 부른 속곡(俗曲)의 총칭	싸움에서 피해가 적게 패함.		3	llm	3	1744150
+o			2	latin		手拍子	てびょうし	beating time with one's hands; clapping to the beat; making a careless move (in go, shogi, etc.); responding to an opponent's move without proper thought	손뼉 치기; (바둑 등에서) 경솔한 수			3	default	3	1328270
+o			2	kanji		氏子	うじこ	shrine parishioner	신사(神社)의 신도	활자의 자모를 만들기 위한 글자의 본.		3	llm	3	1311020
+o			2	latin		一回?	いっかいてん	one revolution; one rotation	한 바퀴 구름; 한 번 회전	여러 회(回)를 통하여 승부를 겨루는 경기에서, 맨 첫 번째 경기.		3	llm	3	1575960
+o			2	latin		切株	きりかぶ	tree stump; stubble (rice, etc.)	나무 그루터기; 	음의 장단이나 강약 따위가 반복될 때의 그 규칙적인 음의 흐름.		3	llm	3	1591790
+o			2	kanji		精華	せいか	essence; quintessence; flower; glory	정화; 사물의 진가라고 할 만한 빼어난 곳; 빼어나 화려한 것; 광채	상칭면(相稱面)이 적은 꽃이 상칭면이 많은 꽃으로 변화하였을 때의 현상을 이르는 말. 디기탈리스, 박하 따위처럼 화서의 꼭대기 위쪽으로 향하여 달린 큰 꽃에서 잘 일어난다.		3	llm	3	1628110
+o			2	latin		知日	ちにち	being knowledgeable about Japan; being well versed in Japanese affairs	일본에 대해 잘 앎	천도교의 제2세 교조 해월(海月) 최시형이 제1세 교조에게 심법을 이어받았음을 기념하는 날. 조선 철종 14년(1863) 8월 14일이다.		3	llm	3	1800110
+o			2	latin		天引	てんびき	deduction in advance (of tax, interest, etc.)	대금 중에서 미리 계약기간 중의 이자를 제하는 것; 급료 등의 총액 중에서 처음에 일정액을 제하는 것	천 길이라는 뜻으로, 산이나 바다가 매우 높거나 깊음을 이르는 말.		3	llm	3	1598490
+o			2	kanji		河童	かっぱ	kappa; mythical water-dwelling creature; excellent swimmer; cucumber	일본인의 상상의 동물 갓파; 물에 사는 일본 신화 속 생물	‘하동거리다’의 어근.		3	llm	3	1193540
+o			2	kanji		?勢	けんせい	prefectural strengths (conditions, resources)	일본의 행정구역인 현(?)의 인구·정치·문화·경제 등의 종합적인 형세(현황)	지금 이 세상.		3	llm	3	1630800
+o			2	kanji		??	けんかい	prefectural assembly	일본의 행정구역인 현(?)의 회의	세상 사람에게 알려지는 것과 알려지지 아니하는 것.		3	llm	3	1258840
+o			2	latin		厚手	あつで	thick (paper, cloth, etc.); heavy	두꺼움; 두께감	두둑한 보수.		3	llm	3	1275470
+o			2	kanji		?堀	うちぼり	inner moat; moat within the castle walls	일본 성벽 안의 해자			3	default	3	1588250
+o			2	kanji		?弟子	うちでし	private pupil; apprentice	스승의 집에 살며 가사 등도 도우면서 가르침을 받는 제자			3	default	3	1458940
+o			2	latin		?三	たんさん	AA battery; AA cell	AA 건전지	꿀풀과의 여러해살이풀. 줄기는 높이가 40~80cm로 전체에 털이 나 있으며, 잎은 넓은 타원형이다. 5~6월에 푸른 자주색의 잔꽃이 피고 열매는 삭과(?果)로 9월에 익는다. 뿌리는 적색으로, 약용한다. 중국이 원산지이다.		3	llm	3	1417440
+o			2	latin		?板	といた	sliding door (esp. when removed from its frame and used for carrying things or people); large flounder	문짝; 큰 문짝의 판자	‘호조 판서’를 줄여 이르는 말.		3	llm	3	1267070
+o			2	kanji		?盆	きゅうぼん	Bon Festival of the lunar calendar	일본의 옛 명절	사람마다 똑같이 나누어 줌.		3	llm	3	1231290
+o			2	latin,long		?丈	きじょう	stout-hearted; firm; courageous; brave	기개가 씩씩함; 씩씩함	옷의 길이.		3	llm	3	1222320
+o			2	kanji		?畑	やきばた	land made arable by the slash-and-burn method; swidden; slash-and-burn farming	초지?임지 등에서 잡목?잡초를 태워 그것들을 비료로 하여 불탄 자리에 메밀?피?대두?밤 등을 뿌리는 밭	소를 사고파는 장.		3	llm	3	1663330
+o			2	latin		?田	さなだ	plait; braid	굵은 무명실로 넓고 두껍게 꼰(엮은) 끈	‘떨림’의 전 용어.		3	llm	3	1364170
+o			2	latin		?側	えんがわ	engawa; external corridor on the outer side of traditional Japanese houses; bone at the base of a fin (esp. of a flatfish); meat at the base of a fin	다다미가 깔린 마루 형태의 공간	‘연측하다’의 어근.		3	llm	3	1177630
+o			2	latin		?台	えんだい	bench	엔가와 내부에 놓여 휴식 및 활동을 위한 낮은 탁자	정토(淨土)에 왕생하는 사람은 모두 연꽃 속에서 난다고 하여 연꽃을 모태에 비유하여 이르는 말.		3	llm	3	1177640
+o			2	kanji		?月	かんげつ	moon viewing (esp. during the eight month of the lunar calendar)	마음으로 달의 아름다움과 신비로움을 관찰하고 사색한다			3	default	3	1214830
+o			2	latin		?結	かみゆい	hairdresser; hairdressing	이발사·헤어스타일리스트			3	default	3	1651930
+o			3	many-senses	Y(3)	見返	みかえし	endpaper (of a book); end-paper; facing (material sewn on the inside edge of a garment); looking back	책의 끝 종이; (옷의) 안감; 되돌아봄; 극복	예전에, 갱(坑) 속에서 사용하던 나침반.		3	llm	3	1604410
+o			4	many-senses		文理	ぶんり	humanities and sciences; reason; logic; line of thought (in a piece of writing)	문과와 이과; 이성; 논리; 사상 흐름	글의 뜻을 깨달아 아는 힘.		2	default	3	1723400
+o			4	many-senses		松竹梅	しょうちくばい	pine, bamboo and plum (an auspicious grouping); high, middle and low (ranking); top, middle and bottom; upper, medium, lower	소나무, 대나무, 매실 (상서로운 조합); 높은 것, 중간 것, 낮은 것	소나무와 대나무와 매화나무를 아울러 이르는 말. 예로부터 세한삼우라고 하여 시나 그림의 소재로 많이 삼아 왔다.		2	default	3	1349920
+o			4	many-senses		太白	たいはく	Venus (planet); thick silk thread; refined sugar; white rice jelly	금성; 굵은 비단실; 정제된 설탕; 떡; 고구마의 종류	강원특별자치도 남부에 있는 시(市). 태백 탄광 지역의 중심지이며 국내에서 무연탄이 가장 많이 난다. 명승지로 용연굴(龍淵窟)이 있다. 면적은 303.52㎢.		2	default	3	1787350
+o			5	many-senses		一丁	いっちょう	one leaf (of a book bound in Japanese style); one block of tofu; one serving (in a restaurant); one long and narrow thing (e.g. a gun, scissors, spade, hoe, inkstick, palanquin, candle, jinrikisha, shamisen, oar)	한 장; 한 덩이; 한 차례; (길이 단위) 초	어떤 것의 크기, 모양, 범위, 시간 따위가 하나로 정하여져 있음.		3	llm	2	1164780
+o			6	many-senses		前後	ぜんご	front and rear; front and back; before and behind; back and forth	앞뒤; 전후; 근처; 약	앞과 뒤를 아울러 이르는 말.		1	llm	0	1392910

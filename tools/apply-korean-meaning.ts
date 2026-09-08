@@ -8,6 +8,7 @@
 import { existsSync, readFileSync, readdirSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { DICT_DIR } from './lib/dict.ts'
+import { readTsv } from './lib/tsv.ts'
 
 const VALIDATE = process.argv.includes('--validate')
 const CLASS_PATH = join(DICT_DIR, 'korean-class.json')
@@ -51,32 +52,39 @@ const stdictDef = new Map<string, string>()
   }
 }
 
-// 여러 파일을 합친다 — id 당 마지막에 본 행이 이긴다
-const merged = new Map<string, { verdict: string; cat: string; fix: string; tier: string }>()
+// 여러 파일을 합친다 — id 당 마지막에 본 행이 이긴다.
+// llm_ko 를 같이 읽는다 — 사람이 그 칸을 직접 고치고 verdict 만 찍는 방식도 지원한다
+const merged = new Map<string, { verdict: string; cat: string; fix: string; llmKo: string; tier: string }>()
 for (const f of WORKLISTS) {
-  const lines = readFileSync(join(DICT_DIR, f), 'utf8').split('\n')
-  const wh = lines[0].split('\t')
-  const col = Object.fromEntries(['verdict', 'cat', 'fix', 'tier', 'id'].map((k) => [k, wh.indexOf(k)]))
+  const grid = readTsv(join(DICT_DIR, f))
+  const wh = grid[0]
+  const col = Object.fromEntries(
+    ['verdict', 'cat', 'fix', 'llm_ko', 'tier', 'id'].map((k) => [k, wh.indexOf(k)]),
+  )
   if (col.id < 0) continue
-  for (const line of lines.slice(1)) {
-    if (!line.trim()) continue
-    const c = line.split('\t')
+  for (const c of grid.slice(1)) {
     const id = c[col.id]
     if (!id) continue
     const verdict = (c[col.verdict] ?? '').trim()
     const cat = (c[col.cat] ?? '').trim()
-    // 이미 verdict 가 있는데 이 파일엔 비었으면 덮지 않는다
     const prev = merged.get(id)
     if (prev && !/^[oxs~]$/.test(verdict) && !/^[123]$/.test(cat)) continue
-    merged.set(id, { verdict, cat, fix: (c[col.fix] ?? '').trim(), tier: c[col.tier] ?? '?' })
+    merged.set(id, {
+      verdict,
+      cat,
+      fix: (c[col.fix] ?? '').trim(),
+      llmKo: (c[col.llm_ko] ?? '').trim(),
+      tier: c[col.tier] ?? '?',
+    })
   }
 }
 console.log(`검수 파일 ${WORKLISTS.length}개, 행 ${merged.size}개 병합`)
 
-const tally = { o: 0, x: 0, s: 0, '~': 0, cat: 0, skip: 0, missing: 0 }
-const perTier: Record<string, { o: number; x: number; s: number; '~': number }> = {}
+const tally = { o: 0, x: 0, s: 0, '~': 0, cat: 0, inlineEdit: 0, skip: 0, missing: 0 }
+const perTier: Record<string, { o: number; x: number; s: number; '~': number; edited: number }> = {}
+const norm = (s: string) => s.replace(/\s+/g, ' ').trim()
 
-for (const [id, { verdict, cat, fix, tier }] of merged) {
+for (const [id, { verdict, cat, fix, llmKo, tier }] of merged) {
   const entry = cls.byId[id]
   if (!entry) {
     tally.missing++
@@ -92,21 +100,31 @@ for (const [id, { verdict, cat, fix, tier }] of merged) {
     tally.skip++
     continue
   }
-  perTier[tier] ??= { o: 0, x: 0, s: 0, '~': 0 }
+  perTier[tier] ??= { o: 0, x: 0, s: 0, '~': 0, edited: 0 }
   perTier[tier][verdict as 'o' | 'x' | 's' | '~']++
   tally[verdict as 'o' | 'x' | 's' | '~']++
 
   const km: KoMeaning = entry.koMeaning ?? { definition: '', source: 'llm', verified: false }
+  // 인라인 수정 — llm_ko 칸을 사람이 직접 고쳤으면(현재 definition 과 다르면) 그 텍스트를 채택한다.
+  // fix 칸에 적는 대신 llm_ko 를 바로 고치고 verdict 만 찍는 방식 지원 (사용자 워크플로)
+  const inlineFix = fix || (llmKo && norm(llmKo) !== norm(km.definition) ? llmKo : '')
+
   if (verdict === 'o') {
+    if (inlineFix) {
+      km.definition = inlineFix
+      km.source = 'manual'
+      tally.inlineEdit++
+      perTier[tier].edited++
+    }
     km.verified = true
   } else if (verdict === 'x') {
-    if (!fix) {
-      console.warn(`  ⚠ ${id} verdict x 인데 fix 가 비었다 — 건너뜀`)
+    if (!inlineFix) {
+      console.warn(`  ⚠ ${id} verdict x 인데 고친 뜻(fix/llm_ko)이 없다 — 건너뜀`)
       tally.x--
       perTier[tier].x--
       continue
     }
-    km.definition = fix
+    km.definition = inlineFix
     km.source = 'manual'
     km.verified = true
   } else if (verdict === 's') {
@@ -131,13 +149,13 @@ if (VALIDATE) {
   console.log('=== 층별 검수 결과 (--validate) ===')
   for (const [t, v] of Object.entries(perTier).sort()) {
     const seen = v.o + v.x + v.s
-    const wrong = v.x + v.s // 번역이 틀려서 손댄 비율
+    const wrong = v.x + v.s + v.edited // 번역이 틀려서 손댄 것 (x·s·인라인 수정)
     console.log(
-      `  tier ${t}: o ${v.o} · x ${v.x} · s ${v.s} · ~ ${v['~']}` +
+      `  tier ${t}: o ${v.o}(수정 ${v.edited}) · x ${v.x} · s ${v.s} · ~ ${v['~']}` +
         (seen ? `  → 손댄 비율 ${((wrong / seen) * 100).toFixed(1)}% (${wrong}/${seen})` : ''),
     )
   }
-  console.log(`\n전체 verified: ${verifiedTotal}`)
+  console.log(`\n인라인 수정 ${tally.inlineEdit} · 분류 교정 ${tally.cat} · 전체 verified: ${verifiedTotal}`)
   process.exit(0)
 }
 
@@ -146,6 +164,6 @@ cls.stats.koMeaningVerified = verifiedTotal
 writeFileSync(CLASS_PATH, JSON.stringify(cls))
 
 console.log('=== 뜻 검수 반영 ===')
-console.log(`  o ${tally.o} · x ${tally.x} · s ${tally.s} · ~ ${tally['~']} · 분류교정 ${tally.cat} · 미기입 ${tally.skip} · id 없음 ${tally.missing}`)
+console.log(`  o ${tally.o} · x ${tally.x} · s ${tally.s} · ~ ${tally['~']} (인라인 수정 ${tally.inlineEdit}) · 분류교정 ${tally.cat} · 미기입 ${tally.skip} · id 없음 ${tally.missing}`)
 console.log(`  koMeaning.verified 총 ${verifiedTotal}`)
 console.log(`  → ${CLASS_PATH}  (build:runtime-dict 재실행 필요)`)
