@@ -133,6 +133,12 @@ input {
     transform: translateY(6px);
   }
 }
+/* 자리 이동 없이 밝기만 — 이미 제자리에 있는 요소가 "자리 잡는" 것처럼 보이면 안 될 때 */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
 @keyframes bar-grow {
   from {
     width: 0;
