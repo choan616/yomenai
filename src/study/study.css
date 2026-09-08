@@ -57,11 +57,13 @@
   justify-content: center;
   gap: 6px;
   text-align: center;
-  animation: fade-up 320ms ease-out both;
 }
+/* 덮개(background)는 첫 프레임부터 불투명하게 깔고, 문구만 떠오르게 한다.
+   컨테이너째 fade 하면 페이드 동안 뒤 카드가 비쳐 "배경이 먼저 보이는" 깜빡임이 생긴다 */
 .chapter-title p {
   margin: 0;
   font-size: 18px;
+  animation: fade-up 320ms ease-out both;
 }
 .chapter-title b {
   font-variant-numeric: tabular-nums;
