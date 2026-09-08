@@ -31,17 +31,41 @@ interface MeaningEntry {
   flags: string[]
 }
 
-// --flagged 는 별도 파일로 — tier별 표본 파일과 나란히 둔다
-const OUT_PATH = join(
-  DICT_DIR,
-  process.argv.includes('--flagged') ? 'korean-meaning-worklist-flagged.tsv' : 'korean-meaning-worklist.tsv',
-)
 const sampleArg = process.argv.find((a) => a.startsWith('--sample='))?.split('=')[1]
 const wantAll = process.argv.includes('--all')
 // --flagged: 표본 없이 품질 플래그(깨진 번역·cat 불일치 등)가 붙은 행 전량만. 최우선 검수 목록
 const flaggedOnly = process.argv.includes('--flagged')
+// --batch [--category=1|2|3] [--batch=N]: 아직 검수 안 한 다음 N건만 뽑아 batch-NN 파일로.
+// 조금씩 나눠 검수하는 모드. apply:korean-meaning 이 batch 파일들을 자동으로 같이 읽는다.
+const batchArg = process.argv.find((a) => a === '--batch' || a.startsWith('--batch='))
+const isBatch = !!batchArg
+const batchSize = batchArg?.includes('=') ? Math.max(1, Number(batchArg.split('=')[1])) : 40
+const catArg = process.argv.find((a) => a.startsWith('--category='))?.split('=')[1]
+const wantCategory = catArg && /^[123]$/.test(catArg) ? (Number(catArg) as 1 | 2 | 3) : undefined
 const perTier = sampleArg ? Math.max(1, Number(sampleArg)) : wantAll || flaggedOnly ? Infinity : 30
 const SEED = 20260907
+const BROKEN = new Set(['empty', 'error', 'latin', 'cyrillic', 'kanji', 'kana', 'untranslated'])
+
+// 배치 모드에서 이어서 쓸 파일 — 마지막 batch 파일에 미기입(?) 행이 남았으면 그걸 채우고, 아니면 다음 번호
+function resolveBatchPath(): string {
+  const existing = readdirSync(DICT_DIR)
+    .map((f) => f.match(/^korean-meaning-worklist-batch-(\d+)\.tsv$/))
+    .filter((m): m is RegExpMatchArray => !!m)
+    .map((m) => ({ f: m[0], n: Number(m[1]) }))
+    .sort((a, b) => a.n - b.n)
+  const last = existing.at(-1)
+  if (last) {
+    const grid = readTsv(join(DICT_DIR, last.f))
+    const vi = grid[0].indexOf('verdict')
+    if (grid.slice(1).some((c) => !/^[ox~s]$/.test((c[vi] ?? '').trim()))) return join(DICT_DIR, last.f)
+  }
+  return join(DICT_DIR, `korean-meaning-worklist-batch-${String((last?.n ?? 0) + 1).padStart(2, '0')}.tsv`)
+}
+
+// --flagged 는 별도 파일로 — tier별 표본 파일과 나란히 둔다
+const OUT_PATH = isBatch
+  ? resolveBatchPath()
+  : join(DICT_DIR, flaggedOnly ? 'korean-meaning-worklist-flagged.tsv' : 'korean-meaning-worklist.tsv')
 
 const need = (p: string) => {
   if (!existsSync(p)) {
@@ -112,7 +136,23 @@ if (existsSync(OUT_PATH)) {
   }
 }
 
-const BROKEN = new Set(['empty', 'error', 'latin', 'cyrillic', 'kanji', 'kana', 'untranslated'])
+// 배치 모드 — 다른 korean-meaning-worklist*.tsv 에 이미 실린 id 는 이번 배치에서 뺀다 (중복 방지).
+// 진행률 표시용으로 "실제 verdict 가 찍힌" id 도 따로 모은다.
+const issuedElsewhere = new Set<string>()
+const reviewedAnywhere = new Set<string>()
+if (isBatch) {
+  for (const f of readdirSync(DICT_DIR).filter((f) => /^korean-meaning-worklist.*\.tsv$/.test(f))) {
+    const grid = readTsv(join(DICT_DIR, f))
+    const [vi, ii] = [grid[0].indexOf('verdict'), grid[0].indexOf('id')]
+    if (ii < 0) continue
+    const self = join(DICT_DIR, f) === OUT_PATH
+    for (const c of grid.slice(1)) {
+      if (!c[ii]) continue
+      if (!self) issuedElsewhere.add(c[ii])
+      if (/^[ox~s]$/.test((c[vi] ?? '').trim())) reviewedAnywhere.add(c[ii])
+    }
+  }
+}
 
 interface Row {
   id: string
@@ -128,6 +168,8 @@ interface Row {
 const rows: Row[] = []
 for (const [id, k] of Object.entries(byId)) {
   if (!k.koMeaning) continue
+  if (isBatch && wantCategory && k.category !== wantCategory) continue
+  if (isBatch && issuedElsewhere.has(id)) continue
   const it = idiomById.get(id)
   if (!it) continue
   const m = meaning[id]
@@ -167,11 +209,25 @@ function shuffle<T>(a: T[]): T[] {
 const byTier = new Map<number, Row[]>()
 for (const r of rows) (byTier.get(r.tier) ?? byTier.set(r.tier, []).get(r.tier)!).push(r)
 
+// 배치 정렬 — 깨진 번역 먼저 → 밴드 낮은 순(자주 나올 카드 먼저) → 표기
+const isBroken = (r: Row) => (r.flags.some((f) => BROKEN.has(f)) ? 0 : 1)
+const batchOrder = (a: Row, b: Row) =>
+  isBroken(a) - isBroken(b) ||
+  priorityToBand(a.it.priority) - priorityToBand(b.it.priority) ||
+  a.it.headword.localeCompare(b.it.headword)
+
 let picked: Row[]
-if (flaggedOnly) {
+if (isBatch) {
+  // 이 배치 파일에 이미 채운 것은 유지, 나머지는 batchSize 까지 새로 채운다
+  const kept = rows.filter((r) => prior.has(r.id))
+  const rest = rows.filter((r) => !prior.has(r.id)).sort(batchOrder)
+  picked = [...kept, ...rest.slice(0, Math.max(0, batchSize - kept.length))]
+  picked.sort(batchOrder)
+} else if (flaggedOnly) {
   // 플래그가 붙은 행(깨진 번역 등) + 이미 검수 verdict 가 찍힌 행 전량. 표본 안 뽑는다.
   // 검수한 행을 계속 담아 두어야 이 파일 하나가 "할 일 + 검수 기록" 노릇을 한다
   picked = rows.filter((r) => r.flags.length > 0 || prior.has(r.id))
+  picked.sort((a, b) => a.tier - b.tier || a.k.category - b.k.category || priorityToBand(a.it.priority) - priorityToBand(b.it.priority) || a.it.headword.localeCompare(b.it.headword))
 } else {
   picked = []
   for (const [, list] of [...byTier].sort((a, b) => a[0] - b[0])) {
@@ -180,8 +236,8 @@ if (flaggedOnly) {
     const take = Number.isFinite(perTier) ? Math.max(0, perTier - kept.length) : Infinity
     picked.push(...kept, ...rest.slice(0, take))
   }
+  picked.sort((a, b) => a.tier - b.tier || a.k.category - b.k.category || priorityToBand(a.it.priority) - priorityToBand(b.it.priority) || a.it.headword.localeCompare(b.it.headword))
 }
-picked.sort((a, b) => a.tier - b.tier || a.k.category - b.k.category || priorityToBand(a.it.priority) - priorityToBand(b.it.priority) || a.it.headword.localeCompare(b.it.headword))
 
 const header = [
   'verdict', 'cat', 'fix', 'tier', 'flags', 'manual',
@@ -213,6 +269,25 @@ const body = picked.map((r) => {
 })
 
 writeTsvBom(OUT_PATH, header + '\n' + body.join('\n') + '\n')
+
+if (isBatch) {
+  const catLabel = wantCategory ? { 1: '동형동의', 2: '동형이의', 3: '일본고유' }[wantCategory] : '전체'
+  const pool = Object.entries(byId).filter(([, k]) => k.koMeaning && (!wantCategory || k.category === wantCategory))
+  const total = pool.length
+  const reviewed = pool.filter(([id]) => reviewedAnywhere.has(id)).length
+  const newCount = picked.filter((r) => !prior.has(r.id)).length
+  const bandBreak: Record<number, number> = {}
+  for (const r of picked) bandBreak[priorityToBand(r.it.priority)] = (bandBreak[priorityToBand(r.it.priority)] ?? 0) + 1
+  const bandStr = Object.entries(bandBreak).sort().map(([b, n]) => `밴드${b}:${n}`).join(' ')
+  const brokenInBatch = picked.filter((r) => r.flags.some((f) => BROKEN.has(f))).length
+  console.log(`→ ${OUT_PATH}`)
+  console.log(`  ${catLabel} ${total}건 중 검수 ${reviewed} · 남은 ${total - reviewed} · 이번 배치 ${picked.length}행` +
+    (prior.size ? ` (이어받음 ${prior.size} + 신규 ${newCount})` : '') + `  [${bandStr}]`)
+  if (brokenInBatch) console.log(`  ⚠ 깨진 번역 ${brokenInBatch}건 포함 — 배치 맨 앞`)
+  console.log(`\n  verdict 채우고: npm run apply:korean-meaning -- --validate`)
+  console.log(`  다음 배치: npm run build:korean-meaning-worklist -- --batch${wantCategory ? ` --category=${wantCategory}` : ''}`)
+  process.exit(0)
+}
 
 const mode = flaggedOnly ? '플래그 전량' : Number.isFinite(perTier) ? `tier별 표본 ${perTier}` : '전체'
 console.log(`→ ${OUT_PATH}  (${picked.length}행, ${mode}, 이어받은 verdict ${prior.size}건)`)
@@ -256,4 +331,4 @@ for (const [t, list] of [...byTier].sort((a, b) => a[0] - b[0])) {
   console.log(`  T${t} ${String(list.length).padStart(6)} / ${String(inFile).padStart(4)}   ${tierLabel[t]}`)
 }
 console.log(`\n검수 표기 — o 맞음 · x 틀림(fix) · ~ 애매(fix 메모) · s stdict_def 채택 · ? 미기입`)
-console.log(`깨진 것만 전량 보려면 --flagged · 전체 --all · tier별 표본 --sample=N`)
+console.log(`깨진 것만 전량 --flagged · 전체 --all · tier별 표본 --sample=N · 조금씩 --batch [--category=1|2|3]`)

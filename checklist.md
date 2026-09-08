@@ -593,8 +593,11 @@ context-notes 2026-09-07 「지속의 유인」·「대조」 절 참조.
     대신 `build:korean-meaning-worklist -- --flagged` → `korean-meaning-worklist-flagged.tsv`
     (플래그 붙은 행 191 = 번역 품질 131 + 분류 불일치 60, 표본 없이 전량). 도구가 플래그별
     분해도 출력. 앱은 `미검수` 뱃지 그대로 (`verified:false` 는 텍스트를 가리지 않는다)
-  - **[ ] 실제 검수** (사람) — `korean-meaning-worklist.tsv` verdict 채우기 → `apply:korean-meaning --validate`
-    로 tier별 손댄 비율 → 필요하면 `--all`. **T2(깨진 번역 125건)부터.** AI 가 대신 못 함
+  - **[~] 실제 검수** (사람) — 표본(tier별 50, 300행) 완료. `apply:korean-meaning --validate`
+    손댄 비율 T1 12/T3 7/T4 13/T5·T6 20%. tier 4~6(~16,500건)은 PLAN대로 보류, 세션마다 조금씩
+  - **[x] 조금씩 검수 도구** (2026-09-08) — `build:korean-meaning-worklist --batch [--category=1|2|3]`
+    아직 verdict 없는 다음 N건(기본 40)만 `korean-meaning-worklist-batch-NN.tsv` 로. 배치 간 중복 0,
+    `apply:korean-meaning` 이 batch 파일 자동 병합. `npm run view:jp-unique` → 일본고유 확인용 HTML
   - **[구버전 폐기]** stdict 기반 `koMeaning` + 워크리스트 v1. `korean-meaning.json`·
     `.korean-meaning-cache.json` 은 gitignore(재생성 가능, `korean-llm-draft.tsv` 와 같은 취급)
 - [x] **12-E · `MISTAKE_ADVICE` 문헌 대조** (2026-09-07) — `RULE_MISTAKES` 4종 대상

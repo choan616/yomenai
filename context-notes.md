@@ -2923,3 +2923,37 @@ checklist "확장 후보" 항목(코퍼스 필터 완화 / 훈독 모드 분리 
 `apply:korean-meaning` — verdict `o` 191, **인라인 수정 151** (T1 46/60, T2 105/125).
 T2(깨진 번역) 84%가 실제로 손봐야 했다 — flagged 집합이라 당연. `build:runtime-dict` →
 `base.json` verified **0 → 187** (나머지 4는 밴드 4), `source: manual` 147.
+
+## 2026-09-08 — 뜻 검수를 조금씩: 카테고리별 배치 + 확인용 HTML
+
+표본(tier별 50, 300행) 검수 완료 후 나머지 대량분을 어떻게 나눌지 결정.
+`apply:korean-meaning --validate` 층별 손댄 비율 — T1 12% / T2 0% / T3 7% / T4 13% /
+T5·T6 20%. tier 4~6(~16,500건)은 전수 검수 대상이나 PLAN대로 보류하고, 대신
+**세션마다 조금씩** 검수하는 도구를 얹었다.
+
+### 자르는 축 — category (기각: tier, band)
+
+- **category** — 배치당 검수 질문이 하나로 고정된다. category 3(일본고유)은 "이 한국어
+  한 줄이 영어 gloss 를 맞게 옮겼나"만 묻는다. 한자음 대조도 동형동의/이의 판단도 없다.
+  가장 단조롭고 빠르다
+- **기각 tier** — 내부 우선순위 아티팩트라 관심사가 섞인다 (T3 = 수동검수 + 동형동의 +
+  일본고유 한 덩어리, T5 ≈ category 3 이지만 정확히 같지 않음). 깨진 번역을 맨 앞으로
+  빼는 이점은 `--batch` 가 슬라이스 안에서도 한다
+- **기각 band (1차 축으로)** — 밴드만으로 자르면 한 배치에 세 질문이 섞인다. 대신 category
+  배치를 밴드 0→3 순으로 정렬해 자주 나올 카드부터 검수되게 한다 (배치 내 2차 정렬)
+
+### `build:korean-meaning-worklist --batch [--category=1|2|3] [--batch=N]`
+
+- 아직 verdict 없는 다음 N건(기본 40)만 `korean-meaning-worklist-batch-NN.tsv` 로 쓴다
+- 마지막 batch 파일에 미기입(`?`) 행이 남았으면 그 파일을 이어 채우고, 다 찼으면 다음 번호
+- 모든 `korean-meaning-worklist*.tsv` 를 훑어 이미 실린 id 는 제외 (배치 간 중복 0 — 검증함)
+- 배치 내 정렬 = 깨진 번역 먼저 → 밴드 0→3 → 표기
+- 진행률 출력 — `일본고유 3643건 중 검수 127 · 남은 3516 · 이번 배치 40`
+- `apply:korean-meaning` 은 `korean-meaning-worklist*.tsv` 를 이미 전부 병합하므로 batch
+  파일이 쌓여도 자동 반영. batch tsv 는 `!data/dict/*-worklist*.tsv` 로 추적 대상(사람 판정)
+
+### 확인용 HTML — `npm run view:jp-unique` → `data/dict/jp-unique.html`
+
+검수 안 해도 일본고유 3,643건을 브라우저로 훑어볼 수 있게. `korean-class.json` +
+`idioms.json` 조인(=`base.json` 재빌드 없이 최신 apply 반영). 밴드 필터·미검수만·텍스트
+검색. 일본어 칸은 `lang="ja"` + JP 폰트 스택. `data/dict/*` 라 gitignore(재생성 가능).
