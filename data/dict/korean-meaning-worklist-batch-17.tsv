@@ -1,0 +1,41 @@
+﻿verdict	cat	fix	tier	flags	manual	headword	reading	glossEn	llm_ko	stdict_def	manual_reason	category	classSource	band	id
+o			5			起源	きげん	origin; beginning; source	기원; 근원	이전의 기술직 8급 공무원의 직급. 지금의 서기에 해당한다.		3	llm	1	1591140
+o			5			旗印	はたじるし	design (on a banner); emblem (on a flag); insignia; banner (e.g. of democracy)	깃발의 표시; 상징; 구호;	고려·조선 시대에, 지방 호족 및 토호의 자제로서 중앙에 볼모로 와서 그 출신 지방의 행정에 고문(顧問) 구실을 하던 사람. 또는 그런 제도. 지방 세력을 견제하고 중앙 집권을 강화하기 위한 정책으로, 신라의 상수리 제도에서 유래하였다.		3	llm	1	1614430
+o			5			機嫌	きげん	humour; humor; temper; mood	기분; 분위기	꺼리고 싫어함.		3	llm	1	1220930
+o			5			暖冬	だんとう	mild winter; warm winter	따뜻한 겨울	질서를 어지럽히며 마구 행동함. 또는 그런 행동.		3	llm	1	1419850
+o			5			暖房	だんぼう	(indoor) heating	난방	질서가 없고 어지러운 나라.		3	llm	1	1419860
+o			5			納豆	なっとう	natto (fermented soybeans)	낫토	머리를 숙여 남에게 굴복함.		3	llm	1	1470070
+o			5			娘婿	むすめむこ	son-in-law	사위	중요하지 아니한 공무(公務)에 종사하는 관리.		3	llm	1	1531230
+o			5			年功序列	ねんこうじょれつ	seniority by length of service	연공서열			3	default	1	1468600
+o			5			年頭	ねんとう	beginning of the year; the oldest person	연초; 연장자			3	default	1	1582880
+o			5			年配	ねんぱい	(approximate) age; years; elderly; old	나이; 연장자			3	default	1	1469090
+o			5			年産	ねんさん	annual production	연간 생산량			3	default	1	1468710
+o			5			年上	としうえ	older; senior	나이가 위인; 연상			3	default	1	1468870
+o			5			年商	ねんしょう	yearly (annual) turnover	연간 매출액			3	default	1	1954240
+o			5			年率	ねんりつ	annual rate (of interest)	연이율			3	default	1	1731140
+o			5			年始	ねんし	beginning of the year; new year; New Year's call; New Year's greetings	연초; 새해			3	default	1	1468730
+o			5			年月	としつき	months and years	연월			3	default	1	1582870
+o			5			年月日	ねんがっぴ	date (year, month and day)	연월일			3	default	1	1468550
+o			5			年中	ねんじゅう	whole year; all year round; throughout the year; always	일 년 내내			3	default	1	1469000
+o			5			年初	ねんしょ	beginning of the year	연초			3	default	1	1468840
+o			5			年下	としした	younger; junior	나이 어린; 연하			3	default	1	1468230
+o			5			年賀状	ねんがじょう	New Year's card	연하장			3	default	1	1468250
+o			5			年会	ねんかい	conference; annual convention	연회; 연례 회의			3	default	1	1468280
+o			5			年数	ねんすう	number of years	연수			3	default	1	1468890
+o			5			年来	ねんらい	of long standing; long-pending; long-cherished; for years (past)	오랫동안; 오랜 기간; 몇 년 전부터			3	default	1	1469240
+o			5			年齢層	ねんれいそう	age range; age-group; age bracket	연령층			3	default	1	1469300
+o			5			念書	ねんしょ	written pledge; signed note of assurance; memorandum; legal instrument	서약서; 각서			3	default	1	1469430
+o			5			奴隷	どれい	slave; servant; slavery	노예			3	default	1	1445650
+o			5			泥棒	どろぼう	thief; burglar; robber; theft	도둑			3	default	1	1599340
+o			5			泥沼	どろぬま	bog; marsh; swamp; quagmire	진흙탕; 곤경			3	default	1	1436950
+o			5			匿名	とくめい	anonymity; using an assumed name	익명			3	default	1	1454470
+o			5			茶屋	ちゃや	teahouse; (Edo period) rest stop; (geisha) teahouse; establishment where patrons are entertained by geisha	찻집	‘다옥하다’의 어근.		3	llm	1	1422620
+o			5			踏切	ふみきり	railway crossing; railroad crossing; train crossing; level crossing	철도 건널목	절을 받고 그 답례로 절을 함. 또는 그렇게 하는 절.		3	llm	1	1602840
+o			5			代議士	だいぎし	parliamentarian; member of a congress	중의원 의원			3	default	1	1411740
+o			5			大店	おおだな	large store	큰 가게	임금의 병세가 아주 위독함.		3	llm	1	1862050
+o			5			大回転	だいかいてん	giant slalom; big rotation	대회전; 거대한 회전			3	default	1	1785680
+o			5			大黒柱	だいこくばしら	central pillar (of a building); mainstay (e.g. of an economy); backbone (e.g. of a family); provider	가장 중요한 기둥; 가장 큰 버팀목			3	default	1	1413720
+o			3		Y(3)	島々	しまじま	islands	섬들	‘도도하다’의 어근.		3	llm	1	1594540
+o			5			島根	しまね	Shimane (prefecture); island country	시마네(현); 섬나라	‘도근거리다’의 어근.		3	llm	1	1446810
+o			5			道端	みちばた	roadside; wayside	길가	말할 길이 끊어졌다는 뜻으로, 어이가 없어서 말하려 해도 말할 수 없음을 이르는 말.		3	llm	1	1454230
+o			5			都度	つど	each (every) time; whenever	매번; 그때마다	‘도도하다’의 어근.		3	llm	1	1445020

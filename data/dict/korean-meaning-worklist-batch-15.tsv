@@ -1,0 +1,41 @@
+﻿verdict	cat	fix	tier	flags	manual	headword	reading	glossEn	llm_ko	stdict_def	manual_reason	category	classSource	band	id
+o			5			気配	けはい	indication; sign; hint; sensation	기척; 분위기	구배(九拜)의 하나. 한 번 절한다.		3	llm	0	1222510
+o			5			気持	きもち	feeling; sensation; mood; state of mind	기분; 느낌; 마음가짐	한 논밭에 같은 곡식을 연거푸 심어서 그 곡식이 잘 자라지 않는 땅.		3	llm	0	1591430
+o			5			清算	せいさん	(financial) settlement; squaring accounts; clearing debts; liquidation	정산; 청산	풀과 나무가 무성한 푸른 산.		3	llm	0	1378210
+o			5			清掃	せいそう	cleaning; clean-up; garbage collection; scavenging	청소; 정화	‘청소하다’의 어근.		3	llm	0	1378320
+o			5			為替相場	かわせそうば	exchange rate; rate of exchange	환율			3	default	0	1157390
+o			5			犠飛	ぎひ	sacrifice fly	희생플라이(야구)	기쁨과 슬픔을 아울러 이르는 말.		3	llm	0	1614600
+o			5			税務	ぜいむ	taxation business	세무	→ 섀미.		3	llm	0	1382180
+o			5			税率	ぜいりつ	tariff; tax rate	세율			3	default	0	1382210
+o			5			税制	ぜいせい	tax system	세제	왕위를 이어받을 왕의 아우.		3	llm	0	1382130
+o			5			税収	ぜいしゅう	tax yields; revenue	세수	대대로 지켜 내려옴.		3	llm	0	1382120
+o			5			経企庁	けいきちょう	Economic Planning Agency (1955-2001)	경제기획청의 줄임	조선 선조 41년(1608)에, 경기도에 대동법을 실시하기 위하여 선혜청 밑에 둔 관아.		3	llm	0	1251260
+o			5			経常利益	けいじょうりえき	current profits; ordinary profit; income before income taxes; ordinary income	영업이익; 경상이익			3	default	0	1630560
+o			5			経済企画庁	けいざいきかくちょう	Economic Planning Agency (1955-2001)	경제기획청			3	default	0	1251400
+o			5			絵本	えほん	picture book	그림책	경전의 본문과 주석문을 함께 엮어 경전의 이해를 도와주는 책.		3	llm	0	1202380
+o			5			総理府	そうりふ	Prime Minister's office; PMO	일본의 내각총리부의 줄임말			3	default	0	1401830
+o			5			総合的	そうごうてき	comprehensive; composite; all-round; all-embracing	종합적인; 전반적인			3	default	0	1401570
+o			5			総会屋	そうかいや	extortionist that threatens to disrupt stock-holder meetings; sokaiya	주주총회 방해꾼			3	default	0	1401500
+o			5			脱出	だっしゅつ	escape; getting away (from); getting out (of); prolapse	탈출; 빠져나감	상자 따위가 파손되어 그 안에 들어 있는 물질이 비어져 나옴.		3	llm	0	1416520
+o			5			読売	よみうり	Yomiuri (newspaper, etc. group); kawaraban (type of Edo-period single-page newspaper); yomiuri	요미우리 (일본의 신문사 이름)			3	default	0	1456470
+o			5			録音	ろくおん	(audio) recording	녹음			3	default	0	1561590
+o			5			関税	かんぜい	customs (duties); duty; tariff	관세	남자가 관례를 치르는 나이인 20세를 이르는 말.		3	llm	0	1215930
+o			5			青木	あおき	Japanese laurel (Aucuba japonica); spotted laurel; lush, green tree	식나무	검푸른 물을 들인 무명.		3	llm	0	1750010
+o			3		Y(3)	加担	かたん	support; participation; assistance; complicity	가담; 지원	법률적으로 가족을 하나의 단체로서 이르는 말. 우리나라 민법에서는 인정하지 않는다.		3	llm	1	1590450
+o			5			街宣車	がいせんしゃ	sound truck (used for campaigning, advertising or propaganda); loudspeaker van; (right-wing) propaganda vehicle	거리 선전 차량			3	default	1	1950540
+o			5			家裁	かさい	family court	가정 법원의 줄임말	가잿과의 하나. 게와 새우의 중간 모양인데 앞의 큰 발에 집게발톱이 있다. 뒷걸음질을 잘하며 폐디스토마를 옮긴다. 개울 상류의 돌 밑에 사는데 한국, 일본 등지에 분포한다.		3	llm	1	1613750
+o			5			家庭内	かていない	within the family; in the home; domestic	가정 내; 집안			3	default	1	1613760
+o			5			肝硬変	かんこうへん	cirrhosis (of the liver)	간경변			3	default	1	1214650
+o			5			簡裁	かんさい	summary court; court of summary offences	간이 재판소의 줄임말	간사한 재주. 또는 그 재주가 있는 사람.		3	llm	1	1614270
+o			5			間際	まぎわ	the point just before ...; the point of (doing); the verge (of); the eve (of)	직전; 무렵; 경계	간(諫)하여 제지함.		3	llm	1	1215450
+o			5			間中	あいだじゅう	during	도중에	간질 증상과 중풍기가 함께 일어나는 병.		3	llm	1	1215610
+o			5			個室	こしつ	single (room); room for one; one's own room; private room	개별실; 칸막이	선종에서, 스승이 방을 열어 대중이 들어와서 묻는 것을 허락함.		3	llm	1	1264750
+o			5			介助	かいじょ	help; assistance; aid	도움; 보조	고쳐 만들거나 바꿈.		3	llm	1	1613820
+o			5			客足	きゃくあし	customer traffic; customers; custom	객단; 손님의 숫자; 손님 발길	조선 시대에, 다른 지역에서 온 상인들의 거처를 제공하며 물건을 맡아 팔거나 흥정을 붙여 주는 일을 하던 상인. 또는 그런 집.		3	llm	1	1614690
+o			5			皆様	みなさま	everyone	여러분	북두칠성의 꼬리 쪽에 있는 세 개의 별 가운데 둘째 별. 큰곰자리의 제타성(Zeta星)으로, 밝기는 2.0등급이다.		3	llm	1	1202260
+o			5			開発部	かいはつぶ	development department	개발부			3	default	1	1613940
+o			5			居場所	いばしょ	whereabouts; place; location; place where one belongs	거처; 속할 곳			3	default	1	1630060
+o			5			居酒屋	いざかや	izakaya; tavern, bar, etc. that also serves various dishes and snacks	선술집; 주점			3	default	1	1231800
+o			5			健保	けんぽ	health insurance	건강보험	잘 걷는 걸음.		3	llm	1	1630710
+o			5			健常者	けんじょうしゃ	person with no physical or mental disability; able-bodied person; non-disabled person	건강한 사람; 장애가 없는 사람			3	default	1	1985220
+o			5			健診	けんしん	health checkup; (general) medical examination; physical examination	건강 검진의 줄임말	공리(空理)를 관찰하는 지혜로 진제(眞諦)의 이치를 꿰뚫어 보는 일.		3	llm	1	2861042

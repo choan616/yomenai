@@ -37,18 +37,18 @@ o			1		Y(2)	研修	けんしゅう	training (esp. in-service); induction course	
 o			1		Y(2)	経緯	けいい	details; particulars; sequence of events; circumstances	경위; 전말	직물(織物)의 날과 씨를 아울러 이르는 말.	일본어의 '경위'는 사건의 전말이나 흐름을 뜻하는 반면, 한국 표준국어대사전의 '경위'는 직물의 날과 씨를 지칭하는 고유한 의미가 주된 정의로 제시되어 있어 핵심 뜻이 갈린다.	2	manual	0	1251120
 o			1		Y(2)	経歴	けいれき	personal history; background; career	경력; 이력	여러 가지 일을 겪어 지내 옴.	일본어의 '経歴'은 개인의 경력이나 이력을 지칭하는 명사이지만, 한국어의 '경력 (經歷)'은 주로 과거에 겪은 일련의 경험 자체를 의미하며, 일본어 표현이 한국에서 통용되는 '경력'의 직접적 번역어는 아니므로 동형이의에 해당합니다.	2	manual	0	1251690
 o			1		Y(2)	経済	けいざい	economy; economics; finance; (one's) finances	경제	세상을 다스리고 백성을 구제함.	일본어의 '경제'는 경제 활동이나 재정을 뜻하는 반면, 한국 표준국어대사전의 '경제 (3)'는 세상을 다스리고 백성을 구제한다는 고전적 정치·사회적 의미를 지닌 동형이의어입니다.	2	manual	0	1251320
-o			1	cat-mismatch	Y(3)	低調	ていちょう	inactive; slow; sluggish; slack	저조함; 침체; 내용이 수준 이하임	가락이 낮음. 또는 그런 가락.		2	llm	1	1434610
-o			1	cat-mismatch	Y(1)	趣向	しゅこう	plan; idea; design; plot	취향; 기미	하고 싶은 마음이 생기는 방향. 또는 그런 경향.		2	llm	1	1328970
-o			1	cat-mismatch	Y(1)	刻々	こっこく	moment by moment; hour by hour	매 시각. 또는 낱낱의 시각.	매 시각. 또는 낱낱의 시각.		2	default	2	1285830
-o			1	cat-mismatch	Y(1)	同病	どうびょう	the same sickness	같은 병	같은 병.		2	default	2	1453310
-o			1	cat-mismatch	Y(1)	英訳	えいやく	English translation	영어로 번역함.	영어로 번역함.		2	default	2	1174670
-s			1	cat-mismatch	Y(1)	王立	おうりつ	royal (institution)	국왕이나 왕족이 세움. 또는 그런 것.	국왕이나 왕족이 세움. 또는 그런 것.		2	default	2	1181710
-o			1	cat-mismatch	Y(1)	左記	さき	undermentioned (statement); the following; at left	세로쓰기를 한 글에서, 본문의 왼쪽에 기록된 것.	세로쓰기를 한 글에서, 본문의 왼쪽에 기록된 것.		2	default	2	1290860
-o			1	cat-mismatch	Y(1)	注入	ちゅうにゅう	pouring; injection	흘러 들어가도록 부어 넣음.	흘러 들어가도록 부어 넣음.		2	default	2	1426640
-o			1	cat-mismatch	Y(1)	炭田	たんでん	coalfield; coal field	석탄이 묻혀 있는 땅.	석탄이 묻혀 있는 땅.		2	default	2	1661270
-o			1	cat-mismatch	Y(1)	短文	たんぶん	short sentence; short piece of writing (e.g. passage, article, composition)	짧은 글	짧은 글.		2	default	3	1843470
-o			1	cat-mismatch	Y(1)	反射的	はんしゃてき	reflexive; reflecting	반사적인; 어떤 자극에 순간적으로 무의식적 반응을 보이는 것.	어떤 자극에 순간적으로 무의식적 반응을 보이는 것.		2	default	3	1480470
-o			1	cat-mismatch	Y(1)	不平	ふへい	discontent; dissatisfaction; complaint; grievance	마음에 들지 아니하여 못마땅하게 여김. 또는 못마땅한 것을 말이나 행동으로 드러냄.	마음에 들지 아니하여 못마땅하게 여김. 또는 못마땅한 것을 말이나 행동으로 드러냄.		2	default	3	1494790
+o			1		Y(3)	低調	ていちょう	inactive; slow; sluggish; slack	저조함; 침체; 내용이 수준 이하임	가락이 낮음. 또는 그런 가락.		2	llm	1	1434610
+o			1		Y(1)	趣向	しゅこう	plan; idea; design; plot	취향; 기미	하고 싶은 마음이 생기는 방향. 또는 그런 경향.		2	llm	1	1328970
+o			1		Y(1)	刻々	こっこく	moment by moment; hour by hour	매 시각. 또는 낱낱의 시각.	매 시각. 또는 낱낱의 시각.		2	default	2	1285830
+o			1		Y(1)	同病	どうびょう	the same sickness	같은 병	같은 병.		2	default	2	1453310
+o			1		Y(1)	英訳	えいやく	English translation	영어로 번역함.	영어로 번역함.		2	default	2	1174670
+s			1		Y(1)	王立	おうりつ	royal (institution)	국왕이나 왕족이 세움. 또는 그런 것.	국왕이나 왕족이 세움. 또는 그런 것.		2	default	2	1181710
+o			1		Y(1)	左記	さき	undermentioned (statement); the following; at left	세로쓰기를 한 글에서, 본문의 왼쪽에 기록된 것.	세로쓰기를 한 글에서, 본문의 왼쪽에 기록된 것.		2	default	2	1290860
+o			1		Y(1)	注入	ちゅうにゅう	pouring; injection	흘러 들어가도록 부어 넣음.	흘러 들어가도록 부어 넣음.		2	default	2	1426640
+o			1		Y(1)	炭田	たんでん	coalfield; coal field	석탄이 묻혀 있는 땅.	석탄이 묻혀 있는 땅.		2	default	2	1661270
+o			1		Y(1)	短文	たんぶん	short sentence; short piece of writing (e.g. passage, article, composition)	짧은 글	짧은 글.		2	default	3	1843470
+o			1		Y(1)	反射的	はんしゃてき	reflexive; reflecting	반사적인; 어떤 자극에 순간적으로 무의식적 반응을 보이는 것.	어떤 자극에 순간적으로 무의식적 반응을 보이는 것.		2	default	3	1480470
+o			1		Y(1)	不平	ふへい	discontent; dissatisfaction; complaint; grievance	마음에 들지 아니하여 못마땅하게 여김. 또는 못마땅한 것을 말이나 행동으로 드러냄.	마음에 들지 아니하여 못마땅하게 여김. 또는 못마땅한 것을 말이나 행동으로 드러냄.		2	default	3	1494790
 o			2	kanji		有無	うむ	existence or nonexistence; presence or absence; consent or refusal; yes or no	있음과 없음.	있음과 없음.		1	llm	0	1541610
 o			2	latin		交際	こうさい	company; friendship; association; society	서로 사귀어 가까이 지냄.	서로 사귀어 가까이 지냄.		1	llm	1	1271990
 o			2	kanji		大河	たいが	large river; epic (of a novel, drama, etc.); long-form; large-scale	큰 강.	큰 강.		1	llm	1	1581490
@@ -173,9 +173,9 @@ o			4			白状	はくじょう	confession	자백	스스로 자기의 죄상을 �
 o			4			弁償	べんしょう	compensation; indemnification; reparation; restitution	배상; 보상; 남에게 진 빚을 갚음.	남에게 진 빚을 갚음.		2	default	3	1512980
 o			4			不浄	ふじょう	unclean; dirty; impure; bathroom	부정함; 더러움; 생리혈	깨끗하지 못함. 또는 더러운 것.		2	default	3	1492980
 o			4			肥育	ひいく	fattening (cattle, pigs, etc.)	비육	주로 고기를 생산하기 위하여 운동을 제한하거나 질이 좋은 사료를 주어 가축을 살이 찌게 기름.		2	default	3	1626730
-s			4			死語	しご	dead language; extinct language; obsolete word; dated word	사어; 사어구	과거에는 쓰였으나 현재에는 쓰이지 아니하게 된 언어. 또는 그런 단어. 고대 그리스어, 고대 라틴어 따위가 있다.		2	default	3	1310840
+s			4			死語	しご	dead language; extinct language; obsolete word; dated word	과거에는 쓰였으나 현재에는 쓰이지 아니하게 된 언어. 또는 그런 단어. 고대 그리스어, 고대 라틴어 따위가 있다.	과거에는 쓰였으나 현재에는 쓰이지 아니하게 된 언어. 또는 그런 단어. 고대 그리스어, 고대 라틴어 따위가 있다.		2	default	3	1310840
 o			4			常緑樹	じょうりょくじゅ	evergreen tree; (an) evergreen	상록수	심훈이 지은 장편 소설. ≪동아일보≫ 창간 15주년 기념 문예 당선작으로, 여주인공인 채영신은 헌신적인 농촌 계몽 운동을 하다가 과로로 숨을 거두고 그녀를 사랑하던 박동혁은 자신이 죽을 때까지 그녀가 못다 한 일을 하겠다고 다짐하는 내용으로, 일제하의 민족의식과 저항 사상을 잘 드러내고 있다. 1935년에 발표하였다.		2	default	3	1356190
-s			4			水源地	すいげんち	source (of a river, etc.)	물줄기 근원지	물이 흘러나오는 근원이 되는 곳. 산의 꼭대기 부근이나 선상지 말단의 용수대 따위이다.		2	default	3	1371470
+s			4			水源地	すいげんち	source (of a river, etc.)	물이 흘러나오는 근원이 되는 곳. 산의 꼭대기 부근이나 선상지 말단의 용수대 따위이다.	물이 흘러나오는 근원이 되는 곳. 산의 꼭대기 부근이나 선상지 말단의 용수대 따위이다.		2	default	3	1371470
 o			4			眼光	がんこう	sparkle of one's eyes; insight; discernment; penetration	눈빛; 통찰력	눈의 정기.		2	default	3	1217190
 o			4			御用	ごよう	(your) business; (your) concern; (your) need; (customer's) order	용건; 업무; (관청 등의) 공식적인 일	임금이 쓰는 것을 이르던 말.		2	default	3	1270720
 o			4			遠洋	えんよう	ocean; deep sea	원양; 깊은 바다	뭍에서 멀리 떨어진 큰 바다.		2	default	3	1178410
@@ -249,7 +249,7 @@ o			5			既製	きせい	ready-made; off the shelf	기성품; 즉석의	해마�
 o			5			緑内障	りょくないしょう	glaucoma	녹내장			3	default	3	1820090
 o			5			縁日	えんにち	temple festival; fair; fete day; day related to a particular deity and thought to bring divine blessing to those who celebrate it	사찰의 잿날; 장날	여러 날을 계속함.		3	llm	3	1177670
 o			5			霊界	れいかい	the spiritual world	영혼의 세계			3	default	3	1557760
-s			6			機会	きかい	chance; opportunity; occasion	기회; 경우	어떠한 일을 하는 데 적절한 시기나 경우.		1	llm	0	1220800
+s			6			機会	きかい	chance; opportunity; occasion	어떠한 일을 하는 데 적절한 시기나 경우.	어떠한 일을 하는 데 적절한 시기나 경우.		1	llm	0	1220800
 o			6			大使	たいし	ambassador	대사	나라를 대표하여 다른 나라에 파견되어 외교를 맡아보는 최고 직급. 또는 그런 사람. 주재국(駐在國)에 대하여 국가의 의사를 전달하는 임무를 가지며 국가의 원수와 그 권위를 대표한다.		1	llm	0	1413880
 o			6			代打	だいだ	pinch-hitting; pinch hitter; performing a duty in place of someone else; proxy	대타; 대신함	야구에서, 순번으로 정해져 있던 타자를 대신하여 공을 치는 일.		1	llm	0	1412050
 o			6			美術館	びじゅつかん	art museum; art gallery	미술관	미술품을 전시하는 시설.		1	llm	0	1486460
@@ -292,10 +292,10 @@ o			6			着目	ちゃくもく	attention; giving one's attention; focusing	주�
 o			6			必然	ひつぜん	inevitable; necessary; certain; sure	필연; 반드시 그러함	사물의 관련이나 일의 결과가 반드시 그렇게 될 수밖에 없음.		1	llm	1	1487570
 o			6			恒常	こうじょう	constancy; permanence	항상함; 영속함	언제나 변함없이.		1	llm	1	1278760
 o			6			血縁	けつえん	blood relationship; consanguinity; blood relative	혈연	같은 핏줄에 의하여 연결된 인연.		1	llm	1	1255170
-s			6			協和	きょうわ	concord; harmony; concert	화합; 조화	서로 협력하며 화합함.		1	llm	1	1235840
+s			6			協和	きょうわ	concord; harmony; concert	서로 협력하며 화합함.	서로 협력하며 화합함.		1	llm	1	1235840
 o			6			好奇心	こうきしん	curiosity; inquisitiveness	호기심	새롭고 신기한 것을 좋아하거나 모르는 것을 알고 싶어 하는 마음.		1	llm	1	1277590
-s			6			図形	ずけい	figure; shape; graphic	도형; 모양	그림의 모양이나 형태.		1	llm	1	1370380
-s			6			対照	たいしょう	contrast; antithesis; comparison	대조; 비교	둘 이상인 대상의 내용을 맞대어 같고 다름을 검토함.		1	llm	1	1410080
+s			6			図形	ずけい	figure; shape; graphic	그림의 모양이나 형태.	그림의 모양이나 형태.		1	llm	1	1370380
+s			6			対照	たいしょう	contrast; antithesis; comparison	둘 이상인 대상의 내용을 맞대어 같고 다름을 검토함.	둘 이상인 대상의 내용을 맞대어 같고 다름을 검토함.		1	llm	1	1410080
 o			6			戦法	せんぽう	tactics; strategy	전술; 전략	전쟁이나 경기 따위에서 상대와 싸우는 방법.		1	llm	1	1801860
-s			6			発達	はったつ	development; growth; progress; advancement	발달; 성장	신체, 정서, 지능 따위가 성장하거나 성숙함.		1	llm	1	1477680
-s			6			賛美	さんび	praise; glorification; extolment	찬양; 칭송	아름답고 훌륭한 것이나 위대한 것 따위를 기리어 칭송함.		1	llm	3	1304240
+s			6			発達	はったつ	development; growth; progress; advancement	신체, 정서, 지능 따위가 성장하거나 성숙함.	신체, 정서, 지능 따위가 성장하거나 성숙함.		1	llm	1	1477680
+s			6			賛美	さんび	praise; glorification; extolment	아름답고 훌륭한 것이나 위대한 것 따위를 기리어 칭송함.	아름답고 훌륭한 것이나 위대한 것 따위를 기리어 칭송함.		1	llm	3	1304240

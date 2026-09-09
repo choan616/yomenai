@@ -1,0 +1,41 @@
+﻿verdict	cat	fix	tier	flags	manual	headword	reading	glossEn	llm_ko	stdict_def	manual_reason	category	classSource	band	id
+o			5			格段	かくだん	dramatic (improvement); remarkable (difference); marked; noticeable	비약적; 현저함	사이를 막음.		3	llm	1	1205420
+o			5			格付	かくづけ	rating; ranking; grading; classification	등급; 순위; 등급이나 순위를 매기는 것	허락과 거절을 아울러 이르는 말.		3	llm	1	1205480
+o			5			格安	かくやす	(very) cheap; (very) inexpensive; cut-price; bargain (price)	매우 저렴함; 값싼	언덕을 사이에 두고 서로 떨어짐. 또는 그 언덕.		3	llm	1	1205280
+o			5			見舞	みまい	visit (to someone affected by illness or misfortune); call; inquiry (about someone's health); expression of sympathy	문병; 위문	사신(四神)의 하나. 북쪽 방위를 지키는 신령을 상징하는 짐승을 이른다. 거북과 뱀이 뭉친 모습으로 형상화하였다.		3	llm	1	1604690
+o			5			見物	けんぶつ	sightseeing; watching; viewing; sightseer	구경; 관람	명주실로 짠 물건을 통틀어 이르는 말.		3	llm	1	1260000
+o			5			見所	みどころ	point worthy of note; good point; part worth seeing; highlight	볼거리; 장점; 기대할 점	검은 것과 흰 것.		3	llm	1	1611780
+o			5			見合	みあい	(formal) meeting with a view to marriage; interview with a prospective spouse; correspondence; balance	만남; 혼인 목적의 만남; 맞선	서로 끌어당겨서 합쳐짐. 또는 합침.		3	llm	1	1259550
+o			5			見当	けんとう	estimate; guess; conjecture; aim	짐작; 추정; 방향	당나라에 사신을 보냄.		3	llm	1	1259930
+o			5			見栄	みえ	show; display; pretensions; appearances	외관; 체면; 허세	‘겨울’을 달리 이르는 말.		3	llm	1	1578350
+o			5			係官	かかりかん	official in charge	담당관; 담당 공무원	둘 이상의 사람, 사물, 현상 따위가 서로 관련을 맺거나 관련이 있음. 또는 그런 관련.		3	llm	1	1249280
+o			5			季語	きご	seasonal word (in haiku)	계절어 (하이쿠의 소재)			3	default	1	1222820
+o			5			高率	こうりつ	high rate	높은 비율			3	default	1	1657240
+o			5			高水準	こうすいじゅん	high level	높은 수준			3	default	1	1283640
+o			5			古紙	こし	used paper; paper for recycling	헌 종이; 재생지	호박, 박, 가지, 고구마 따위를 납작납작하거나 잘고 길게 썰어 말린 것.		3	llm	1	1659930
+o			5			古着	ふるぎ	old clothes; secondhand clothing	헌 옷; 중고 의류	물건 같은 것이 굳게 들러붙어 있음.		3	llm	1	1265850
+o			5			高台	たかだい	high ground; elevation; hill; plateau	고지대; 높은 지대	예스럽고 아담하여 수수한 상태. 또는 그런 모습.		3	llm	1	1283740
+o			5			谷間	たにま	valley; ravine; gorge; chasm	골짜기; 틈; 공백	→ 곳간.		3	llm	1	1416740
+o			5			公共料金	こうきょうりょうきん	public utilities charge	공공요금			3	default	1	1273590
+o			5			公民館	こうみんかん	public hall; community center; community centre	주민 회관; 커뮤니티 센터			3	default	1	1274780
+o			5			空缶	あきかん	empty can	빈 깡통	학문이나 기술을 배우고 익힘.		3	llm	1	1245320
+o			5			公司	コンス	company (in China); firm	회사	무당이 사람의 편에서 신에게 사정을 전하는 일.		3	llm	1	1273750
+o			5			控室	ひかえしつ	waiting room; anteroom; antechamber; green room	대기실	공적인 사무를 보는 방.		3	llm	1	1601430
+o			5			空調	くうちょう	air conditioning	공기조절의 줄임말;	고려 시대에, 육조(六曹) 가운데 산택(山澤)·공장(工匠)·영조(營造)를 맡아보던 관아. 충렬왕 24년에 설치하였는데 공민왕 5년(1356)에는 공부(工部)라 불렀으며, 한때 전공사(典工司)라고 하다가 공양왕 원년(1389)에 다시 이 이름으로 고쳤다.		3	llm	1	1245860
+o			5			共闘	きょうとう	joint struggle; common (united) front	공동 투쟁의 줄임말; 연합 전선			3	default	1	1234750
+o			5			館内	かんない	inside a library, museum, cinema, etc.; on the premises	관내; 건물 안	관청의 안.		3	llm	1	1614320
+o			5			管区気象台	かんくきしょうだい	district meteorological observatory	관구 기상대			3	default	1	1614220
+o			5			掛声	かけごえ	shout (of encouragement, etc.); yell (used to time or encourage activity, e.g. "Heave ho!")	외침; 구령; 구호			3	default	1	1590070
+o			5			口々	くちぐち	every person; every mouth; every entrance	제각기; 여기저기서	닭이나 비둘기 따위가 우는 소리.		3	llm	1	1592190
+o			3		Y(3)	球界	きゅうかい	the baseball world	야구계	십계(十界) 중에서 불계(佛界)를 제외한, 지옥·아귀·축생·수라(修羅)·인간·천상·성문·연각·보살의 아홉 세계.		3	llm	1	1783610
+o			5			句集	くしゅう	collection of haiku poems	하이쿠 모음집	한데 모음.		3	llm	1	1244000
+o			5			口紅	くちべに	lipstick	립스틱	천자(天子)의 아홉 가지 선정(善政). 백성들 생활의 근본이 되는 화(火)·수(水)·목(木)·금(金)·토(土)와 곡물(穀物)의 육부(六府)를 잘 다스리고, 정덕(正德)·후생(厚生)·이용(利用)의 삼사(三事)를 정비하는 것을 이른다.		3	llm	1	1276110
+o			5			口火	くちび	fuse; pilot light; cause (of a war, argument, revolt, etc.); origin	도화선; 발단	언어 장애인이나 청각 장애인이 특수한 교육을 받아 상대가 말하는 입술 모양 따위로 그 뜻을 알아듣고, 자기도 그렇게 소리 내어 말함.		3	llm	1	1275860
+o			5			軍拡	ぐんかく	military expansion; arms buildup	군비 확장의 줄임말			3	default	1	1247740
+o			5			堀江	ほりえ	canal	운하; 해자	‘굴강하다’의 어근.		3	llm	1	1628190
+o			5			規律	きりつ	order; observance; discipline; rules	규율; 질서			3	default	1	1223120
+o			5			棋士	きし	professional shogi player; professional go player	기사; 바둑 기사	육십갑자의 여섯째.		3	llm	1	1220640
+o			5			寄席	よせ	entertainment hall (for rakugo, manzai, magic, music, etc.); vaudeville theater (theatre); music hall	공연장; 연예 극장	모양이 기묘하게 생긴 돌.		3	llm	1	1219790
+o			5			棋聖	きせい	great master of go; great master of shogi	바둑의 대가; 장기의 대가	기이한 소리.		3	llm	1	1614470
+o			5			旗揚	はたあげ	raising an army; raising a banner; launching a new group; launching a business	군대를 일으킴; 게양; 새로운 사업을 벌임	→ 치양.		3	llm	1	1220290
+o			5			棋院	きいん	go institution; go club; go hall	바둑 기원	이전의 기술직 8급 공무원의 직급. 지금의 서기에 해당한다.		3	llm	1	1614460
