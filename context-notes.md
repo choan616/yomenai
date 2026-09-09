@@ -3001,3 +3001,42 @@ p95 11.2ms) · tsc/oxlint/build 클린. 폰 뷰포트(390×740)는 스크롤 없
 
 대조군(`contrastGroups`)에 현재 숙어가 예시로 다시 들어가는 건(絶大 "그대로" 줄에 絶大)
 사용자가 이번 범위에서 뺐다. `.now` 표시와 별개로 목록 자기 포함은 남아 있다.
+
+---
+
+## 2026-09-09 — 오답 상세의 한국음(kr)이 옛 음·오염 음을 그대로 보여준다
+
+사용자 지적 — 大 가 "대·다·태"로 뜨는데 모던 한국어는 "대"뿐. 다른 한자도 그런지 확인 요청.
+
+### 원인 — KANJIDIC2 `korean_h` 를 무가공 통과
+
+`import-kanjidic.ts` `byType('korean_h')` → `build-runtime-dict.ts` `kr: k.koreanH`.
+KANJIDIC 의 `korean_h` 는 옥편식이라 옛 음(大 다·태), 코드포인트 통합 오염(医 = 화살통
+'예' + 醫 '의' / 芸 = 향풀 '운' + 藝 '예'), 두음 원음(論 론, 竜 룡)을 다 담는다.
+`kr[0]` 만 쓰는 것도 안전하지 않다 — 医→예, 金→김, 芸→운 이 먼저다.
+
+### 규모 — 코퍼스(base) 한자 2,130자 중 kr 2개 이상이 263자
+
+### 방식 — stdict 표제어로 교차검증 (사용자 결정: "stdict 먼저, 그 뒤 사람")
+
+`tools/audit-korean-readings.ts` (`npm run audit:korean-readings`).
+Phase 3 `.korean-cache.json`(stdict 응답 캐시)의 표제어를 **위치 정렬**해 근거를 모은다 —
+`醫院`↔`의원` 이면 醫→의, 院→원. origin(정자)은 `loadVariantSets()` + 보충 표
+(兌계열 説/税/脱/鋭, 内/呉 등 jis208 결손분)로 신자체에 되잇는다. 두음법칙(론→논/룡→용/
+녀→여)은 `initialLawForms` 로 원음의 표기형까지 만들어 대조.
+
+산출 `data/dict/korean-reading-audit.tsv` (gitignore) — verdict 열 초벌:
+
+| verdict | 뜻 | 수 |
+|---|---|---|
+| `keep` | 모든 kr 이 stdict 근거 있음 (不 불·부, 車 차·거, 見 견·현…) | 58 |
+| `trim:음·음` | 주음 15+ hits · 나머지 0 hits — 잘라낼 후보 (大 다·태, 医 예, 台 이…) | 122 |
+| `?` | 주음 표본 부족(<15) — 코퍼스 갭일 수 있어 사람이 판단 | 83 |
+
+**초벌이라 오탐 있다** — `茶 trim:차` 는 틀림(차 정상, 정렬이 다-어휘만 맞았을 뿐).
+則(즉), 単(선우), 邪(막야)처럼 고전 음이 진짜인 것도 `trim` 에 섞인다.
+
+### 다음 단계 (미완)
+
+verdict 확정 → apply 스크립트(`char → kr[]` override JSON) → `build-runtime-dict.ts` 가
+`koreanH` 대신 override 적용. apply·배선은 사용자 검수 뒤 착수.
