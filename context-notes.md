@@ -3036,7 +3036,26 @@ Phase 3 `.korean-cache.json`(stdict 응답 캐시)의 표제어를 **위치 정�
 **초벌이라 오탐 있다** — `茶 trim:차` 는 틀림(차 정상, 정렬이 다-어휘만 맞았을 뿐).
 則(즉), 単(선우), 邪(막야)처럼 고전 음이 진짜인 것도 `trim` 에 섞인다.
 
+### 방향 수정 (사용자 지적) — "삭제"가 아니라 "옛 음 접기"
+
+사용자 — "현재 사용하지 않는다고 그 음이 아니라고 할 근거는 없다." 옳다.
+stdict 교차검증이 재는 건 "현대 어휘에 쓰이는가"지 "맞는 음인가"가 아니다.
+KANJIDIC `korean_h` 는 한국 자전 기반이라 大 다·태도 정식 음이다.
+
+→ `trim(삭제)` 프레이밍 폐기. 감사 결과는 **now(지금 쓰는 음) / old(옛·드문 음)** 로
+가르는 순위 신호로만 쓴다. 화면은 now 를 크게, old 는 "옛 음 다·태" 로 흐리게/접어서.
+정보 손실 0. (사용자 결정: "주 음 + 나머지 접기")
+
+`audit-korean-readings.ts` 재작성 — verdict 열 → now/old 두 열.
+now = kanjidic 음 중 stdict 근거 있음(자전 순서) + 교정음(자전에 없는데 5+ hits, 斉→제).
+old = 근거 0. now 가 비면 전부 now(판단 보류). 205자에 old 후보 발생.
+`korean-reading-review.tsv` = 그 205자만.
+
 ### 다음 단계 (미완)
 
-verdict 확정 → apply 스크립트(`char → kr[]` override JSON) → `build-runtime-dict.ts` 가
-`koreanH` 대신 override 적용. apply·배선은 사용자 검수 뒤 착수.
+1. `apply-korean-readings.ts` — 검수한 review TSV(now/old) → `korean-reading-overrides.json`
+2. `build-runtime-dict.ts` — override 있으면 `{ kr: now, krOld: old }`, 없으면 `kr: koreanH`/`krOld: []`
+   (public/dict/kanji.json 에 `krOld` 필드 추가 — 재생성 산출물이라 스키마 불변 대상 아님)
+3. `mistakeDetail.ts` `BreakdownPart` 에 `krOld`, `MistakeDetail.tsx` 가 "옛 음" 을 흐리게
+4. `mistakeDetail.test.ts` 갱신
+override 없으면 현행 동작 그대로라 검수 전엔 앱 변화 없음.
