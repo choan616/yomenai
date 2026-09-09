@@ -2967,3 +2967,37 @@ T5·T6 20%. tier 4~6(~16,500건)은 전수 검수 대상이나 PLAN대로 보류
 검수 안 해도 일본고유 3,643건을 브라우저로 훑어볼 수 있게. `korean-class.json` +
 `idioms.json` 조인(=`base.json` 재빌드 없이 최신 apply 반영). 밴드 필터·미검수만·텍스트
 검색. 일본어 칸은 `lang="ja"` + JP 폰트 스택. `data/dict/*` 라 gitignore(재생성 가능).
+
+---
+
+## 2026-09-09 — 오답 상세: 닫기 바가 내용을 가리던 문제
+
+사용자 보고 — 絶大 오답 상세에서 `닫기` 버튼이 둘째 한자(大) 칸 위에 떠 있고 그 아래로
+내용이 잘려 보인다.
+
+### 원인 — .card 3분할을 그대로 물려받았다
+
+`.mistake-detail` 이 `.card`(head 고정 / body `flex:1; overflow-y:auto` / bottom 고정)를
+상속받아, 좁은 화면(예: 585×520)에서 body 스크롤 창이 ~310px 밖에 안 됐다. 큰 헤드워드가
+그 절반을 먹어 분해 목록 둘째 칸부터 잘렸다. 게다가 `.card-bottom` 이 **투명·경계선 없음**
+이라 잘린 자리에 버튼만 떠 보여 "깨진" 인상을 줬다. 추가로 `.card.feedback.is-ng .card-head`
+(음수 마진·朱 띠)가 오버레이 헤더로 새어 들어왔다(specificity 0,4,0 이 `.md-head` 를 이김).
+
+### 고침 — 오버레이 전체를 한 덩어리로 스크롤 (PLAN §7 "셸 구간 느린 스크롤")
+
+- `.mistake-detail` `padding:0`, `.md-body` `flex:0 0 auto; overflow:visible` — body 안
+  스크롤 창을 없애고 오버레이(`overflow-y:auto`)가 통째로 스크롤한다
+- `.md-head` / `.card-bottom` `position:sticky` + 불투명 `var(--bg)` + 경계선. 여백은
+  각 구획이 직접(`.card` 기본 20px 대신) 가져 고정 바가 가장자리에 딱 붙는다 —
+  안 그러면 sticky 바 밑으로 20px 만큼 내용이 비어져 나온다
+- 헤더 누수는 `.card.feedback .mistake-detail .md-head`(0,4,0, 뒤 규칙)로 되받아 차단
+- `.md-body` 아래 `padding-bottom:24px` — 최하단까지 스크롤해도 마지막 칸이 닫기 바에 안 가림
+
+CSS 만 수정(`src/study/study.css`). 검증 — `npm test` 325 · `npm run e2e` 8스펙(카드 전환
+p95 11.2ms) · tsc/oxlint/build 클린. 폰 뷰포트(390×740)는 스크롤 없이 다 들어오고, 짧은
+데스크톱 창은 헤더·푸터 고정한 채 부드럽게 스크롤된다.
+
+### 안 건드린 것
+
+대조군(`contrastGroups`)에 현재 숙어가 예시로 다시 들어가는 건(絶大 "그대로" 줄에 絶大)
+사용자가 이번 범위에서 뺐다. `.now` 표시와 별개로 목록 자기 포함은 남아 있다.

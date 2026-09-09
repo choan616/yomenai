@@ -379,13 +379,41 @@
   z-index: 2;
   background: var(--bg);
   overflow-y: auto;
+  /* 여백은 .card 기본값(20px) 대신 각 구획이 직접 갖는다 — 고정 헤더·푸터가 가장자리에
+     딱 붙어야 스크롤한 내용이 그 옆으로 비어져 나오지 않는다 */
+  padding: 0;
 }
-/* 분해 목록은 길어질 수 있어 위에서부터 쌓는다 — 카드와 달리 중앙 정렬하지 않는다 */
+/* 분해 목록은 길어질 수 있어 위에서부터 쌓는다 — 카드와 달리 중앙 정렬하지 않는다.
+   .card-body 안에 스크롤 창을 따로 두지 않고(flex:0 0 auto, overflow 해제) 오버레이 전체가
+   스크롤하게 둔다. 좁은 화면에서 둘째 한자부터 잘려 보이던 문제를 없앤다 (셸 구간, 느린 스크롤).
+   아래 여백은 고정된 닫기 바에 마지막 한자 칸이 가리지 않게 하는 것 */
 .md-body {
+  flex: 0 0 auto;
+  overflow: visible;
   justify-content: flex-start;
+  padding: 0 20px 24px;
 }
-.md-head {
+/* 스크롤해도 "오답 상세" 라벨과 ✕ 는 위에 남긴다. 이 오버레이는 피드백 카드 안에 뜨지만
+   그 헤더 띠 처리(음수 마진·색 띠·밑줄)를 물려받지 않는다 — 불투명 배경이라야 뒤가 안 비친다 */
+.card.feedback .mistake-detail .md-head {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  margin: 0;
+  padding: 20px 20px 12px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
   justify-content: space-between;
+}
+/* 닫기는 늘 닿게 바닥에 고정하고 불투명 배경으로 뒤 내용을 덮는다.
+   내용이 짧으면 margin-top:auto 가 버튼을 바닥으로 밀고, 길면 sticky 가 붙잡는다 */
+.mistake-detail .card-bottom {
+  margin-top: auto;
+  position: sticky;
+  bottom: 0;
+  padding: 12px 20px calc(20px + env(safe-area-inset-bottom, 0px));
+  background: var(--bg);
+  border-top: 1px solid var(--border);
 }
 .headword.sm {
   font-size: clamp(36px, 12vw, 60px);
