@@ -107,18 +107,25 @@ function main() {
   // 리포트 — kr 2개 이상인 한자만, 코퍼스 빈도순.
   // verdict 열: keep(둘 다 근거), trim:xx(강한 노이즈 후보 — 주음 15+ hits, 나머지 0), ?(표본 부족)
   const STRONG_MIN = 15
-  const rows: string[] = [
-    ['char', 'verdict', 'corpusFreq', 'kanjidic_kr', 'stdict_attested', 'unconfirmed', 'samples'].join(
-      '\t',
-    ),
+  const HEADER = [
+    'char',
+    'verdict',
+    'corpusFreq',
+    'kanjidic_kr',
+    'stdict_attested',
+    'unconfirmed',
+    'samples',
   ]
-  let multi = 0
+  interface Row {
+    verdict: string
+    cells: (string | number)[]
+  }
+  const out: Row[] = []
   const tally = { keep: 0, trim: 0, review: 0 }
   const chars = [...corpusFreq.keys()]
     .filter((c) => (kanji[c].koreanH ?? []).length >= 2)
     .sort((a, b) => (corpusFreq.get(b) ?? 0) - (corpusFreq.get(a) ?? 0))
   for (const c of chars) {
-    multi++
     const kr = kanji[c].koreanH
     const att = attested.get(c) ?? new Map<string, number>()
     const attEntries = [...att.entries()].sort((a, b) => b[1] - a[1])
@@ -135,8 +142,9 @@ function main() {
       verdict = '?'
       tally.review++
     }
-    rows.push(
-      [
+    out.push({
+      verdict,
+      cells: [
         c,
         verdict,
         corpusFreq.get(c) ?? 0,
@@ -144,19 +152,24 @@ function main() {
         attEntries.map(([s, n]) => `${s}:${n}`).join(' ') || '—',
         unconfirmed.join('·') || '—',
         (samples.get(c) ?? []).join(' / '),
-      ].join('\t'),
-    )
+      ],
+    })
   }
+  const toTsv = (rows: Row[]) =>
+    [HEADER.join('\t'), ...rows.map((r) => r.cells.join('\t'))].join('\n') + '\n'
 
-  const outPath = join(DICT_DIR, 'korean-reading-audit.tsv')
-  writeFileSync(outPath, rows.join('\n') + '\n')
+  const auditPath = join(DICT_DIR, 'korean-reading-audit.tsv')
+  const reviewPath = join(DICT_DIR, 'korean-reading-review.tsv')
+  writeFileSync(auditPath, toTsv(out))
+  writeFileSync(reviewPath, toTsv(out.filter((r) => r.verdict === '?')))
 
   console.log(`stdict 캐시 항목 ${usedEntries.toLocaleString()}개를 위치정렬에 사용`)
-  console.log(`코퍼스 한자 중 kr 2개 이상: ${multi}자`)
+  console.log(`코퍼스 한자 중 kr 2개 이상: ${chars.length}자`)
   console.log(`  keep  (둘 다 stdict 근거 있음)         : ${tally.keep}자`)
   console.log(`  trim  (주음 ${STRONG_MIN}+ · 나머지 0 — 잘라낼 후보): ${tally.trim}자`)
   console.log(`  ?     (표본 부족 — 사람이 판단)          : ${tally.review}자`)
-  console.log(`→ ${outPath}`)
+  console.log(`→ ${auditPath} (전체)`)
+  console.log(`→ ${reviewPath} (? 항목 ${tally.review}자만)`)
   console.log(`\n검수: verdict 열을 확정(keep / trim:음·음 / drop 전체)한 뒤 다음 단계(apply)로.`)
 }
 
