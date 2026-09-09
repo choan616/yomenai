@@ -46,8 +46,10 @@ export interface OnyomiPair {
 }
 
 export interface KanjiInfo {
-  /** 한국 한자음 (KANJIDIC2 korean_h) */
+  /** 한국 한자음 — 지금 쓰는 음 (KANJIDIC2 korean_h, override 있으면 그 now) */
   kr: string[]
+  /** 옛·드문 음 — 자전엔 있으나 현대 어휘에 안 쓰이는 음. override 없으면 빈 배열 */
+  krOld: string[]
   on: string[]
   kun: string[]
 }

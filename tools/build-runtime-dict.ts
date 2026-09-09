@@ -108,10 +108,28 @@ for (const [id, p] of Object.entries(pairsRaw)) {
   pairs[id] = { kanji: p.kanji, base: p.base, kind: p.kind }
 }
 
-const kanjiSlim: Record<string, { kr: string[]; on: string[]; kun: string[] }> = {}
+// 한국음 override — korean-reading-overrides.json 이 있으면 kr(지금 쓰는 음) / krOld(옛·드문 음)
+// 로 나눠 싣는다. 없으면 koreanH 를 그대로 kr 에, krOld 는 빈 배열. (없으면 현행 동작 그대로)
+const krOverride: Record<string, { now: string[]; old: string[] }> = existsSync(
+  join(DICT_DIR, 'korean-reading-overrides.json'),
+)
+  ? read<{ byChar: Record<string, { now: string[]; old: string[] }> }>(
+      'korean-reading-overrides.json',
+    ).byChar
+  : {}
+
+const kanjiSlim: Record<string, { kr: string[]; krOld: string[]; on: string[]; kun: string[] }> = {}
+let krOverridden = 0
 for (const ch of [...usedKanji].sort()) {
   const k = kanji[ch]
-  kanjiSlim[ch] = { kr: k.koreanH, on: k.onyomi, kun: k.kunyomi }
+  const ov = krOverride[ch]
+  if (ov) krOverridden++
+  kanjiSlim[ch] = {
+    kr: ov ? ov.now : k.koreanH,
+    krOld: ov ? ov.old : [],
+    on: k.onyomi,
+    kun: k.kunyomi,
+  }
 }
 
 mkdirSync(OUT_DIR, { recursive: true })
@@ -127,6 +145,10 @@ emit('base.json', { _meta: { ...meta, band: '0~3', count: base.length }, idioms:
 emit('band4.json', { _meta: { ...meta, band: '4', count: band4.length }, idioms: band4 })
 emit('pairs.json', { _meta: meta, pairs })
 emit('kanji.json', { _meta: meta, kanji: kanjiSlim })
+console.log(
+  `  한국음 override ${krOverridden}자 적용` +
+    (krOverridden === 0 ? ' (korean-reading-overrides.json 없음 — koreanH 그대로)' : ''),
+)
 
 // Tatoeba 예문 — data/dict/examples.json 이 없으면 조용히 건너뛴다 (원본이 큰 수동 다운로드라
 // 다들 받아두는 게 아니다). `npm run build:examples` 로 만든다

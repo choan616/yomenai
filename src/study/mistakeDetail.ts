@@ -9,8 +9,10 @@ export interface BreakdownPart {
   /** 이 숙어에서 이 한자가 쓴 음/훈독 (히라가나 대표형) */
   base: string
   kind: 'on' | 'kun'
-  /** 한국 한자음 (KANJIDIC2 korean_h) */
+  /** 한국 한자음 — 지금 쓰는 음 */
   kr: string[]
+  /** 옛·드문 음 (있으면 "옛 음" 으로 접어서 보여준다) */
+  krOld: string[]
 }
 
 /** 숙어의 pairIds 를 (한자, 음독) 조각으로 펼치고 각 한자의 한국 한자음을 병기한다 */
@@ -23,7 +25,15 @@ export function breakdown(
   for (const pid of idiom.pairIds) {
     const p = pairs.get(pid)
     if (p === undefined) continue
-    out.push({ pairId: pid, kanji: p.kanji, base: p.base, kind: p.kind, kr: kanji.get(p.kanji)?.kr ?? [] })
+    const k = kanji.get(p.kanji)
+    out.push({
+      pairId: pid,
+      kanji: p.kanji,
+      base: p.base,
+      kind: p.kind,
+      kr: k?.kr ?? [],
+      krOld: k?.krOld ?? [],
+    })
   }
   return out
 }

@@ -628,3 +628,27 @@ context-notes 2026-09-07 「별도 앱으로 분리」 절, PLAN §0 참조.
   yomenai 안에서 쓸 일은 거의 없어졌지만 비용 0
 
 기존 후보 항목(코퍼스 필터 완화 / 훈독 모드 분리 / 훈독 오답 버킷)은 앱 B 로 이관.
+
+---
+
+## 오답 상세 다듬기 (2026-09-09, 실사용 지적)
+
+- [x] **닫기 바가 내용을 가림 / 둘째 한자부터 잘림** — `.mistake-detail` 이 `.card` 3분할을
+  물려받아 좁은 화면에서 스크롤 창이 ~310px 였다. 오버레이 전체를 한 덩어리로 스크롤,
+  헤더·닫기 바를 불투명 sticky 로 고정. `src/study/study.css` 만 수정. 커밋 `22336e0`.
+  **검증: `npm test` 325 · `npm run e2e` 8스펙(카드 전환 p95 11.2ms) · 폰/짧은창 캡처 대조**
+- [x] **한국음(kr)이 옛 음·오염 음을 그대로 노출** (大→대·다·태, 医→예·의) — KANJIDIC
+  `korean_h` 무가공 통과. context-notes 2026-09-09 절
+  - `tools/audit-korean-readings.ts` (`npm run audit:korean-readings`) — Phase 3
+    `.korean-cache.json` stdict 표제어를 위치 정렬해 "현대 어휘에 쓰이는 음" 을 가려냄.
+    두음법칙 정규화 + jis208 결손 이체자 보충. 코퍼스 한자 263자(kr 2+) 중 old 후보 205자
+  - **"삭제" 아님** (사용자 지적 — 안 쓰인다 ≠ 틀렸다). `now`(지금 쓰는 음) / `old`(옛·드문 음)
+    으로 갈라 화면에서 old 를 "옛 음" 으로 접는다. 정보 손실 0
+  - 배선 완료 (커밋 대기) — `apply-korean-readings.ts`(review TSV → `korean-reading-overrides.json`),
+    `build-runtime-dict.ts`(override 있으면 `kr:now`/`krOld:old`, 없으면 현행), `KanjiInfo.krOld`,
+    `BreakdownPart.krOld`, `MistakeDetail.tsx` "옛 음" 흐리게, `.md-kr-old` 스타일
+  - **override 파일 없으면 앱 동작 그대로** — `public/dict/kanji.json` 전 한자 `kr` 불변, `krOld:[]`
+  - **검증: `npm test` 325 · `tsc -b`/tools tsc/oxlint/build 클린 · 임시 override 로 e2e 캡처
+    (圧縮 → "한국음 압 · 옛 음 엽" 흐리게 렌더) 확인 후 임시본 제거**
+  - [ ] **미완 — 205자 검수** (`data/dict/korean-reading-review.tsv` now/old 열). 亀 균(龜裂),
+    斉 제(一斉) 같은 예외 있음. 검수 후 `apply:korean-readings` + `build:runtime-dict`

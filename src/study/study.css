@@ -456,6 +456,10 @@
   color: var(--text-dim);
   font-size: 14px;
 }
+/* 옛·드문 음 — 자전엔 있으나 현대 어휘에 안 쓰이는 음. 지우지 않고 흐리게 곁들인다 */
+.md-kr-old {
+  color: var(--text-faint);
+}
 .md-shared {
   margin: 10px 0 0;
   font-size: 14px;

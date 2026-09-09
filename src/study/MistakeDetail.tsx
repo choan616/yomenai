@@ -90,7 +90,12 @@ export function MistakeDetail({ idiom, mistakeType, onClose }: Props) {
                   {p.base}
                 </span>
                 <span className="tag muted">{p.kind === 'on' ? '음독' : '훈독'}</span>
-                <span className="md-kr">한국음 {p.kr.length > 0 ? p.kr.join('·') : '—'}</span>
+                <span className="md-kr">
+                  한국음 {p.kr.length > 0 ? p.kr.join('·') : '—'}
+                  {p.krOld.length > 0 && (
+                    <span className="md-kr-old"> · 옛 음 {p.krOld.join('·')}</span>
+                  )}
+                </span>
               </div>
               {(contrast.get(p.pairId)?.length ?? 0) >= 2 ? (
                 <Contrast groups={contrast.get(p.pairId)!} />

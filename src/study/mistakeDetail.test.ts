@@ -12,8 +12,8 @@ const pairs = new Map<string, OnyomiPair>([
 ])
 
 const kanji = new Map<string, KanjiInfo>([
-  ['認', { kr: ['인'], on: ['ニン'], kun: ['みと.める'] }],
-  ['識', { kr: ['식', '지'], on: ['シキ'], kun: [] }],
+  ['認', { kr: ['인'], krOld: [], on: ['ニン'], kun: ['みと.める'] }],
+  ['識', { kr: ['식'], krOld: ['지'], on: ['シキ'], kun: [] }],
 ])
 
 function idiom(id: string, headword: string, reading: string, pairIds: string[]): RuntimeIdiom {
@@ -30,11 +30,11 @@ const pool: RuntimeIdiom[] = [
 ]
 
 describe('breakdown', () => {
-  it('pairIds 를 (한자, 음독) 조각으로 펼치고 한국 한자음을 병기한다', () => {
+  it('pairIds 를 (한자, 음독) 조각으로 펼치고 한국 한자음을 병기한다 (옛 음은 krOld 로)', () => {
     const parts = breakdown(pool[0], pairs, kanji)
     expect(parts).toEqual([
-      { pairId: '認:on:にん', kanji: '認', base: 'にん', kind: 'on', kr: ['인'] },
-      { pairId: '識:on:しき', kanji: '識', base: 'しき', kind: 'on', kr: ['식', '지'] },
+      { pairId: '認:on:にん', kanji: '認', base: 'にん', kind: 'on', kr: ['인'], krOld: [] },
+      { pairId: '識:on:しき', kanji: '識', base: 'しき', kind: 'on', kr: ['식'], krOld: ['지'] },
     ])
   })
 
@@ -45,7 +45,7 @@ describe('breakdown', () => {
 
   it('kanji 사전에 없으면 한국음은 빈 배열이다', () => {
     const parts = breakdown(pool[1], pairs, kanji)
-    expect(parts[1]).toMatchObject({ kanji: '知', kr: [] })
+    expect(parts[1]).toMatchObject({ kanji: '知', kr: [], krOld: [] })
   })
 })
 

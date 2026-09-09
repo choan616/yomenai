@@ -3051,11 +3051,27 @@ now = kanjidic 음 중 stdict 근거 있음(자전 순서) + 교정음(자전에
 old = 근거 0. now 가 비면 전부 now(판단 보류). 205자에 old 후보 발생.
 `korean-reading-review.tsv` = 그 205자만.
 
-### 다음 단계 (미완)
+### 배선 완료 (2026-09-09, 커밋 대기) — override 파일만 생기면 먹힌다
 
-1. `apply-korean-readings.ts` — 검수한 review TSV(now/old) → `korean-reading-overrides.json`
-2. `build-runtime-dict.ts` — override 있으면 `{ kr: now, krOld: old }`, 없으면 `kr: koreanH`/`krOld: []`
-   (public/dict/kanji.json 에 `krOld` 필드 추가 — 재생성 산출물이라 스키마 불변 대상 아님)
-3. `mistakeDetail.ts` `BreakdownPart` 에 `krOld`, `MistakeDetail.tsx` 가 "옛 음" 을 흐리게
-4. `mistakeDetail.test.ts` 갱신
-override 없으면 현행 동작 그대로라 검수 전엔 앱 변화 없음.
+1. `tools/apply-korean-readings.ts` (`npm run apply:korean-readings`) — 검수한
+   `korean-reading-review.tsv`(now/old) → `data/dict/korean-reading-overrides.json`.
+   `old` 비면 override 안 만듦(passthrough). koreanH 원본 안 건드림. 삭제·중복·1글자
+   아님 경고
+2. `build-runtime-dict.ts` — `korean-reading-overrides.json` 있으면 `kr: now, krOld: old`,
+   없으면 `kr: koreanH, krOld: []`. `public/dict/kanji.json` 에 `krOld` 필드 추가
+   (재생성 산출물 → 스키마 불변 대상 아님). 적용 수를 콘솔에 찍는다
+3. `src/dict/load.ts` `KanjiInfo.krOld`, `src/study/mistakeDetail.ts` `BreakdownPart.krOld`
+   (`breakdown` 이 `k?.krOld ?? []`), `MistakeDetail.tsx` → `한국음 {kr} · 옛 음 {krOld}`
+   ( `krOld` 있을 때만, `.md-kr-old` = `--text-faint` )
+4. `mistakeDetail.test.ts` — 픽스처/단언에 `krOld` 반영 (識 을 `kr:['식'],krOld:['지']` 로)
+
+**검증** — override 파일 없이 `build:runtime-dict` 재실행 → 전 한자 `kr` 불변, `krOld:[]`,
+그 외 0 변화. 임시 override(圧→압/엽 등)로 e2e — 오답 상세에 "한국음 압 · 옛 음 엽"
+흐리게 렌더 확인 후 임시본 제거. `npm test` 325 · tsc(app+tools)·oxlint·build·e2e(detail·
+full-flow) 클린.
+
+### 미완 — 205자 검수
+
+`data/dict/korean-reading-review.tsv` now/old 열. 감사 초벌은 오탐 있음 — `亀`(균=龜裂 균열,
+now 로 올려야), `茶`(차 정상), `斉`(now 제 맞음, old 자·체·채). 검수 후
+`apply:korean-readings` → `build:runtime-dict` 하면 "옛 음" 접힘이 화면에 나타난다.
