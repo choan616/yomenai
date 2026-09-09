@@ -43,6 +43,7 @@ build:runtime-dict     위 산출물 → public/dict/{base,band4,pairs,kanji,exa
 npm run build:korean-meaning-worklist -- --sample=50   # 층(T1~T6)마다 50개, ~300행
 npm run build:korean-meaning-worklist -- --flagged     # 깨진 번역 등 플래그 붙은 것 전량
 npm run build:korean-meaning-worklist -- --all         # 우선순위 순 전체 (~13,000행)
+npm run build:korean-meaning-worklist -- --batch --category=3         # category3을 배치파일로 추가 (40행씩)
 ```
 
 → `data/dict/korean-meaning-worklist.tsv` (또는 `-flagged.tsv`).
