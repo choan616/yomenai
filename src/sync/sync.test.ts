@@ -6,7 +6,7 @@ import { IDBFactory, IDBKeyRange as FDBKeyRange } from 'fake-indexeddb'
 import { YomenaiDB } from '../db/schema.ts'
 import { appendEvent, listEvents, LOCAL_USER_ID, newEventId } from '../db/events.ts'
 import type { DriveClient, DriveFileMeta } from './googleDrive.ts'
-import { resetLearning, syncNow } from './sync.ts'
+import { ARCHIVE_FILE_NAME, consolidateSyncFiles, resetLearning, syncNow } from './sync.ts'
 import type { MistakeType, ReviewEvent } from '../core/types.ts'
 
 const T0 = Date.UTC(2026, 0, 1)
@@ -61,6 +61,9 @@ class FakeDrive implements DriveClient {
   }
   async uploadOrReplace(fileName: string, content: string): Promise<void> {
     this.cloud.set(fileName, content)
+  }
+  async deleteFile(fileId: string): Promise<void> {
+    this.cloud.delete(fileId)
   }
   async deleteSyncFiles(): Promise<number> {
     const n = this.cloud.size
@@ -157,5 +160,63 @@ describe('resetLearning', () => {
     expect(result.localCleared).toBe(1)
     expect(result.driveDeleted).toBe(-1)
     expect(await listEvents(db, LOCAL_USER_ID)).toEqual([])
+  })
+})
+
+describe('consolidateSyncFiles', () => {
+  it('내 파일을 뺀 옛 기기 파일을 보관 파일 하나로 합치고 원본을 지운다', async () => {
+    const db = freshDb()
+    const b = review({ at: T0 + 1, idiomId: 'b', deviceId: 'dev-b' })
+    const c = review({ at: T0 + 2, idiomId: 'c', deviceId: 'dev-c' })
+    const cloud = new Map([
+      ['reviews-dev-a.json', '[]'],
+      ['reviews-dev-b.json', JSON.stringify([b])],
+      ['reviews-dev-c.json', JSON.stringify([c])],
+    ])
+
+    const result = await consolidateSyncFiles(db, 'dev-a', new FakeDrive(cloud))
+
+    expect(result).toEqual({ archived: 2, removed: 2 })
+    expect([...cloud.keys()].sort()).toEqual([ARCHIVE_FILE_NAME, 'reviews-dev-a.json'])
+    const archived = JSON.parse(cloud.get(ARCHIVE_FILE_NAME)!) as typeof b[]
+    expect(archived.map((e) => e.idiomId).sort()).toEqual(['b', 'c'])
+  })
+
+  it('지우기 전에 로컬로 흡수하고, 정리 뒤 다른 기기도 보관 파일에서 전부 받는다', async () => {
+    const db = freshDb()
+    const cloud = new Map([
+      ['reviews-dev-b.json', JSON.stringify([review({ at: T0 + 1, idiomId: 'b', deviceId: 'dev-b' })])],
+      ['reviews-dev-c.json', JSON.stringify([review({ at: T0 + 2, idiomId: 'c', deviceId: 'dev-c' })])],
+    ])
+
+    await consolidateSyncFiles(db, 'dev-a', new FakeDrive(cloud))
+    expect((await listEvents(db, LOCAL_USER_ID)).map((e) => e.idiomId).sort()).toEqual(['b', 'c'])
+
+    // 정리 뒤 합류한 기기도 보관 파일 하나로 과거 기록을 전부 받는다
+    const fresh = freshDb()
+    await syncNow(fresh, 'dev-d', new FakeDrive(cloud))
+    expect((await listEvents(fresh, LOCAL_USER_ID)).map((e) => e.idiomId).sort()).toEqual(['b', 'c'])
+  })
+
+  it('두 번 정리해도 보관 파일 내용이 같고, 지울 게 없으면 아무것도 안 한다', async () => {
+    const db = freshDb()
+    const cloud = new Map([
+      ['reviews-dev-a.json', '[]'],
+      ['reviews-dev-b.json', JSON.stringify([review({ at: T0 + 1, idiomId: 'b', deviceId: 'dev-b' })])],
+    ])
+    const drive = new FakeDrive(cloud)
+
+    await consolidateSyncFiles(db, 'dev-a', drive)
+    const after = cloud.get(ARCHIVE_FILE_NAME)
+
+    const second = await consolidateSyncFiles(db, 'dev-a', drive)
+    expect(second).toEqual({ archived: 0, removed: 0 })
+    expect(cloud.get(ARCHIVE_FILE_NAME)).toBe(after)
+  })
+
+  it('로그인하지 않았으면 거부한다', async () => {
+    const drive = new FakeDrive(new Map())
+    drive.authed = false
+    await expect(consolidateSyncFiles(freshDb(), 'dev-a', drive)).rejects.toThrow('로그인')
   })
 })

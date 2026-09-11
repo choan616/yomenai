@@ -12,7 +12,7 @@ import { applyTheme, loadTheme, saveTheme, type Theme } from './theme.ts'
 import { db } from '../db/schema.ts'
 import { getDeviceId } from '../db/device.ts'
 import { googleDrive } from '../sync/googleDrive.ts'
-import { resetLearning, syncNow } from '../sync/sync.ts'
+import { consolidateSyncFiles, resetLearning, syncNow } from '../sync/sync.ts'
 import { getLastSyncAt, setLastSyncAt, setSignedIn, wasSignedIn } from '../sync/syncState.ts'
 import { clearDiagnosticDone } from './diagnostic-state.ts'
 
@@ -55,6 +55,8 @@ function BackupSetting() {
   const [busy, setBusy] = useState<'idle' | 'signIn' | 'sync'>('idle')
   const [error, setError] = useState<string | null>(null)
   const [lastSyncAt, setLastSyncAtState] = useState<number | null>(getLastSyncAt)
+  const [cleanup, setCleanup] = useState<'idle' | 'armed' | 'busy'>('idle')
+  const [cleanupMsg, setCleanupMsg] = useState<string | null>(null)
 
   useEffect(() => {
     if (!wasSignedIn() || authed) return
@@ -97,6 +99,23 @@ function BackupSetting() {
       .finally(() => setBusy('idle'))
   }
 
+  // 옛 기기 파일 정리 — 합친 뒤에 지우므로 기록은 안 사라지지만 Drive 파일을 삭제하니 확인을 받는다
+  const handleCleanup = () => {
+    setCleanup('busy')
+    setError(null)
+    setCleanupMsg(null)
+    void consolidateSyncFiles(db(), getDeviceId())
+      .then(({ archived, removed }) => {
+        setCleanupMsg(
+          removed === 0
+            ? '정리할 옛 기기 파일이 없어요.'
+            : `옛 기기 파일 ${removed}개를 보관 파일 하나로 합쳤어요. 기록 ${archived}건은 그대로예요.`,
+        )
+      })
+      .catch((err: unknown) => setError(err instanceof Error ? err.message : String(err)))
+      .finally(() => setCleanup('idle'))
+  }
+
   return (
     <div className="setting">
       <label>백업</label>
@@ -112,6 +131,28 @@ function BackupSetting() {
           </div>
           <span className="hint">
             {lastSyncAt === null ? '아직 동기화하지 않았어요.' : `마지막 동기화 ${formatSyncTime(lastSyncAt)}`}
+          </span>
+          {cleanup === 'armed' ? (
+            <div className="seg" role="group" aria-label="옛 기기 파일 정리 확인">
+              <button type="button" className="danger" onClick={handleCleanup}>
+                정말 정리
+              </button>
+              <button type="button" onClick={() => setCleanup('idle')}>
+                취소
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setCleanup('armed')}
+              disabled={busy !== 'idle' || cleanup === 'busy'}
+            >
+              {cleanup === 'busy' ? '정리 중…' : '옛 기기 파일 정리'}
+            </button>
+          )}
+          <span className="hint">
+            {cleanupMsg ??
+              '브라우저 데이터를 지우면 새 기기로 잡혀 백업 파일이 쌓여요. 안 쓰는 파일을 보관 파일 하나로 합쳐요.'}
           </span>
         </>
       ) : (

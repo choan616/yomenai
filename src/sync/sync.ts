@@ -42,6 +42,54 @@ export async function syncNow(
   return { uploaded: mine.length, downloaded }
 }
 
+/** 더는 쓰지 않는 기기들의 이벤트를 모아 두는 보관 파일. 아무도 쓰지 않고 읽기만 한다 */
+export const ARCHIVE_FILE_NAME = 'reviews-archive.json'
+
+export interface ConsolidateResult {
+  /** 보관 파일에 담긴 이벤트 수 */
+  archived: number
+  /** 지운 옛 기기 파일 수 */
+  removed: number
+}
+
+/**
+ * 옛 기기 파일 정리 — 내 파일을 뺀 나머지 `reviews-*.json` 을 보관 파일 하나로 합치고 원본을 지운다.
+ * 브라우저 데이터를 지우거나 프로파일이 바뀔 때마다 새 deviceId 가 생겨 죽은 파일이 쌓이는데,
+ * 그냥 지우면 그 이벤트의 Drive 사본이 사라진다. 그래서 합친 뒤에 지운다.
+ *
+ * 기기별 파일 분리 원칙(PLAN §5 원칙 3)은 유지된다 — 보관 파일에 쓰는 주체는 정리 동작뿐이고
+ * 살아 있는 기기는 여전히 자기 파일에만 쓴다. 다른 기기가 나중에 동기화하면 자기 파일을
+ * 다시 만들어 전량을 올리므로(보관본과 중복되지만 합집합 병합이라 무해) 기록 손실도 없다.
+ */
+export async function consolidateSyncFiles(
+  database: YomenaiDB,
+  deviceId: string,
+  drive: DriveClient = googleDrive,
+): Promise<ConsolidateResult> {
+  if (!drive.isAuthenticated()) throw new Error('로그인이 필요합니다')
+
+  const myFileName = fileNameFor(deviceId)
+  const files = await drive.listSyncFiles()
+  const targets = files.filter((f) => f.name !== myFileName)
+  const toRemove = targets.filter((f) => f.name !== ARCHIVE_FILE_NAME)
+  if (toRemove.length === 0) return { archived: 0, removed: 0 }
+
+  // 기존 보관 파일도 같이 읽어 합친다 — 두 번 정리해도 결과가 같다
+  const byId = new Map<string, LearningEvent>()
+  for (const file of targets) {
+    const events = JSON.parse(await drive.downloadFile(file.id)) as LearningEvent[]
+    await importEvents(database, events) // 지우기 전에 로컬 사본을 확보한다
+    for (const e of events) byId.set(e.id, e)
+  }
+
+  // 업로드가 끝난 뒤에 지운다. 순서를 뒤집으면 업로드 실패 시 기록이 Drive 에서 사라진다
+  const merged = [...byId.values()]
+  await drive.uploadOrReplace(ARCHIVE_FILE_NAME, JSON.stringify(merged))
+  for (const file of toRemove) await drive.deleteFile(file.id)
+
+  return { archived: merged.length, removed: toRemove.length }
+}
+
 export interface ResetResult {
   /** 지운 로컬 이벤트 수 */
   localCleared: number

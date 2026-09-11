@@ -652,3 +652,18 @@ context-notes 2026-09-07 「별도 앱으로 분리」 절, PLAN §0 참조.
     (圧縮 → "한국음 압 · 옛 음 엽" 흐리게 렌더) 확인 후 임시본 제거**
   - [ ] **미완 — 205자 검수** (`data/dict/korean-reading-review.tsv` now/old 열). 亀 균(龜裂),
     斉 제(一斉) 같은 예외 있음. 검수 후 `apply:korean-readings` + `build:runtime-dict`
+
+---
+
+## Drive 동기화 파일 정리 (2026-09-11, 사용자 관찰)
+
+- [x] **원인 확인** — 동기화마다 쌓이는 게 아니라 개발 기간 deviceId 잔해 9개가 안 지워진
+  것. 오늘 갱신된 파일은 하나뿐. context-notes 같은 날 절
+- [x] **`consolidateSyncFiles(db, deviceId, drive?)`** — 내 파일을 뺀 `reviews-*.json` 을
+  `reviews-archive.json` 하나로 합치고 원본 삭제. 업로드 후 삭제 순서 고정.
+  `DriveClient.deleteFile(fileId)` 추가
+  **검증: `npm test` 329(`sync.test.ts` 6→10) · `tsc -b`/`oxlint` 클린**
+- [x] **설정 > 백업 "옛 기기 파일 정리"** — 2단 확인, 결과를 hint 로 표시
+- [ ] **실기기 확인 필요(사용자)** — 배포판에서 정리 실행 → Drive 파일 11개가
+  `reviews-b1dc6cae….json` + `reviews-archive.json` 2개로 줄고, 이후 동기화에서
+  기록 수가 그대로인지
