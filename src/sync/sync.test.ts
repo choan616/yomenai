@@ -6,7 +6,13 @@ import { IDBFactory, IDBKeyRange as FDBKeyRange } from 'fake-indexeddb'
 import { YomenaiDB } from '../db/schema.ts'
 import { appendEvent, listEvents, LOCAL_USER_ID, newEventId } from '../db/events.ts'
 import type { DriveClient, DriveFileMeta } from './googleDrive.ts'
-import { ARCHIVE_FILE_NAME, consolidateSyncFiles, resetLearning, syncNow } from './sync.ts'
+import {
+  ARCHIVE_FILE_NAME,
+  consolidateSyncFiles,
+  resetLearning,
+  syncNow,
+  type SyncProgress,
+} from './sync.ts'
 import type { MistakeType, ReviewEvent } from '../core/types.ts'
 
 const T0 = Date.UTC(2026, 0, 1)
@@ -130,6 +136,39 @@ describe('syncNow', () => {
     // 재동기화해도 멱등 — 중복이 생기지 않는다
     await syncNow(dbA, 'dev-a', driveA)
     expect(await idsOf(dbA)).toEqual(expected)
+  })
+})
+
+describe('syncNow 진행 보고', () => {
+  it('단계마다 보고하고, 목록을 받은 뒤 전체 단계 수가 확정된다', async () => {
+    const db = freshDb()
+    await appendEvent(db, review({ at: T0, idiomId: '1', deviceId: 'dev-a' }))
+    const cloud = new Map([
+      ['reviews-dev-b.json', JSON.stringify([review({ at: T0 + 1, idiomId: 'b', deviceId: 'dev-b' })])],
+      [ARCHIVE_FILE_NAME, JSON.stringify([review({ at: T0 + 2, idiomId: 'c', deviceId: 'dev-c' })])],
+    ])
+
+    const seen: SyncProgress[] = []
+    await syncNow(db, 'dev-a', new FakeDrive(cloud), (p) => seen.push(p))
+
+    expect(seen.map((p) => p.phase)).toEqual(['upload', 'list', 'download', 'download', 'done'])
+    // 목록 전에는 잠정 2, 받은 뒤엔 업로드 1 + 목록 1 + 파일 2 = 4
+    expect(seen.map((p) => p.total)).toEqual([2, 2, 4, 4, 4])
+    expect(seen.map((p) => p.done)).toEqual([0, 1, 2, 3, 4])
+    expect(seen.filter((p) => p.phase === 'download').map((p) => p.file)).toEqual([
+      { index: 1, count: 2 },
+      { index: 2, count: 2 },
+    ])
+  })
+
+  it('받을 파일이 없으면 업로드·목록만 보고하고 100% 로 끝난다', async () => {
+    const db = freshDb()
+    const seen: SyncProgress[] = []
+    await syncNow(db, 'dev-a', new FakeDrive(new Map()), (p) => seen.push(p))
+
+    expect(seen.map((p) => p.phase)).toEqual(['upload', 'list', 'done'])
+    const last = seen[seen.length - 1]
+    expect(last.done).toBe(last.total)
   })
 })
 

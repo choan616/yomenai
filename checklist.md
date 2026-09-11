@@ -666,6 +666,10 @@ context-notes 2026-09-07 「별도 앱으로 분리」 절, PLAN §0 참조.
   `DriveClient.deleteFile(fileId)` 추가
   **검증: `npm test` 329(`sync.test.ts` 6→10) · `tsc -b`/`oxlint` 클린**
 - [x] **설정 > 백업 "옛 기기 파일 정리"** — 2단 확인, 결과를 hint 로 표시
+- [x] **동기화 진행 막대** (2026-09-11) — `syncNow` 4번째 인자 `onProgress`.
+  단계 = 업로드 1 + 목록 1 + 파일 n, 파일 수는 목록을 받아야 알아서 그전 `total` 은 잠정 2.
+  설정 > 백업에서 `<progress>` + "백업 내려받는 중 1/2" 표시
+  **검증: `npm test` 331(`sync.test.ts` 10→12) · `tsc -b`/`lint`/`build` 클린**
 - [ ] **실기기 확인 필요(사용자)** — 배포판에서 정리 실행 → Drive 파일 11개가
   `reviews-b1dc6cae….json` + `reviews-archive.json` 2개로 줄고, 이후 동기화에서
   기록 수가 그대로인지

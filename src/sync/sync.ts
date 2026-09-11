@@ -10,6 +10,19 @@ function fileNameFor(deviceId: string): string {
   return `reviews-${deviceId}.json`
 }
 
+/**
+ * 동기화 진행 상황. 단계는 업로드 1 + 목록 조회 1 + 파일 수 n 이고, 파일 수는 목록을
+ * 받아야 알 수 있어 그전까지 `total` 은 잠정값(2)이다
+ */
+export interface SyncProgress {
+  phase: 'upload' | 'list' | 'download' | 'done'
+  /** 끝난 단계 수 — 막대에 그대로 쓴다 */
+  done: number
+  total: number
+  /** download 단계에서만 — 지금 몇 번째 파일인지 (1-based) */
+  file?: { index: number; count: number }
+}
+
 export interface SyncResult {
   /** 이 기기에서 올린 이벤트 수(전체, 매번 파일을 통째로 덮어쓴다) */
   uploaded: number
@@ -22,23 +35,30 @@ export async function syncNow(
   database: YomenaiDB,
   deviceId: string,
   drive: DriveClient = googleDrive,
+  onProgress?: (p: SyncProgress) => void,
 ): Promise<SyncResult> {
   if (!drive.isAuthenticated()) throw new Error('로그인이 필요합니다')
 
   const myFileName = fileNameFor(deviceId)
 
+  onProgress?.({ phase: 'upload', done: 0, total: 2 })
   const mine = await listDeviceEvents(database, LOCAL_USER_ID, deviceId)
   await drive.uploadOrReplace(myFileName, JSON.stringify(mine))
 
+  onProgress?.({ phase: 'list', done: 1, total: 2 })
   const files = await drive.listSyncFiles()
+  const toDownload = files.filter((f) => f.name !== myFileName) // 방금 올린 자기 파일은 다시 받을 필요 없다
+  const total = 2 + toDownload.length
+
   let downloaded = 0
-  for (const file of files) {
-    if (file.name === myFileName) continue // 방금 올린 자기 파일은 다시 받을 필요 없다
+  for (const [i, file] of toDownload.entries()) {
+    onProgress?.({ phase: 'download', done: 2 + i, total, file: { index: i + 1, count: toDownload.length } })
     const text = await drive.downloadFile(file.id)
     const events = JSON.parse(text) as LearningEvent[]
     downloaded += await importEvents(database, events)
   }
 
+  onProgress?.({ phase: 'done', done: total, total })
   return { uploaded: mine.length, downloaded }
 }
 

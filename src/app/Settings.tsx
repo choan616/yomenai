@@ -12,7 +12,7 @@ import { applyTheme, loadTheme, saveTheme, type Theme } from './theme.ts'
 import { db } from '../db/schema.ts'
 import { getDeviceId } from '../db/device.ts'
 import { googleDrive } from '../sync/googleDrive.ts'
-import { consolidateSyncFiles, resetLearning, syncNow } from '../sync/sync.ts'
+import { consolidateSyncFiles, resetLearning, syncNow, type SyncProgress } from '../sync/sync.ts'
 import { getLastSyncAt, setLastSyncAt, setSignedIn, wasSignedIn } from '../sync/syncState.ts'
 import { clearDiagnosticDone } from './diagnostic-state.ts'
 
@@ -49,12 +49,29 @@ function formatSyncTime(at: number): string {
   })
 }
 
+/** 동기화 단계를 사람 말로. 파일 수는 목록을 받아야 알 수 있어 그전까지 막대가 2단계로 잡힌다 */
+function progressLabel(p: SyncProgress): string {
+  switch (p.phase) {
+    case 'upload':
+      return '내 기록 올리는 중…'
+    case 'list':
+      return '백업 파일 확인 중…'
+    case 'download':
+      return p.file === undefined
+        ? '백업 내려받는 중…'
+        : `백업 내려받는 중 ${p.file.index}/${p.file.count}`
+    case 'done':
+      return '마무리하는 중…'
+  }
+}
+
 /** Google Drive 백업 — 로그인 → 지금 동기화. 기기별 파일 분리라 충돌 UI가 없다 (PLAN §5 원칙 3) */
 function BackupSetting() {
   const [authed, setAuthed] = useState(googleDrive.isAuthenticated())
   const [busy, setBusy] = useState<'idle' | 'signIn' | 'sync'>('idle')
   const [error, setError] = useState<string | null>(null)
   const [lastSyncAt, setLastSyncAtState] = useState<number | null>(getLastSyncAt)
+  const [progress, setProgress] = useState<SyncProgress | null>(null)
   const [cleanup, setCleanup] = useState<'idle' | 'armed' | 'busy'>('idle')
   const [cleanupMsg, setCleanupMsg] = useState<string | null>(null)
 
@@ -89,14 +106,18 @@ function BackupSetting() {
   const handleSync = () => {
     setBusy('sync')
     setError(null)
-    void syncNow(db(), getDeviceId())
+    setProgress(null)
+    void syncNow(db(), getDeviceId(), googleDrive, setProgress)
       .then(() => {
         const now = Date.now()
         setLastSyncAt(now)
         setLastSyncAtState(now)
       })
       .catch((err: unknown) => setError(err instanceof Error ? err.message : String(err)))
-      .finally(() => setBusy('idle'))
+      .finally(() => {
+        setBusy('idle')
+        setProgress(null)
+      })
   }
 
   // 옛 기기 파일 정리 — 합친 뒤에 지우므로 기록은 안 사라지지만 Drive 파일을 삭제하니 확인을 받는다
@@ -129,9 +150,16 @@ function BackupSetting() {
               로그아웃
             </button>
           </div>
-          <span className="hint">
-            {lastSyncAt === null ? '아직 동기화하지 않았어요.' : `마지막 동기화 ${formatSyncTime(lastSyncAt)}`}
-          </span>
+          {progress === null ? (
+            <span className="hint">
+              {lastSyncAt === null ? '아직 동기화하지 않았어요.' : `마지막 동기화 ${formatSyncTime(lastSyncAt)}`}
+            </span>
+          ) : (
+            <div className="sync-progress">
+              <progress value={progress.done} max={progress.total} aria-label="동기화 진행" />
+              <span className="hint">{progressLabel(progress)}</span>
+            </div>
+          )}
           {cleanup === 'armed' ? (
             <div className="seg" role="group" aria-label="옛 기기 파일 정리 확인">
               <button type="button" className="danger" onClick={handleCleanup}>

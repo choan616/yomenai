@@ -218,6 +218,17 @@
 .setting .hint.error {
   color: var(--ng);
 }
+/* 동기화 진행 — 학습 화면 막대와 같은 굵기·색 */
+.sync-progress {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.sync-progress progress {
+  flex: 1;
+  height: 6px;
+  accent-color: var(--text-dim);
+}
 .stepper {
   display: flex;
   align-items: center;
