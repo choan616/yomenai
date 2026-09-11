@@ -595,6 +595,8 @@ context-notes 2026-09-07 「지속의 유인」·「대조」 절 참조.
     분해도 출력. 앱은 `미검수` 뱃지 그대로 (`verified:false` 는 텍스트를 가리지 않는다)
   - **[~] 실제 검수** (사람) — 표본(tier별 50, 300행) 완료. `apply:korean-meaning --validate`
     손댄 비율 T1 12/T3 7/T4 13/T5·T6 20%. tier 4~6(~16,500건)은 PLAN대로 보류, 세션마다 조금씩
+  - **검수 진행** — 배치 18 반영 (2026-09-11, 커밋 `761a2c4`). 일본고유 847/3,643,
+    전체 verified 1,148. 배치 18은 40건 중 인라인 수정 1(力投)
   - **[x] 조금씩 검수 도구** (2026-09-08) — `build:korean-meaning-worklist --batch [--category=1|2|3]`
     아직 verdict 없는 다음 N건(기본 40)만 `korean-meaning-worklist-batch-NN.tsv` 로. 배치 간 중복 0,
     `apply:korean-meaning` 이 batch 파일 자동 병합. `npm run view:jp-unique` → 일본고유 확인용 HTML
