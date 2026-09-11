@@ -14,6 +14,7 @@ import {
 import {
   cardKey,
   newEventId,
+  type CardState,
   type KoreanCategory,
   type LearningEvent,
   type MeaningKnownEvent,
@@ -193,13 +194,49 @@ function base(idiomId: string, cardType: 'reading' | 'meaning', ctx: AnswerConte
 export interface RematchOptions {
   now: number
   limit: number
+  /** 테스트가 고정 난수를 넣는 자리 — `newEventId` 와 같은 관례 */
+  rand?: () => number
+}
+
+/**
+ * 마지막 오답 이후 이만큼 연속으로 맞히면 재대결 후보에서 뺀다.
+ * `wrong` 은 누적이라 줄지 않으므로, 이 기준이 없으면 이미 극복한 숙어가 후보에 영원히 남는다.
+ */
+export const REMATCH_CLEARED_STREAK = 2
+
+function isRematchCandidate(card: CardState): boolean {
+  return card.cardType === 'reading' && card.wrong > 0 && card.streak < REMATCH_CLEARED_STREAK
+}
+
+/**
+ * 오답 수를 가중치로 두고 중복 없이 `k` 개를 뽑는다.
+ * 자주 틀린 숙어가 더 자주 나오되 매번 조합이 달라진다.
+ */
+function pickWeighted<T>(pool: { item: T; weight: number }[], k: number, rand: () => number): T[] {
+  const rest = [...pool]
+  let total = rest.reduce((sum, c) => sum + c.weight, 0)
+  const picked: T[] = []
+  while (picked.length < k && rest.length > 0) {
+    let r = rand() * total
+    let i = 0
+    while (i < rest.length - 1 && r >= rest[i].weight) {
+      r -= rest[i].weight
+      i++
+    }
+    picked.push(rest[i].item)
+    total -= rest[i].weight
+    rest.splice(i, 1)
+  }
+  return picked
 }
 
 /**
  * 재대결 세션 — 예전에 틀린 읽기 카드만 모은다. 기한을 무시한다.
  *
  * 복습 기한을 기다리지 않고 다시 붙는 게 이 세션의 전부라서, 정규 세션의 선택 로직
- * (`selectSession`)을 타지 않는다. 대신 오답이 많은 순 → 최근에 틀린 순으로 세운다.
+ * (`selectSession`)을 타지 않는다. 대신 **오답 수를 가중치로 둔 무작위 추출**로 고른다 —
+ * 결정적으로 정렬해 앞에서 자르면 매번 같은 카드만 나온다 (2026-09-11 사용자 지적).
+ * 마지막 오답 이후 `REMATCH_CLEARED_STREAK` 번 연속으로 맞힌 카드는 후보에서 뺀다.
  *
  * **기한을 무시하는 대가.** 답안은 정규 이벤트로 기록되므로 FSRS 일정에 영향을 준다.
  * 이르게 맞히면 안정도가 덜 오르고, 틀리면 정상적으로 lapse 가 잡힌다. 후자가 맞는
@@ -214,13 +251,12 @@ export function buildRematch(
   const byId = new Map(pool.map((p) => [p.idiomId, p]))
   const state = replay(events, { pairsOf: (id) => byId.get(id)?.pairIds ?? [] })
 
-  const scored: { item: SessionItem; wrong: number; lastWrongAt: number }[] = []
+  const candidates: { item: SessionItem; weight: number }[] = []
   for (const [, card] of state.cards) {
-    if (card.cardType !== 'reading') continue
+    if (!isRematchCandidate(card)) continue
     const entry = byId.get(card.idiomId)
     if (entry === undefined) continue
-    if (card.wrong === 0) continue
-    scored.push({
+    candidates.push({
       item: {
         idiomId: card.idiomId,
         cardType: 'reading',
@@ -231,22 +267,19 @@ export function buildRematch(
         }).mode,
         due: card.card.due.getTime() <= options.now,
       },
-      wrong: card.wrong,
-      lastWrongAt: card.lastAt ?? 0,
+      weight: card.wrong,
     })
   }
 
-  scored.sort(
-    (a, b) =>
-      b.wrong - a.wrong ||
-      b.lastWrongAt - a.lastWrongAt ||
-      (a.item.idiomId < b.item.idiomId ? -1 : 1),
-  )
+  // 뽑기 전에 id 로 세운다 — Map 순회 순서(이벤트 병합 순서)에 결과가 휘둘리지 않게
+  candidates.sort((a, b) => (a.item.idiomId < b.item.idiomId ? -1 : 1))
 
   // 재대결은 확인 질문을 끼우지 않는다 — 이미 만난 숙어들이라 물어볼 게 없다
-  const cards: SessionCard[] = scored
-    .slice(0, options.limit)
-    .map(({ item }) => ({ ...item, needsClassReview: false }))
+  const cards: SessionCard[] = pickWeighted(
+    candidates,
+    options.limit,
+    options.rand ?? Math.random,
+  ).map((item) => ({ ...item, needsClassReview: false }))
 
   return { cards, state }
 }
@@ -257,8 +290,7 @@ export function rematchCount(pool: IdiomEntry[], events: LearningEvent[]): numbe
   const state = replay(events, { pairsOf: (id) => byId.get(id)?.pairIds ?? [] })
   let n = 0
   for (const [, card] of state.cards) {
-    if (card.cardType !== 'reading' || !byId.has(card.idiomId)) continue
-    if (card.wrong > 0) n++
+    if (isRematchCandidate(card) && byId.has(card.idiomId)) n++
   }
   return n
 }

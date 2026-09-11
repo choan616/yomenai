@@ -670,6 +670,12 @@ context-notes 2026-09-07 「별도 앱으로 분리」 절, PLAN §0 참조.
   단계 = 업로드 1 + 목록 1 + 파일 n, 파일 수는 목록을 받아야 알아서 그전 `total` 은 잠정 2.
   설정 > 백업에서 `<progress>` + "백업 내려받는 중 1/2" 표시
   **검증: `npm test` 331(`sync.test.ts` 10→12) · `tsc -b`/`lint`/`build` 클린**
+- [x] **재대결 선별 — 가중 무작위 + 극복 카드 제외** (2026-09-11, 사용자 지적)
+  결정적 정렬 + 상위 N 절단이라 매번 같은 문제가 나왔다. 오답 수를 가중치로 둔 무작위
+  추출(`pickWeighted`, `rand` 주입)로 바꾸고, `CardState.streak` 을 추가해 마지막 오답
+  이후 2연속 정답이면 후보에서 뺀다. `rematchCount` 도 같은 술어
+  **검증: `npm test` 333(`session.test.ts` 36→39, 가중치 3:2:1 · 조합 변화 · 극복/재발) ·
+  `tsc -b`/`lint`/`build` 클린**
 - [ ] **실기기 확인 필요(사용자)** — 배포판에서 정리 실행 → Drive 파일 11개가
   `reviews-b1dc6cae….json` + `reviews-archive.json` 2개로 줄고, 이후 동기화에서
   기록 수가 그대로인지

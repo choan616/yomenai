@@ -208,14 +208,62 @@ describe('buildRematch — 예전에 틀린 것만', () => {
     expect(cards.map((c) => c.idiomId)).toEqual(['a'])
   })
 
-  it('많이 틀린 순으로 세운다', () => {
+  /** mulberry32 — 시드를 주면 같은 수열이 나와 통계 검증이 결정적이다 */
+  function seeded(seed: number): () => number {
+    let t = seed
+    return () => {
+      t += 0x6d2b79f5
+      let r = Math.imul(t ^ (t >>> 15), 1 | t)
+      r ^= r + Math.imul(r ^ (r >>> 7), 61 | r)
+      return ((r ^ (r >>> 14)) >>> 0) / 4294967296
+    }
+  }
+
+  it('많이 틀린 숙어가 더 자주 뽑힌다 (가중 무작위)', () => {
     const events = [
       ...history('a', [false]),
       ...history('b', [false, false, false], T0 + 3600_000),
       ...history('c', [false, false], T0 + 7200_000),
     ]
-    const { cards } = buildRematch(pool, events, { now: T0 + 10800_000, limit: 10 })
-    expect(cards.map((c) => c.idiomId)).toEqual(['b', 'c', 'a'])
+    const rand = seeded(42)
+    const drawn = { a: 0, b: 0, c: 0 }
+    for (let i = 0; i < 300; i++) {
+      const { cards } = buildRematch(pool, events, { now: T0 + 10800_000, limit: 1, rand })
+      drawn[cards[0].idiomId as 'a' | 'b' | 'c']++
+    }
+    // 가중치 3 : 2 : 1 — 순서가 지켜지고 적은 쪽도 꾸준히 나온다
+    expect(drawn.b).toBeGreaterThan(drawn.c)
+    expect(drawn.c).toBeGreaterThan(drawn.a)
+    expect(drawn.a).toBeGreaterThan(0)
+  })
+
+  it('세션마다 조합이 달라진다 — 같은 카드만 반복되지 않는다', () => {
+    const events = [
+      ...history('a', [false]),
+      ...history('b', [false], T0 + 3600_000),
+      ...history('c', [false], T0 + 7200_000),
+    ]
+    const rand = seeded(7)
+    const combos = new Set<string>()
+    for (let i = 0; i < 30; i++) {
+      const { cards } = buildRematch(pool, events, { now: T0 + 10800_000, limit: 2, rand })
+      combos.add(cards.map((c) => c.idiomId).sort().join(','))
+    }
+    expect(combos.size).toBeGreaterThan(1)
+  })
+
+  it('마지막 오답 이후 연속으로 맞히면 후보에서 빠진다', () => {
+    const cleared = history('a', [false, true, true])
+    expect(buildRematch(pool, cleared, { now: T0, limit: 10 }).cards).toEqual([])
+    expect(rematchCount(pool, cleared)).toBe(0)
+
+    // 한 번만 맞혔으면 아직 후보
+    const notYet = history('b', [false, true])
+    expect(buildRematch(pool, notYet, { now: T0, limit: 10 }).cards).toHaveLength(1)
+
+    // 다시 틀리면 연속이 끊겨 후보로 돌아온다
+    const relapsed = history('c', [false, true, true, false])
+    expect(buildRematch(pool, relapsed, { now: T0, limit: 10 }).cards).toHaveLength(1)
   })
 
   it('기한을 무시한다 — 방금 맞힌 카드도 틀린 적 있으면 다시 낸다', () => {

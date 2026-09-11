@@ -83,6 +83,8 @@ export interface CardState {
   mistakes: Partial<Record<MistakeType, number>>
   /** 실제 오답 횟수. 유형 분류 성공 여부와 무관하다 */
   wrong: number
+  /** 마지막 오답 이후 연속 정답 수. 재대결 후보에서 뺄지 판단한다 (`wrong` 은 안 줄어든다) */
+  streak: number
   lastAt: number | null
 }
 

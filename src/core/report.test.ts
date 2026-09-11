@@ -13,7 +13,7 @@ function card(
   /** 실제 오답 수. 안 주면 분류된 수와 같다고 본다 */
   wrong = Object.values(mistakes).reduce((a, b) => a + b, 0),
 ): CardState {
-  return { idiomId, cardType: 'reading', card: { ...newCard(0), reps }, mistakes, wrong, lastAt: 0 }
+  return { idiomId, cardType: 'reading', card: { ...newCard(0), reps }, mistakes, wrong, streak: 0, lastAt: 0 }
 }
 
 const pairs = new Map<string, OnyomiPair>([
@@ -27,7 +27,7 @@ function state(): ReplayState {
       ['1:reading', card('1', 4, { KO_INTERFERENCE: 2, ONYOMI_CHOICE: 1 })],
       ['2:reading', card('2', 3, { KO_INTERFERENCE: 1 })],
       ['3:reading', card('3', 2, { RENDAKU: 1 })],
-      ['3:meaning', { idiomId: '3', cardType: 'meaning', card: { ...newCard(0), reps: 9 }, mistakes: {}, wrong: 0, lastAt: 0 }],
+      ['3:meaning', { idiomId: '3', cardType: 'meaning', card: { ...newCard(0), reps: 9 }, mistakes: {}, wrong: 0, streak: 0, lastAt: 0 }],
     ]),
     meaningKnown: new Map(),
     onyomi: new Map([
@@ -124,7 +124,7 @@ describe('buildReport — 분류에 실패한 오답', () => {
       cards: new Map<string, CardState>([
         ['1:reading', card('1', 2, {}, 1)],
         ['1:meaning', { idiomId: '1', cardType: 'meaning', card: { ...newCard(0), reps: 5 },
-          mistakes: {}, wrong: 4, lastAt: 0 }],
+          mistakes: {}, wrong: 4, streak: 0, lastAt: 0 }],
       ]),
       meaningKnown: new Map(),
       onyomi: new Map(),
