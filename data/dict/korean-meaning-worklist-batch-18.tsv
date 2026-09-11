@@ -1,0 +1,41 @@
+﻿verdict	cat	fix	tier	flags	manual	headword	reading	glossEn	llm_ko	stdict_def	manual_reason	category	classSource	band	id
+o			5			途方	とほう	way; destination; reason	길; 목적지; 이유	고려 시대에, 무신 정권 집권자의 사병 집단. 또는 사병 숙소. 경대승이 신변 보호를 위하여 처음 설치하였고 최충헌도 이를 계승하여 이곳에서 정사(政事)를 처리하였는데 원종 11년(1270)에 왕정 복구로 없앴다.		3	llm	1	1444930
+o			5			途上	とじょう	on the way; en route; in the process of (development, construction, etc.); in the middle of	도중에; 과정에	칼에 맞거나 찔려서 난 상처.		3	llm	1	1444870
+o			5			度合	どあい	degree; extent	정도; 수준	모두 합한 셈.		3	llm	1	1445200
+o			5			度胸	どきょう	courage; bravery; pluck; nerve	배짱; 용기			3	default	1	1445190
+o			5			東口	ひがしぐち	east entrance; east exit	동쪽 출구	외행성이 태양의 동쪽에 있어 황경(黃經)의 차이가 90도인 시기. 또는 그 자리.		3	llm	1	1447790
+o			5			冬場	ふゆば	wintertime; winter season	겨울철	가을의 수확물을 겨울 동안 저장함. 또는 그런 저장물.		3	llm	1	1698120
+o			5			酪農	らくのう	dairy farming	낙농업			3	default	1	1548890
+o			5			落選	らくせん	failing to be elected; election defeat; losing an election; not being accepted (for a prize, exhibition, etc.)	낙선; 탈락			3	default	1	1643910
+o			5			落語	らくご	rakugo; traditional Japanese comic storytelling; comic story (told by a professional storyteller)	라쿠고; 전통 일본의 이야기극			3	default	1	1548720
+o			5			落語家	らくごか	rakugo story teller; comic story teller	라쿠고 이야기꾼			3	default	1	1548730
+o			5			落差	らくさ	difference in elevation (between two points in a body of water); head; drop (e.g. of a waterfall); fall distance	낙차; 높이 차이			3	default	1	1548740
+o			5			落札	らくさつ	successful bid; winning a tender	낙찰			3	default	1	1548750
+o			5			落下	らっか	fall; drop; descent; coming down	낙하; 떨어짐			3	default	1	1548650
+o			5			卵子	らんし	ovum; ovule; egg cell	난자			3	default	1	1549220
+o			5			朗報	ろうほう	good news; happy news; glad tidings	좋은 소식			3	default	1	1560740
+o			5			浪人	ろうにん	ronin; masterless samurai; high school graduate waiting for another chance to enter university after having failed the yearly entrance examination; person out of work	떠돌이; 무사			3	default	1	1560780
+o			5			朗読	ろうどく	reading aloud; recitation	낭독			3	default	1	1560730
+o			5			冷暖房	れいだんぼう	air conditioning and heating	냉난방			3	default	1	1955240
+o			5			冷房	れいぼう	air conditioning; air cooling	냉방			3	default	1	1557290
+o			5			冷水	れいすい	cold water	찬물			3	default	1	1557020
+o			5			冷害	れいがい	cold-weather damage (to crops)	냉해			3	default	1	1556830
+o			5			略式	りゃくしき	informal; simplified	간략한; 비격식의			3	default	1	1552010
+o			5			略奪	りゃくだつ	pillage; plunder; looting; robbery	약탈; 약탈하다			3	default	1	1606250
+o			5			略称	りゃくしょう	abbreviation	약칭			3	default	1	1552030
+o			5			量産	りょうさん	mass production	대량 생산			3	default	1	1554660
+o			5			良識	りょうしき	good sense	상식; 분별력			3	default	1	1554570
+o			5			良心	りょうしん	conscience	양심			3	default	1	1554590
+o			5			良質	りょうしつ	good quality; fine quality; superior quality; high quality	양질; 우수한 품질			3	default	1	1554580
+o			5			量販店	りょうはんてん	volume retailer; mass marketer; emporium	대형 매장; 대형 판매점			3	default	1	1948590
+o			5			量刑	りょうけい	judge's sentence; assessment of a case	양형; 형량			3	default	1	1644830
+o			5			旅客機	りょかくき	passenger plane	여객기			3	default	1	1553150
+o			5			旅券	りょけん	passport	여권			3	default	1	1553160
+o			5			旅費	りょひ	travel expenses	여행 경비			3	default	1	1553250
+o			5			力量	りきりょう	ability; capacity; capability; talent	능력; 힘			3	default	1	1555260
+o			5			力作	りきさく	painstaking piece of work; work of great effort; tour de force; outstanding work	수작; 공들인 작품			3	default	1	1554980
+o			5			力点	りきてん	emphasis; stress; main point; importance	강조점; 지렛대의 힘점			3	default	1	1555140
+o			5			力投	りきとう	pitching with all one's strength	전력투구, 힘을 다함			3	default	1	1555150
+o			5			力学	りきがく	mechanics; dynamics	역학			3	default	1	1554910
+o			5			連結	れんけつ	connection; linking; joining; coupling	연결; 결합			3	default	1	1559410
+o			5			連隊	れんたい	regiment	연대			3	default	1	1559680
