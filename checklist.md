@@ -740,3 +740,22 @@ context-notes 2026-09-07 「별도 앱으로 분리」 절, PLAN §0 참조.
   진입 버튼 → 카드 화면 → 첫 장 이전 잠김 · 넘기면 표제어·카운트 변경 · 되돌아오면 첫 장 ·
   예문 존재 · 출제 요소(`.kana-input`·채점 버튼) 부재 · 나가면 리포트.
   `npm test` 348 · `npm run e2e` 9스펙 · `tsc -b`/`oxlint`/`vite build` 클린 · 캡처 대조**
+
+---
+
+## 한국어 뜻 구분자 — 세미콜론을 쉼표로 (2026-09-12, 사용자 요청)
+
+- [x] **`tools/lib/meaning.ts` `normalizeDefinition`** — `;` 를 `, ` 로 통일.
+  붙여 쓴 `;`, 구분자 뒤 홀로 남은 마침표, 끝에 매달린 구분자까지 정리
+- [x] **반영 시점에 고친다** — `apply-korean-review`(llm·stdict 정의)와
+  `apply-korean-meaning`(사람이 고친 정의·stdict 채택)에서 통과시킨다.
+  원본 `korean-meaning.json` 은 안 건드린다 (재생성 가능한 중간 산출물)
+- [x] **`translate-gloss` 프롬프트도 쉼표로** — 앞으로 번역하는 것부터 맞는다.
+  이미 만든 17,000여 건을 다시 돌리지 않는다 (~110분)
+- [x] **`sameText` 비교** — 워크리스트의 `llm_ko` 는 옛 `;` 표기라, 구분자를 맞춰
+  비교하지 않으면 *사람이 고친 값* 으로 오인돼 검수분이 통째로 `source: manual` 로 뒤집힌다
+- **검증: `meaning.test.ts` 7 테스트. 파이프라인 재실행
+  (`apply:korean-review --trust-llm` → `apply:korean-meaning` → `build:runtime-dict`) 후
+  이전 `korean-class.json` 과 전량 대조 — **구분자 말고 달라진 뜻 0건**, verified 1,148 유지,
+  분류 분포 동일. `base.json` `;` 0건 / 쉼표 9,110건. band4·kanji·pairs·examples 는
+  `_meta` 외 동일. 앱 캡처로 "저렴함, 값싼" 렌더 확인. `npm test` 360**

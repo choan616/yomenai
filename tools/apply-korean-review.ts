@@ -4,6 +4,7 @@
 import { readFileSync, writeFileSync, existsSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
 import { DICT_DIR } from './lib/dict.ts'
+import { normalizeDefinition } from './lib/meaning.ts'
 
 interface MatchRow {
   word: string
@@ -120,10 +121,10 @@ for (const [id, e] of Object.entries(byId)) {
   const top = e.matches.find((m) => m.originMatch) ?? e.matches[0] ?? null
   let koMeaning: KoMeaning | null = null
   if (llm && llm.ko) {
-    koMeaning = { definition: llm.ko, glossEn: llm.glossEn, source: 'llm', verified: false }
+    koMeaning = { definition: normalizeDefinition(llm.ko), glossEn: llm.glossEn, source: 'llm', verified: false }
     meaningLlm++
   } else if (category !== 3 && top) {
-    koMeaning = { definition: top.definition, source: 'stdict', verified: false }
+    koMeaning = { definition: normalizeDefinition(top.definition), source: 'stdict', verified: false }
     meaningStdict++
   }
   classById[id] = { category, classSource, koMeaning }

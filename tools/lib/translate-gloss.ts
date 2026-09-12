@@ -11,10 +11,10 @@ const HOST = process.env.OLLAMA_HOST ?? 'http://localhost:11434'
 // 표본과 안 겹치는 예시 5개. "핵심 뜻 하나, 갈리면 2~3개" 규칙을 보인다.
 const FEWSHOT = [
   '- 鉄道 (てつどう) / ["railroad","railway"] → {"ko": "철도"}',
-  '- 大切 (たいせつ) / ["important","valuable","precious","careful"] → {"ko": "중요함; 소중함"}',
-  '- 我慢 (がまん) / ["patience","endurance","perseverance","tolerance"] → {"ko": "참음; 인내"}',
+  '- 大切 (たいせつ) / ["important","valuable","precious","careful"] → {"ko": "중요함, 소중함"}',
+  '- 我慢 (がまん) / ["patience","endurance","perseverance","tolerance"] → {"ko": "참음, 인내"}',
   '- 石鹸 (せっけん) / ["soap"] → {"ko": "비누"}',
-  '- 二日 (ふつか) / ["2nd day of the month","two days"] → {"ko": "이틀; 2일"}',
+  '- 二日 (ふつか) / ["2nd day of the month","two days"] → {"ko": "이틀, 2일"}',
 ]
 
 function buildPrompt(x: TranslateInput): string {
@@ -23,7 +23,7 @@ function buildPrompt(x: TranslateInput): string {
     '',
     '규칙:',
     '- 학습 카드에 뜨는 사전 뜻풀이다. 한 줄, 간결하게.',
-    '- 핵심 뜻 하나. 뜻이 정말 갈리면 "; " 로 최대 2~3개.',
+    '- 핵심 뜻 하나. 뜻이 정말 갈리면 ", " 로 최대 2~3개.',
     '- 영어 동의어 나열을 그대로 옮기지 말 것. 영어를 남기지 말 것.',
     '- 물질명·전문용어·고유명사는 한국 표준 표기를 쓴다.',
     '- 괄호 보충은 꼭 필요할 때만 짧게.',

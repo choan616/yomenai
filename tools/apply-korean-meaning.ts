@@ -8,6 +8,7 @@
 import { existsSync, readFileSync, readdirSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { DICT_DIR } from './lib/dict.ts'
+import { normalizeDefinition } from './lib/meaning.ts'
 import { readTsv } from './lib/tsv.ts'
 
 const VALIDATE = process.argv.includes('--validate')
@@ -89,6 +90,9 @@ console.log(`검수 파일 ${WORKLISTS.length}개, 행 ${merged.size}개 병합`
 const tally = { o: 0, x: 0, s: 0, '~': 0, cat: 0, inlineEdit: 0, skip: 0, missing: 0 }
 const perTier: Record<string, { o: number; x: number; s: number; '~': number; edited: number }> = {}
 const norm = (s: string) => s.replace(/\s+/g, ' ').trim()
+// 구분자까지 맞춘 비교용. 이걸 안 쓰면 워크리스트에 남은 옛 "; " 표기가
+// *사람이 고친 값* 으로 오인돼 검수분이 통째로 source: manual 로 뒤집힌다
+const sameText = (a: string, b: string) => norm(normalizeDefinition(a)) === norm(normalizeDefinition(b))
 
 for (const [id, { verdict, cat, fix, llmKo, tier }] of merged) {
   const entry = cls.byId[id]
@@ -113,11 +117,11 @@ for (const [id, { verdict, cat, fix, llmKo, tier }] of merged) {
   const km: KoMeaning = entry.koMeaning ?? { definition: '', source: 'llm', verified: false }
   // 인라인 수정 — llm_ko 칸을 사람이 직접 고쳤으면(현재 definition 과 다르면) 그 텍스트를 채택한다.
   // fix 칸에 적는 대신 llm_ko 를 바로 고치고 verdict 만 찍는 방식 지원 (사용자 워크플로)
-  const inlineFix = fix || (llmKo && norm(llmKo) !== norm(km.definition) ? llmKo : '')
+  const inlineFix = fix || (llmKo && !sameText(llmKo, km.definition) ? llmKo : '')
 
   if (verdict === 'o') {
     if (inlineFix) {
-      km.definition = inlineFix
+      km.definition = normalizeDefinition(inlineFix)
       km.source = 'manual'
       tally.inlineEdit++
       perTier[tier].edited++
@@ -130,7 +134,7 @@ for (const [id, { verdict, cat, fix, llmKo, tier }] of merged) {
       perTier[tier].x--
       continue
     }
-    km.definition = inlineFix
+    km.definition = normalizeDefinition(inlineFix)
     km.source = 'manual'
     km.verified = true
   } else if (verdict === 's') {
@@ -141,7 +145,7 @@ for (const [id, { verdict, cat, fix, llmKo, tier }] of merged) {
       perTier[tier].s--
       continue
     }
-    km.definition = sd
+    km.definition = normalizeDefinition(sd)
     km.source = 'stdict'
     km.verified = true
   }
