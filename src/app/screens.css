@@ -514,3 +514,66 @@
 .btn.quick b {
   font-variant-numeric: tabular-nums;
 }
+
+/* 훑어보기 — 자주 틀린 숙어를 채점 없이 다시 보는 자리 (사용자 요청 2026-09-12).
+   출제 루프가 아니라 읽는 화면이라 리포트의 느린 모션 쪽 규칙을 따른다 (CLAUDE.md 성능 제약) */
+.browse-lead {
+  margin: 0 0 10px;
+  color: var(--text-dim);
+  font-size: 13px;
+}
+.browse .rows > li.browse-row {
+  display: block;
+  padding: 0;
+}
+.browse-head {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 14px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+}
+.browse-row.is-open .browse-head {
+  color: var(--text);
+}
+.browse-body {
+  padding: 0 14px 14px;
+  animation: browse-open 220ms ease both;
+}
+@keyframes browse-open {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .browse-body {
+    animation: none;
+  }
+}
+.browse-reading {
+  margin: 0;
+  font-family: var(--font-ja);
+  font-size: 20px;
+}
+.browse-meaning {
+  margin: 4px 0 0;
+  color: var(--text-dim);
+  font-size: 15px;
+}
+.browse-body .tts-btn {
+  margin: 10px 0 0;
+}
+.browse-ex {
+  margin: 10px 0 0;
+  padding-left: 10px;
+  border-left: 2px solid var(--border);
+  font-family: var(--font-ja);
+  font-size: 14px;
+  color: var(--text-dim);
+  line-height: 1.7;
+}

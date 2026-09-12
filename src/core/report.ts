@@ -7,6 +7,8 @@ import type { MistakeType } from './types.ts'
 export const WEAK_MIN_SEEN = 3
 /** 리포트에 싣는 취약 음독·간섭 숙어 상한 */
 export const TOP_N = 8
+/** 훑어보기에 싣는 자주 틀린 숙어 상한. 읽는 목록이라 출제 목록보다 길게 둔다 */
+export const BROWSE_N = 12
 
 /** 동점 정렬용 고정 순서 (진단 가치 순, src/core/mistakes.ts 우선순위와 같은 계열) */
 const MISTAKE_ORDER: MistakeType[] = [
@@ -41,6 +43,11 @@ export interface NamedIdiom {
   reading: string
 }
 
+/** 훑어보기 행 — 채점 없이 읽기·뜻·소리·예문을 다시 보는 대상 */
+export interface FrequentIdiom extends NamedIdiom {
+  wrong: number
+}
+
 export interface Report {
   /** 읽기 카드 채점 횟수 (reps 합) */
   totalReviews: number
@@ -61,6 +68,12 @@ export interface Report {
   weakOnyomi: WeakOnyomi[]
   koInterferenceCount: number
   koInterferenceIdioms: NamedIdiom[]
+  /**
+   * 자주 틀린 숙어, 오답 수 내림차순. 훑어보기 섹션이 쓴다.
+   * 재대결과 달리 **극복한 카드(streak)를 안 뺀다** — 출제가 아니라 노출이라
+   * 최근에 맞힌 것도 다시 보는 게 이득이다.
+   */
+  frequent: FrequentIdiom[]
 }
 
 export function buildReport(
@@ -78,16 +91,22 @@ export function buildReport(
   let totalReviews = 0
   let totalWrong = 0
   const koIdioms: NamedIdiom[] = []
+  const frequent: FrequentIdiom[] = []
   for (const c of state.cards.values()) {
     if (c.cardType !== 'reading') continue
     totalReviews += c.card.reps
     totalWrong += c.wrong
-    if ((c.mistakes.KO_INTERFERENCE ?? 0) > 0) {
-      const n = nameOf(c.idiomId)
-      if (n) koIdioms.push({ id: c.idiomId, headword: n.headword, reading: n.reading })
+    const n = nameOf(c.idiomId)
+    if ((c.mistakes.KO_INTERFERENCE ?? 0) > 0 && n) {
+      koIdioms.push({ id: c.idiomId, headword: n.headword, reading: n.reading })
+    }
+    if (c.wrong > 0 && n) {
+      frequent.push({ id: c.idiomId, headword: n.headword, reading: n.reading, wrong: c.wrong })
     }
   }
   koIdioms.sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0))
+  // 동점은 id 로 갈라 기기 간 이벤트 병합 순서에 목록이 안 흔들리게 한다
+  frequent.sort((a, b) => b.wrong - a.wrong || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0))
 
   const weakOnyomi: WeakOnyomi[] = [...state.onyomi.values()]
     .filter((s) => s.seen >= WEAK_MIN_SEEN && s.wrong > 0)
@@ -115,5 +134,6 @@ export function buildReport(
     weakOnyomi,
     koInterferenceCount: totals.KO_INTERFERENCE ?? 0,
     koInterferenceIdioms: koIdioms.slice(0, TOP_N),
+    frequent: frequent.slice(0, BROWSE_N),
   }
 }

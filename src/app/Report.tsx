@@ -1,20 +1,23 @@
-// 진단 리포트 화면 — 수준, 다음에 볼 것, 오답 유형 분포, 한국음 간섭, 취약 음독. 이 앱의 얼굴이다 (PLAN §7)
+// 진단 리포트 화면 — 수준, 다음에 볼 것, 훑어보기, 오답 유형 분포, 한국음 간섭, 취약 음독. 이 앱의 얼굴이다 (PLAN §7)
 import { useEffect, useState } from 'react'
 import { buildLevel, type BandRow, type LevelProfile } from '../core/level.ts'
 import { prescribe, type Prescription } from '../core/prescription.ts'
 import { replay } from '../core/replay.ts'
-import { buildReport, type Report as ReportData } from '../core/report.ts'
+import { buildReport, type FrequentIdiom, type Report as ReportData } from '../core/report.ts'
 import { LOCAL_USER_ID, listEvents } from '../db/events.ts'
 import { db } from '../db/schema.ts'
-import { loadBaseIdioms, loadPairs } from '../dict/load.ts'
+import { loadBaseIdioms, loadExamples, loadPairs } from '../dict/load.ts'
 import { loadPairIndex } from '../dict/pairIndex.ts'
 import { BAND_NOTE } from '../lib/bands.ts'
 import { MISTAKE_ADVICE, MISTAKE_LABEL } from '../study/mistakeLabels.ts'
+import { tts } from '../study/tts.ts'
 
 interface Loaded {
   report: ReportData
   level: LevelProfile
   prescriptions: Prescription[]
+  /** 훑어보기가 쓰는 숙어별 한국어 뜻. 없는 숙어도 있다 */
+  meanings: Map<string, string>
 }
 
 export function Report({
@@ -46,9 +49,15 @@ export function Report({
           return it ? { headword: it.headword, reading: it.reading } : undefined
         })
         const level = buildLevel(events, (id) => byId.get(id)?.band)
+        const meanings = new Map<string, string>()
+        for (const f of report.frequent) {
+          const def = byId.get(f.id)?.koMeaning?.definition?.trim()
+          if (def) meanings.set(f.id, def)
+        }
         setData({
           report,
           level,
+          meanings,
           prescriptions: prescribe({
             report,
             level,
@@ -92,6 +101,75 @@ export function Report({
   )
 }
 
+/**
+ * 훑어보기 — 자주 틀린 숙어를 채점 없이 다시 본다 (사용자 요청 2026-09-12).
+ * 세션이 전부 출제·채점 루프라 쉬어 가는 자리가 없었다. 여기선 이벤트를 쓰지 않는다.
+ */
+function BrowseSection({ rows, meanings }: { rows: FrequentIdiom[]; meanings: Map<string, string> }) {
+  const [open, setOpen] = useState<string | null>(null)
+  const [examples, setExamples] = useState<Map<string, string[]> | null>(null)
+
+  // 예문은 큰 번들이라 처음 펼칠 때 부른다 — 리포트 첫 그림을 늦추지 않는다
+  useEffect(() => {
+    if (open === null || examples !== null) return
+    let alive = true
+    void loadExamples().then((m) => {
+      if (alive) setExamples(m)
+    })
+    return () => {
+      alive = false
+    }
+  }, [open, examples])
+
+  if (rows.length === 0) return null
+
+  return (
+    <section className="browse">
+      <p className="section-title">훑어보기</p>
+      <p className="browse-lead">자주 틀린 것들이에요. 문제는 안 나와요 — 눌러서 보기만 하세요.</p>
+      <ul className="rows">
+        {rows.map((r) => {
+          const isOpen = open === r.id
+          const sentences = examples?.get(r.id) ?? []
+          return (
+            <li key={r.id} className={isOpen ? 'browse-row is-open' : 'browse-row'}>
+              <button
+                type="button"
+                className="browse-head"
+                aria-expanded={isOpen}
+                onClick={() => setOpen(isOpen ? null : r.id)}
+              >
+                <span className="r-main" lang="ja">
+                  {r.headword}
+                </span>
+                <span className="r-tail dim">{r.wrong}회 틀림</span>
+              </button>
+              {isOpen && (
+                <div className="browse-body">
+                  <p className="browse-reading" lang="ja">
+                    {r.reading}
+                  </p>
+                  {meanings.get(r.id) && <p className="browse-meaning">{meanings.get(r.id)}</p>}
+                  {tts.available && (
+                    <button type="button" className="tts-btn" onClick={() => tts.speak(r.reading)}>
+                      <span aria-hidden="true">🔊</span> 소리 듣기
+                    </button>
+                  )}
+                  {sentences.slice(0, 2).map((sentence) => (
+                    <p className="browse-ex" lang="ja" key={sentence}>
+                      {sentence}
+                    </p>
+                  ))}
+                </div>
+              )}
+            </li>
+          )
+        })}
+      </ul>
+    </section>
+  )
+}
+
 function ReportBody({ data, onFocus }: { data: Loaded; onFocus: (pairId: string) => void }) {
   const { report, level, prescriptions } = data
   // 정답률은 *실제* 오답으로 센다. 분류된 오답만 쓰면 미분류분이 정답으로 둔갑한다
@@ -124,6 +202,8 @@ function ReportBody({ data, onFocus }: { data: Loaded; onFocus: (pairId: string)
           </ol>
         )}
       </section>
+
+      <BrowseSection rows={report.frequent} meanings={data.meanings} />
 
       <section>
         <p className="section-title">오답 유형 분포</p>

@@ -4,7 +4,7 @@ import type { OnyomiPair } from '../dict/load.ts'
 import { newCard } from './scheduler.ts'
 import type { ReplayState } from './replay.ts'
 import type { CardState, MistakeType } from './types.ts'
-import { buildReport } from './report.ts'
+import { buildReport, BROWSE_N } from './report.ts'
 
 function card(
   idiomId: string,
@@ -133,5 +133,66 @@ describe('buildReport — 분류에 실패한 오답', () => {
     const m = buildReport(withMeaning, pairs, () => undefined)
     expect(m.totalReviews).toBe(2)
     expect(m.totalWrong).toBe(1)
+  })
+})
+
+describe('훑어보기 — 자주 틀린 숙어', () => {
+  const nameOf = (id: string) => names[id]
+
+  it('오답이 있는 읽기 카드만, 오답 수 내림차순', () => {
+    const r = buildReport(state(), pairs, nameOf)
+    expect(r.frequent).toEqual([
+      { id: '1', headword: '認識', reading: 'にんしき', wrong: 3 },
+      { id: '2', headword: '知識', reading: 'ちしき', wrong: 1 },
+    ])
+  })
+
+  it('이름을 못 찾는 숙어는 뺀다 (카드 3 은 names 에 없다)', () => {
+    expect(buildReport(state(), pairs, nameOf).frequent.some((f) => f.id === '3')).toBe(false)
+  })
+
+  it('뜻 카드와 오답 0 인 카드는 안 담는다', () => {
+    const st = state()
+    st.cards.set('2:meaning', {
+      idiomId: '2', cardType: 'meaning', card: { ...newCard(0), reps: 4 },
+      mistakes: { RENDAKU: 9 }, wrong: 9, streak: 0, lastAt: 0,
+    })
+    st.cards.set('4:reading', {
+      idiomId: '4', cardType: 'reading', card: { ...newCard(0), reps: 5 },
+      mistakes: {}, wrong: 0, streak: 0, lastAt: 0,
+    })
+    const r = buildReport(st, pairs, (id) => names[id] ?? { headword: 'x', reading: 'x' })
+    expect(r.frequent.some((f) => f.id === '4')).toBe(false)
+    // 뜻 카드의 오답 9 가 섞였으면 2 번이 1 번을 제쳤을 것이다
+    expect(r.frequent[0].id).toBe('1')
+  })
+
+  it('극복한 카드도 담는다 — 재대결과 다르다. 출제가 아니라 노출이라', () => {
+    const st = state()
+    st.cards.set('1:reading', { ...st.cards.get('1:reading')!, streak: 5 })
+    expect(buildReport(st, pairs, nameOf).frequent[0]).toMatchObject({ id: '1', wrong: 3 })
+  })
+
+  it('동점은 id 순으로 갈라 기기 병합 순서에 안 흔들린다', () => {
+    const st = state()
+    st.cards.set('9:reading', {
+      idiomId: '9', cardType: 'reading', card: { ...newCard(0), reps: 2 },
+      mistakes: { RENDAKU: 1 }, wrong: 1, streak: 0, lastAt: 0,
+    })
+    const tied = buildReport(st, pairs, (id) => names[id] ?? { headword: 'x', reading: 'x' })
+      .frequent.filter((f) => f.wrong === 1).map((f) => f.id)
+    expect(tied).toEqual([...tied].sort())
+  })
+
+  it('BROWSE_N 을 넘으면 자른다', () => {
+    const st = state()
+    for (let i = 10; i < 30; i++) {
+      st.cards.set(`${i}:reading`, {
+        idiomId: String(i), cardType: 'reading', card: { ...newCard(0), reps: 3 },
+        mistakes: { RENDAKU: 2 }, wrong: 2, streak: 0, lastAt: 0,
+      })
+    }
+    const r = buildReport(st, pairs, (id) => names[id] ?? { headword: 'x', reading: 'x' })
+    expect(r.frequent).toHaveLength(BROWSE_N)
   })
 })
