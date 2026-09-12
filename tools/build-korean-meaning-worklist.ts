@@ -80,6 +80,14 @@ const { byId } = JSON.parse(readFileSync(need(join(DICT_DIR, 'korean-class.json'
 const { idioms } = JSON.parse(readFileSync(join(DICT_DIR, 'idioms.json'), 'utf8')) as { idioms: IdiomRecord[] }
 const idiomById = new Map(idioms.map((i) => [i.id, i]))
 
+// 런타임에 실제로 나가는 숙어 집합. build-runtime-dict 가 onyomi-map 에 없는 숙어를
+// (熟字訓 거부·카타카나 읽기·파싱 실패) 안 싣기 때문에, 그런 건 검수해도 앱에 안 보인다.
+// 파일이 없으면(build:onyomi 전) 거르지 않는다 — 없는 채로 도는 쪽이 덜 놀랍다.
+const onyomiPath = join(DICT_DIR, 'onyomi-map.json')
+const inRuntime: Set<string> | null = existsSync(onyomiPath)
+  ? new Set(Object.keys((JSON.parse(readFileSync(onyomiPath, 'utf8')) as { byIdiom: Record<string, unknown> }).byIdiom))
+  : null
+
 // 영어 gloss 번역 (없으면 stdict 폴백만 있는 상태 — 그런 행은 llm_ko 가 빈다)
 const meaning: Record<string, MeaningEntry> = existsSync(join(DICT_DIR, 'korean-meaning.json'))
   ? (JSON.parse(readFileSync(join(DICT_DIR, 'korean-meaning.json'), 'utf8')).byId as Record<string, MeaningEntry>)
@@ -166,8 +174,14 @@ interface Row {
 }
 
 const rows: Row[] = []
+let droppedOffCorpus = 0
 for (const [id, k] of Object.entries(byId)) {
   if (!k.koMeaning) continue
+  // 이미 채운 verdict 는 파일을 다시 써도 살려 둔다 (사람 판정이 날아가면 안 된다)
+  if (inRuntime && !inRuntime.has(id) && !prior.has(id)) {
+    droppedOffCorpus++
+    continue
+  }
   if (isBatch && wantCategory && k.category !== wantCategory) continue
   if (isBatch && issuedElsewhere.has(id)) continue
   const it = idiomById.get(id)
@@ -272,7 +286,9 @@ writeTsvBom(OUT_PATH, header + '\n' + body.join('\n') + '\n')
 
 if (isBatch) {
   const catLabel = wantCategory ? { 1: '동형동의', 2: '동형이의', 3: '일본고유' }[wantCategory] : '전체'
-  const pool = Object.entries(byId).filter(([, k]) => k.koMeaning && (!wantCategory || k.category === wantCategory))
+  const pool = Object.entries(byId).filter(
+    ([id, k]) => k.koMeaning && (!wantCategory || k.category === wantCategory) && (!inRuntime || inRuntime.has(id)),
+  )
   const total = pool.length
   const reviewed = pool.filter(([id]) => reviewedAnywhere.has(id)).length
   const newCount = picked.filter((r) => !prior.has(r.id)).length
@@ -284,6 +300,7 @@ if (isBatch) {
   console.log(`  ${catLabel} ${total}건 중 검수 ${reviewed} · 남은 ${total - reviewed} · 이번 배치 ${picked.length}행` +
     (prior.size ? ` (이어받음 ${prior.size} + 신규 ${newCount})` : '') + `  [${bandStr}]`)
   if (brokenInBatch) console.log(`  ⚠ 깨진 번역 ${brokenInBatch}건 포함 — 배치 맨 앞`)
+  if (droppedOffCorpus) console.log(`  런타임에 안 나가는 ${droppedOffCorpus}건 제외 (onyomi-map 밖 — 검수해도 앱에 안 보인다)`)
   console.log(`\n  검수:      npm run review -- ${OUT_PATH.split(/[\\/]/).pop()?.replace(/^korean-meaning-worklist-|\.tsv$/g, '')}`)
   console.log(`  반영:      npm run apply:korean-meaning   (--validate 는 손댄 비율만 볼 때, 반영 안 함)`)
   console.log(`  배포용:    npm run build:runtime-dict`)
@@ -293,6 +310,7 @@ if (isBatch) {
 
 const mode = flaggedOnly ? '플래그 전량' : Number.isFinite(perTier) ? `tier별 표본 ${perTier}` : '전체'
 console.log(`→ ${OUT_PATH}  (${picked.length}행, ${mode}, 이어받은 verdict ${prior.size}건)`)
+if (droppedOffCorpus) console.log(`   런타임에 안 나가는 ${droppedOffCorpus}건 제외 (onyomi-map 밖 — 검수해도 앱에 안 보인다)`)
 
 // 플래그 분해 — 무엇을 왜 검수해야 하는지
 const FLAG_NOTE: Record<string, string> = {
