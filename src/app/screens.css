@@ -560,3 +560,9 @@
   scroll-snap-align: center;
   scroll-snap-stop: always;
 }
+/* 넘김 버튼 — 트랙 밖에 고정 (사용자 요청 2026-09-12).
+   .card-bottom 을 같이 걸어 safe-area 여백을 그대로 쓴다 */
+.browse-nav {
+  padding: 0 20px;
+  padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+}

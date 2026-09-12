@@ -90,16 +90,22 @@ test('훑어보기가 스냅되는 캐러셀이다', async ({ page }) => {
   await scrollToSlide(page, 0)
   await expect(count).toContainText(`1 / ${total}`)
 
-  // 버튼도 트랙을 움직인다
-  await page.locator('.browse-slide').first().getByRole('button', { name: '다음 ›' }).click()
-  await expect(count).toContainText(`2 / ${total}`)
-  await page.locator('.browse-slide').nth(1).getByRole('button', { name: '‹ 이전' }).click()
-  await expect(count).toContainText(`1 / ${total}`)
+  // 넘김 버튼은 트랙 밖에 한 벌뿐이고, 눌러도 자리가 안 바뀐다
+  const nav = page.locator('.browse-nav')
+  const prev = nav.getByRole('button', { name: '‹ 이전' })
+  const next = nav.getByRole('button', { name: '다음 ›' })
+  await expect(nav).toHaveCount(1)
+  await expect(slides.locator('.card-bottom')).toHaveCount(0)
+  const navBox = await nav.boundingBox()
 
-  // 첫 장의 이전은 잠겨 있다
-  await expect(
-    page.locator('.browse-slide').first().getByRole('button', { name: '‹ 이전' }),
-  ).toBeDisabled()
+  await expect(prev).toBeDisabled()
+  await next.click()
+  await expect(count).toContainText(`2 / ${total}`)
+  await expect(prev).toBeEnabled()
+  await prev.click()
+  await expect(count).toContainText(`1 / ${total}`)
+  await expect(prev).toBeDisabled()
+  expect(await nav.boundingBox()).toEqual(navBox)
 
   // 출제 요소는 없다
   await expect(page.locator('.kana-input')).toHaveCount(0)

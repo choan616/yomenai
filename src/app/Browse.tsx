@@ -111,7 +111,7 @@ export function Browse({ onExit }: { onExit: () => void }) {
           setAt((prev) => (prev === i ? prev : Math.min(items.length - 1, Math.max(0, i))))
         }}
       >
-        {items.map((item, index) => (
+        {items.map((item) => (
         <div className="browse-slide" key={item.id}>
         <div className="card">
           <div className="card-head">
@@ -137,30 +137,27 @@ export function Browse({ onExit }: { onExit: () => void }) {
               </p>
             ))}
           </div>
-          <div className="card-bottom">
-            <div className="answer-row choice">
-              <button
-                type="button"
-                className="btn"
-                disabled={index === 0}
-                onClick={() => move(-1)}
-              >
-                ‹ 이전
-              </button>
-              <button
-                type="button"
-                className="btn-primary"
-                disabled={index === items.length - 1}
-                onClick={() => move(1)}
-              >
-                다음 ›
-              </button>
-            </div>
-          </div>
         </div>
         </div>
         ))}
       </main>
+
+      {/* 넘김 버튼은 트랙 밖에 한 벌만 둔다 — 카드를 따라 흘러가면 누르려던 자리가 움직인다 */}
+      <div className="card-bottom browse-nav">
+        <div className="answer-row choice">
+          <button type="button" className="btn" disabled={at === 0} onClick={() => move(-1)}>
+            ‹ 이전
+          </button>
+          <button
+            type="button"
+            className="btn-primary"
+            disabled={at === items.length - 1}
+            onClick={() => move(1)}
+          >
+            다음 ›
+          </button>
+        </div>
+      </div>
     </div>
   )
 }
