@@ -24,6 +24,7 @@
     "draft:korean-review": "tsx tools/draft-korean-review.ts",
     "apply:korean-review": "tsx tools/apply-korean-review.ts",
     "build:review-worklist": "tsx tools/build-review-worklist.ts",
+    "build:event-worklist": "tsx tools/build-event-worklist.ts",
     "build:korean-meaning": "tsx tools/build-korean-meaning.ts",
     "build:korean-meaning-worklist": "tsx tools/build-korean-meaning-worklist.ts",
     "apply:korean-meaning": "tsx tools/apply-korean-meaning.ts",

@@ -3051,7 +3051,7 @@ now = kanjidic 음 중 stdict 근거 있음(자전 순서) + 교정음(자전에
 old = 근거 0. now 가 비면 전부 now(판단 보류). 205자에 old 후보 발생.
 `korean-reading-review.tsv` = 그 205자만.
 
-### 배선 완료 (2026-09-09, 커밋 대기) — override 파일만 생기면 먹힌다
+### 배선 완료 (2026-09-09, 커밋 `bb62da0`) — override 파일만 생기면 먹힌다
 
 1. `tools/apply-korean-readings.ts` (`npm run apply:korean-readings`) — 검수한
    `korean-reading-review.tsv`(now/old) → `data/dict/korean-reading-overrides.json`.
@@ -3163,3 +3163,53 @@ UI 는 설정 > 백업의 "옛 기기 파일 정리" — Drive 파일을 지우�
 연속이 끊겨 후보로 돌아온다. `rematchCount` 도 같은 술어를 써서 홈 버튼 숫자와 세션
 내용이 어긋나지 않는다. `streak` 은 이벤트에서 재생되는 파생 상태라 IndexedDB 스키마
 불변 조건과 무관하다.
+
+## 지연 검수 응답을 사전으로 되돌리는 도구 (2026-09-12)
+
+Phase 3 이 미뤄둔 마지막 항목. 앱이 "이 숙어, 뜻은 알고 있었어요?" 로 받은 `meaningKnown`
+이벤트를 빌드타임 분류(`korean-class.json`)로 되돌리는 쪽이다. 런타임은 이미 이 값을
+모드 배정 2단계에서 쓰고 있어서, 여기서 얻는 건 **2 대 3 구분과 영속성**뿐이다.
+
+### 기각 — 응답을 `korean-class.json` 에 바로 반영
+
+「알았다」를 곧 category 1(동형동의)로 굳히는 안. 한 번 굳으면 `classSource: 'manual'` 이
+되어 사람 검수와 구분이 안 간다. 그런데 일본어를 따로 공부해서 뜻을 아는 일본고유어도
+「알았다」가 나온다 — 응답은 한국어 동형동의의 *신호*지 사전 판정이 아니다. Phase 3 이
+"사람 verdict > 초벌 > 잠정값" 으로 신뢰도 층을 나눠둔 걸 무너뜨린다.
+
+**채택 — 이벤트 로그 → 검수 TSV 한 방향만.** 사람이 verdict 칸을 채워야 반영된다.
+기존 `apply:korean-review` 가 `korean-worklist*.tsv` 를 전부 읽으므로 도구를 안 건드렸다.
+
+### 담는 행 — 현재 분류와 어긋난 응답만
+
+`알았다` + 분류 2·3, `몰랐다` + 분류 1. 일치하는 응답은 새 정보가 없어 집계로만 보고한다.
+사람이 볼 목록을 짧게 유지하는 게 검수를 실제로 굴리는 조건이다 (12-D 배치 모드와 같은 이유).
+
+`몰랐다` 는 2 와 3 을 못 가른다 — 그래서 `proposed` 열은 잠정 분류를 그대로 물려주고
+사람이 최종 판단한다. 런타임에 필요한 건 1 대 2·3 갈림뿐이라 (2026-09-04 절) 여기서
+급할 게 없다.
+
+### 이미 사람 verdict 가 있는 숙어는 파일에서 뺀다
+
+`apply:korean-review` 는 `readdirSync` 순서로 worklist 를 읽어 **뒤 파일이 이긴다.**
+`korean-worklist-events.tsv` 는 이름 순으로 `korean-worklist-t1.tsv`·`korean-worklist.tsv`
+보다 앞이라, 같은 id 를 양쪽에 두면 새 판정이 옛 판정에 조용히 덮인다. 그래서 겹치는
+숙어는 TSV 에서 빼고 콘솔로만 보고한다 — 고칠 거면 원래 파일에서 고치라는 뜻이다.
+(대안 — apply 쪽에 우선순위 규칙을 넣는 것. 기각: Phase 3 도구를 건드리게 되고,
+충돌은 드물어 사람이 보는 편이 낫다.)
+
+### 입력은 `data/events/` 의 Drive 백업 파일
+
+앱에 로컬 내보내기가 없어서 Drive 의 `reviews-*.json` 을 직접 내려받아 넣는다.
+기기별 파일은 합집합이라 같은 이벤트 id 가 겹쳐도 한 번만 센다. 개인 학습 기록이므로
+`data/events/` 는 gitignore, 산출 TSV 는 사람 판정이라 추적한다
+(`!data/dict/*-worklist*.tsv` 예외에 자동으로 걸린다).
+
+- 기각 — **설정에 이벤트 내보내기 버튼 추가.** 쓸 일이 드문 빌드타임 작업에 앱 UI 를
+  늘릴 이유가 없다. Drive 웹에서 받는 걸로 충분하다
+
+### 검증
+
+`tools/build-event-worklist.test.ts` 9 테스트. 기기 2개 픽스처(중복 이벤트·뒤집힌 응답·
+이미 verdict 가 있는 架空 포함)로 실행해 일치 2 / 어긋남 1 / 보류 1 집계 확인.
+`npm test` 342 (333 → 342) · `tsc -b` / tools tsc / `oxlint` 클린.

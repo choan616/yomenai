@@ -100,8 +100,20 @@
   - 런타임 준비 완료 — `buildSession`이 `needsClassReview`를 실어 주고 `meaningKnown`
     응답이 모드를 즉시 바로잡는다 (Phase 4 절). 카드가 실제로 풀에 들어올 때만 묻으므로
     16,858건을 미리 다 볼 일은 없다. 남은 건 **묻는 화면(Phase 5)**이다
-- [ ] 검수 응답을 `korean-class.json`으로 되돌리는 도구 — 이벤트 로그(`meaningKnown`)
-  → 검수 TSV 방향. 실사용 응답이 쌓인 뒤 만든다 (Phase 5 이후)
+- [x] **검수 응답을 `korean-class.json`으로 되돌리는 도구** (2026-09-12) —
+  `tools/build-event-worklist.ts` (`npm run build:event-worklist`). `data/events/` 에 넣은
+  Drive 동기화 파일(`reviews-*.json`)에서 `meaningKnown` 만 걸러 숙어별로 접고,
+  **현재 분류와 어긋나는 응답만** `korean-worklist-events.tsv` 로 낸다
+  - 이벤트 합집합 — 같은 이벤트 id 가 여러 기기 파일에 있어도 한 번만 센다.
+    숙어별로 마지막 응답을 남기고 뒤집힌 이력은 `flip` 열로 표시 (정렬 기준은 `compareEvents` 와 같다)
+  - **`korean-class.json` 을 직접 안 고친다** — "뜻은 알고 있었어요?" 는 동형동의 신호지 사전
+    판정이 아니다 (일본어로 따로 익힌 일본고유어도 「알았다」가 나온다). context-notes 같은 날 절
+  - 이미 사람 verdict 가 있는 숙어는 파일에서 빼고 콘솔로만 보고 — 같은 id 가 두 worklist 에
+    있으면 `apply:korean-review` 의 파일명 순 병합에서 어느 쪽이 이겼는지 조용히 갈린다
+  - `data/events/` 는 개인 학습 기록이라 gitignore. 산출 TSV 는 사람 판정이라 추적
+  - **검증: `tools/build-event-worklist.test.ts` 9 테스트 (접기·중복·뒤집힘·같은 시각 id 정렬·
+    어긋남 판정·제안 분류). 기기 2개 픽스처로 실행 — 일치 2 / 어긋남 1 / 사람 verdict 보유 1(架空)
+    분류 확인. `npm test` 342 · `tsc -b`/tools tsc/`oxlint` 클린**
 
 ---
 
@@ -646,7 +658,7 @@ context-notes 2026-09-07 「별도 앱으로 분리」 절, PLAN §0 참조.
     두음법칙 정규화 + jis208 결손 이체자 보충. 코퍼스 한자 263자(kr 2+) 중 old 후보 205자
   - **"삭제" 아님** (사용자 지적 — 안 쓰인다 ≠ 틀렸다). `now`(지금 쓰는 음) / `old`(옛·드문 음)
     으로 갈라 화면에서 old 를 "옛 음" 으로 접는다. 정보 손실 0
-  - 배선 완료 (커밋 대기) — `apply-korean-readings.ts`(review TSV → `korean-reading-overrides.json`),
+  - 배선 완료 (커밋 `bb62da0`) — `apply-korean-readings.ts`(review TSV → `korean-reading-overrides.json`),
     `build-runtime-dict.ts`(override 있으면 `kr:now`/`krOld:old`, 없으면 현행), `KanjiInfo.krOld`,
     `BreakdownPart.krOld`, `MistakeDetail.tsx` "옛 음" 흐리게, `.md-kr-old` 스타일
   - **override 파일 없으면 앱 동작 그대로** — `public/dict/kanji.json` 전 한자 `kr` 불변, `krOld:[]`

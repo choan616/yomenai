@@ -84,5 +84,17 @@ npm run build:runtime-dict                    # → public/dict
 match:korean          한자별 한국 한자음 → stdict 조회 → korean-match.json / korean-review.tsv
 draft:korean-review   Ollama 초벌 분류 → korean-llm-draft.tsv
 build:review-worklist  수동 검수 큐 → korean-worklist*.tsv
+build:event-worklist   앱 지연 검수 응답(meaningKnown) → korean-worklist-events.tsv
 apply:korean-review    사람 verdict + 초벌 → korean-class.json
 ```
+
+`build:event-worklist` 는 `data/events/` 에 둔 Drive 백업(`reviews-*.json`)을 읽는다.
+현재 분류와 **어긋난 응답만** 담으므로 보통 몇 행 안 나온다.
+
+```
+npm run build:event-worklist                 # data/events/ 를 읽는다
+npm run build:event-worklist -- --dir=<경로>  # 다른 폴더에서 읽기
+```
+
+verdict 를 채운 뒤 `apply:korean-review -- --trust-llm` → `apply:korean-meaning` →
+`build:runtime-dict` 순으로 돌린다. 가운데를 빼면 검수한 `koMeaning.verified` 가 전부 날아간다.

@@ -29,3 +29,6 @@ data/dict/*
 .DS_Store
 .vscode/*
 !.vscode/extensions.json
+
+# 앱에서 내려받은 학습 이벤트 원본 (개인 학습 기록, 커밋 금지)
+data/events/
