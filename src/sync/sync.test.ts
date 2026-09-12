@@ -10,6 +10,7 @@ import {
   ARCHIVE_FILE_NAME,
   consolidateSyncFiles,
   resetLearning,
+  STALE_DAYS,
   syncNow,
   type SyncProgress,
 } from './sync.ts'
@@ -44,8 +45,11 @@ function review(fields: Partial<ReviewEvent> & { at: number; idiomId: string; de
 class FakeDrive implements DriveClient {
   authed = true
   cloud: Map<string, string>
-  constructor(cloud: Map<string, string>) {
+  /** 파일별 수정 시각(epoch ms). 안 주면 "방금" 으로 본다 — 자동 정리 대상이 아니다 */
+  times: Map<string, number>
+  constructor(cloud: Map<string, string>, times: Map<string, number> = new Map()) {
     this.cloud = cloud
+    this.times = times
   }
   isAuthenticated() {
     return this.authed
@@ -58,7 +62,11 @@ class FakeDrive implements DriveClient {
   }
   signOut() {}
   async listSyncFiles(): Promise<DriveFileMeta[]> {
-    return [...this.cloud.keys()].map((name) => ({ id: name, name }))
+    return [...this.cloud.keys()].map((name) => ({
+      id: name,
+      name,
+      modifiedTime: new Date(this.times.get(name) ?? Date.now()).toISOString(),
+    }))
   }
   async downloadFile(fileId: string): Promise<string> {
     const content = this.cloud.get(fileId)
@@ -257,5 +265,83 @@ describe('consolidateSyncFiles', () => {
     const drive = new FakeDrive(new Map())
     drive.authed = false
     await expect(consolidateSyncFiles(freshDb(), 'dev-a', drive)).rejects.toThrow('로그인')
+  })
+})
+
+describe('자동 정리 — 오래 안 쓴 기기 파일 (2026-09-12)', () => {
+  /** id 를 고정한 이벤트 — 보관 파일 내용을 그대로 대조하려고 */
+  const ev = (id: string, deviceId: string, at: number) =>
+    review({ id, at, idiomId: 'x', deviceId })
+  const DAY = 24 * 60 * 60 * 1000
+  const NOW = Date.parse('2026-09-12T00:00:00Z')
+  const old = NOW - (STALE_DAYS + 5) * DAY
+  const recent = NOW - 3 * DAY
+
+  function cloudWith(): Map<string, string> {
+    return new Map([
+      ['reviews-dev-a.json', JSON.stringify([ev('a1', 'dev-a', 1)])],
+      ['reviews-dead.json', JSON.stringify([ev('d1', 'dead', 2)])],
+      ['reviews-live.json', JSON.stringify([ev('l1', 'live', 3)])],
+    ])
+  }
+
+  it('죽은 파일은 보관 파일로 접고 살아 있는 기기 파일은 남긴다', async () => {
+    const cloud = cloudWith()
+    const times = new Map([['reviews-dead.json', old], ['reviews-live.json', recent]])
+    const result = await syncNow(freshDb(), 'dev-a', new FakeDrive(cloud, times), undefined, NOW)
+
+    expect(result.consolidated).toMatchObject({ removed: 1 })
+    expect(cloud.has('reviews-dead.json')).toBe(false)
+    expect(cloud.has('reviews-live.json')).toBe(true)
+    expect(cloud.has(ARCHIVE_FILE_NAME)).toBe(true)
+  })
+
+  it('죽은 파일의 기록은 보관 파일과 로컬에 남는다', async () => {
+    const cloud = cloudWith()
+    const times = new Map([['reviews-dead.json', old], ['reviews-live.json', recent]])
+    const db = freshDb()
+    await syncNow(db, 'dev-a', new FakeDrive(cloud, times), undefined, NOW)
+
+    const archived = JSON.parse(cloud.get(ARCHIVE_FILE_NAME)!) as { id: string }[]
+    expect(archived.map((e) => e.id)).toEqual(['d1'])
+    // a1 은 내 파일(reviews-dev-a.json)에 있던 것 — 빈 로컬 DB 를 올리며 덮어썼으므로 안 돌아온다
+    expect((await db.events.toArray()).map((e) => e.id).sort()).toEqual(['d1', 'l1'])
+  })
+
+  it('죽은 파일이 없으면 정리를 안 돈다 — 살아 있는 기기끼리 churn 이 없다', async () => {
+    const cloud = cloudWith()
+    const times = new Map([['reviews-dead.json', recent], ['reviews-live.json', recent]])
+    const result = await syncNow(freshDb(), 'dev-a', new FakeDrive(cloud, times), undefined, NOW)
+
+    expect(result.consolidated).toBeUndefined()
+    expect(cloud.has(ARCHIVE_FILE_NAME)).toBe(false)
+    expect(cloud.size).toBe(3)
+  })
+
+  it('보관 파일 자체는 오래돼도 안 지운다', async () => {
+    const cloud = new Map([
+      ['reviews-dev-a.json', JSON.stringify([ev('a1', 'dev-a', 1)])],
+      [ARCHIVE_FILE_NAME, JSON.stringify([ev('z1', 'gone', 9)])],
+    ])
+    const result = await syncNow(
+      freshDb(), 'dev-a', new FakeDrive(cloud, new Map([[ARCHIVE_FILE_NAME, old]])), undefined, NOW,
+    )
+    expect(result.consolidated).toBeUndefined()
+    expect(cloud.has(ARCHIVE_FILE_NAME)).toBe(true)
+  })
+
+  it('정리 단계가 진행 보고에 들어간다', async () => {
+    const cloud = cloudWith()
+    const times = new Map([['reviews-dead.json', old], ['reviews-live.json', recent]])
+    const seen: string[] = []
+    await syncNow(freshDb(), 'dev-a', new FakeDrive(cloud, times), (pr) => seen.push(pr.phase), NOW)
+    expect(seen).toEqual(['upload', 'list', 'download', 'download', 'consolidate', 'done'])
+  })
+
+  it('설정 화면의 수동 정리는 시각을 안 본다 — 내 것 말고 전부 접는다', async () => {
+    const cloud = cloudWith()
+    const times = new Map([['reviews-dead.json', recent], ['reviews-live.json', recent]])
+    const result = await consolidateSyncFiles(freshDb(), 'dev-a', new FakeDrive(cloud, times))
+    expect(result.removed).toBe(2)
   })
 })

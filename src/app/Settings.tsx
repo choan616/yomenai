@@ -12,7 +12,7 @@ import { applyTheme, loadTheme, saveTheme, type Theme } from './theme.ts'
 import { db } from '../db/schema.ts'
 import { getDeviceId } from '../db/device.ts'
 import { googleDrive } from '../sync/googleDrive.ts'
-import { consolidateSyncFiles, resetLearning, syncNow, type SyncProgress } from '../sync/sync.ts'
+import { consolidateSyncFiles, resetLearning, STALE_DAYS, syncNow, type SyncProgress } from '../sync/sync.ts'
 import { getLastSyncAt, setLastSyncAt, setSignedIn, wasSignedIn } from '../sync/syncState.ts'
 import { clearDiagnosticDone } from './diagnostic-state.ts'
 
@@ -60,6 +60,8 @@ function progressLabel(p: SyncProgress): string {
       return p.file === undefined
         ? '백업 내려받는 중…'
         : `백업 내려받는 중 ${p.file.index}/${p.file.count}`
+    case 'consolidate':
+      return '옛 기기 파일 정리하는 중…'
     case 'done':
       return '마무리하는 중…'
   }
@@ -108,10 +110,16 @@ function BackupSetting() {
     setError(null)
     setProgress(null)
     void syncNow(db(), getDeviceId(), googleDrive, setProgress)
-      .then(() => {
+      .then(({ consolidated }) => {
         const now = Date.now()
         setLastSyncAt(now)
         setLastSyncAtState(now)
+        // 자동 정리가 돌았으면 조용히 넘기지 않는다 — Drive 파일이 줄어든 이유를 알려 준다
+        if (consolidated && consolidated.removed > 0) {
+          setCleanupMsg(
+            `${STALE_DAYS}일 넘게 안 쓴 기기 파일 ${consolidated.removed}개를 보관 파일로 합쳤어요. 기록은 그대로예요.`,
+          )
+        }
       })
       .catch((err: unknown) => setError(err instanceof Error ? err.message : String(err)))
       .finally(() => {

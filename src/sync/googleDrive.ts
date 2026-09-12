@@ -49,6 +49,8 @@ declare global {
 export interface DriveFileMeta {
   id: string
   name: string
+  /** Drive 의 마지막 수정 시각(ISO). 자동 정리가 죽은 파일을 가리는 데 쓴다 */
+  modifiedTime: string
 }
 
 /** sync.ts 가 실제 구현 대신 주입할 수 있는 형태. 테스트는 이 인터페이스만 흉내 낸다 */
@@ -177,7 +179,7 @@ async function findOrCreateFolder(): Promise<string> {
 async function listSyncFiles(): Promise<DriveFileMeta[]> {
   const folderId = await findOrCreateFolder()
   const q = encodeURIComponent(`'${folderId}' in parents and trashed=false and name contains 'reviews-'`)
-  const res = await fetch(`${DRIVE_API}/files?q=${q}&fields=files(id,name)&spaces=drive`, {
+  const res = await fetch(`${DRIVE_API}/files?q=${q}&fields=files(id,name,modifiedTime)&spaces=drive`, {
     headers: authHeaders(),
   })
   if (!res.ok) throw new Error(`Drive 파일 목록 조회 실패: ${res.status}`)
