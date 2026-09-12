@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import { buildLevel, type BandRow, type LevelProfile } from '../core/level.ts'
 import { prescribe, type Prescription } from '../core/prescription.ts'
 import { replay } from '../core/replay.ts'
-import { buildReport, type Report as ReportData } from '../core/report.ts'
+import { BROWSE_N, buildReport, type Report as ReportData } from '../core/report.ts'
 import { LOCAL_USER_ID, listEvents } from '../db/events.ts'
 import { db } from '../db/schema.ts'
 import { loadBaseIdioms, loadPairs } from '../dict/load.ts'
@@ -139,9 +139,9 @@ function ReportBody({
       {report.frequent.length > 0 && (
         <section className="browse-entry">
           <p className="section-title">훑어보기</p>
-          <p className="browse-lead">자주 틀린 것들을 채점 없이 한 장씩 넘겨 봐요.</p>
+          <p className="browse-lead">자주 틀린 것들을 채점 없이 한 장씩 넘겨 봐요. 들어갈 때마다 섞여요.</p>
           <button type="button" className="btn-primary" onClick={onBrowse}>
-            훑어보기 {report.frequent.length}장 ›
+            훑어보기 {Math.min(report.frequent.length, BROWSE_N)}장 ›
           </button>
         </section>
       )}

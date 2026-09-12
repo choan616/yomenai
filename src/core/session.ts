@@ -3,6 +3,7 @@ import type { Band } from '../lib/bands.ts'
 import { toHiragana } from '../lib/readings.ts'
 import { classifyMistake, type MistakeContext } from './mistakes.ts'
 import { assignMode } from './mode.ts'
+import { pickWeighted } from './pick.ts'
 import { replay, type ReplayState } from './replay.ts'
 import { gradeFor, type Confidence } from './scheduler.ts'
 import {
@@ -206,28 +207,6 @@ export const REMATCH_CLEARED_STREAK = 2
 
 function isRematchCandidate(card: CardState): boolean {
   return card.cardType === 'reading' && card.wrong > 0 && card.streak < REMATCH_CLEARED_STREAK
-}
-
-/**
- * 오답 수를 가중치로 두고 중복 없이 `k` 개를 뽑는다.
- * 자주 틀린 숙어가 더 자주 나오되 매번 조합이 달라진다.
- */
-function pickWeighted<T>(pool: { item: T; weight: number }[], k: number, rand: () => number): T[] {
-  const rest = [...pool]
-  let total = rest.reduce((sum, c) => sum + c.weight, 0)
-  const picked: T[] = []
-  while (picked.length < k && rest.length > 0) {
-    let r = rand() * total
-    let i = 0
-    while (i < rest.length - 1 && r >= rest[i].weight) {
-      r -= rest[i].weight
-      i++
-    }
-    picked.push(rest[i].item)
-    total -= rest[i].weight
-    rest.splice(i, 1)
-  }
-  return picked
 }
 
 /**

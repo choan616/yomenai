@@ -1,5 +1,6 @@
 // 진단 리포트의 파생 로직 — 오답 유형 분포, 취약 음독, 한국음 간섭 패턴 (PLAN §7 "이 앱의 얼굴")
 import type { OnyomiPair } from '../dict/load.ts'
+import { pickWeighted } from './pick.ts'
 import { mistakeTotals, type ReplayState } from './replay.ts'
 import type { MistakeType } from './types.ts'
 
@@ -68,7 +69,7 @@ export interface Report {
   weakOnyomi: WeakOnyomi[]
   koInterferenceCount: number
   koInterferenceIdioms: NamedIdiom[]
-  /** 훑어보기 대상. `frequentIdioms` 참조 */
+  /** 훑어보기 후보 전량. 화면에 몇 장 낼지는 `pickBrowse` 가 정한다 */
   frequent: FrequentIdiom[]
 }
 
@@ -129,8 +130,8 @@ export function buildReport(
 }
 
 /**
- * 훑어보기 대상 — **한 번이라도 틀린 읽기 카드**, 자주 틀린 것부터.
- * 리포트와 훑어보기 화면이 같은 기준을 쓰도록 여기 둔다.
+ * 훑어보기 **후보 전량** — 한 번이라도 틀린 읽기 카드.
+ * 리포트와 훑어보기 화면이 같은 기준을 쓰도록 여기 둔다. 실제로 낼 장수는 `pickBrowse`.
  *
  * 틀린 적 없는 카드는 안 담는다 (사용자 결정 2026-09-12). 넘길 카드를 늘리는 건
  * `BROWSE_N` 상한으로 하지, 기준을 흐려서 하지 않는다 — "틀린 것을 다시 본다" 가
@@ -138,30 +139,38 @@ export function buildReport(
  * 안 뺀다. 출제가 아니라 노출이라 최근에 맞혔어도 다시 읽고 듣는 게 복습이다
  * (context-notes 2026-09-12 절).
  *
- * 순서 — 오답 많은 순 → 최근에 본 순 → id. 1회씩 틀린 카드가 대부분이라 id 순으로만
- * 세우면 사전순 나열처럼 읽혀서, 방금 본 것이 앞에 오게 `lastAt` 을 2차 기준으로 쓴다.
- * 이벤트에서 재생되는 값이라 기기 간 병합에도 순서가 같다.
+ * **뽑기 전 입력 순서를 id 로 고정한다** — Map 순회 순서(= 기기 간 이벤트 병합 순서)에
+ * `pickBrowse` 결과가 휘둘리지 않게 하는 장치다 (`buildRematch` 와 같은 관례).
  */
 export function frequentIdioms(
   state: ReplayState,
   nameOf: (idiomId: string) => { headword: string; reading: string } | undefined,
-  limit = BROWSE_N,
 ): FrequentIdiom[] {
-  const rows: { row: FrequentIdiom; lastAt: number }[] = []
+  const rows: FrequentIdiom[] = []
   for (const c of state.cards.values()) {
     if (c.cardType !== 'reading' || c.wrong <= 0) continue
     const n = nameOf(c.idiomId)
-    if (!n) continue
-    rows.push({
-      row: { id: c.idiomId, headword: n.headword, reading: n.reading, wrong: c.wrong },
-      lastAt: c.lastAt ?? 0,
-    })
+    if (n) rows.push({ id: c.idiomId, headword: n.headword, reading: n.reading, wrong: c.wrong })
   }
-  rows.sort(
-    (a, b) =>
-      b.row.wrong - a.row.wrong ||
-      b.lastAt - a.lastAt ||
-      (a.row.id < b.row.id ? -1 : a.row.id > b.row.id ? 1 : 0),
+  rows.sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0))
+  return rows
+}
+
+/**
+ * 훑어볼 카드를 **오답 수 가중 무작위**로 뽑는다 (사용자 요청 2026-09-12 "섞여서 노출").
+ *
+ * 오답 수로 결정적으로 정렬해 앞에서 자르면 들어갈 때마다 같은 카드가 같은 순서로 나온다 —
+ * 재대결이 같은 이유로 가중 무작위로 바뀌었다 (2026-09-11). 자주 틀린 것이 더 자주·앞쪽에
+ * 나오되 조합과 순서가 매번 달라진다.
+ */
+export function pickBrowse(
+  rows: FrequentIdiom[],
+  limit = BROWSE_N,
+  rand: () => number = Math.random,
+): FrequentIdiom[] {
+  return pickWeighted(
+    rows.map((row) => ({ item: row, weight: row.wrong })),
+    limit,
+    rand,
   )
-  return rows.slice(0, limit).map((r) => r.row)
 }

@@ -4,7 +4,7 @@ import type { OnyomiPair } from '../dict/load.ts'
 import { newCard } from './scheduler.ts'
 import type { ReplayState } from './replay.ts'
 import type { CardState, MistakeType } from './types.ts'
-import { buildReport, BROWSE_N } from './report.ts'
+import { buildReport, frequentIdioms, pickBrowse, BROWSE_N } from './report.ts'
 
 function card(
   idiomId: string,
@@ -136,17 +136,16 @@ describe('buildReport — 분류에 실패한 오답', () => {
   })
 })
 
-describe('훑어보기 — 틀린 카드만, 자주 틀린 것부터', () => {
+describe('훑어보기 후보 — 틀린 카드만', () => {
   const nameOf = (id: string) => names[id]
   const anyName = (id: string) => names[id] ?? { headword: 'x', reading: 'x' }
-  const seen = (id: string, wrong: number, lastAt: number, reps = 3): CardState => ({
+  const seen = (id: string, wrong: number, reps = 3): CardState => ({
     idiomId: id, cardType: 'reading', card: { ...newCard(0), reps },
-    mistakes: wrong > 0 ? { RENDAKU: wrong } : {}, wrong, streak: 0, lastAt,
+    mistakes: wrong > 0 ? { RENDAKU: wrong } : {}, wrong, streak: 0, lastAt: 0,
   })
 
-  it('오답 있는 읽기 카드만, 오답 수 내림차순', () => {
-    const r = buildReport(state(), pairs, nameOf)
-    expect(r.frequent).toEqual([
+  it('오답 있는 읽기 카드만, id 순으로 세운다', () => {
+    expect(buildReport(state(), pairs, nameOf).frequent).toEqual([
       { id: '1', headword: '認識', reading: 'にんしき', wrong: 3 },
       { id: '2', headword: '知識', reading: 'ちしき', wrong: 1 },
     ])
@@ -158,7 +157,7 @@ describe('훑어보기 — 틀린 카드만, 자주 틀린 것부터', () => {
 
   it('틀린 적 없는 카드는 안 담는다 — 많이 봤어도 (사용자 결정)', () => {
     const st = state()
-    st.cards.set('4:reading', seen('4', 0, 500, 20))
+    st.cards.set('4:reading', seen('4', 0, 20))
     expect(buildReport(st, pairs, anyName).frequent.some((f) => f.id === '4')).toBe(false)
   })
 
@@ -168,36 +167,66 @@ describe('훑어보기 — 틀린 카드만, 자주 틀린 것부터', () => {
       idiomId: '2', cardType: 'meaning', card: { ...newCard(0), reps: 4 },
       mistakes: { RENDAKU: 9 }, wrong: 9, streak: 0, lastAt: 0,
     })
-    // 뜻 카드의 오답 9 가 섞였으면 2 번이 1 번을 제쳤을 것이다
-    expect(buildReport(st, pairs, anyName).frequent[0].id).toBe('1')
+    expect(buildReport(st, pairs, anyName).frequent.some((f) => f.wrong === 9)).toBe(false)
   })
 
   it('극복한 카드도 담는다 — 재대결과 다르다. 출제가 아니라 노출이라', () => {
     const st = state()
     st.cards.set('1:reading', { ...st.cards.get('1:reading')!, streak: 5 })
-    expect(buildReport(st, pairs, nameOf).frequent[0]).toMatchObject({ id: '1', wrong: 3 })
+    expect(buildReport(st, pairs, nameOf).frequent.some((f) => f.id === '1')).toBe(true)
   })
 
-  it('오답이 같으면 최근에 본 것이 먼저', () => {
+  it('후보는 상한을 안 건다 — 자르는 건 pickBrowse 의 몫', () => {
     const st = state()
-    st.cards.set('7:reading', seen('7', 2, 100))
-    st.cards.set('8:reading', seen('8', 2, 900))
-    st.cards.set('9:reading', seen('9', 2, 500))
-    const two = buildReport(st, pairs, anyName).frequent.filter((f) => f.wrong === 2)
-    expect(two.map((f) => f.id)).toEqual(['8', '9', '7'])
+    for (let i = 10; i < 10 + BROWSE_N + 5; i++) st.cards.set(`${i}:reading`, seen(String(i), 2))
+    // 픽스처의 오답 카드 3장 + 새로 넣은 BROWSE_N + 5 장
+    expect(frequentIdioms(st, anyName).length).toBe(BROWSE_N + 8)
+  })
+})
+
+describe('pickBrowse — 오답 수 가중 무작위', () => {
+  /** mulberry32 — 시드를 주면 같은 수열이 나와 통계 검증이 결정적이다 */
+  function seeded(seed: number): () => number {
+    let t = seed
+    return () => {
+      t += 0x6d2b79f5
+      let r = Math.imul(t ^ (t >>> 15), 1 | t)
+      r ^= r + Math.imul(r ^ (r >>> 7), 61 | r)
+      return ((r ^ (r >>> 14)) >>> 0) / 4294967296
+    }
+  }
+  const row = (id: string, wrong: number) => ({ id, headword: id, reading: id, wrong })
+
+  it('많이 틀린 것이 더 자주 앞에 뽑힌다 (3:2:1)', () => {
+    const rows = [row('a', 3), row('b', 2), row('c', 1)]
+    const rand = seeded(7)
+    const first: Record<string, number> = { a: 0, b: 0, c: 0 }
+    for (let i = 0; i < 600; i++) first[pickBrowse(rows, 1, rand)[0].id]++
+    expect(first.a).toBeGreaterThan(first.b)
+    expect(first.b).toBeGreaterThan(first.c)
   })
 
-  it('오답·시각이 다 같으면 id 순 — 기기 병합 순서에 안 흔들린다', () => {
-    const st = state()
-    for (const id of ['9', '7', '8']) st.cards.set(`${id}:reading`, seen(id, 2, 100))
-    const two = buildReport(st, pairs, anyName).frequent.filter((f) => f.wrong === 2)
-    expect(two.map((f) => f.id)).toEqual(['7', '8', '9'])
+  it('중복 없이 뽑고 상한에서 자른다', () => {
+    const rows = Array.from({ length: 50 }, (_, i) => row(String(i), 2))
+    const picked = pickBrowse(rows, BROWSE_N, seeded(1))
+    expect(picked).toHaveLength(BROWSE_N)
+    expect(new Set(picked.map((r) => r.id)).size).toBe(BROWSE_N)
   })
 
-  it('BROWSE_N 은 30 이고 넘으면 자른다', () => {
-    expect(BROWSE_N).toBe(30)
-    const st = state()
-    for (let i = 10; i < 10 + BROWSE_N + 5; i++) st.cards.set(`${i}:reading`, seen(String(i), 2, i))
-    expect(buildReport(st, pairs, anyName).frequent).toHaveLength(BROWSE_N)
+  it('후보가 상한보다 적으면 전부 나온다', () => {
+    const rows = [row('a', 1), row('b', 1)]
+    expect(pickBrowse(rows, BROWSE_N, seeded(2))).toHaveLength(2)
+  })
+
+  it('들어갈 때마다 조합·순서가 달라진다', () => {
+    const rows = Array.from({ length: 40 }, (_, i) => row(String(i), 1 + (i % 3)))
+    const rand = seeded(3)
+    const a = pickBrowse(rows, BROWSE_N, rand).map((r) => r.id)
+    const b = pickBrowse(rows, BROWSE_N, rand).map((r) => r.id)
+    expect(a).not.toEqual(b)
+  })
+
+  it('후보가 없으면 빈 배열', () => {
+    expect(pickBrowse([], BROWSE_N, seeded(4))).toEqual([])
   })
 })

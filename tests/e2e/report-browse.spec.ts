@@ -112,4 +112,27 @@ test('리포트에서 훑어보기 카드로 들어가 채점 없이 넘긴다',
   // 나가면 리포트로 돌아온다 (홈이 아니다)
   await page.getByRole('button', { name: '훑어보기 나가기' }).click()
   await expect(page.locator('.report')).toBeVisible()
+
+  // 들어갈 때마다 섞인다 — 같은 후보라도 순서가 달라진다 (2026-09-12)
+  const firstRun = await readHeadwords(page, 5)
+  await page.getByRole('button', { name: '훑어보기 나가기' }).click()
+  await expect(page.locator('.report')).toBeVisible()
+  const secondRun = await readHeadwords(page, 5)
+  expect(firstRun).toHaveLength(5)
+  expect(secondRun).not.toEqual(firstRun)
 })
+
+/** 리포트에서 훑어보기로 들어가 앞에서 n 장의 표제어를 읽는다 (나가지는 않는다) */
+async function readHeadwords(page: Page, n: number): Promise<string[]> {
+  await page.getByRole('button', { name: /훑어보기 \d+장/ }).click()
+  const card = page.locator('.browse-screen .card .headword')
+  await expect(card).toBeVisible()
+  const out: string[] = []
+  for (let i = 0; i < n; i++) {
+    out.push(await card.innerText())
+    const next = page.getByRole('button', { name: '다음 ›' })
+    if (!(await next.isEnabled())) break
+    await next.click()
+  }
+  return out
+}

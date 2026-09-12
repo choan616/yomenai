@@ -1,7 +1,7 @@
 // 훑어보기 화면 — 자주 틀린 숙어를 채점 없이 한 장씩 넘겨 본다 (사용자 요청 2026-09-12).
 // 세션과 같은 카드 셸을 쓰되 입력·채점·이벤트가 없다. FSRS 도 안 건드린다.
 import { useEffect, useState } from 'react'
-import { frequentIdioms } from '../core/report.ts'
+import { frequentIdioms, pickBrowse } from '../core/report.ts'
 import { replay } from '../core/replay.ts'
 import { LOCAL_USER_ID, listEvents } from '../db/events.ts'
 import { db } from '../db/schema.ts'
@@ -37,10 +37,13 @@ export function Browse({ onExit }: { onExit: () => void }) {
         if (!alive) return
         const byId = new Map(pool.map((p) => [p.idiomId, p]))
         const state = replay(events, { pairsOf: (id) => byId.get(id)?.pairIds ?? [] })
-        const rows = frequentIdioms(state, (id) => {
-          const it = byId.get(id)
-          return it ? { headword: it.headword, reading: it.reading } : undefined
-        })
+        // 들어올 때 한 번만 뽑는다 — 넘기는 도중에 목록이 바뀌면 안 된다
+        const rows = pickBrowse(
+          frequentIdioms(state, (id) => {
+            const it = byId.get(id)
+            return it ? { headword: it.headword, reading: it.reading } : undefined
+          }),
+        )
         setItems(
           rows.map((r) => ({
             ...r,
