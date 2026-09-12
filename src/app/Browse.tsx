@@ -29,6 +29,17 @@ export function Browse({ onExit }: { onExit: () => void }) {
   const [at, setAt] = useState(0)
   /** 캐러셀 트랙. 버튼은 여기를 스크롤하고, 손가락 넘김은 브라우저가 한다 */
   const track = useRef<HTMLElement | null>(null)
+/**
+   * 지금 보는 카드에서 몇 번째 예문을 펼쳐 뒀는지. **카드를 떠나면 0 으로 되돌린다** —
+   * 트랙이 모든 장을 띄워 두는 구조라 안 그러면 몇 장 전에 넘겨 둔 자리가 그대로 남는다.
+   */
+  const [exIndex, setExIndex] = useState(0)
+  // 장이 바뀌면 렌더 중에 자리를 되돌린다. effect 로 하면 한 번 그린 뒤 다시 그리게 된다
+  const [exCard, setExCard] = useState(0)
+  if (exCard !== at) {
+    setExCard(at)
+    setExIndex(0)
+  }
 
   useEffect(() => {
     let alive = true
@@ -54,7 +65,7 @@ export function Browse({ onExit }: { onExit: () => void }) {
           rows.map((r) => ({
             ...r,
             meaning: byId.get(r.id)?.koMeaning?.definition?.trim() ?? '',
-            sentences: (examples.get(r.id) ?? []).slice(0, 2),
+            sentences: examples.get(r.id) ?? [],
           })),
         )
       } catch (e) {
@@ -111,34 +122,13 @@ export function Browse({ onExit }: { onExit: () => void }) {
           setAt((prev) => (prev === i ? prev : Math.min(items.length - 1, Math.max(0, i))))
         }}
       >
-        {items.map((item) => (
-        <div className="browse-slide" key={item.id}>
-        <div className="card">
-          <div className="card-head">
-            <span className="tag">훑어보기</span>
-            <span className="tag muted">{item.wrong}회 틀림</span>
-          </div>
-          <div className="card-body">
-            <p className="headword" lang="ja">
-              {item.headword}
-            </p>
-            <p className="reading-shown" lang="ja">
-              {item.reading}
-            </p>
-            {item.meaning && <p className="meaning">{item.meaning}</p>}
-            {tts.available && (
-              <button type="button" className="tts-btn" onClick={() => tts.speak(item.reading)}>
-                <span aria-hidden="true">🔊</span> 소리 듣기
-              </button>
-            )}
-            {item.sentences.map((sentence) => (
-              <p className="browse-ex" lang="ja" key={sentence}>
-                {sentence}
-              </p>
-            ))}
-          </div>
-        </div>
-        </div>
+        {items.map((item, index) => (
+          <BrowseSlide
+            item={item}
+            exAt={index === at ? exIndex : 0}
+            onNextEx={() => setExIndex((n) => (n + 1) % item.sentences.length)}
+            key={item.id}
+          />
         ))}
       </main>
 
@@ -156,6 +146,63 @@ export function Browse({ onExit }: { onExit: () => void }) {
           >
             다음 ›
           </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/**
+ * 카드 한 장. 예문은 **한 줄씩** 보여주고 여러 개일 때만 넘길 수 있게 한다
+ * (사용자 요청 2026-09-12). 넘기는 건 이 카드의 예문뿐이고 카드는 안 움직인다.
+ *
+ * 예문 자리(`exAt`)는 부모가 준다 — 카드를 떠나면 0 으로 파생돼 첫 예문으로 돌아간다.
+ */
+function BrowseSlide({
+  item,
+  exAt,
+  onNextEx,
+}: {
+  item: BrowseItem
+  exAt: number
+  onNextEx: () => void
+}) {
+  const sentence = item.sentences[exAt]
+
+  return (
+    <div className="browse-slide">
+      <div className="card">
+        <div className="card-head">
+          <span className="tag">훑어보기</span>
+          <span className="tag muted">{item.wrong}회 틀림</span>
+        </div>
+        <div className="card-body">
+          <p className="headword" lang="ja">
+            {item.headword}
+          </p>
+          <p className="reading-shown" lang="ja">
+            {item.reading}
+          </p>
+          {item.meaning && <p className="meaning">{item.meaning}</p>}
+          {tts.available && (
+            <button type="button" className="tts-btn" onClick={() => tts.speak(item.reading)}>
+              <span aria-hidden="true">🔊</span> 소리 듣기
+            </button>
+          )}
+          {sentence !== undefined && (
+            <p className="browse-ex" lang="ja">
+              {sentence}
+            </p>
+          )}
+          {item.sentences.length > 1 && (
+            <button
+              type="button"
+              className="browse-ex-more"
+              onClick={onNextEx}
+            >
+              다음 예문 <span className="dim">{exAt + 1}/{item.sentences.length}</span>
+            </button>
+          )}
         </div>
       </div>
     </div>

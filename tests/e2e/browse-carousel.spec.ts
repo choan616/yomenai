@@ -118,6 +118,51 @@ test('훑어보기가 스냅되는 캐러셀이다', async ({ page }) => {
   await expect(first.locator('.reading-shown')).not.toBeEmpty()
   expect(await slides.locator('.browse-ex').count()).toBeGreaterThan(0)
 
+  // 예문은 카드마다 한 줄씩만 뜬다
+  for (let i = 0; i < (await slides.count()); i++) {
+    expect(await slides.nth(i).locator('.browse-ex').count()).toBeLessThanOrEqual(1)
+  }
+
+  // 「다음 예문」 — 예문이 여럿인 카드로 옮겨 가서 본다 (화면에 보이는 카드에서만 누를 수 있다)
+  let withMore = -1
+  for (let i = 0; i < total; i++) {
+    if ((await slides.nth(i).locator('.browse-ex-more').count()) > 0) {
+      withMore = i
+      break
+    }
+  }
+  expect(withMore).toBeGreaterThanOrEqual(0)
+
+  await scrollToSlide(page, withMore)
+  await expect(count).toContainText(`${withMore + 1} / ${total}`)
+  const slide = slides.nth(withMore)
+  const more = slide.locator('.browse-ex-more')
+  const ex = slide.locator('.browse-ex')
+  const before = await ex.innerText()
+  const moreLabel = await more.innerText()
+  const senses = Number(/\/(\d+)/.exec(moreLabel)?.[1] ?? '1')
+  expect(senses).toBeGreaterThan(1)
+
+  // 누르면 그 카드의 예문만 바뀌고 카드는 안 움직인다
+  await more.click()
+  await expect(ex).not.toHaveText(before)
+  await expect(count).toContainText(`${withMore + 1} / ${total}`)
+
+  // 한 바퀴 돌면 첫 예문으로
+  for (let i = 1; i < senses; i++) await more.click()
+  await expect(ex).toHaveText(before)
+
+  // 카드를 떠났다 돌아오면 첫 예문으로 되돌아간다
+  await more.click()
+  await expect(ex).not.toHaveText(before)
+  const away = withMore === 0 ? 1 : 0
+  await scrollToSlide(page, away)
+  // 도착을 확인하고 돌아온다 — 연속으로 scrollLeft 를 쓰면 스크롤 이벤트가 합쳐져 안 거친다
+  await expect(count).toContainText(`${away + 1} / ${total}`)
+  await scrollToSlide(page, withMore)
+  await expect(count).toContainText(`${withMore + 1} / ${total}`)
+  await expect(ex).toHaveText(before)
+
   // 리포트엔 목록이 없다 — 진입 버튼 하나뿐
   await expect(page.locator('.browse-row')).toHaveCount(0)
 

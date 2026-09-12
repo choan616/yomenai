@@ -566,3 +566,14 @@
   padding: 0 20px;
   padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px));
 }
+/* 다음 예문 — 예문이 여럿일 때만 뜬다. 소리 듣기(.tts-btn)와 같은 무게로 (사용자 요청 2026-09-12) */
+.browse-ex-more {
+  display: block;
+  margin: 8px auto 0;
+  padding: 4px 12px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-dim);
+  font-size: 13px;
+}
