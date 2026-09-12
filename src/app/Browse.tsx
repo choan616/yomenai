@@ -1,11 +1,12 @@
 // 훑어보기 화면 — 자주 틀린 숙어를 채점 없이 한 장씩 넘겨 본다 (사용자 요청 2026-09-12).
 // 세션과 같은 카드 셸을 쓰되 입력·채점·이벤트가 없다. FSRS 도 안 건드린다.
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { frequentIdioms, pickBrowse } from '../core/report.ts'
 import { replay } from '../core/replay.ts'
 import { LOCAL_USER_ID, listEvents } from '../db/events.ts'
 import { db } from '../db/schema.ts'
 import { loadBaseIdioms, loadExamples } from '../dict/load.ts'
+import { swipeDirection } from '../study/swipe.ts'
 import { tts } from '../study/tts.ts'
 import { useViewportLock } from '../study/useViewportLock.ts'
 
@@ -23,6 +24,8 @@ export function Browse({ onExit }: { onExit: () => void }) {
   const [items, setItems] = useState<BrowseItem[] | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [at, setAt] = useState(0)
+  /** 스와이프 시작점. 넘김 판정은 손을 뗄 때 한 번만 한다 */
+  const touchStart = useRef<{ x: number; y: number } | null>(null)
 
   useEffect(() => {
     let alive = true
@@ -77,6 +80,8 @@ export function Browse({ onExit }: { onExit: () => void }) {
   }
 
   const item = items[at]
+  const move = (d: -1 | 1) => setAt((n) => Math.min(items.length - 1, Math.max(0, n + d)))
+
   return (
     <div className="study browse-screen">
       <header className="study-bar">
@@ -89,7 +94,21 @@ export function Browse({ onExit }: { onExit: () => void }) {
         </span>
       </header>
 
-      <main className="study-main">
+      <main
+        className="study-main"
+        onTouchStart={(e) => {
+          const t = e.touches[0]
+          touchStart.current = { x: t.clientX, y: t.clientY }
+        }}
+        onTouchEnd={(e) => {
+          const start = touchStart.current
+          touchStart.current = null
+          if (start === null) return
+          const t = e.changedTouches[0]
+          const dir = swipeDirection(t.clientX - start.x, t.clientY - start.y)
+          if (dir !== null) move(dir === 'next' ? 1 : -1)
+        }}
+      >
         <div className="card">
           <div className="card-head">
             <span className="tag">훑어보기</span>
@@ -120,7 +139,7 @@ export function Browse({ onExit }: { onExit: () => void }) {
                 type="button"
                 className="btn"
                 disabled={at === 0}
-                onClick={() => setAt((n) => Math.max(0, n - 1))}
+                onClick={() => move(-1)}
               >
                 ‹ 이전
               </button>
@@ -128,7 +147,7 @@ export function Browse({ onExit }: { onExit: () => void }) {
                 type="button"
                 className="btn-primary"
                 disabled={at === items.length - 1}
-                onClick={() => setAt((n) => Math.min(items.length - 1, n + 1))}
+                onClick={() => move(1)}
               >
                 다음 ›
               </button>

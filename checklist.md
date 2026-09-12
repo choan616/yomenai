@@ -782,3 +782,13 @@ context-notes 2026-09-07 「별도 앱으로 분리」 절, PLAN §0 참조.
 - **검증: `sync.test.ts` 12 → 18 (죽은 것만 접음 · 기록은 보관 파일과 로컬에 남음 ·
   죽은 게 없으면 안 돎(churn 없음) · 보관 파일 보호 · 진행 보고 단계 · 수동 정리는 시각 무시).
   `npm test` 366 · `tsc -b`/`oxlint` 클린**
+
+- [x] **스와이프로 넘기기** (2026-09-12, 사용자 요청) — `src/study/swipe.ts` `swipeDirection`.
+  왼쪽으로 밀면 다음, 오른쪽이면 이전. 버튼과 같은 `move()` 를 탄다
+  - **세로 이동이 가로보다 크면 안 넘긴다** — `.card-body` 가 스크롤되는 화면이라
+    (뜻·예문) 세로로 긋는 손을 가로로 채가면 안 된다. 대각선은 스크롤 쪽에 준다
+  - `preventDefault` 를 안 쓰고 `touchend` 에서 한 번만 판정한다. `touch-action` 도
+    안 건드려서 카드 안 세로 스크롤이 그대로 산다
+  - **검증: `swipe.test.ts` 5. `tests/e2e/browse-swipe.spec.ts` 신규 (`hasTouch`) —
+    좌/우 스와이프로 카운트·표제어 변경, 첫 장에서 더 뒤로 안 감, 세로 우세·짧은 이동 무시.
+    `npm test` 371 · `npm run e2e` 10스펙 · `tsc -b`/`oxlint`/`vite build` 클린**
