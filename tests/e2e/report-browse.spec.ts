@@ -1,4 +1,4 @@
-// 리포트 훑어보기 검증 — 자주 틀린 숙어를 채점 없이 펼쳐 본다 (사용자 요청 2026-09-12)
+// 훑어보기 검증 — 리포트에서 카드 화면으로 들어가 채점 없이 넘겨 본다 (사용자 요청 2026-09-12)
 import { expect, test, type Page } from '@playwright/test'
 
 test.setTimeout(240_000)
@@ -54,7 +54,7 @@ async function runSessionWrong(page: Page): Promise<void> {
   await page.getByRole('button', { name: '홈으로' }).click()
 }
 
-test('리포트에서 자주 틀린 숙어를 펼쳐 읽기·뜻·예문을 본다', async ({ page }) => {
+test('리포트에서 훑어보기 카드로 들어가 채점 없이 넘긴다', async ({ page }) => {
   await page.goto('/')
   await expect(page.getByRole('button', { name: '세션 시작' })).toBeVisible({ timeout: 20_000 })
   await resetState(page)
@@ -63,41 +63,53 @@ test('리포트에서 자주 틀린 숙어를 펼쳐 읽기·뜻·예문을 본�
   await page.getByRole('button', { name: /진단 리포트/ }).click()
   await expect(page.locator('.report')).toBeVisible()
 
-  const section = page.locator('.browse')
-  await expect(section).toBeVisible()
-  const rows = section.locator('.browse-row')
-  expect(await rows.count()).toBeGreaterThan(0)
+  // 리포트엔 진입 버튼만. 목록은 없다
+  await expect(page.locator('.browse-row')).toHaveCount(0)
+  const enter = page.getByRole('button', { name: /훑어보기 \d+장/ })
+  await expect(enter).toBeVisible()
+  await enter.click()
 
-  // 접힌 상태 — 표제어와 오답 횟수만
-  const head = rows.first().locator('.browse-head')
-  await expect(head).toHaveAttribute('aria-expanded', 'false')
-  await expect(head.locator('.r-tail')).toContainText('회 틀림')
-  await expect(section.locator('.browse-body')).toHaveCount(0)
+  // 카드 화면 — 세션과 같은 셸
+  const screen = page.locator('.browse-screen')
+  await expect(screen).toBeVisible()
+  await expect(screen.locator('.card .headword')).not.toBeEmpty()
+  await expect(screen.locator('.card .reading-shown')).not.toBeEmpty()
+  await expect(screen.locator('.count')).toContainText('1 /')
 
-  // 펼치면 읽기가 나온다. 출제·채점 요소는 없다
-  await head.click()
-  await expect(head).toHaveAttribute('aria-expanded', 'true')
-  const body = rows.first().locator('.browse-body')
-  await expect(body.locator('.browse-reading')).not.toBeEmpty()
+  // 출제 요소가 없다
   await expect(page.locator('.kana-input')).toHaveCount(0)
   await expect(page.getByRole('button', { name: '알았어요' })).toHaveCount(0)
+  await expect(page.getByRole('button', { name: '뜻 보기' })).toHaveCount(0)
 
-  // 한 번에 하나만 펼친다
-  if ((await rows.count()) > 1) {
-    await rows.nth(1).locator('.browse-head').click()
-    await expect(head).toHaveAttribute('aria-expanded', 'false')
-    await expect(section.locator('.browse-body')).toHaveCount(1)
-  }
+  // 첫 장에서 이전은 잠겨 있다
+  const prev = page.getByRole('button', { name: '‹ 이전' })
+  const next = page.getByRole('button', { name: '다음 ›' })
+  await expect(prev).toBeDisabled()
 
-  // 예문은 지연 로드 — 적어도 하나의 행에는 붙어야 한다 (examples.json 은 11,217 숙어 보유)
+  // 넘기면 표제어가 바뀐다
+  const first = await screen.locator('.card .headword').innerText()
+  await next.click()
+  await expect(screen.locator('.count')).toContainText('2 /')
+  expect(await screen.locator('.card .headword').innerText()).not.toBe(first)
+  await expect(prev).toBeEnabled()
+
+  // 되돌아오면 첫 장
+  await prev.click()
+  expect(await screen.locator('.card .headword').innerText()).toBe(first)
+
+  // 예문은 목록과 같이 받는다 — 몇 장 넘기는 동안 적어도 한 번은 붙는다
   let sawExample = false
-  const n = Math.min(await rows.count(), 6)
-  for (let i = 0; i < n; i++) {
-    await rows.nth(i).locator('.browse-head').click()
-    if ((await rows.nth(i).locator('.browse-ex').count()) > 0) {
+  for (let i = 0; i < 6; i++) {
+    if ((await screen.locator('.browse-ex').count()) > 0) {
       sawExample = true
       break
     }
+    if (await next.isEnabled()) await next.click()
+    else break
   }
   expect(sawExample).toBe(true)
+
+  // 나가면 리포트로 돌아온다 (홈이 아니다)
+  await page.getByRole('button', { name: '훑어보기 나가기' }).click()
+  await expect(page.locator('.report')).toBeVisible()
 })

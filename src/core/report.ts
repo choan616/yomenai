@@ -91,22 +91,16 @@ export function buildReport(
   let totalReviews = 0
   let totalWrong = 0
   const koIdioms: NamedIdiom[] = []
-  const frequent: FrequentIdiom[] = []
   for (const c of state.cards.values()) {
     if (c.cardType !== 'reading') continue
     totalReviews += c.card.reps
     totalWrong += c.wrong
-    const n = nameOf(c.idiomId)
-    if ((c.mistakes.KO_INTERFERENCE ?? 0) > 0 && n) {
-      koIdioms.push({ id: c.idiomId, headword: n.headword, reading: n.reading })
-    }
-    if (c.wrong > 0 && n) {
-      frequent.push({ id: c.idiomId, headword: n.headword, reading: n.reading, wrong: c.wrong })
+    if ((c.mistakes.KO_INTERFERENCE ?? 0) > 0) {
+      const n = nameOf(c.idiomId)
+      if (n) koIdioms.push({ id: c.idiomId, headword: n.headword, reading: n.reading })
     }
   }
   koIdioms.sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0))
-  // 동점은 id 로 갈라 기기 간 이벤트 병합 순서에 목록이 안 흔들리게 한다
-  frequent.sort((a, b) => b.wrong - a.wrong || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0))
 
   const weakOnyomi: WeakOnyomi[] = [...state.onyomi.values()]
     .filter((s) => s.seen >= WEAK_MIN_SEEN && s.wrong > 0)
@@ -134,6 +128,28 @@ export function buildReport(
     weakOnyomi,
     koInterferenceCount: totals.KO_INTERFERENCE ?? 0,
     koInterferenceIdioms: koIdioms.slice(0, TOP_N),
-    frequent: frequent.slice(0, BROWSE_N),
+    frequent: frequentIdioms(state, nameOf),
   }
+}
+
+/**
+ * 자주 틀린 숙어, 오답 수 내림차순. 리포트와 훑어보기 화면이 **같은 기준**을 쓰도록 여기 둔다.
+ *
+ * 재대결(`buildRematch`)과 달리 극복한 카드(`streak`)를 안 뺀다 — 출제가 아니라 노출이라
+ * 최근에 맞힌 것도 다시 읽고 듣는 게 복습이다 (context-notes 2026-09-12 절).
+ */
+export function frequentIdioms(
+  state: ReplayState,
+  nameOf: (idiomId: string) => { headword: string; reading: string } | undefined,
+  limit = BROWSE_N,
+): FrequentIdiom[] {
+  const rows: FrequentIdiom[] = []
+  for (const c of state.cards.values()) {
+    if (c.cardType !== 'reading' || c.wrong <= 0) continue
+    const n = nameOf(c.idiomId)
+    if (n) rows.push({ id: c.idiomId, headword: n.headword, reading: n.reading, wrong: c.wrong })
+  }
+  // 동점은 id 로 갈라 기기 간 이벤트 병합 순서에 목록이 안 흔들리게 한다
+  rows.sort((a, b) => b.wrong - a.wrong || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0))
+  return rows.slice(0, limit)
 }

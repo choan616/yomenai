@@ -7,6 +7,7 @@ import { Home } from './app/Home.tsx'
 import { OnyomiMap } from './app/OnyomiMap.tsx'
 import { Report } from './app/Report.tsx'
 import { Settings } from './app/Settings.tsx'
+import { Browse } from './app/Browse.tsx'
 import { Study } from './study/Study.tsx'
 import { QUICK_SESSION_LIMIT } from './app/settings.ts'
 
@@ -18,6 +19,7 @@ export type Screen =
   | 'focus'
   | 'onyomi'
   | 'report'
+  | 'browse'
   | 'diagnostic'
   | 'settings'
 
@@ -48,12 +50,16 @@ export default function App() {
       return (
         <Report
           onBack={home}
+          onBrowse={() => setScreen('browse')}
           onFocus={(pairId) => {
             setFocusPair(pairId)
             setScreen('focus')
           }}
         />
       )
+    case 'browse':
+      // 리포트에서만 들어오는 화면이라 나가면 리포트로 돌아간다
+      return <Browse onExit={() => setScreen('report')} />
     case 'diagnostic':
       return <Diagnostic onDone={() => setScreen('report')} onExit={home} />
     case 'settings':

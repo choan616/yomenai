@@ -337,6 +337,9 @@
 .report > .screen-body > section:nth-of-type(5) {
   animation-delay: 360ms;
 }
+.report > .screen-body > section:nth-of-type(6) {
+  animation-delay: 450ms;
+}
 .report .bar-fill {
   animation: bar-grow 620ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
   animation-delay: calc(var(--i, 0) * 70ms + 120ms);
@@ -515,65 +518,38 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* 훑어보기 — 자주 틀린 숙어를 채점 없이 다시 보는 자리 (사용자 요청 2026-09-12).
-   출제 루프가 아니라 읽는 화면이라 리포트의 느린 모션 쪽 규칙을 따른다 (CLAUDE.md 성능 제약) */
+/* 훑어보기 — 리포트의 진입 자리. 카드 화면 자체는 study.css 의 .card 셸을 그대로 쓴다
+   (사용자 요청 2026-09-12: 목록이 아니라 카드로 넘겨 본다) */
 .browse-lead {
-  margin: 0 0 10px;
+  margin: 0 0 12px;
   color: var(--text-dim);
   font-size: 13px;
 }
-.browse .rows > li.browse-row {
-  display: block;
-  padding: 0;
-}
-.browse-head {
-  display: flex;
-  align-items: baseline;
-  gap: 10px;
+.browse-entry .btn-primary {
   width: 100%;
-  padding: 10px 14px;
-  border: 0;
-  background: transparent;
-  color: inherit;
-  text-align: left;
 }
-.browse-row.is-open .browse-head {
-  color: var(--text);
+
+/* 카드 안의 예문 — .card-body 가 가운데 정렬이라 같이 맞춘다. 뜻은 뜻 카드의 .meaning 을 그대로 쓴다 */
+.browse-ex {
+  text-align: center;
+  margin: 12px auto 0;
+  max-width: 30em;
+  font-family: var(--font-ja);
+  font-size: 14px;
+  color: var(--text-faint);
+  line-height: 1.8;
 }
-.browse-body {
-  padding: 0 14px 14px;
-  animation: browse-open 220ms ease both;
+/* 넘기는 화면이라 전환은 짧게 — 카드 루프의 150ms 규칙과 같은 쪽에 둔다 (CLAUDE.md 성능 제약) */
+.browse-screen .card-body {
+  animation: browse-in 120ms ease both;
 }
-@keyframes browse-open {
+@keyframes browse-in {
   from {
     opacity: 0;
-    transform: translateY(-4px);
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .browse-body {
+  .browse-screen .card-body {
     animation: none;
   }
-}
-.browse-reading {
-  margin: 0;
-  font-family: var(--font-ja);
-  font-size: 20px;
-}
-.browse-meaning {
-  margin: 4px 0 0;
-  color: var(--text-dim);
-  font-size: 15px;
-}
-.browse-body .tts-btn {
-  margin: 10px 0 0;
-}
-.browse-ex {
-  margin: 10px 0 0;
-  padding-left: 10px;
-  border-left: 2px solid var(--border);
-  font-family: var(--font-ja);
-  font-size: 14px;
-  color: var(--text-dim);
-  line-height: 1.7;
 }
