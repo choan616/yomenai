@@ -783,12 +783,18 @@ context-notes 2026-09-07 「별도 앱으로 분리」 절, PLAN §0 참조.
   죽은 게 없으면 안 돎(churn 없음) · 보관 파일 보호 · 진행 보고 단계 · 수동 정리는 시각 무시).
   `npm test` 366 · `tsc -b`/`oxlint` 클린**
 
-- [x] **스와이프로 넘기기** (2026-09-12, 사용자 요청) — `src/study/swipe.ts` `swipeDirection`.
-  왼쪽으로 밀면 다음, 오른쪽이면 이전. 버튼과 같은 `move()` 를 탄다
-  - **세로 이동이 가로보다 크면 안 넘긴다** — `.card-body` 가 스크롤되는 화면이라
-    (뜻·예문) 세로로 긋는 손을 가로로 채가면 안 된다. 대각선은 스크롤 쪽에 준다
-  - `preventDefault` 를 안 쓰고 `touchend` 에서 한 번만 판정한다. `touch-action` 도
-    안 건드려서 카드 안 세로 스크롤이 그대로 산다
-  - **검증: `swipe.test.ts` 5. `tests/e2e/browse-swipe.spec.ts` 신규 (`hasTouch`) —
-    좌/우 스와이프로 카운트·표제어 변경, 첫 장에서 더 뒤로 안 감, 세로 우세·짧은 이동 무시.
-    `npm test` 371 · `npm run e2e` 10스펙 · `tsc -b`/`oxlint`/`vite build` 클린**
+- [x] **캐러셀로 넘기기** (2026-09-12, 사용자 요청 — 손수 짠 스와이프에서 갈아탐)
+  - 모든 장을 한 트랙에 깔고 `scroll-snap-type: x mandatory` + `scroll-snap-align: center`.
+    손가락을 따라 오는 움직임·관성·스냅을 브라우저가 한다
+  - `Browse.tsx` 가 하는 일은 둘 — `onScroll` 에서 `scrollLeft / clientWidth` 를 반올림해
+    머리말(`n / 총`)에 반영하고, ‹이전/다음› 버튼이 `scrollTo({ behavior: 'smooth' })` 로
+    트랙을 미는 것
+  - **`src/study/swipe.ts` 와 `swipe.test.ts` 는 지웠다.** 브라우저가 하는 일을
+    손으로 다시 짜고 있었다. 세로 스크롤과 축을 가르는 것도 브라우저 몫이 됐다
+  - `scroll-snap-stop: always` — 세게 밀어도 한 장씩 선다. 훑어보는 화면이라
+    여러 장을 건너뛰면 뭘 봤는지 놓친다
+  - **검증: `tests/e2e/browse-carousel.spec.ts` (`hasTouch`) — 모든 장이 한 트랙에 있고,
+    `scrollSnapType`/`scrollSnapAlign` 이 걸려 있고, 트랙을 스크롤하면 머리말이 따라오고,
+    버튼도 트랙을 움직이고, 첫 장 이전이 잠겨 있고, 출제 요소가 없다.
+    `npm test` 366 · `npm run e2e` 9스펙 · `tsc -b`/`oxlint`/`vite build` 클린 · 폰 폭(390px) 캡처 대조.
+    옛 `report-browse.spec.ts` 는 이 스펙에 합쳤다 — 한 화면을 두 스펙이 나눠 보고 있었다**

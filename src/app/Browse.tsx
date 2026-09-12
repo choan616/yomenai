@@ -1,12 +1,15 @@
 // 훑어보기 화면 — 자주 틀린 숙어를 채점 없이 한 장씩 넘겨 본다 (사용자 요청 2026-09-12).
 // 세션과 같은 카드 셸을 쓰되 입력·채점·이벤트가 없다. FSRS 도 안 건드린다.
+//
+// 넘김은 **CSS scroll-snap 캐러셀**이다 (사용자 요청). 손가락을 따라 오는 움직임·관성·
+// 스냅을 브라우저가 하고, 이 파일은 스크롤 위치에서 지금 장을 읽어 머리말에 반영하는 것과
+// 버튼이 트랙을 스크롤하게 하는 것만 한다.
 import { useEffect, useRef, useState } from 'react'
 import { frequentIdioms, pickBrowse } from '../core/report.ts'
 import { replay } from '../core/replay.ts'
 import { LOCAL_USER_ID, listEvents } from '../db/events.ts'
 import { db } from '../db/schema.ts'
 import { loadBaseIdioms, loadExamples } from '../dict/load.ts'
-import { swipeDirection } from '../study/swipe.ts'
 import { tts } from '../study/tts.ts'
 import { useViewportLock } from '../study/useViewportLock.ts'
 
@@ -24,8 +27,8 @@ export function Browse({ onExit }: { onExit: () => void }) {
   const [items, setItems] = useState<BrowseItem[] | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [at, setAt] = useState(0)
-  /** 스와이프 시작점. 넘김 판정은 손을 뗄 때 한 번만 한다 */
-  const touchStart = useRef<{ x: number; y: number } | null>(null)
+  /** 캐러셀 트랙. 버튼은 여기를 스크롤하고, 손가락 넘김은 브라우저가 한다 */
+  const track = useRef<HTMLElement | null>(null)
 
   useEffect(() => {
     let alive = true
@@ -79,8 +82,12 @@ export function Browse({ onExit }: { onExit: () => void }) {
     )
   }
 
-  const item = items[at]
-  const move = (d: -1 | 1) => setAt((n) => Math.min(items.length - 1, Math.max(0, n + d)))
+  const move = (d: -1 | 1) => {
+    const el = track.current
+    if (el === null) return
+    const next = Math.min(items.length - 1, Math.max(0, at + d))
+    el.scrollTo({ left: next * el.clientWidth, behavior: 'smooth' })
+  }
 
   return (
     <div className="study browse-screen">
@@ -95,20 +102,17 @@ export function Browse({ onExit }: { onExit: () => void }) {
       </header>
 
       <main
-        className="study-main"
-        onTouchStart={(e) => {
-          const t = e.touches[0]
-          touchStart.current = { x: t.clientX, y: t.clientY }
-        }}
-        onTouchEnd={(e) => {
-          const start = touchStart.current
-          touchStart.current = null
-          if (start === null) return
-          const t = e.changedTouches[0]
-          const dir = swipeDirection(t.clientX - start.x, t.clientY - start.y)
-          if (dir !== null) move(dir === 'next' ? 1 : -1)
+        className="study-main browse-track"
+        ref={track}
+        onScroll={(e) => {
+          // 한 장 폭으로 스냅되므로 반올림이 곧 지금 장이다. 값이 바뀔 때만 리렌더한다
+          const el = e.currentTarget
+          const i = Math.round(el.scrollLeft / Math.max(1, el.clientWidth))
+          setAt((prev) => (prev === i ? prev : Math.min(items.length - 1, Math.max(0, i))))
         }}
       >
+        {items.map((item, index) => (
+        <div className="browse-slide" key={item.id}>
         <div className="card">
           <div className="card-head">
             <span className="tag">훑어보기</span>
@@ -138,7 +142,7 @@ export function Browse({ onExit }: { onExit: () => void }) {
               <button
                 type="button"
                 className="btn"
-                disabled={at === 0}
+                disabled={index === 0}
                 onClick={() => move(-1)}
               >
                 ‹ 이전
@@ -146,7 +150,7 @@ export function Browse({ onExit }: { onExit: () => void }) {
               <button
                 type="button"
                 className="btn-primary"
-                disabled={at === items.length - 1}
+                disabled={index === items.length - 1}
                 onClick={() => move(1)}
               >
                 다음 ›
@@ -154,6 +158,8 @@ export function Browse({ onExit }: { onExit: () => void }) {
             </div>
           </div>
         </div>
+        </div>
+        ))}
       </main>
     </div>
   )

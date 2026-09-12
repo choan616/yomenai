@@ -539,17 +539,24 @@
   color: var(--text-faint);
   line-height: 1.8;
 }
-/* 넘기는 화면이라 전환은 짧게 — 카드 루프의 150ms 규칙과 같은 쪽에 둔다 (CLAUDE.md 성능 제약) */
-.browse-screen .card-body {
-  animation: browse-in 120ms ease both;
+/* 캐러셀 트랙 — 손가락을 따라 오는 움직임·관성·스냅은 브라우저에 맡긴다 (사용자 요청 2026-09-12).
+   .card-body 의 세로 스크롤과 축이 갈리는 것도 브라우저가 알아서 가른다 */
+.browse-screen .browse-track {
+  flex-direction: row;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
 }
-@keyframes browse-in {
-  from {
-    opacity: 0;
-  }
+.browse-screen .browse-track::-webkit-scrollbar {
+  display: none;
 }
-@media (prefers-reduced-motion: reduce) {
-  .browse-screen .card-body {
-    animation: none;
-  }
+.browse-slide {
+  flex: 0 0 100%;
+  min-width: 100%;
+  display: flex;
+  flex-direction: column;
+  scroll-snap-align: center;
+  scroll-snap-stop: always;
 }
