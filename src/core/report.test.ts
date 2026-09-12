@@ -136,10 +136,15 @@ describe('buildReport — 분류에 실패한 오답', () => {
   })
 })
 
-describe('훑어보기 — 자주 틀린 숙어', () => {
+describe('훑어보기 — 틀린 카드만, 자주 틀린 것부터', () => {
   const nameOf = (id: string) => names[id]
+  const anyName = (id: string) => names[id] ?? { headword: 'x', reading: 'x' }
+  const seen = (id: string, wrong: number, lastAt: number, reps = 3): CardState => ({
+    idiomId: id, cardType: 'reading', card: { ...newCard(0), reps },
+    mistakes: wrong > 0 ? { RENDAKU: wrong } : {}, wrong, streak: 0, lastAt,
+  })
 
-  it('오답이 있는 읽기 카드만, 오답 수 내림차순', () => {
+  it('오답 있는 읽기 카드만, 오답 수 내림차순', () => {
     const r = buildReport(state(), pairs, nameOf)
     expect(r.frequent).toEqual([
       { id: '1', headword: '認識', reading: 'にんしき', wrong: 3 },
@@ -151,20 +156,20 @@ describe('훑어보기 — 자주 틀린 숙어', () => {
     expect(buildReport(state(), pairs, nameOf).frequent.some((f) => f.id === '3')).toBe(false)
   })
 
-  it('뜻 카드와 오답 0 인 카드는 안 담는다', () => {
+  it('틀린 적 없는 카드는 안 담는다 — 많이 봤어도 (사용자 결정)', () => {
+    const st = state()
+    st.cards.set('4:reading', seen('4', 0, 500, 20))
+    expect(buildReport(st, pairs, anyName).frequent.some((f) => f.id === '4')).toBe(false)
+  })
+
+  it('뜻 카드는 안 담는다', () => {
     const st = state()
     st.cards.set('2:meaning', {
       idiomId: '2', cardType: 'meaning', card: { ...newCard(0), reps: 4 },
       mistakes: { RENDAKU: 9 }, wrong: 9, streak: 0, lastAt: 0,
     })
-    st.cards.set('4:reading', {
-      idiomId: '4', cardType: 'reading', card: { ...newCard(0), reps: 5 },
-      mistakes: {}, wrong: 0, streak: 0, lastAt: 0,
-    })
-    const r = buildReport(st, pairs, (id) => names[id] ?? { headword: 'x', reading: 'x' })
-    expect(r.frequent.some((f) => f.id === '4')).toBe(false)
     // 뜻 카드의 오답 9 가 섞였으면 2 번이 1 번을 제쳤을 것이다
-    expect(r.frequent[0].id).toBe('1')
+    expect(buildReport(st, pairs, anyName).frequent[0].id).toBe('1')
   })
 
   it('극복한 카드도 담는다 — 재대결과 다르다. 출제가 아니라 노출이라', () => {
@@ -173,26 +178,26 @@ describe('훑어보기 — 자주 틀린 숙어', () => {
     expect(buildReport(st, pairs, nameOf).frequent[0]).toMatchObject({ id: '1', wrong: 3 })
   })
 
-  it('동점은 id 순으로 갈라 기기 병합 순서에 안 흔들린다', () => {
+  it('오답이 같으면 최근에 본 것이 먼저', () => {
     const st = state()
-    st.cards.set('9:reading', {
-      idiomId: '9', cardType: 'reading', card: { ...newCard(0), reps: 2 },
-      mistakes: { RENDAKU: 1 }, wrong: 1, streak: 0, lastAt: 0,
-    })
-    const tied = buildReport(st, pairs, (id) => names[id] ?? { headword: 'x', reading: 'x' })
-      .frequent.filter((f) => f.wrong === 1).map((f) => f.id)
-    expect(tied).toEqual([...tied].sort())
+    st.cards.set('7:reading', seen('7', 2, 100))
+    st.cards.set('8:reading', seen('8', 2, 900))
+    st.cards.set('9:reading', seen('9', 2, 500))
+    const two = buildReport(st, pairs, anyName).frequent.filter((f) => f.wrong === 2)
+    expect(two.map((f) => f.id)).toEqual(['8', '9', '7'])
   })
 
-  it('BROWSE_N 을 넘으면 자른다', () => {
+  it('오답·시각이 다 같으면 id 순 — 기기 병합 순서에 안 흔들린다', () => {
     const st = state()
-    for (let i = 10; i < 30; i++) {
-      st.cards.set(`${i}:reading`, {
-        idiomId: String(i), cardType: 'reading', card: { ...newCard(0), reps: 3 },
-        mistakes: { RENDAKU: 2 }, wrong: 2, streak: 0, lastAt: 0,
-      })
-    }
-    const r = buildReport(st, pairs, (id) => names[id] ?? { headword: 'x', reading: 'x' })
-    expect(r.frequent).toHaveLength(BROWSE_N)
+    for (const id of ['9', '7', '8']) st.cards.set(`${id}:reading`, seen(id, 2, 100))
+    const two = buildReport(st, pairs, anyName).frequent.filter((f) => f.wrong === 2)
+    expect(two.map((f) => f.id)).toEqual(['7', '8', '9'])
+  })
+
+  it('BROWSE_N 은 30 이고 넘으면 자른다', () => {
+    expect(BROWSE_N).toBe(30)
+    const st = state()
+    for (let i = 10; i < 10 + BROWSE_N + 5; i++) st.cards.set(`${i}:reading`, seen(String(i), 2, i))
+    expect(buildReport(st, pairs, anyName).frequent).toHaveLength(BROWSE_N)
   })
 })

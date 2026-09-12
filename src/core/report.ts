@@ -7,8 +7,8 @@ import type { MistakeType } from './types.ts'
 export const WEAK_MIN_SEEN = 3
 /** 리포트에 싣는 취약 음독·간섭 숙어 상한 */
 export const TOP_N = 8
-/** 훑어보기에 싣는 자주 틀린 숙어 상한. 읽는 목록이라 출제 목록보다 길게 둔다 */
-export const BROWSE_N = 12
+/** 훑어보기에 싣는 숙어 상한. 읽는 목록이라 출제 목록보다 길게 둔다 (12 → 30, 사용자 요청) */
+export const BROWSE_N = 30
 
 /** 동점 정렬용 고정 순서 (진단 가치 순, src/core/mistakes.ts 우선순위와 같은 계열) */
 const MISTAKE_ORDER: MistakeType[] = [
@@ -68,11 +68,7 @@ export interface Report {
   weakOnyomi: WeakOnyomi[]
   koInterferenceCount: number
   koInterferenceIdioms: NamedIdiom[]
-  /**
-   * 자주 틀린 숙어, 오답 수 내림차순. 훑어보기 섹션이 쓴다.
-   * 재대결과 달리 **극복한 카드(streak)를 안 뺀다** — 출제가 아니라 노출이라
-   * 최근에 맞힌 것도 다시 보는 게 이득이다.
-   */
+  /** 훑어보기 대상. `frequentIdioms` 참조 */
   frequent: FrequentIdiom[]
 }
 
@@ -133,23 +129,39 @@ export function buildReport(
 }
 
 /**
- * 자주 틀린 숙어, 오답 수 내림차순. 리포트와 훑어보기 화면이 **같은 기준**을 쓰도록 여기 둔다.
+ * 훑어보기 대상 — **한 번이라도 틀린 읽기 카드**, 자주 틀린 것부터.
+ * 리포트와 훑어보기 화면이 같은 기준을 쓰도록 여기 둔다.
  *
- * 재대결(`buildRematch`)과 달리 극복한 카드(`streak`)를 안 뺀다 — 출제가 아니라 노출이라
- * 최근에 맞힌 것도 다시 읽고 듣는 게 복습이다 (context-notes 2026-09-12 절).
+ * 틀린 적 없는 카드는 안 담는다 (사용자 결정 2026-09-12). 넘길 카드를 늘리는 건
+ * `BROWSE_N` 상한으로 하지, 기준을 흐려서 하지 않는다 — "틀린 것을 다시 본다" 가
+ * 이 화면의 정체다. 다만 재대결(`buildRematch`)과 달리 극복한 카드(`streak`)는
+ * 안 뺀다. 출제가 아니라 노출이라 최근에 맞혔어도 다시 읽고 듣는 게 복습이다
+ * (context-notes 2026-09-12 절).
+ *
+ * 순서 — 오답 많은 순 → 최근에 본 순 → id. 1회씩 틀린 카드가 대부분이라 id 순으로만
+ * 세우면 사전순 나열처럼 읽혀서, 방금 본 것이 앞에 오게 `lastAt` 을 2차 기준으로 쓴다.
+ * 이벤트에서 재생되는 값이라 기기 간 병합에도 순서가 같다.
  */
 export function frequentIdioms(
   state: ReplayState,
   nameOf: (idiomId: string) => { headword: string; reading: string } | undefined,
   limit = BROWSE_N,
 ): FrequentIdiom[] {
-  const rows: FrequentIdiom[] = []
+  const rows: { row: FrequentIdiom; lastAt: number }[] = []
   for (const c of state.cards.values()) {
     if (c.cardType !== 'reading' || c.wrong <= 0) continue
     const n = nameOf(c.idiomId)
-    if (n) rows.push({ id: c.idiomId, headword: n.headword, reading: n.reading, wrong: c.wrong })
+    if (!n) continue
+    rows.push({
+      row: { id: c.idiomId, headword: n.headword, reading: n.reading, wrong: c.wrong },
+      lastAt: c.lastAt ?? 0,
+    })
   }
-  // 동점은 id 로 갈라 기기 간 이벤트 병합 순서에 목록이 안 흔들리게 한다
-  rows.sort((a, b) => b.wrong - a.wrong || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0))
-  return rows.slice(0, limit)
+  rows.sort(
+    (a, b) =>
+      b.row.wrong - a.row.wrong ||
+      b.lastAt - a.lastAt ||
+      (a.row.id < b.row.id ? -1 : a.row.id > b.row.id ? 1 : 0),
+  )
+  return rows.slice(0, limit).map((r) => r.row)
 }
