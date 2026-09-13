@@ -629,3 +629,29 @@
   overflow-x: auto;
 }
 .fb-done { display: flex; flex-direction: column; gap: 12px; }
+
+/* ── 새 버전 알림 띠 (2026-09-13) ── */
+/* 아래에 붙는다. 위는 screen-bar 자리라 겹치면 뒤로가기를 가린다.
+   누르기 전에는 아무것도 안 한다 — 학습 중 새로고침은 답을 지운다 */
+.update-banner {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px));
+  background: var(--surface-2);
+  border-top: 1px solid var(--border);
+  color: var(--text-dim);
+  font-size: 0.9rem;
+}
+.update-banner button {
+  min-height: 0;
+  padding: 8px 14px;
+  font-size: 0.9rem;
+  color: var(--text);
+}

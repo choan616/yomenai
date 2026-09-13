@@ -1,4 +1,5 @@
 /// <reference types="vite/client" />
+/// <reference types="vite-plugin-pwa/client" />
 
 interface ImportMetaEnv {
   /** Google Drive 백업 로그인용 OAuth 클라이언트 ID (Phase 7, .env 참조) */

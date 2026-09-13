@@ -14,8 +14,10 @@ export default defineConfig(({ command, isPreview }) => ({
   plugins: [
     react(),
     VitePWA({
-      registerType: 'autoUpdate', // 새 SW 는 프롬프트 없이 즉시 반영 (mmtm SW 를 빨리 밀어낸다)
-      injectRegister: 'script', // index.html 에 registerSW.js 를 넣는다 (앱 코드 수정 없음)
+      // 학습 중에 페이지가 갈리면 풀던 답이 사라진다. 새 SW 는 사용자가 「지금 적용」을
+      // 누를 때까지 대기시킨다 (src/app/UpdateBanner.tsx)
+      registerType: 'prompt',
+      injectRegister: null, // 등록은 UpdateBanner 가 한다. script 주입과 겹치면 이중 등록이다
       includeAssets: ['favicon.svg', 'apple-touch-icon.png', 'icons.svg'],
       manifest: {
         name: 'yomenai — 読めない',
@@ -33,6 +35,7 @@ export default defineConfig(({ command, isPreview }) => ({
         ],
       },
       workbox: {
+        // skipWaiting 을 안 켠다 — 새 SW 가 기다려야 띠를 띄울 수 있다
         // 프리캐시: 앱 셸 + 폰트 + 핵심 사전(밴드 0~3·쌍·한자·예문). 첫 실행부터 오프라인이 되게.
         // band4.json(19MB, 밴드 4 = "선택")만 런타임 캐시로 미룬다.
         globPatterns: [
@@ -50,7 +53,6 @@ export default defineConfig(({ command, isPreview }) => ({
         navigateFallbackDenylist: [/^\/yomenai\/dict\//, /^\/yomenai\/guide\.html$/],
         cleanupOutdatedCaches: true,
         clientsClaim: true,
-        skipWaiting: true,
         runtimeCaching: [
           {
             // band4.json — 밴드 4 를 켠 적이 있으면 그때 캐시되고 이후 오프라인에서 열린다.

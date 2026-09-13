@@ -10,6 +10,7 @@ import { Settings } from './app/Settings.tsx'
 import { Browse } from './app/Browse.tsx'
 import { Feedback } from './app/Feedback.tsx'
 import { Study } from './study/Study.tsx'
+import { UpdateBanner } from './app/UpdateBanner.tsx'
 import { QUICK_SESSION_LIMIT } from './app/settings.ts'
 
 export type Screen =
@@ -26,6 +27,15 @@ export type Screen =
   | 'settings'
 
 export default function App() {
+  return (
+    <>
+      <Screens />
+      <UpdateBanner />
+    </>
+  )
+}
+
+function Screens() {
   const [screen, setScreen] = useState<Screen>('home')
   // 집중 세션이 붙을 (한자, 음독) 쌍. 리포트의 처방이 정한다 (Phase 10)
   const [focusPair, setFocusPair] = useState<string | null>(null)
