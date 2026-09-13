@@ -45,7 +45,9 @@ export default defineConfig(({ command, isPreview }) => ({
         globIgnores: ['**/dict/band4.json'],
         maximumFileSizeToCacheInBytes: 6 * 1024 * 1024, // base.json 이 ~5.5MB
         navigateFallback: 'index.html',
-        navigateFallbackDenylist: [/^\/yomenai\/dict\//],
+        // guide.html 은 앱이 아니라 독립 문서다. 이게 없으면 SW 가 설치된 기기에서
+        // 안내서 주소로 들어가도 앱 셸(index.html)이 대신 뜬다
+        navigateFallbackDenylist: [/^\/yomenai\/dict\//, /^\/yomenai\/guide\.html$/],
         cleanupOutdatedCaches: true,
         clientsClaim: true,
         skipWaiting: true,
