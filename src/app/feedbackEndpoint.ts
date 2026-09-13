@@ -5,8 +5,9 @@
 // 발급된 `https://script.google.com/macros/s/…/exec` 주소를 아래에 넣는다.
 //
 // 비어 있으면 피드백 화면이 전송 버튼 대신 "복사해서 보내기" 만 보여준다 —
-// 주소를 안 넣었다고 화면이 깨지면 안 된다.
-export const FEEDBACK_ENDPOINT = ''
+// 주소를 안 넣었다고 화면이 깨지면 안 된다. `string` 을 명시해야 그 분기가 타입 오류가 안 난다
+// (리터럴로 좁혀지면 `=== ''` 가 "겹치지 않는 비교" 가 된다).
+export const FEEDBACK_ENDPOINT: string = 'https://script.google.com/macros/s/AKfycbxmEjfyEXvG9Q7ZXL09coPX2Yi7NpQnGPkHKe6zkBiE3NrTili7D4t0_vrT-scyXnpf/exec'
 
 /**
  * 우연히 주소를 긁은 봇을 거르는 표식.
