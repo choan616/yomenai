@@ -10,13 +10,34 @@ test('예문은 문제 풀이 화면엔 없고 확인 단계에서만 나온다'
 
   let sawExample = false
 
-  for (let i = 0; i < 20; i++) {
-    if (await page.getByText('세션 완료').isVisible().catch(() => false)) break
+  let replayed = false
+  // 두 세션을 돌 수 있어 넉넉히 (2026-09-13 소개 카드)
+  for (let i = 0; i < 200; i++) {
+    if (await page.getByText('세션 완료').isVisible().catch(() => false)) {
+      // 첫 세션이 전부 소개였으면 채점 기록이 없다 — 한 번 더 돌려 실제로 푼다 (2026-09-13)
+      if (replayed) break
+      replayed = true
+      const home = page.getByRole('button', { name: '홈으로', exact: true })
+      if (await home.isVisible().catch(() => false)) await home.click()
+      const again = page.getByRole('button', { name: '세션 시작' })
+      if (!(await again.isVisible().catch(() => false))) break
+      await again.click()
+      await page.waitForTimeout(200)
+      continue
+    }
 
     // 피드백 중이면 다음으로 (입력창이 계속 보이므로 이 검사가 먼저)
     if (await page.locator('.card.feedback').isVisible().catch(() => false)) {
       const next = page.getByRole('button', { name: '다음' })
       if (await next.isVisible().catch(() => false)) await next.click()
+      continue
+    }
+
+    // 처음 만나는 숙어는 소개로 나온다 (2026-09-13). 소개의 예문은 .browse-ex 라
+    // 문제 풀이 화면의 .example-sentence 검사와 안 겹친다
+    const seen = page.getByRole('button', { name: '봤어요' })
+    if (await seen.isVisible().catch(() => false)) {
+      await seen.click()
       continue
     }
 

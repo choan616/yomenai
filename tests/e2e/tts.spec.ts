@@ -21,10 +21,32 @@ test('소리 듣기는 확인 단계에만 있고 ja-JP 로 발화한다', async
   await expect(page.locator('.headword').first()).toBeVisible({ timeout: 10_000 })
 
   // 지연 검수 프롬프트가 뜨면 넘긴다 — 순수 문제 풀이 화면(읽기 카드)에 닿을 때까지
-  const classReview = page.getByRole('button', { name: '알고 있었다' })
-  if (await classReview.isVisible().catch(() => false)) await classReview.click()
-
+  // 확인 질문 → 소개 → 읽기 카드 순으로 올 수 있다 (2026-09-13 소개 카드 추가)
   const input = page.locator('.kana-input')
+  for (let i = 0; i < 200; i++) {
+    if (await input.isVisible().catch(() => false)) break
+    const known = page.getByRole('button', { name: '알고 있었다', exact: true })
+    if (await known.isVisible().catch(() => false)) {
+      await known.click()
+      continue
+    }
+    const seen = page.getByRole('button', { name: '봤어요', exact: true })
+    if (await seen.isVisible().catch(() => false)) {
+      await seen.click()
+      continue
+    }
+    // 첫 세션이 전부 소개면 읽기 카드 없이 끝난다 — 한 번 더 연다 (2026-09-13)
+    if (await page.getByText('세션 완료').isVisible().catch(() => false)) {
+      const home = page.getByRole('button', { name: '홈으로', exact: true })
+      if (await home.isVisible().catch(() => false)) await home.click()
+      const again = page.getByRole('button', { name: '세션 시작' })
+      if (!(await again.isVisible().catch(() => false))) break
+      await again.click()
+      await page.waitForTimeout(200)
+      continue
+    }
+    await page.waitForTimeout(100)
+  }
   await expect(input).toBeVisible({ timeout: 10_000 })
 
   // 문제 풀이 화면 — 소리 듣기가 없어야 한다

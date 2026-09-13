@@ -1,6 +1,7 @@
 // 학습 세션 화면 — 카드 순회, 진행률, 종료 요약. 카드 전환은 150ms 이하를 목표로 한다 (PLAN §7)
 import { useLayoutEffect } from 'react'
 import { ClassReviewPrompt } from './ClassReviewPrompt.tsx'
+import { IntroCard } from './IntroCard.tsx'
 import { MeaningCard } from './MeaningCard.tsx'
 import { ReadingCard } from './ReadingCard.tsx'
 import { ChapterTitle, MidNote } from './SessionShape.tsx'
@@ -89,6 +90,7 @@ export function Study({
         {s.status === 'classReview' && s.idiom && (
           <ClassReviewPrompt idiom={s.idiom} onAnswer={a.answerClassReview} />
         )}
+        {s.status === 'intro' && s.idiom && <IntroCard idiom={s.idiom} onSeen={a.seenIntro} />}
         {(s.status === 'reading' || s.status === 'reading-feedback') && s.idiom && (
           <ReadingCard
             idiom={s.idiom}

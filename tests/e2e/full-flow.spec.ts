@@ -84,6 +84,8 @@ test('진입 진단 → 세션 → 리포트 전체 흐름을 완주한다', asy
       await page.waitForTimeout(20)
       continue
     }
+    // 처음 만나는 숙어는 소개로 나온다 (2026-09-13) — 보고 넘긴다
+    if (await clickIfVisible(page, '봤어요')) continue
     if (await clickIfVisible(page, '알고 있었다')) continue
     const qi = page.locator('.kana-input')
     if (await qi.isVisible().catch(() => false)) {
@@ -114,6 +116,8 @@ test('진입 진단 → 세션 → 리포트 전체 흐름을 완주한다', asy
       await page.waitForTimeout(20)
       continue
     }
+    // 처음 만나는 숙어는 소개로 나온다 (2026-09-13) — 보고 넘긴다
+    if (await clickIfVisible(page, '봤어요')) continue
     if (await clickIfVisible(page, '알고 있었다')) continue
     const input = page.locator('.kana-input')
     if (await input.isVisible().catch(() => false)) {

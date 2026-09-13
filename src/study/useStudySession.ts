@@ -20,6 +20,8 @@ import { surfaceOfPair } from '../core/surface.ts'
 import type { Confidence } from '../core/scheduler.ts'
 import type { LearningEvent, MistakeType } from '../core/types.ts'
 import { appendEvent } from '../db/events.ts'
+import { loadIntroduced, markIntroduced } from './introduced.ts'
+import { planIntros } from './planIntros.ts'
 import { getDeviceId } from '../db/device.ts'
 import { db } from '../db/schema.ts'
 import { LOCAL_USER_ID } from '../db/events.ts'
@@ -46,6 +48,8 @@ export type StudyStatus =
   | 'loading'
   | 'error'
   | 'classReview'
+  /** 처음 만나는 숙어 — 시험 대신 보여준다 (2026-09-13) */
+  | 'intro'
   | 'reading'
   | 'reading-feedback'
   | 'meaning'
@@ -76,6 +80,8 @@ export interface StudyActions {
   submitMeaning: (known: boolean) => void
   /** "뜻은 알고 계셨나요" 지연 검수 응답 */
   answerClassReview: (known: boolean) => void
+  /** 소개를 봤다 — 채점도 이벤트도 없이 다음으로 */
+  seenIntro: () => void
   /** 피드백을 닫고 다음 카드로. 정답이면 자신감 보정을 함께 넘긴다 */
   next: (confidence?: Confidence) => void
 }
@@ -103,6 +109,11 @@ export function useStudySession({
   limit: limitOverride,
 }: StudySessionOptions = {}): [StudyState, StudyActions] {
   const [session, setSession] = useState<Session | null>(null)
+  /**
+   * 이번 세션에서 소개로 낼 숙어. 세션을 짤 때 한 번 정해지고 안 바뀐다 —
+   * `planIntros` 가 그 숙어의 다른 카드를 이미 걷어서 다시 나올 일이 없다
+   */
+  const [introIds, setIntroIds] = useState<Set<string>>(new Set())
   const [error, setError] = useState<string | null>(null)
   const [idx, setIdx] = useState(0)
   /** 지연 검수 질문을 아직 안 지난 카드인지 */
@@ -168,8 +179,13 @@ export function useStudySession({
                 })
               : // seed 로 제시 순서를 매 세션 섞는다 — 순서를 예측해 모르는 한자를 찍는 걸 막는다 (2026-09-07)
                 buildSession(loaded, events, { now, limit, ratio, seed: now })
-        setSession(built)
-        setInClassReview(built.cards[0]?.needsClassReview ?? false)
+        // 처음 만나는 숙어는 시험 대신 소개로. 그 숙어의 나머지 카드는 이번 세션에서 걷는다
+        const introduced = loadIntroduced()
+        const plan = planIntros(built.cards, (id) => introduced.has(id))
+        setIntroIds(plan.introIds)
+        const built2 = { ...built, cards: plan.cards }
+        setSession(built2)
+        setInClassReview(built2.cards[0]?.needsClassReview ?? false)
         shownAt.current = performance.now()
       } catch (e) {
         if (alive) setError(e instanceof Error ? e.message : String(e))
@@ -215,6 +231,20 @@ export function useStudySession({
     },
     [session],
   )
+
+  /** 소개를 보고 넘어간다 — 채점도 이벤트도 없다 */
+  const seenIntro = useCallback(() => {
+    if (!card) return
+    markIntroduced(card.idiomId)
+    performance.mark('yomenai:advance')
+    setTransitionSeq((n) => n + 1)
+    setIdx((i) => {
+      const nextCard = session?.cards[i + 1]
+      setInClassReview(nextCard?.needsClassReview ?? false)
+      return i + 1
+    })
+    shownAt.current = performance.now()
+  }, [card, session])
 
   const submitReading = useCallback(
     (answer: string) => {
@@ -308,9 +338,10 @@ export function useStudySession({
     if (!session) return 'loading'
     if (idx >= session.cards.length) return 'done'
     if (inClassReview) return 'classReview'
+    if (card && introIds.has(card.idiomId)) return 'intro'
     if (card?.cardType === 'reading') return feedback ? 'reading-feedback' : 'reading'
     return meaningDone !== null ? 'meaning-feedback' : 'meaning'
-  }, [error, session, idx, inClassReview, card, feedback, meaningDone])
+  }, [error, session, idx, inClassReview, card, introIds, feedback, meaningDone])
 
   const state: StudyState = {
     status,
@@ -325,5 +356,5 @@ export function useStudySession({
     transitionSeq,
   }
 
-  return [state, { submitReading, submitMeaning, answerClassReview, next }]
+  return [state, { submitReading, submitMeaning, answerClassReview, seenIntro, next }]
 }

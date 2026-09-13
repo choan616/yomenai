@@ -42,13 +42,27 @@ test('훑어보기가 스냅되는 캐러셀이다', async ({ page }) => {
   // 세션을 전부 틀리며 완주해 훑어볼 카드를 쌓는다
   await page.getByRole('button', { name: '세션 시작' }).click()
   await expect(page.locator('.headword').first()).toBeVisible({ timeout: 10_000 })
+  let replayed = false
   for (let i = 0; i < 160; i++) {
-    if (await page.getByText('세션 완료').isVisible().catch(() => false)) break
+    if (await page.getByText('세션 완료').isVisible().catch(() => false)) {
+      // 첫 세션이 전부 소개였으면 채점 기록이 없다 — 한 번 더 돌려 실제로 푼다 (2026-09-13)
+      if (replayed) break
+      replayed = true
+      const home = page.getByRole('button', { name: '홈으로', exact: true })
+      if (await home.isVisible().catch(() => false)) await home.click()
+      const again = page.getByRole('button', { name: '세션 시작' })
+      if (!(await again.isVisible().catch(() => false))) break
+      await again.click()
+      await page.waitForTimeout(200)
+      continue
+    }
     if (await page.locator('.card.feedback').isVisible().catch(() => false)) {
       await clickIfVisible(page, '다음')
       await page.waitForTimeout(20)
       continue
     }
+    // 처음 만나는 숙어는 소개로 나온다 (2026-09-13) — 보고 넘긴다
+    if (await clickIfVisible(page, '봤어요')) continue
     if (await clickIfVisible(page, '알고 있었다')) continue
     const input = page.locator('.kana-input')
     if (await input.isVisible().catch(() => false)) {

@@ -1,0 +1,83 @@
+// 처음 만나는 숙어는 시험 대신 소개로 나온다 (2026-09-13)
+import { expect, test, type Page } from '@playwright/test'
+
+test.setTimeout(240_000)
+
+/** IndexedDB 의 이벤트 건수 — 소개가 기록을 안 남기는지 보는 데 쓴다 */
+async function eventCount(page: Page): Promise<number> {
+  return page.evaluate(
+    () =>
+      new Promise<number>((res) => {
+        const req = indexedDB.open('yomenai')
+        req.onsuccess = () => {
+          const tx = req.result.transaction('events', 'readonly')
+          const all = tx.objectStore('events').count()
+          all.onsuccess = () => res(all.result)
+          all.onerror = () => res(-1)
+        }
+        req.onerror = () => res(-1)
+      }),
+  )
+}
+
+/** 새 숙어는 "뜻은 알고 있었어요?" 를 먼저 묻는다 — 보여주기 전에 물어야 답이 의미가 있다 */
+async function passClassReview(page: Page): Promise<void> {
+  const ask = page.getByRole('button', { name: '몰랐다', exact: true })
+  if (await ask.isVisible().catch(() => false)) await ask.click()
+}
+
+async function resetState(page: Page): Promise<void> {
+  await page.evaluate(() => {
+    try {
+      localStorage.clear()
+    } catch {
+      /* private mode */
+    }
+    return new Promise<void>((res) => {
+      const r = indexedDB.deleteDatabase('yomenai')
+      r.onsuccess = r.onerror = r.onblocked = () => res()
+    })
+  })
+  await page.reload()
+}
+
+test('새 숙어는 소개로 나오고, 채점도 이벤트도 없다', async ({ page }) => {
+  await page.goto('/')
+  await expect(page.getByRole('button', { name: '세션 시작' })).toBeVisible({ timeout: 20_000 })
+  await resetState(page)
+
+  // 기록이 없으니 세션은 전부 신규 — 확인 질문 뒤에 소개가 와야 한다
+  await page.getByRole('button', { name: '세션 시작' }).click()
+  await expect(page.locator('.card').first()).toBeVisible({ timeout: 10_000 })
+  await passClassReview(page)
+  const intro = page.locator('.intro-card')
+  await expect(intro).toBeVisible({ timeout: 10_000 })
+
+  // 소개는 한자어·읽기·뜻을 다 보여준다. 입력창은 없다
+  await expect(intro.locator('.headword')).not.toBeEmpty()
+  await expect(intro.locator('.reading-shown')).not.toBeEmpty()
+  await expect(page.locator('.kana-input')).toHaveCount(0)
+  await expect(intro.getByRole('button', { name: '봤어요' })).toBeVisible()
+
+  const first = await intro.locator('.headword').innerText()
+
+  // 「봤어요」 는 이벤트를 안 남긴다 — 채점도 FSRS 도 안 건드린다
+  const before = await eventCount(page)
+  expect(before).toBeGreaterThanOrEqual(0)
+  await intro.getByRole('button', { name: '봤어요' }).click()
+  await page.waitForTimeout(150)
+  expect(await eventCount(page)).toBe(before)
+
+  // 같은 숙어는 이번 세션에서 다시 안 나온다
+  const seen = new Set<string>([first])
+  for (let i = 0; i < 5; i++) {
+    await passClassReview(page)
+    if (!(await intro.isVisible().catch(() => false))) break
+    const h = await intro.locator('.headword').innerText()
+    expect(seen.has(h)).toBe(false)
+    seen.add(h)
+    await intro.getByRole('button', { name: '봤어요' }).click()
+    await page.waitForTimeout(80)
+  }
+  expect(seen.size).toBeGreaterThan(1)
+})

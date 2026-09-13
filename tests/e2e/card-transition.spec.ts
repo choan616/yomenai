@@ -31,6 +31,8 @@ test('카드 전환이 150ms 이하다', async ({ page }) => {
     }
 
     // 지연 검수 → 답 단계로 (전환)
+    // 처음 만나는 숙어는 소개로 나온다 (2026-09-13) — 보고 넘긴다
+    if (await clickIfVisible(page, '봤어요')) continue
     if (await clickIfVisible(page, '알고 있었다')) continue
 
     // 읽기 입력 → 오답 제출 (피드백 표시, 아직 전환 아님)

@@ -13,6 +13,7 @@ import { db } from '../db/schema.ts'
 import { getDeviceId } from '../db/device.ts'
 import { googleDrive } from '../sync/googleDrive.ts'
 import { resetLearning, syncNow, type SyncProgress } from '../sync/sync.ts'
+import { clearIntroduced } from '../study/introduced.ts'
 import { getLastSyncAt, setLastSyncAt, setSignedIn, wasSignedIn } from '../sync/syncState.ts'
 import { clearDiagnosticDone } from './diagnostic-state.ts'
 
@@ -178,6 +179,8 @@ function ResetSetting() {
   const handleReset = () => {
     setBusy(true)
     setError(null)
+    // 소개 이력도 같이 비운다 — 기록을 지웠는데 "처음 만나요" 가 안 뜨면 앞뒤가 안 맞는다
+    clearIntroduced()
     void resetLearning(db(), googleDrive)
       .then(() => {
         // 기록이 비었으니 진입 진단도 다시 받을 수 있어야 한다. 안 지우면 영영 안 뜬다
