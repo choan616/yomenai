@@ -3980,3 +3980,28 @@ Apps Script 웹 앱은 리다이렉트를 거쳐 응답하고 그쪽에 CORS 헤
   감추면 비밀인 줄 오해하게 만들 뿐이다. 소스에 "비밀이 아니다" 라고 적어 뒀다
 - 기각한 대안 — 서명·시간 검증. 넣을 비밀이 없는 클라이언트라 아무 의미가 없다
 - 장난이 실제로 들어오면 양쪽 값을 바꾸고 Apps Script 를 다시 배포한다
+
+### 루트에 배포한 PWA 가 다른 프로젝트 페이지를 삼킨다 (2026-09-13)
+
+`choan616.github.io/yomenai` (끝 슬래시 없음) 로 들어가면 mmtm 로그인 화면이 떴다.
+
+- 서버는 정상이다 — `/yomenai` 는 301 로 `/yomenai/` 를 돌려준다
+- 그 요청이 네트워크까지 못 간다. mmtm 이 루트(`/`)에 배포돼 있고 그 SW 가
+  `NavigationRoute` + `createHandlerBoundToURL("index.html")` 을 denylist 없이 걸고 있다
+- SW 스코프는 문자열 접두사다. **`/yomenai` 는 `/yomenai/` 로 시작하지 않아서**
+  yomenai SW 관할 밖으로 떨어지고, 루트를 먹은 mmtm SW 가 가로챈다
+
+**yomenai 쪽에서 못 고친다.** SW 스코프를 자기 디렉터리 위로 넓히려면 응답에
+`Service-Worker-Allowed` 헤더가 필요한데 GitHub Pages 는 헤더를 못 단다.
+고칠 자리는 mmtm 의 `workbox.navigateFallbackDenylist` 다 (다른 저장소).
+
+- 기각한 대안 — yomenai 쪽에 `/yomenai` 를 잡는 리다이렉트 페이지. Pages 에 그 경로의
+  파일을 둘 방법이 없고, 있어도 SW 가 먼저 가로채서 소용없다
+- 교훈 — **사용자 사이트 루트에 PWA 를 두면 그 계정의 모든 프로젝트 페이지가 그 SW 관할에
+  들어온다.** 루트 PWA 는 denylist 를 처음부터 들고 있어야 한다
+
+### guide.html 도 같은 함정을 밟을 뻔했다
+
+`public/guide.html` 은 yomenai 자신의 `navigateFallback: 'index.html'` 에 걸린다.
+파일이 멀쩡히 배포돼 있어도 SW 가 설치된 기기에서는 앱 셸이 대신 뜬다.
+`navigateFallbackDenylist` 에 넣어서 막았다 — 같은 원리를 두 층에서 두 번 만난 셈이다.

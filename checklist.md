@@ -1005,4 +1005,22 @@ mmtm 은 백업(버전 zip)과 동기화를 갈라 뒀는데 yomenai 는 한 파
   CORS 헤더가 없어 `no-cors` 로 보낸다. 보낸 뒤에도 「내용 복사」 경로를 남긴다
 - [x] **주소가 비면 전송 버튼 대신 복사만** — 설정이 덜 됐다고 화면이 깨지면 안 된다
 - [x] `docs/feedback-endpoint.md` — Apps Script 코드와 배포 절차
-- [ ] **사용자가 할 일** — 스프레드시트 + Apps Script 배포 후 `FEEDBACK_ENDPOINT` 에 주소 입력
+- [x] **표식(`FEEDBACK_TOKEN`)** — 앱이 약속된 문자열을 같이 보내고 `doPost` 가 아니면 버린다.
+  비밀이 아니다 (정적 번들이라 감출 수 없다). 막는 건 아무 데나 POST 하는 자동 요청뿐
+- [x] **스프레드시트 + Apps Script 배포, `FEEDBACK_ENDPOINT` 입력** — 2026-09-13.
+  독립 스크립트라 시트를 `openById` 로 찾는다 (모바일에는 「확장 프로그램 → Apps Script」 가 없다)
+- [x] **끝까지 검증** — 배포된 앱에서 실제로 보내 스프레드시트에 줄이 쌓이는 것을 사용자가 확인.
+  `no-cors` 라 화면은 실패해도 "보냈어요" 라고 하므로 **판정은 시트로만 난다**
+
+## 테스터 안내서 (2026-09-13)
+
+- [x] **`public/guide.html`** — 아티팩트로 쓴 안내서를 Pages 에 같이 올린다.
+  조각이라 doctype/head/body 로 감싸고, 아티팩트 래퍼가 넣어 주던 `body { margin: 0 }` 을 직접 넣었다
+- [x] **SW 내비게이션 폴백에서 제외** — `navigateFallbackDenylist` 에 `guide.html`.
+  안 하면 SW 가 설치된 기기에서 안내서 주소로 들어가도 앱 셸이 대신 뜬다
+- [x] **설정 → 「사용 안내서 열기」** — `BASE_URL` 로 붙이고 새 창으로 연다.
+  standalone 창에서 같은 스코프로 이동하면 주소창도 뒤로가기도 없어 돌아올 길이 막힌다
+- [ ] **mmtm 의 SW 가 `/yomenai`(끝 슬래시 없음)를 가로챈다** — mmtm 이 루트(`/`)에 배포돼
+  있고 `navigateFallbackDenylist` 가 없어서 자기 `index.html` 을 내준다. 서버는 301 로 정상.
+  **yomenai 쪽에서는 못 고친다** (SW 스코프를 디렉터리 위로 넓히려면 `Service-Worker-Allowed`
+  헤더가 필요한데 Pages 는 헤더를 못 단다). 고칠 자리는 mmtm `vite.config.js` 의 `workbox`
