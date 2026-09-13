@@ -67,3 +67,28 @@ export async function importEvents(db: YomenaiDB, events: LearningEvent[]): Prom
   return events.length
 }
 
+/**
+ * **로컬에 없는 이벤트만** 받는다. 자기 기기 파일을 되받을 때 쓴다 (동기화가 자기 파일을
+ * 덮어쓰지 않도록 먼저 합치는 단계, context-notes 2026-09-13).
+ *
+ * `importEvents` 와 달리 덮어쓰지 않는 이유 — 되받는 건 *내가 지난번에 올린 것* 이라
+ * 그 뒤 로컬에서 생긴 변화(묘비 등)를 옛 값으로 되돌리면 안 된다. 지금은 묘비를 만드는
+ * 곳이 없지만, 스키마에 자리가 있는 이상 되살아나는 길을 미리 막아 둔다.
+ *
+ * 돌려주는 값은 실제로 새로 들어온 건수다.
+ */
+export async function importMissingEvents(
+  db: YomenaiDB,
+  events: LearningEvent[],
+): Promise<number> {
+  if (events.length === 0) return 0
+  const known = new Set(
+    (await db.events.where('[userId+id]').anyOf(events.map((e) => [e.userId, e.id])).primaryKeys()).map(
+      ([, id]) => id,
+    ),
+  )
+  const missing = events.filter((e) => !known.has(e.id))
+  if (missing.length > 0) await db.events.bulkAdd(missing)
+  return missing.length
+}
+

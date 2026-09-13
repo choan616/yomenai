@@ -1,7 +1,7 @@
 // 기기별 파일 분리 동기화 (PLAN §5 원칙 3) — 각 기기가 자기 이벤트만 자기 파일
 // (`reviews-{deviceId}.json`)에 쓰고, 남의 파일은 읽기만 한다. 쓰기 충돌이 구조적으로
 // 없으므로 충돌 해결 UI가 필요 없다. 병합은 항상 합집합(bulkPut, 같은 id 는 같은 내용).
-import { importEvents, listDeviceEvents, LOCAL_USER_ID } from '../db/events.ts'
+import { importEvents, importMissingEvents, listDeviceEvents, LOCAL_USER_ID } from '../db/events.ts'
 import type { YomenaiDB } from '../db/schema.ts'
 import type { LearningEvent } from '../core/types.ts'
 import { googleDrive, type DriveClient, type DriveFileMeta } from './googleDrive.ts'
@@ -15,7 +15,7 @@ function fileNameFor(deviceId: string): string {
  * 받아야 알 수 있어 그전까지 `total` 은 잠정값(2)이다
  */
 export interface SyncProgress {
-  phase: 'upload' | 'list' | 'download' | 'consolidate' | 'done'
+  phase: 'list' | 'restore' | 'upload' | 'download' | 'consolidate' | 'done'
   /** 끝난 단계 수 — 막대에 그대로 쓴다 */
   done: number
   total: number
@@ -28,6 +28,8 @@ export interface SyncResult {
   uploaded: number
   /** 다른 기기 파일에서 새로 들여온 이벤트 수 */
   downloaded: number
+  /** 내 파일에서 되살린 이벤트 수 (로컬이 비었을 때만 0 보다 크다) */
+  restored: number
   /** 자동 정리가 돌았으면 그 결과. 접을 게 없었으면 undefined */
   consolidated?: ConsolidateResult
 }
@@ -70,21 +72,35 @@ export async function syncNow(
 
   const myFileName = fileNameFor(deviceId)
 
-  onProgress?.({ phase: 'upload', done: 0, total: 2 })
+  // 목록이 먼저다. 내 파일을 **읽기 전에는 쓰지 않는다** — 읽지도 않고 덮어쓰는 것이
+  // 기록이 통째로 사라지던 원인이었다 (context-notes 2026-09-13)
+  onProgress?.({ phase: 'list', done: 0, total: 3 })
+  const files = await drive.listSyncFiles()
+  const myFile = files.find((f) => f.name === myFileName)
+  const toDownload = files.filter((f) => f.name !== myFileName)
+  const cutoff = staleBefore(now)
+  const willConsolidate = toDownload.some((f) => isStale(f, cutoff))
+  // 단계 = 목록 1 + 되살리기 1 + 업로드 1 + 파일 n (+ 정리 1)
+  const total = 3 + toDownload.length + (willConsolidate ? 1 : 0)
+
+  // 내 파일을 먼저 합친다. 브라우저가 IndexedDB 만 비우는 일이 있어서(iOS 는 미사용
+  // 7일에 비운다) 로컬만 보고 올리면 그때 Drive 사본까지 지운다.
+  // 덮어쓰지 않고 없는 것만 받는다 — 되받는 건 내가 지난번에 올린 것이다
+  onProgress?.({ phase: 'restore', done: 1, total })
+  let restored = 0
+  if (myFile !== undefined) {
+    // 받다가 실패하면 업로드를 건너뛴다. 못 읽은 파일은 덮어쓰지 않는다
+    const text = await drive.downloadFile(myFile.id)
+    restored = await importMissingEvents(database, JSON.parse(text) as LearningEvent[])
+  }
+
+  onProgress?.({ phase: 'upload', done: 2, total })
   const mine = await listDeviceEvents(database, LOCAL_USER_ID, deviceId)
   await drive.uploadOrReplace(myFileName, JSON.stringify(mine))
 
-  onProgress?.({ phase: 'list', done: 1, total: 2 })
-  const files = await drive.listSyncFiles()
-  const toDownload = files.filter((f) => f.name !== myFileName) // 방금 올린 자기 파일은 다시 받을 필요 없다
-  // 죽은 파일이 있으면 내려받기 뒤에 한 단계를 더 돈다
-  const cutoff = staleBefore(now)
-  const willConsolidate = toDownload.some((f) => isStale(f, cutoff))
-  const total = 2 + toDownload.length + (willConsolidate ? 1 : 0)
-
   let downloaded = 0
   for (const [i, file] of toDownload.entries()) {
-    onProgress?.({ phase: 'download', done: 2 + i, total, file: { index: i + 1, count: toDownload.length } })
+    onProgress?.({ phase: 'download', done: 3 + i, total, file: { index: i + 1, count: toDownload.length } })
     const text = await drive.downloadFile(file.id)
     const events = JSON.parse(text) as LearningEvent[]
     downloaded += await importEvents(database, events)
@@ -92,12 +108,12 @@ export async function syncNow(
 
   let consolidated: ConsolidateResult | undefined
   if (willConsolidate) {
-    onProgress?.({ phase: 'consolidate', done: 2 + toDownload.length, total })
+    onProgress?.({ phase: 'consolidate', done: 3 + toDownload.length, total })
     consolidated = await consolidateSyncFiles(database, deviceId, drive, { olderThan: cutoff })
   }
 
   onProgress?.({ phase: 'done', done: total, total })
-  return { uploaded: mine.length, downloaded, consolidated }
+  return { uploaded: mine.length, downloaded, restored, consolidated }
 }
 
 /** 더는 쓰지 않는 기기들의 이벤트를 모아 두는 보관 파일. 아무도 쓰지 않고 읽기만 한다 */

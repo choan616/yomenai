@@ -52,10 +52,12 @@ function formatSyncTime(at: number): string {
 /** 동기화 단계를 사람 말로. 파일 수는 목록을 받아야 알 수 있어 그전까지 막대가 2단계로 잡힌다 */
 function progressLabel(p: SyncProgress): string {
   switch (p.phase) {
-    case 'upload':
-      return '내 기록 올리는 중…'
     case 'list':
       return '백업 파일 확인 중…'
+    case 'restore':
+      return '내 백업 확인 중…'
+    case 'upload':
+      return '내 기록 올리는 중…'
     case 'download':
       return p.file === undefined
         ? '백업 내려받는 중…'
@@ -110,10 +112,14 @@ function BackupSetting() {
     setError(null)
     setProgress(null)
     void syncNow(db(), getDeviceId(), googleDrive, setProgress)
-      .then(({ consolidated }) => {
+      .then(({ consolidated, restored }) => {
         const now = Date.now()
         setLastSyncAt(now)
         setLastSyncAtState(now)
+        // 로컬이 비었다가 백업에서 돌아온 경우 — 조용히 넘기면 무슨 일이 있었는지 모른다
+        if (restored > 0) {
+          setCleanupMsg(`이 기기에 없던 기록 ${restored}건을 백업에서 되살렸어요.`)
+        }
         // 자동 정리가 돌았으면 조용히 넘기지 않는다 — Drive 파일이 줄어든 이유를 알려 준다
         if (consolidated && consolidated.removed > 0) {
           setCleanupMsg(
@@ -245,8 +251,8 @@ function ResetSetting() {
         </button>
       )}
       <span className="hint">
-        이 기기의 학습 기록과{googleDrive.isAuthenticated() ? ' Google Drive 백업을' : ''} 모두 지워요.
-        되돌릴 수 없어요.
+        이 기기의 학습 기록과{googleDrive.isAuthenticated() ? ' Google Drive 백업을' : ''} 지워요.
+        되돌릴 수 없어요. 다른 기기에 남은 기록은 그 기기가 동기화할 때 다시 올라와요.
       </span>
       {error !== null && <span className="hint error">{error}</span>}
     </div>
