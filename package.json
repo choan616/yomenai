@@ -26,6 +26,7 @@
     "build:review-worklist": "tsx tools/build-review-worklist.ts",
     "build:event-worklist": "tsx tools/build-event-worklist.ts",
     "audit:sync": "tsx tools/audit-sync-files.ts",
+    "audit:empty-answers": "tsx tools/audit-empty-answers.ts",
     "build:korean-meaning": "tsx tools/build-korean-meaning.ts",
     "build:korean-meaning-worklist": "tsx tools/build-korean-meaning-worklist.ts",
     "apply:korean-meaning": "tsx tools/apply-korean-meaning.ts",
