@@ -1018,8 +1018,11 @@ mmtm 은 백업(버전 zip)과 동기화를 갈라 뒀는데 yomenai 는 한 파
   조각이라 doctype/head/body 로 감싸고, 아티팩트 래퍼가 넣어 주던 `body { margin: 0 }` 을 직접 넣었다
 - [x] **SW 내비게이션 폴백에서 제외** — `navigateFallbackDenylist` 에 `guide.html`.
   안 하면 SW 가 설치된 기기에서 안내서 주소로 들어가도 앱 셸이 대신 뜬다
-- [x] **설정 → 「사용 안내서 열기」** — `BASE_URL` 로 붙이고 새 창으로 연다.
-  standalone 창에서 같은 스코프로 이동하면 주소창도 뒤로가기도 없어 돌아올 길이 막힌다
+- [x] **홈과 설정에서 「사용 안내서」** — 여는 코드는 `src/app/guide.ts` 한 곳.
+  `BASE_URL` 로 붙인다 (dev 는 `/`, 배포는 `/yomenai/`)
+- [x] **안내서 안에 「앱으로 돌아가기」** (`.backbar` 고정 바 + 꼬리말).
+  `_blank` 로 열어도 **홈 화면에 설치한 앱에서는 브라우저로 안 빠지고 그 자리에서 열린다.**
+  주소창도 뒤로가기도 없어 앱을 껐다 켜야 했다. 창 동작에 기대지 않고 문서가 길을 들고 있어야 한다
 - [x] **mmtm 의 SW 가 `/yomenai`(끝 슬래시 없음)를 가로챘다** (2026-09-13 해결) — mmtm 이 루트(`/`)에 배포돼
   있고 `navigateFallbackDenylist` 가 없어서 자기 `index.html` 을 내준다. 서버는 301 로 정상.
   **yomenai 쪽에서는 못 고친다** (SW 스코프를 디렉터리 위로 넓히려면 `Service-Worker-Allowed`

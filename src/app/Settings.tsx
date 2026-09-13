@@ -9,6 +9,7 @@ import {
   type Settings as SettingsData,
 } from './settings.ts'
 import { applyTheme, loadTheme, saveTheme, type Theme } from './theme.ts'
+import { openGuide } from './guide.ts'
 import { db } from '../db/schema.ts'
 import { getDeviceId } from '../db/device.ts'
 import { googleDrive } from '../sync/googleDrive.ts'
@@ -340,12 +341,7 @@ export function Settings({
 
         <div className="setting">
           <label>안내서</label>
-          {/* _blank 로 열지만 홈 화면 앱에서는 브라우저로 안 빠지고 그 자리에서 열린다.
-              그래서 안내서 자신이 「앱으로 돌아가기」 를 들고 있다 (public/guide.html 의 .backbar) */}
-          <button
-            type="button"
-            onClick={() => window.open(`${import.meta.env.BASE_URL}guide.html`, '_blank', 'noopener')}
-          >
+          <button type="button" onClick={openGuide}>
             사용 안내서 열기 ›
           </button>
           <span className="hint">

@@ -12,6 +12,7 @@ import {
 } from './diagnostic-state.ts'
 import { loadSettings, QUICK_SESSION_LIMIT } from './settings.ts'
 import type { Screen } from '../App.tsx'
+import { openGuide } from './guide.ts'
 
 interface Preview {
   ready: number
@@ -135,6 +136,9 @@ export function Home({ onNavigate }: { onNavigate: (screen: Screen) => void }) {
         </button>
         <button type="button" onClick={() => onNavigate('onyomi')}>
           음독 맵 <span className="chev">›</span>
+        </button>
+        <button type="button" onClick={openGuide}>
+          사용 안내서 <span className="chev">›</span>
         </button>
         <button type="button" onClick={() => onNavigate('settings')}>
           설정 <span className="chev">›</span>
