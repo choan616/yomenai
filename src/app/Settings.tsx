@@ -221,7 +221,14 @@ function ResetSetting() {
   )
 }
 
-export function Settings({ onBack }: { onBack: () => void }) {
+export function Settings({
+  onBack,
+  onFeedback,
+}: {
+  onBack: () => void
+  /** 테스터 피드백 화면으로 (2026-09-13) */
+  onFeedback: () => void
+}) {
   const [settings, setSettings] = useState<SettingsData>(loadSettings)
   const [theme, setThemeState] = useState<Theme>(loadTheme)
 
@@ -330,6 +337,17 @@ export function Settings({ onBack }: { onBack: () => void }) {
         </div>
 
         <BackupSetting />
+
+        <div className="setting">
+          <label>피드백</label>
+          <button type="button" onClick={onFeedback}>
+            피드백 보내기 ›
+          </button>
+          <span className="hint">
+            써 보신 소감을 여쭙습니다. 학습 기록은 보내지 않고, 적으신 답만 갑니다.
+          </span>
+        </div>
+
         <ResetSetting />
       </div>
     </section>

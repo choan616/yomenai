@@ -577,3 +577,55 @@
   color: var(--text-dim);
   font-size: 13px;
 }
+
+/* 피드백 화면 (2026-09-13) — 설정과 같은 .setting 골격을 쓰되 입력이 길다 */
+.fb-lead {
+  margin: 0 0 0.5rem;
+  color: var(--text-dim);
+  font-size: 14px;
+  line-height: 1.7;
+}
+.feedback textarea,
+.feedback input[type='text'] {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: 15px;
+  line-height: 1.6;
+  resize: vertical;
+}
+.fb-choices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.fb-choices button {
+  padding: 6px 12px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-dim);
+  font-size: 14px;
+}
+.fb-choices button.chosen {
+  border-color: var(--text);
+  color: var(--text);
+}
+/* 보낼 내용 — 요약이 아니라 그대로 보여준다 */
+.fb-preview {
+  margin: 0;
+  padding: 12px;
+  background: var(--surface, transparent);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--text-dim);
+  white-space: pre-wrap;
+  overflow-x: auto;
+}
+.fb-done { display: flex; flex-direction: column; gap: 12px; }
