@@ -7,7 +7,7 @@ import type { RuntimeIdiom } from '../dict/load.ts'
 import type { ReadingFeedback } from './useStudySession.ts'
 import { KanaInput } from './KanaInput.tsx'
 import { MistakeDetail } from './MistakeDetail.tsx'
-import { MISTAKE_LABEL } from './mistakeLabels.ts'
+import { MISTAKE_ADVICE, MISTAKE_LABEL, RULE_MISTAKES } from './mistakeLabels.ts'
 import { tts } from './tts.ts'
 
 interface Props {
@@ -58,11 +58,18 @@ export function ReadingCard({ idiom, feedback: fb, onSubmit, onNext }: Props) {
                 </ruby>
               ))}
             </p>
-            {/* 입력값은 아래 입력창(locked)에 그대로 남아 있어 여기선 오답 유형만 (Phase 9-C 이후) */}
+            {/* 입력값은 아래 입력창(locked)에 그대로 남아 있어 여기선 유형과 규칙만 (Phase 9-C 이후) */}
             {!fb.correct && fb.mistakeType && (
               <p className="wrong-answer">
                 <span className="tag">{MISTAKE_LABEL[fb.mistakeType]}</span>
               </p>
+            )}
+            {/* 규칙형 오답이면 규칙 한 줄을 여기서 바로 보여준다 (2026-09-13).
+                전에는 「자세히」 안에만 있어서, 틀리고 + 누르고 + 규칙형이어야 닿았다.
+                어휘형(음독 선택·한국음 간섭)에는 안 붙인다 — 규칙이 없는 자리에 글을
+                늘리면 있는 해설까지 안 읽힌다 (context-notes 2026-09-07) */}
+            {!fb.correct && fb.mistakeType && RULE_MISTAKES.has(fb.mistakeType) && (
+              <p className="rule-hint">{MISTAKE_ADVICE[fb.mistakeType]}</p>
             )}
             {tts.available && (
               <button type="button" className="tts-btn" onClick={() => tts.speak(fb.expected)}>

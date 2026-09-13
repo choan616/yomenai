@@ -807,3 +807,17 @@
 .summary-screen > * {
   flex-shrink: 0;
 }
+
+/* 오답 카드의 규칙 한 줄 (2026-09-13) — 「자세히」를 안 눌러도 닿게.
+   오버레이의 .md-rule 과 같은 생김새다. 둘이 동시에 보이는 일은 없다(오버레이가 카드를 덮는다) */
+.rule-hint {
+  margin: 10px auto 0;
+  max-width: 32em;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--surface-2);
+  color: var(--text-dim);
+  font-size: 13px;
+  line-height: 1.65;
+  text-align: left;
+}
