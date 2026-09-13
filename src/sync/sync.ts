@@ -1,21 +1,52 @@
-// 기기별 파일 분리 동기화 (PLAN §5 원칙 3) — 각 기기가 자기 이벤트만 자기 파일
-// (`reviews-{deviceId}.json`)에 쓰고, 남의 파일은 읽기만 한다. 쓰기 충돌이 구조적으로
-// 없으므로 충돌 해결 UI가 필요 없다. 병합은 항상 합집합(bulkPut, 같은 id 는 같은 내용).
-import { importEvents, importMissingEvents, listDeviceEvents, LOCAL_USER_ID } from '../db/events.ts'
+// 백업과 동기화 전송을 가른다 (PLAN §5 원칙 3, 2026-09-13 개정).
+//
+// **성취도는 깎이지 않는다** 가 상위 원칙이고, 파일 구조는 그걸 위한 수단이다.
+// 학습 기록이 줄면 사용자가 쌓아 온 증거가 사라져 계속할 이유가 깎인다 —
+// 이 앱이 Phase 11 「지속의 유인」 에서 통째로 다루는 바로 그 문제다.
+//
+// 역할이 다른 파일 둘.
+//
+// - `backup.json`   전체 로그. 오래 산다. **지우면 안 되는 것.** 이름이 그렇게 말한다
+// - `sync-<기기>.json`  그 기기가 올린 것. 짧게 산다. 백업에 접히면 바로 지운다.
+//   기기마다 이름이 달라 **쓰기 충돌이 없다** — 새 이벤트가 백업 쓰기 경합에 져도
+//   이 파일이 아직 살아 있어 다음 동기화가 메운다
+//
+// 옛 이름(`reviews-*.json`, `reviews-archive.json`)은 읽어서 접고 지운다 — 일회성 이관이
+// 따로 없고 동기화 한 번이면 끝난다.
+import { importMissingEvents, listAllEvents, listDeviceEvents, LOCAL_USER_ID } from '../db/events.ts'
 import type { YomenaiDB } from '../db/schema.ts'
 import type { LearningEvent } from '../core/types.ts'
 import { googleDrive, type DriveClient, type DriveFileMeta } from './googleDrive.ts'
 
-function fileNameFor(deviceId: string): string {
-  return `reviews-${deviceId}.json`
+/** 전체 로그를 담는 유일한 백업 파일 */
+export const BACKUP_FILE_NAME = 'backup.json'
+/** 2026-09-13 이전의 보관 파일 이름. 읽어서 백업에 접고 지운다 */
+export const LEGACY_BACKUP_NAME = 'reviews-archive.json'
+
+const TRANSPORT_PREFIX = 'sync-'
+const LEGACY_TRANSPORT_PREFIX = 'reviews-'
+
+function transportNameFor(deviceId: string): string {
+  return `${TRANSPORT_PREFIX}${deviceId}.json`
+}
+
+/** 백업 파일인가 (옛 이름 포함) */
+function isBackup(name: string): boolean {
+  return name === BACKUP_FILE_NAME || name === LEGACY_BACKUP_NAME
+}
+
+/** 전송 파일인가 (옛 이름 포함). 폴더에 섞여 든 남의 파일은 건드리지 않는다 */
+function isTransport(name: string): boolean {
+  if (isBackup(name)) return false
+  return name.startsWith(TRANSPORT_PREFIX) || name.startsWith(LEGACY_TRANSPORT_PREFIX)
 }
 
 /**
- * 동기화 진행 상황. 단계는 업로드 1 + 목록 조회 1 + 파일 수 n 이고, 파일 수는 목록을
- * 받아야 알 수 있어 그전까지 `total` 은 잠정값(2)이다
+ * 동기화 진행 상황. 단계는 목록 1 + 읽을 파일 n + 전송 1 + 백업 1 이고,
+ * 파일 수는 목록을 받아야 알 수 있어 그전까지 `total` 은 잠정값(3)이다
  */
 export interface SyncProgress {
-  phase: 'list' | 'restore' | 'upload' | 'download' | 'consolidate' | 'done'
+  phase: 'list' | 'download' | 'upload' | 'backup' | 'done'
   /** 끝난 단계 수 — 막대에 그대로 쓴다 */
   done: number
   total: number
@@ -24,40 +55,42 @@ export interface SyncProgress {
 }
 
 export interface SyncResult {
-  /** 이 기기에서 올린 이벤트 수(전체, 매번 파일을 통째로 덮어쓴다) */
+  /** 이 기기가 전송 파일에 올린 이벤트 수 */
   uploaded: number
-  /** 다른 기기 파일에서 새로 들여온 이벤트 수 */
+  /** Drive 에서 새로 들여온 이벤트 수 */
   downloaded: number
-  /** 내 파일에서 되살린 이벤트 수 (로컬이 비었을 때만 0 보다 크다) */
+  /** 그중 이 기기가 만든 것 — 로컬이 비었다 되살아난 경우에만 0 보다 크다 */
   restored: number
-  /** 자동 정리가 돌았으면 그 결과. 접을 게 없었으면 undefined */
-  consolidated?: ConsolidateResult
+  /** 백업에 접고 지운 전송·옛 파일 수 */
+  folded: number
+  /** 백업 파일에 담긴 전체 이벤트 수 */
+  backupTotal: number
+}
+
+/** 백업이 줄어드는 쓰기를 막는다 — append-only 로그라 작아지는 정상적인 경우가 없다 */
+export class BackupShrinkError extends Error {
+  before: number
+  after: number
+  constructor(before: number, after: number) {
+    super(`백업이 줄어듭니다 (${before} → ${after}). 안전을 위해 중단했어요.`)
+    this.name = 'BackupShrinkError'
+    this.before = before
+    this.after = after
+  }
 }
 
 /**
- * 이 기간 동안 한 번도 갱신되지 않은 기기 파일을 "죽었다" 고 본다.
- *
- * 새 브라우저·프로파일·사이트 데이터 삭제마다 새 deviceId 가 생기는 건 막을 수 없다
- * (localStorage 는 브라우저 경계를 못 넘는다). 그래서 생기는 걸 막는 대신 **쌓인 걸 접는다.**
- * 살아 있는 기기 파일까지 접으면 그 기기가 다음 동기화에서 자기 파일을 다시 만들어
- * 지웠다 올렸다를 반복한다 — 그 churn 을 막는 게 이 기준의 전부다.
+ * 백업은 줄어들 수 없다 — append-only 로그라 작아지는 정상적인 경우가 없다.
+ * 병합을 빼먹는 류의 결함(2026-09-13 P0 가 정확히 그랬다)을 쓰기 직전에 잡는 방어선이다.
  */
-export const STALE_DAYS = 30
-
-/** 지금 기준으로 "죽은 파일" 판정선 (epoch ms) */
-export function staleBefore(now: number = Date.now()): number {
-  return now - STALE_DAYS * 24 * 60 * 60 * 1000
+export function assertBackupGrows(before: number, after: number): void {
+  if (after < before) throw new BackupShrinkError(before, after)
 }
 
-/**
- * 보관 파일이 아니면서 판정선보다 오래된 기기 파일인가.
- * `modifiedTime` 을 못 읽으면(옛 응답·가짜 Drive) 죽지 않은 것으로 본다 — 판단이
- * 안 서면 지우지 않는 쪽이 안전하다.
- */
-function isStale(file: DriveFileMeta, cutoff: number): boolean {
-  if (file.name === ARCHIVE_FILE_NAME) return false
-  const t = Date.parse(file.modifiedTime ?? '')
-  return Number.isFinite(t) && t < cutoff
+function parseEvents(text: string, label: string): LearningEvent[] {
+  const parsed = JSON.parse(text) as unknown
+  if (!Array.isArray(parsed)) throw new Error(`${label} 이 이벤트 배열이 아닙니다`)
+  return parsed as LearningEvent[]
 }
 
 /** `deviceId` 는 호출부(설정 화면)가 `getDeviceId()` 로 한 번 얻어 넘긴다 — 세션 훅과 같은 관례 */
@@ -66,110 +99,65 @@ export async function syncNow(
   deviceId: string,
   drive: DriveClient = googleDrive,
   onProgress?: (p: SyncProgress) => void,
-  now: number = Date.now(),
 ): Promise<SyncResult> {
   if (!drive.isAuthenticated()) throw new Error('로그인이 필요합니다')
 
-  const myFileName = fileNameFor(deviceId)
+  const myTransport = transportNameFor(deviceId)
 
-  // 목록이 먼저다. 내 파일을 **읽기 전에는 쓰지 않는다** — 읽지도 않고 덮어쓰는 것이
-  // 기록이 통째로 사라지던 원인이었다 (context-notes 2026-09-13)
   onProgress?.({ phase: 'list', done: 0, total: 3 })
   const files = await drive.listSyncFiles()
-  const myFile = files.find((f) => f.name === myFileName)
-  const toDownload = files.filter((f) => f.name !== myFileName)
-  const cutoff = staleBefore(now)
-  const willConsolidate = toDownload.some((f) => isStale(f, cutoff))
-  // 단계 = 목록 1 + 되살리기 1 + 업로드 1 + 파일 n (+ 정리 1)
-  const total = 3 + toDownload.length + (willConsolidate ? 1 : 0)
+  const backups = files.filter((f) => isBackup(f.name))
+  const transports = files.filter((f) => isTransport(f.name))
+  // 내 전송 파일도 읽는다. 브라우저가 IndexedDB 만 비우는 일이 있어서(iOS 는 미사용 7일에
+  // 비운다) 로컬만 보고 쓰면 그때 Drive 사본까지 지운다 — 읽기 전에는 쓰지 않는다
+  const toRead: DriveFileMeta[] = [...backups, ...transports]
+  const total = 3 + toRead.length
 
-  // 내 파일을 먼저 합친다. 브라우저가 IndexedDB 만 비우는 일이 있어서(iOS 는 미사용
-  // 7일에 비운다) 로컬만 보고 올리면 그때 Drive 사본까지 지운다.
-  // 덮어쓰지 않고 없는 것만 받는다 — 되받는 건 내가 지난번에 올린 것이다
-  onProgress?.({ phase: 'restore', done: 1, total })
-  let restored = 0
-  if (myFile !== undefined) {
-    // 받다가 실패하면 업로드를 건너뛴다. 못 읽은 파일은 덮어쓰지 않는다
-    const text = await drive.downloadFile(myFile.id)
-    restored = await importMissingEvents(database, JSON.parse(text) as LearningEvent[])
-  }
-
-  onProgress?.({ phase: 'upload', done: 2, total })
-  const mine = await listDeviceEvents(database, LOCAL_USER_ID, deviceId)
-  await drive.uploadOrReplace(myFileName, JSON.stringify(mine))
-
+  // 되살린 건수는 내 이벤트 수의 증가분으로 센다 — 파일 간 중복이 겹쳐도 부풀지 않는다
+  const mineBefore = (await listDeviceEvents(database, LOCAL_USER_ID, deviceId)).length
   let downloaded = 0
-  for (const [i, file] of toDownload.entries()) {
-    onProgress?.({ phase: 'download', done: 3 + i, total, file: { index: i + 1, count: toDownload.length } })
-    const text = await drive.downloadFile(file.id)
-    const events = JSON.parse(text) as LearningEvent[]
-    downloaded += await importEvents(database, events)
+  let backupBefore = 0
+  for (const [i, file] of toRead.entries()) {
+    onProgress?.({ phase: 'download', done: 1 + i, total, file: { index: i + 1, count: toRead.length } })
+    const events = parseEvents(await drive.downloadFile(file.id), file.name)
+    if (isBackup(file.name)) backupBefore = Math.max(backupBefore, events.length)
+    // 덮어쓰지 않고 없는 것만 받는다 — 같은 id 면 내용도 같다는 게 append-only 의 전제라
+    // 덮어써서 얻는 게 없고, 로컬에서 생긴 변화(묘비)를 되돌릴 위험만 있다
+    downloaded += await importMissingEvents(database, events)
   }
 
-  let consolidated: ConsolidateResult | undefined
-  if (willConsolidate) {
-    onProgress?.({ phase: 'consolidate', done: 3 + toDownload.length, total })
-    consolidated = await consolidateSyncFiles(database, deviceId, drive, { olderThan: cutoff })
+  const mine = await listDeviceEvents(database, LOCAL_USER_ID, deviceId)
+  const restored = mine.length - mineBefore
+
+  onProgress?.({ phase: 'upload', done: 1 + toRead.length, total })
+  await drive.uploadOrReplace(myTransport, JSON.stringify(mine))
+
+  // 백업 = 이 기기가 아는 전부. 줄어들면 쓰지 않는다
+  onProgress?.({ phase: 'backup', done: 2 + toRead.length, total })
+  const all = await listAllEvents(database, LOCAL_USER_ID)
+  assertBackupGrows(backupBefore, all.length)
+  await drive.uploadOrReplace(BACKUP_FILE_NAME, JSON.stringify(all))
+
+  // **백업 쓰기가 성공한 뒤에만** 지운다. 순서를 뒤집으면 실패 시 기록이 사라진다.
+  // 접을 이름만 골라 다시 목록을 받는다 — 방금 쓴 내 전송 파일은 처음 목록에 없었고,
+  // 이름을 모르는 남의 새 파일은 건드리면 안 된다
+  const foldNames = new Set([
+    ...transports.map((f) => f.name),
+    ...backups.filter((f) => f.name === LEGACY_BACKUP_NAME).map((f) => f.name),
+    myTransport,
+  ])
+  // 접은 수는 **원래 있던 파일만** 센다. 내 전송 파일은 이번 동기화에서 만들었다 지우는
+  // 것이라 사용자에게 보고할 변화가 아니다
+  const preexisting = new Set(files.map((f) => f.name))
+  let folded = 0
+  for (const file of await drive.listSyncFiles()) {
+    if (!foldNames.has(file.name)) continue
+    await drive.deleteFile(file.id)
+    if (preexisting.has(file.name)) folded++
   }
 
   onProgress?.({ phase: 'done', done: total, total })
-  return { uploaded: mine.length, downloaded, restored, consolidated }
-}
-
-/** 더는 쓰지 않는 기기들의 이벤트를 모아 두는 보관 파일. 아무도 쓰지 않고 읽기만 한다 */
-export const ARCHIVE_FILE_NAME = 'reviews-archive.json'
-
-export interface ConsolidateResult {
-  /** 보관 파일에 담긴 이벤트 수 */
-  archived: number
-  /** 지운 옛 기기 파일 수 */
-  removed: number
-}
-
-/**
- * 옛 기기 파일 정리 — 내 파일을 뺀 나머지 `reviews-*.json` 을 보관 파일 하나로 합치고 원본을 지운다.
- * 브라우저 데이터를 지우거나 프로파일이 바뀔 때마다 새 deviceId 가 생겨 죽은 파일이 쌓이는데,
- * 그냥 지우면 그 이벤트의 Drive 사본이 사라진다. 그래서 합친 뒤에 지운다.
- *
- * 기기별 파일 분리 원칙(PLAN §5 원칙 3)은 유지된다 — 보관 파일에 쓰는 주체는 정리 동작뿐이고
- * 살아 있는 기기는 여전히 자기 파일에만 쓴다. 다른 기기가 나중에 동기화하면 자기 파일을
- * 다시 만들어 전량을 올리므로(보관본과 중복되지만 합집합 병합이라 무해) 기록 손실도 없다.
- */
-export async function consolidateSyncFiles(
-  database: YomenaiDB,
-  deviceId: string,
-  drive: DriveClient = googleDrive,
-  options: { olderThan?: number } = {},
-): Promise<ConsolidateResult> {
-  if (!drive.isAuthenticated()) throw new Error('로그인이 필요합니다')
-
-  const myFileName = fileNameFor(deviceId)
-  const files = await drive.listSyncFiles()
-  const foreign = files.filter((f) => f.name !== myFileName)
-  // `olderThan` 이 있으면 그보다 오래된 것만 (동기화 중 자동 정리). 없으면 전부 (설정 화면 버튼)
-  const toRemove =
-    options.olderThan === undefined
-      ? foreign.filter((f) => f.name !== ARCHIVE_FILE_NAME)
-      : foreign.filter((f) => isStale(f, options.olderThan!))
-  if (toRemove.length === 0) return { archived: 0, removed: 0 }
-
-  // 기존 보관 파일도 같이 읽어 합친다 — 두 번 정리해도 결과가 같다.
-  // 살아 있는 기기 파일은 읽지도 지우지도 않는다
-  const archive = foreign.find((f) => f.name === ARCHIVE_FILE_NAME)
-  const targets = archive ? [archive, ...toRemove] : toRemove
-  const byId = new Map<string, LearningEvent>()
-  for (const file of targets) {
-    const events = JSON.parse(await drive.downloadFile(file.id)) as LearningEvent[]
-    await importEvents(database, events) // 지우기 전에 로컬 사본을 확보한다
-    for (const e of events) byId.set(e.id, e)
-  }
-
-  // 업로드가 끝난 뒤에 지운다. 순서를 뒤집으면 업로드 실패 시 기록이 Drive 에서 사라진다
-  const merged = [...byId.values()]
-  await drive.uploadOrReplace(ARCHIVE_FILE_NAME, JSON.stringify(merged))
-  for (const file of toRemove) await drive.deleteFile(file.id)
-
-  return { archived: merged.length, removed: toRemove.length }
+  return { uploaded: mine.length, downloaded, restored, folded, backupTotal: all.length }
 }
 
 export interface ResetResult {

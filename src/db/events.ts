@@ -42,6 +42,14 @@ export async function listCardEvents(
   return rows.filter((e) => e.deletedAt === null).sort(compareEvents)
 }
 
+/** 이 사용자의 이벤트 전량 (묘비 포함). 백업 파일에 쓸 내용이다 */
+export async function listAllEvents(db: YomenaiDB, userId: string): Promise<LearningEvent[]> {
+  return db.events
+    .where('[userId+at]')
+    .between([userId, Number.NEGATIVE_INFINITY], [userId, Number.POSITIVE_INFINITY], true, true)
+    .toArray()
+}
+
 /**
  * 이 기기가 만든 이벤트만 골라낸다 (묘비 포함) — 기기별 파일 분리 동기화의 업로드 대상
  * (PLAN §5 원칙 3). 다른 기기 파일을 건드리지 않으므로 쓰기 충돌이 없다

@@ -6,6 +6,9 @@
 // 특히 **빈 파일과 기기 불일치**를 본다 — 로컬이 빈 채로 올라가 Drive 사본을 덮어쓴
 // 흔적이다 (2026-09-13 에 고친 유실 버그, context-notes 참조).
 //
+// 2026-09-13 개편 후 폴더에는 backup.json 하나만 있는 게 정상이다. 전송 파일(sync-*.json)이
+// 남아 있으면 그 기기의 동기화가 백업 쓰기 전에 끊긴 것이다.
+//
 // 입력 — data/events/*.json (Drive 백업 폴더에서 그대로 내려받아 넣는다)
 import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
@@ -36,6 +39,15 @@ interface FileStat {
   first: number
   last: number
   bad: number
+}
+
+/** 파일 이름이 말하는 역할. 지워도 되는 것과 아닌 것을 가른다 */
+function role(name: string): string {
+  if (name === 'backup.json') return '백업 — 지우면 안 되는 것'
+  if (name === 'reviews-archive.json') return '옛 보관 파일 — 다음 동기화에 백업으로 접힘'
+  if (name.startsWith('sync-')) return '전송 — 백업에 접히면 지워짐'
+  if (name.startsWith('reviews-')) return '옛 기기 파일 — 다음 동기화에 백업으로 접힘'
+  return '알 수 없는 파일'
 }
 
 const stats: FileStat[] = []
@@ -70,7 +82,7 @@ for (const f of files.sort()) {
 console.log('=== Drive 동기화 파일 점검 ===\n')
 for (const s of stats) {
   const range = s.events > 0 ? `${day(s.first)} ~ ${day(s.last)}` : '—'
-  console.log(`${s.name}`)
+  console.log(`${s.name}  [${role(s.name)}]`)
   console.log(`  이벤트 ${s.events}건 · ${range}${s.bad ? ` · 깨진 행 ${s.bad}` : ''}`)
   if (s.devices.size === 0) {
     console.log('  ⚠ 비어 있다 — 로컬이 빈 채로 올라가 덮어쓴 흔적일 수 있다')
@@ -92,4 +104,15 @@ if (empty.length > 0) {
   console.log(`\n⚠ 빈 파일 ${empty.length}개 — ${empty.map((s) => s.name).join(', ')}`)
   console.log('  기기를 새로 열고 학습 전에 동기화만 눌러도 생긴다. 기록이 있던 기기의 파일이')
   console.log('  비어 있다면 2026-09-13 에 고친 덮어쓰기 유실에 당한 것이다.')
+}
+
+const hasBackup = stats.some((s) => s.name === 'backup.json')
+const leftovers = stats.filter((s) => s.name !== 'backup.json')
+console.log('')
+if (!hasBackup) {
+  console.log('⚠ backup.json 이 없다 — 2026-09-13 이후 동기화를 아직 한 번도 안 돌렸다.')
+} else if (leftovers.length > 0) {
+  console.log(`남은 파일 ${leftovers.length}개는 다음 동기화에서 backup.json 으로 접힌다.`)
+} else {
+  console.log('정상 — backup.json 하나뿐이다.')
 }

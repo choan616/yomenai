@@ -64,7 +64,7 @@ export interface DriveClient {
   uploadOrReplace(fileName: string, content: string): Promise<void>
   /** 파일 하나를 지운다. 이미 없으면(404) 조용히 넘어간다 */
   deleteFile(fileId: string): Promise<void>
-  /** YomenaiSync 폴더의 동기화 파일을 전부 지운다 (학습 기록 초기화). 지운 개수를 돌려준다 */
+  /** YomenaiSync 폴더의 파일을 전부 지운다 (학습 기록 초기화). 지운 개수를 돌려준다 */
   deleteSyncFiles(): Promise<number>
 }
 
@@ -178,7 +178,7 @@ async function findOrCreateFolder(): Promise<string> {
 
 async function listSyncFiles(): Promise<DriveFileMeta[]> {
   const folderId = await findOrCreateFolder()
-  const q = encodeURIComponent(`'${folderId}' in parents and trashed=false and name contains 'reviews-'`)
+  const q = encodeURIComponent(`'${folderId}' in parents and trashed=false`)
   const res = await fetch(`${DRIVE_API}/files?q=${q}&fields=files(id,name,modifiedTime)&spaces=drive`, {
     headers: authHeaders(),
   })

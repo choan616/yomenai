@@ -12,7 +12,7 @@ import { applyTheme, loadTheme, saveTheme, type Theme } from './theme.ts'
 import { db } from '../db/schema.ts'
 import { getDeviceId } from '../db/device.ts'
 import { googleDrive } from '../sync/googleDrive.ts'
-import { consolidateSyncFiles, resetLearning, STALE_DAYS, syncNow, type SyncProgress } from '../sync/sync.ts'
+import { resetLearning, syncNow, type SyncProgress } from '../sync/sync.ts'
 import { getLastSyncAt, setLastSyncAt, setSignedIn, wasSignedIn } from '../sync/syncState.ts'
 import { clearDiagnosticDone } from './diagnostic-state.ts'
 
@@ -54,16 +54,14 @@ function progressLabel(p: SyncProgress): string {
   switch (p.phase) {
     case 'list':
       return '백업 파일 확인 중…'
-    case 'restore':
-      return '내 백업 확인 중…'
-    case 'upload':
-      return '내 기록 올리는 중…'
     case 'download':
       return p.file === undefined
-        ? '백업 내려받는 중…'
-        : `백업 내려받는 중 ${p.file.index}/${p.file.count}`
-    case 'consolidate':
-      return '옛 기기 파일 정리하는 중…'
+        ? '백업 읽는 중…'
+        : `백업 읽는 중 ${p.file.index}/${p.file.count}`
+    case 'upload':
+      return '내 기록 올리는 중…'
+    case 'backup':
+      return '백업 갱신 중…'
     case 'done':
       return '마무리하는 중…'
   }
@@ -76,8 +74,7 @@ function BackupSetting() {
   const [error, setError] = useState<string | null>(null)
   const [lastSyncAt, setLastSyncAtState] = useState<number | null>(getLastSyncAt)
   const [progress, setProgress] = useState<SyncProgress | null>(null)
-  const [cleanup, setCleanup] = useState<'idle' | 'armed' | 'busy'>('idle')
-  const [cleanupMsg, setCleanupMsg] = useState<string | null>(null)
+  const [syncMsg, setSyncMsg] = useState<string | null>(null)
 
   useEffect(() => {
     if (!wasSignedIn() || authed) return
@@ -111,44 +108,24 @@ function BackupSetting() {
     setBusy('sync')
     setError(null)
     setProgress(null)
+    setSyncMsg(null)
     void syncNow(db(), getDeviceId(), googleDrive, setProgress)
-      .then(({ consolidated, restored }) => {
+      .then(({ restored, backupTotal }) => {
         const now = Date.now()
         setLastSyncAt(now)
         setLastSyncAtState(now)
-        // 로컬이 비었다가 백업에서 돌아온 경우 — 조용히 넘기면 무슨 일이 있었는지 모른다
-        if (restored > 0) {
-          setCleanupMsg(`이 기기에 없던 기록 ${restored}건을 백업에서 되살렸어요.`)
-        }
-        // 자동 정리가 돌았으면 조용히 넘기지 않는다 — Drive 파일이 줄어든 이유를 알려 준다
-        if (consolidated && consolidated.removed > 0) {
-          setCleanupMsg(
-            `${STALE_DAYS}일 넘게 안 쓴 기기 파일 ${consolidated.removed}개를 보관 파일로 합쳤어요. 기록은 그대로예요.`,
-          )
-        }
+        // 무슨 일이 있었는지 알린다 — 조용히 넘기면 기록이 늘거나 준 이유를 모른다
+        setSyncMsg(
+          restored > 0
+            ? `이 기기에 없던 기록 ${restored}건을 백업에서 되살렸어요. 백업에 모두 ${backupTotal}건.`
+            : `백업에 모두 ${backupTotal}건 있어요.`,
+        )
       })
       .catch((err: unknown) => setError(err instanceof Error ? err.message : String(err)))
       .finally(() => {
         setBusy('idle')
         setProgress(null)
       })
-  }
-
-  // 옛 기기 파일 정리 — 합친 뒤에 지우므로 기록은 안 사라지지만 Drive 파일을 삭제하니 확인을 받는다
-  const handleCleanup = () => {
-    setCleanup('busy')
-    setError(null)
-    setCleanupMsg(null)
-    void consolidateSyncFiles(db(), getDeviceId())
-      .then(({ archived, removed }) => {
-        setCleanupMsg(
-          removed === 0
-            ? '정리할 옛 기기 파일이 없어요.'
-            : `옛 기기 파일 ${removed}개를 보관 파일 하나로 합쳤어요. 기록 ${archived}건은 그대로예요.`,
-        )
-      })
-      .catch((err: unknown) => setError(err instanceof Error ? err.message : String(err)))
-      .finally(() => setCleanup('idle'))
   }
 
   return (
@@ -174,27 +151,9 @@ function BackupSetting() {
               <span className="hint">{progressLabel(progress)}</span>
             </div>
           )}
-          {cleanup === 'armed' ? (
-            <div className="seg" role="group" aria-label="옛 기기 파일 정리 확인">
-              <button type="button" className="danger" onClick={handleCleanup}>
-                정말 정리
-              </button>
-              <button type="button" onClick={() => setCleanup('idle')}>
-                취소
-              </button>
-            </div>
-          ) : (
-            <button
-              type="button"
-              onClick={() => setCleanup('armed')}
-              disabled={busy !== 'idle' || cleanup === 'busy'}
-            >
-              {cleanup === 'busy' ? '정리 중…' : '옛 기기 파일 정리'}
-            </button>
-          )}
           <span className="hint">
-            {cleanupMsg ??
-              '브라우저 데이터를 지우면 새 기기로 잡혀 백업 파일이 쌓여요. 안 쓰는 파일을 보관 파일 하나로 합쳐요.'}
+            {syncMsg ??
+              'Drive 의 YomenaiSync 폴더에 backup.json 하나만 둬요. 동기화할 때마다 전체 기록이 거기 모여요.'}
           </span>
         </>
       ) : (
