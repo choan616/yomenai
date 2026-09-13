@@ -339,6 +339,21 @@ export function Settings({
         <BackupSetting />
 
         <div className="setting">
+          <label>안내서</label>
+          {/* 새 창으로 연다 — 홈 화면에 설치한 standalone 창은 같은 스코프로 이동하면
+              주소창도 뒤로가기도 없어서 돌아올 길이 막힌다 */}
+          <button
+            type="button"
+            onClick={() => window.open(`${import.meta.env.BASE_URL}guide.html`, '_blank', 'noopener')}
+          >
+            사용 안내서 열기 ›
+          </button>
+          <span className="hint">
+            이 앱이 무엇을 왜 다루는지, 리포트를 어떻게 읽는지 정리해 뒀어요. 새 창에서 열립니다.
+          </span>
+        </div>
+
+        <div className="setting">
           <label>피드백</label>
           <button type="button" onClick={onFeedback}>
             피드백 보내기 ›
