@@ -3,6 +3,36 @@ import { expect, test, type Page } from '@playwright/test'
 
 test.setTimeout(240_000)
 
+/**
+ * 소개는 읽기 채점이 `INTRO_MIN_READINGS`(30) 이상 쌓여야 시작된다 — 처음부터
+ * 설명하지 않고 먼저 풀게 한다 (2026-09-13). 세션을 여러 번 돌리는 대신
+ * 채점 기록을 직접 심어 그 구간을 건너뛴다. 코퍼스에 없는 숙어 id 라
+ * 카드 선택에는 안 끼어들고 건수만 채운다.
+ */
+async function seedReadings(page: Page, n: number): Promise<void> {
+  await page.evaluate(
+    (count) =>
+      new Promise<void>((res, rej) => {
+        const req = indexedDB.open('yomenai')
+        req.onsuccess = () => {
+          const tx = req.result.transaction('events', 'readwrite')
+          const store = tx.objectStore('events')
+          for (let i = 0; i < count; i++) {
+            store.put({
+              id: `seed-${i}`, userId: 'local', deviceId: 'seed', at: 1_700_000_000_000 + i,
+              idiomId: `seed-${i}`, cardType: 'reading', mistakeType: null, deletedAt: null,
+              type: 'review', grade: 3, answer: 'あ', expected: 'あ', correct: true, elapsedMs: 100,
+            })
+          }
+          tx.oncomplete = () => res()
+          tx.onerror = () => rej(new Error('seed 실패'))
+        }
+        req.onerror = () => rej(new Error('DB 열기 실패'))
+      }),
+    n,
+  )
+}
+
 /** IndexedDB 의 이벤트 건수 — 소개가 기록을 안 남기는지 보는 데 쓴다 */
 async function eventCount(page: Page): Promise<number> {
   return page.evaluate(
@@ -45,8 +75,9 @@ test('새 숙어는 소개로 나오고, 채점도 이벤트도 없다', async (
   await page.goto('/')
   await expect(page.getByRole('button', { name: '세션 시작' })).toBeVisible({ timeout: 20_000 })
   await resetState(page)
+  await seedReadings(page, 30)
 
-  // 기록이 없으니 세션은 전부 신규 — 확인 질문 뒤에 소개가 와야 한다
+  // 기록이 쌓였으니 이제 새 숙어는 소개로 나온다 — 확인 질문 뒤에 소개가 와야 한다
   await page.getByRole('button', { name: '세션 시작' }).click()
   await expect(page.locator('.card').first()).toBeVisible({ timeout: 10_000 })
   await passClassReview(page)
@@ -86,6 +117,7 @@ test('안다고 답하면 소개를 건너뛰고 바로 읽기로 간다', async
   await page.goto('/')
   await expect(page.getByRole('button', { name: '세션 시작' })).toBeVisible({ timeout: 20_000 })
   await resetState(page)
+  await seedReadings(page, 30)
 
   await page.getByRole('button', { name: '세션 시작' }).click()
   await expect(page.locator('.card').first()).toBeVisible({ timeout: 10_000 })
@@ -104,6 +136,7 @@ test('모른다고 답해야 소개가 뜬다', async ({ page }) => {
   await page.goto('/')
   await expect(page.getByRole('button', { name: '세션 시작' })).toBeVisible({ timeout: 20_000 })
   await resetState(page)
+  await seedReadings(page, 30)
 
   await page.getByRole('button', { name: '세션 시작' }).click()
   const unknown = page.getByRole('button', { name: '몰랐다', exact: true })
@@ -115,4 +148,20 @@ test('모른다고 답해야 소개가 뜬다', async ({ page }) => {
   // 모른다고 한 뒤라 보여주는 게 정당하다 — 읽기·뜻이 다 나온다
   await expect(intro.locator('.reading-shown')).not.toBeEmpty()
   await expect(page.locator('.kana-input')).toHaveCount(0)
+})
+
+test('기록이 없으면 소개 없이 바로 문제부터 — 레벨 테스트 구간', async ({ page }) => {
+  await page.goto('/')
+  await expect(page.getByRole('button', { name: '세션 시작' })).toBeVisible({ timeout: 20_000 })
+  await resetState(page)
+
+  await page.getByRole('button', { name: '세션 시작' }).click()
+  await expect(page.locator('.card').first()).toBeVisible({ timeout: 10_000 })
+
+  // 확인 질문에 모른다고 답해도 설명이 안 뜬다 — 아직 이 사람을 모른다
+  const unknown = page.getByRole('button', { name: '몰랐다', exact: true })
+  if (await unknown.isVisible().catch(() => false)) await unknown.click()
+
+  await expect(page.locator('.intro-card')).toHaveCount(0)
+  await expect(page.locator('.kana-input')).toBeVisible({ timeout: 10_000 })
 })

@@ -185,9 +185,13 @@ export function useStudySession({
                 })
               : // seed 로 제시 순서를 매 세션 섞는다 — 순서를 예측해 모르는 한자를 찍는 걸 막는다 (2026-09-07)
                 buildSession(loaded, events, { now, limit, ratio, seed: now })
-        // 처음 만나는 숙어는 시험 대신 소개로. 그 숙어의 나머지 카드는 이번 세션에서 걷는다
+        // 처음 만나는 숙어는 시험 대신 소개로. 그 숙어의 나머지 카드는 이번 세션에서 걷는다.
+        // 단, 기록이 얕으면 소개를 안 낸다 — 먼저 풀게 해서 이 사람을 알아야 한다
         const introduced = loadIntroduced()
-        const plan = planIntros(built.cards, (id) => introduced.has(id))
+        const readings = events.filter(
+          (e) => e.type === 'review' && e.cardType === 'reading' && e.deletedAt === null,
+        ).length
+        const plan = planIntros(built.cards, (id) => introduced.has(id), readings)
         setIntroIds(plan.introIds)
         const built2 = { ...built, cards: plan.cards }
         setSession(built2)
