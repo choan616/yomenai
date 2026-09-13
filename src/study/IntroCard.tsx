@@ -21,7 +21,8 @@ export function IntroCard({ idiom, onSeen }: { idiom: RuntimeIdiom; onSeen: () =
   return (
     <div className="card intro-card">
       <div className="card-head">
-        <span className="tag">처음 만나요</span>
+        {/* "처음 만나요" 는 앱이 모르는 걸 단정하는 말이었다 — 기록에 없을 뿐이다 */}
+        <span className="tag">알아 두기</span>
       </div>
       <div className="card-body">
         <p className="headword" lang="ja">

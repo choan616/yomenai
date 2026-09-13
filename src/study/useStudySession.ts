@@ -114,6 +114,12 @@ export function useStudySession({
    * `planIntros` 가 그 숙어의 다른 카드를 이미 걷어서 다시 나올 일이 없다
    */
   const [introIds, setIntroIds] = useState<Set<string>>(new Set())
+  /**
+   * 「뜻은 알고 있었어요?」에 **안다고 답하면 소개를 건너뛴다.** 아는 단어를 가르칠 이유가
+   * 없고, 그 사람에게 필요한 건 읽기 확인뿐이다 (`assignMode` 도 교정으로 넘긴다).
+   * 카드가 넘어갈 때 풀린다
+   */
+  const [knewMeaning, setKnewMeaning] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [idx, setIdx] = useState(0)
   /** 지연 검수 질문을 아직 안 지난 카드인지 */
@@ -220,6 +226,7 @@ export function useStudySession({
       cardsSinceObserve.current++
       setTransitionSeq((n) => n + 1)
       setResults((r) => [...r, correct])
+      setKnewMeaning(false)
       setFeedback(null)
       setMeaningDone(null)
       setIdx((i) => {
@@ -236,6 +243,7 @@ export function useStudySession({
   const seenIntro = useCallback(() => {
     if (!card) return
     markIntroduced(card.idiomId)
+    setKnewMeaning(false)
     performance.mark('yomenai:advance')
     setTransitionSeq((n) => n + 1)
     setIdx((i) => {
@@ -298,6 +306,7 @@ export function useStudySession({
       performance.mark('yomenai:advance')
       setTransitionSeq((n) => n + 1)
       record(recordMeaningKnown({ idiomId: card.idiomId, known, ctx: answerCtx() }))
+      setKnewMeaning(known)
       setInClassReview(false)
       shownAt.current = performance.now()
     },
@@ -338,10 +347,10 @@ export function useStudySession({
     if (!session) return 'loading'
     if (idx >= session.cards.length) return 'done'
     if (inClassReview) return 'classReview'
-    if (card && introIds.has(card.idiomId)) return 'intro'
+    if (card && !knewMeaning && introIds.has(card.idiomId)) return 'intro'
     if (card?.cardType === 'reading') return feedback ? 'reading-feedback' : 'reading'
     return meaningDone !== null ? 'meaning-feedback' : 'meaning'
-  }, [error, session, idx, inClassReview, card, introIds, feedback, meaningDone])
+  }, [error, session, idx, inClassReview, card, introIds, knewMeaning, feedback, meaningDone])
 
   const state: StudyState = {
     status,

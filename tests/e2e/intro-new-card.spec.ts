@@ -81,3 +81,38 @@ test('새 숙어는 소개로 나오고, 채점도 이벤트도 없다', async (
   }
   expect(seen.size).toBeGreaterThan(1)
 })
+
+test('안다고 답하면 소개를 건너뛰고 바로 읽기로 간다', async ({ page }) => {
+  await page.goto('/')
+  await expect(page.getByRole('button', { name: '세션 시작' })).toBeVisible({ timeout: 20_000 })
+  await resetState(page)
+
+  await page.getByRole('button', { name: '세션 시작' }).click()
+  await expect(page.locator('.card').first()).toBeVisible({ timeout: 10_000 })
+
+  // 확인 질문이 나올 때까지 (첫 카드가 바로 질문이다)
+  const known = page.getByRole('button', { name: '알고 있었다', exact: true })
+  await expect(known).toBeVisible({ timeout: 10_000 })
+  await known.click()
+
+  // 아는 단어를 가르치지 않는다 — 소개 없이 입력창이 열린다
+  await expect(page.locator('.intro-card')).toHaveCount(0)
+  await expect(page.locator('.kana-input')).toBeVisible({ timeout: 10_000 })
+})
+
+test('모른다고 답해야 소개가 뜬다', async ({ page }) => {
+  await page.goto('/')
+  await expect(page.getByRole('button', { name: '세션 시작' })).toBeVisible({ timeout: 20_000 })
+  await resetState(page)
+
+  await page.getByRole('button', { name: '세션 시작' }).click()
+  const unknown = page.getByRole('button', { name: '몰랐다', exact: true })
+  await expect(unknown).toBeVisible({ timeout: 10_000 })
+  await unknown.click()
+
+  const intro = page.locator('.intro-card')
+  await expect(intro).toBeVisible()
+  // 모른다고 한 뒤라 보여주는 게 정당하다 — 읽기·뜻이 다 나온다
+  await expect(intro.locator('.reading-shown')).not.toBeEmpty()
+  await expect(page.locator('.kana-input')).toHaveCount(0)
+})
