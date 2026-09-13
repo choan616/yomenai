@@ -1,19 +1,56 @@
 # 피드백 수신 — Google Apps Script
 
 테스터 피드백을 본인 구글 스프레드시트로 받는 절차. 한 번만 하면 된다.
+**휴대폰에서도 된다.** 아래는 모바일 기준이고, PC 면 같은 순서에 화면만 편하다.
 
 앱은 **학습 기록을 보내지 않는다.** 테스터가 화면에 적은 답만 텍스트로 간다
 (`src/app/Feedback.tsx`).
 
-## 1. 스프레드시트와 스크립트
+## 0. 모바일에서 먼저 알아 둘 것
 
-1. 새 스프레드시트를 만든다 (이름은 아무거나)
-2. **확장 프로그램 → Apps Script**
-3. 기본 코드를 지우고 아래를 붙인다
+Apps Script 편집기는 **구글 시트 앱 안에 없다.** 모바일 시트 앱에는 「확장 프로그램」
+메뉴 자체가 없어서 그 길로는 못 간다. 대신 브라우저로 `script.google.com` 에 직접 들어가
+**시트에 붙지 않은 독립 스크립트**를 만든다. 그래서 아래 코드는 시트를 ID 로 찾는다
+(`getActiveSpreadsheet()` 는 독립 스크립트에서 빈 값이라 못 쓴다).
+
+편집기가 모바일용이 아니라서 **「데스크톱 사이트 요청」을 켜야** 쓸 만하다.
+
+- Chrome (안드로이드) — 주소창 오른쪽 `⋮` → 「데스크톱 사이트」 체크
+- Safari (iOS) — 주소창 왼쪽 `ᴀA` → 「데스크톱 웹사이트 요청」
+
+화면을 가로로 눕히면 편집기가 한결 넓어진다. 코드는 이 문서에서 복사해 붙이면 되니
+타이핑할 일은 `SHEET_ID` 한 줄뿐이다.
+
+## 1. 시트 만들고 ID 복사
+
+1. 구글 시트 앱에서 새 스프레드시트를 만든다 (이름은 아무거나)
+2. `⋮` → **「공유 및 내보내기」 → 「링크 복사」**
+3. 복사된 주소의 가운데 토막이 ID 다
+
+   `docs.google.com/spreadsheets/d/` **`1AbC...xYz`** `/edit?usp=sharing`
+
+   `/d/` 와 그다음 `/` 사이. 메모 앱에 붙여 두면 다음 단계가 편하다.
+
+이 시트를 **공유할 필요는 없다.** 스크립트가 내 계정 권한으로 쓰기 때문에
+링크는 ID 를 꺼내려고 복사하는 것뿐이다.
+
+## 2. 스크립트 만들기
+
+1. 브라우저로 `script.google.com` — 「데스크톱 사이트 요청」을 켠 상태로
+2. **새 프로젝트**
+3. 기본 코드(`function myFunction() {}`)를 다 지우고 아래를 붙인다
+4. `SHEET_ID` 에 1번에서 복사한 ID 를 넣는다
+5. 저장 (💾 아이콘)
+
+PC 라면 시트에서 **확장 프로그램 → Apps Script** 로 가도 된다. 그 경우에도 같은 코드가
+그대로 동작한다 — `openById` 는 붙은 스크립트에서도 쓸 수 있다.
 
 ```js
 // 앱이 보내는 표식. src/app/feedbackEndpoint.ts 의 FEEDBACK_TOKEN 과 같아야 한다
 const TOKEN = 'yomenai-tester-2026'
+
+// 시트 주소 .../spreadsheets/d/여기/edit 의 가운데 토막
+const SHEET_ID = ''
 
 function doPost(e) {
   let body
@@ -25,10 +62,15 @@ function doPost(e) {
   // 우연히 주소를 긁은 자동 요청을 거른다. 비밀이 아니라 표식일 뿐이다
   if (!body || body.token !== TOKEN) return ContentService.createTextOutput('no')
 
-  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0]
+  const sheet = SpreadsheetApp.openById(SHEET_ID).getSheets()[0]
   if (sheet.getLastRow() === 0) sheet.appendRow(['받은 시각', '내용'])
   sheet.appendRow([new Date(), body.text])
   return ContentService.createTextOutput('ok')
+}
+
+// 배포 전에 한 번 실행해 본다 (3장) — 시트 연결과 권한을 여기서 확인한다
+function testSend() {
+  doPost({ postData: { contents: JSON.stringify({ token: TOKEN, text: '시험 전송' }) } })
 }
 ```
 
@@ -39,9 +81,21 @@ function doPost(e) {
 막으려는 건 아무 데나 POST 해 보는 자동 요청이지 작정한 사람이 아니다.
 장난이 실제로 들어오면 양쪽 값을 같이 바꾸고 다시 배포한다.
 
-## 2. 배포
+## 3. 배포 전에 시험 실행
 
-**배포 → 새 배포 → 유형 「웹 앱」**
+**이 단계를 건너뛰지 않는다.** 배포한 뒤에는 실패해도 앱 쪽에서 알 방법이 없다 (5장).
+
+편집기 위쪽 함수 목록에서 `testSend` 를 고르고 **실행**.
+
+- 처음 한 번은 권한을 묻는다. 「권한 검토」 → 계정 선택 →
+  **「Google에서 확인하지 않은 앱」 경고가 뜨면 「고급」 → 「…(으)로 이동」** → 허용.
+  내가 만든 스크립트를 내 시트에 쓰겠다는 것이라 정상이다
+- 시트에 「시험 전송」 한 줄이 생기면 성공이다. 그 줄은 지워도 된다
+- 안 생기면 `SHEET_ID` 부터 다시 본다. 편집기 아래 실행 로그에 이유가 찍힌다
+
+## 4. 배포
+
+**배포 → 새 배포 → 유형 선택(⚙️) → 웹 앱**
 
 | 항목 | 값 |
 |---|---|
@@ -49,12 +103,13 @@ function doPost(e) {
 | 액세스 권한 | **모든 사용자** |
 
 「모든 사용자」여야 로그인 안 한 테스터도 보낼 수 있다.
-처음 배포하면 권한 승인을 한 번 묻는다.
 
 발급된 주소(`https://script.google.com/macros/s/…/exec`)를
 [`src/app/feedbackEndpoint.ts`](../src/app/feedbackEndpoint.ts) 의 `FEEDBACK_ENDPOINT` 에 넣고 배포한다.
+휴대폰에서 소스를 못 고치면 주소만 적어 두고 나중에 PC 에서 넣어도 된다 —
+주소가 비어 있어도 앱은 멀쩡히 돌아간다.
 
-## 3. 알아 둘 것
+## 5. 알아 둘 것
 
 **전송 성공을 확인할 수 없다.** Apps Script 웹 앱은 리다이렉트를 거쳐 응답하는데 그쪽에
 CORS 헤더가 없다. 그래서 `no-cors` 로 보내고 결과를 못 읽는다. 화면은 이 사실을 숨기지
