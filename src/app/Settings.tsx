@@ -340,8 +340,8 @@ export function Settings({
 
         <div className="setting">
           <label>안내서</label>
-          {/* 새 창으로 연다 — 홈 화면에 설치한 standalone 창은 같은 스코프로 이동하면
-              주소창도 뒤로가기도 없어서 돌아올 길이 막힌다 */}
+          {/* _blank 로 열지만 홈 화면 앱에서는 브라우저로 안 빠지고 그 자리에서 열린다.
+              그래서 안내서 자신이 「앱으로 돌아가기」 를 들고 있다 (public/guide.html 의 .backbar) */}
           <button
             type="button"
             onClick={() => window.open(`${import.meta.env.BASE_URL}guide.html`, '_blank', 'noopener')}
@@ -349,7 +349,7 @@ export function Settings({
             사용 안내서 열기 ›
           </button>
           <span className="hint">
-            이 앱이 무엇을 왜 다루는지, 리포트를 어떻게 읽는지 정리해 뒀어요. 새 창에서 열립니다.
+            이 앱이 무엇을 왜 다루는지, 리포트를 어떻게 읽는지 정리해 뒀어요.
           </span>
         </div>
 

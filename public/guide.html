@@ -258,6 +258,25 @@
   .asks b { font-weight: 500; display: block; }
   .asks span { color: var(--ink-soft); font-size: 0.93rem; }
 
+  /* 홈 화면에 설치한 앱에는 주소창도 뒤로가기도 없다 — 돌아갈 길을 늘 띄워 둔다 */
+  .backbar {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: var(--paper);
+    border-bottom: 1px solid var(--rule);
+    padding: 0.7rem 1.5rem;
+    font-size: 0.9rem;
+  }
+  .backbar a {
+    color: var(--ai);
+    text-decoration: none;
+    display: inline-flex;
+    gap: 0.4rem;
+    align-items: baseline;
+  }
+  .backbar a:hover { text-decoration: underline; }
+
   footer {
     border-top: 1px solid var(--rule);
     padding-top: 1.25rem;
@@ -274,6 +293,8 @@
 </style>
 </head>
 <body>
+<nav class="backbar"><a href="https://choan616.github.io/yomenai/">‹ <span>yomenai 앱으로 돌아가기</span></a></nav>
+
 <div class="sheet">
 
   <header class="masthead">
@@ -602,6 +623,7 @@
 
   <footer>
     <span>읽어 주셔서 고맙습니다. 소감은 설정 → 「피드백 보내기」로, 막히는 곳은 화면을 캡처해 보내 주세요.</span>
+    <span><a href="https://choan616.github.io/yomenai/">‹ yomenai 앱으로 돌아가기</a></span>
     <span class="ja" lang="ja">読めない — 読めるまで</span>
   </footer>
 
