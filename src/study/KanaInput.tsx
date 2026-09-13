@@ -1,6 +1,6 @@
 // 로마자를 히라가나로 변환하는 읽기 입력 필드. wanakana 를 요소에 bind 한다 (PLAN §3).
 // iOS 스탠드얼론 대응 — 카드마다 리마운트하지 않고(포커스 유지) resetKey 로 값만 비운다.
-// lang="ja" 를 빼고 inputMode="latin" 으로 일본어 IME 한자 변환을 억제한다.
+// lang="ja" 를 빼고 ASCII 전용 inputMode 로 일본어 IME 한자 변환을 억제한다 (아래 주석 참조).
 import { useEffect, useRef } from 'react'
 import { bind, unbind } from 'wanakana'
 
@@ -65,11 +65,16 @@ export function KanaInput({ onSubmit, resetKey, locked }: Props) {
         className={`kana-input${locked ? ' locked' : ''}`}
         type="text"
         /* 일본어 IME(한자 변환 후보 바)를 막는다. iOS 는 변환 바를 숨기는 API 가 없어서
-           inputMode="email" 로 ASCII 전용 키보드를 띄운다(언어 키보드가 아니라 후보 바 없음).
-           키보드에 @ · . 키가 더 보이는 게 대가. wanakana 가 로마자→가나 변환은 그대로 한다.
-           lang="en" · autocorrect/autocomplete off 도 함께 */
+           ASCII 전용 키보드를 띄우는 inputMode 를 쓴다(언어 키보드가 아니라 후보 바 없음).
+           wanakana 가 로마자→가나 변환은 그대로 한다.
+
+           "email" 이었는데 "url" 로 바꿨다 — 이메일 필드로 인식돼 저장된 주소가
+           자동완성 후보로 떴다. autoComplete="off" 로는 안 막힌다(브라우저가 대체로 무시한다).
+           "text" 는 못 쓴다. 언어 키보드가 돌아와 IME 후보 바가 다시 뜬다.
+           name 도 준다 — 이름 없는 필드는 브라우저가 내용을 넘겨짚는다 */
         lang="en"
-        inputMode="email"
+        name="reading"
+        inputMode="url"
         autoCapitalize="none"
         autoComplete="off"
         autoCorrect="off"
