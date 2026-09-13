@@ -1,6 +1,6 @@
 // 진단 리포트 화면 — 수준, 다음에 볼 것, 훑어보기 진입, 오답 유형 분포, 한국음 간섭, 취약 음독. 이 앱의 얼굴이다 (PLAN §7)
 import { useEffect, useState } from 'react'
-import { buildLevel, type BandRow, type LevelProfile } from '../core/level.ts'
+import { buildLevel, LEVEL_WINDOW, type BandRow, type LevelProfile } from '../core/level.ts'
 import { prescribe, type Prescription } from '../core/prescription.ts'
 import { replay } from '../core/replay.ts'
 import { BROWSE_N, buildReport, type Report as ReportData } from '../core/report.ts'
@@ -267,6 +267,8 @@ function LevelSection({
       <p className="stat-line">
         읽기 {reviews}회 · 정답률 {accuracy}%
       </p>
+      {/* 밴드 행의 숫자가 왜 {LEVEL_WINDOW} 에서 멈추는지 안 밝히면 오해를 부른다 */}
+      <p className="hint">밴드 판정은 최근 {LEVEL_WINDOW}회 기준이에요.</p>
 
       <div className="ladder">
         {level.bands.map((b, i) => (

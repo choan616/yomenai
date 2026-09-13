@@ -1,7 +1,7 @@
 // 읽기 수준 — 밴드별 정답률과 "경계선". 리포트 최상단이 답해야 할 질문은 "내가 어디쯤인가"다 (PLAN §4/§7)
-import { DIAGNOSTIC_BANDS, diagnosticSummary } from './diagnostic.ts'
+import { DIAGNOSTIC_BANDS } from './diagnostic.ts'
 import type { Band } from '../lib/bands.ts'
-import type { LearningEvent } from './types.ts'
+import { compareEvents, type LearningEvent } from './types.ts'
 
 /** 밴드 하나에 판정을 내리는 데 필요한 최소 노출 수. 그 아래는 `thin`(표본 부족)이다 */
 export const LEVEL_MIN_SEEN = 5
@@ -10,11 +10,25 @@ export const LEVEL_MIN_SEEN = 5
  * 진단이 "다음 밴드로" 넘긴 밴드가 리포트에서 "흔들림"으로 나오면 두 화면이 서로 다른 말을 한다.
  */
 export const LEVEL_SOLID_RATE = 0.8
+/**
+ * 밴드 판정에 쓰는 **최근 N회**. 전 기간을 통째로 접으면 첫 주의 실수가 영원히 평균을
+ * 끌어내려, 실력이 늘어도 사다리가 안 올라간다 (2026-09-13 실측: 밴드 1 이 전 기간 70.3%
+ * 인데 최근 3일은 81.3% — 문턱 0.8 을 이미 넘겼는데 화면은 「흔들림」이라 말했다).
+ * 「성취도는 깎이지 않는다」(PLAN §5 원칙 3)의 다른 얼굴이라 판정을 최근으로 옮긴다.
+ *
+ * **누적 총계(`totalReadings`)는 안 건드린다** — 그건 쌓아 온 양이고, 줄이면 그게 곧
+ * 성취도를 깎는 것이다. 처방의 표본 문턱도 이 값을 본다.
+ *
+ * 회수 기준인 이유 — 날짜 기준(최근 N일)은 며칠 쉬면 표본이 비어 「표본 부족」으로 떨어진다.
+ * 회수는 쉬어도 유지되고 FSRS 복습 주기와도 맞는다.
+ */
+export const LEVEL_WINDOW = 30
 
 export type BandStatus = 'solid' | 'shaky' | 'thin' | 'unseen'
 
 export interface BandRow {
   band: Band
+  /** 판정에 쓴 채점 수 — 최근 `LEVEL_WINDOW` 회까지 */
   seen: number
   correct: number
   /** correct / seen. seen 이 0 이면 0 */
@@ -29,7 +43,7 @@ export interface LevelProfile {
   solidThrough: Band | null
   /** 지금 흔들리는 첫 밴드. 없으면 null (아직 벽을 못 만났다) */
   edge: Band | null
-  /** 읽기 카드 채점 총 횟수. 표본이 얼마나 쌓였는지 */
+  /** 읽기 카드 채점 **누적** 총 횟수. 밴드 행의 `seen`(최근 `LEVEL_WINDOW`)과 다르다 */
   totalReadings: number
 }
 
@@ -50,13 +64,25 @@ export function buildLevel(
   events: readonly LearningEvent[],
   bandOf: (idiomId: string) => Band | undefined,
 ): LevelProfile {
-  const seen = new Map(diagnosticSummary(events, bandOf).map((r) => [r.band, r]))
-  const bands = [...new Set<Band>([...DIAGNOSTIC_BANDS, ...seen.keys()])].sort((a, b) => a - b)
+  // 밴드별로 시간순 채점 이력을 모은다. 뒤에서 `LEVEL_WINDOW` 개만 판정에 쓴다
+  const history = new Map<Band, boolean[]>()
+  let totalReadings = 0
+  for (const e of [...events].sort(compareEvents)) {
+    if (e.type !== 'review' || e.cardType !== 'reading' || e.deletedAt !== null) continue
+    const band = bandOf(e.idiomId)
+    if (band === undefined) continue
+    totalReadings++
+    const row = history.get(band)
+    if (row) row.push(e.correct)
+    else history.set(band, [e.correct])
+  }
+
+  const bands = [...new Set<Band>([...DIAGNOSTIC_BANDS, ...history.keys()])].sort((a, b) => a - b)
 
   const rows: BandRow[] = bands.map((band) => {
-    const r = seen.get(band)
-    const s = r?.seen ?? 0
-    const c = r?.correct ?? 0
+    const recent = (history.get(band) ?? []).slice(-LEVEL_WINDOW)
+    const s = recent.length
+    const c = recent.filter(Boolean).length
     return { band, seen: s, correct: c, rate: s > 0 ? c / s : 0, status: statusOf(s, c) }
   })
 
@@ -70,6 +96,7 @@ export function buildLevel(
     bands: rows,
     solidThrough,
     edge: rows.find((r) => r.status === 'shaky')?.band ?? null,
-    totalReadings: rows.reduce((n, r) => n + r.seen, 0),
+    // 누적이다. 밴드 행의 `seen` 은 최근 `LEVEL_WINDOW` 로 잘려 있어 합과 다르다
+    totalReadings,
   }
 }

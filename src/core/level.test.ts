@@ -1,6 +1,6 @@
 // 읽기 수준 — 밴드별 판정과 경계선 위치 (Phase 10)
 import { describe, expect, it } from 'vitest'
-import { buildLevel, LEVEL_MIN_SEEN } from './level.ts'
+import { buildLevel, LEVEL_MIN_SEEN, LEVEL_WINDOW } from './level.ts'
 import type { Band } from '../lib/bands.ts'
 import type { LearningEvent } from './types.ts'
 
@@ -69,5 +69,53 @@ describe('buildLevel', () => {
     )
     expect(level.solidThrough).toBe(3)
     expect(level.edge).toBeNull()
+  })
+})
+
+describe('밴드 판정은 최근 LEVEL_WINDOW 회만 본다 (2026-09-13)', () => {
+  it('창 밖의 옛 기록은 판정에서 빠진다 — 실력이 늘면 사다리가 올라간다', () => {
+    // 옛날에 30번 다 틀리고, 최근 30번을 다 맞혔다
+    const events = [...run('b1', 0, LEVEL_WINDOW), ...run('b1', LEVEL_WINDOW, 0)]
+    const row = buildLevel(events, bandOf).bands.find((b) => b.band === 1)!
+    expect(row.seen).toBe(LEVEL_WINDOW)
+    expect(row.rate).toBe(1)
+    expect(row.status).toBe('solid')
+  })
+
+  it('반대로 최근에 무너지면 바로 흔들림이 된다', () => {
+    const events = [...run('b1', LEVEL_WINDOW, 0), ...run('b1', 0, LEVEL_WINDOW)]
+    expect(buildLevel(events, bandOf).bands.find((b) => b.band === 1)!.status).toBe('shaky')
+  })
+
+  it('누적 총계는 창에 안 잘린다 — 성취도는 깎이지 않는다', () => {
+    const events = [...run('b1', 0, LEVEL_WINDOW), ...run('b1', LEVEL_WINDOW, 0)]
+    const level = buildLevel(events, bandOf)
+    expect(level.totalReadings).toBe(LEVEL_WINDOW * 2)
+    // 밴드 행의 seen 합과는 다르다
+    expect(level.bands.reduce((n, b) => n + b.seen, 0)).toBe(LEVEL_WINDOW)
+  })
+
+  it('창보다 적게 풀었으면 전부 센다', () => {
+    const events = run('b1', 4, 1)
+    const row = buildLevel(events, bandOf).bands.find((b) => b.band === 1)!
+    expect(row.seen).toBe(5)
+    expect(row.correct).toBe(4)
+  })
+
+  it('창은 밴드마다 따로 잡힌다', () => {
+    const events = [
+      ...run('b1', 0, LEVEL_WINDOW), ...run('b1', LEVEL_WINDOW, 0),
+      ...run('b2', 3, 2),
+    ]
+    const level = buildLevel(events, bandOf)
+    expect(level.bands.find((b) => b.band === 1)!.seen).toBe(LEVEL_WINDOW)
+    expect(level.bands.find((b) => b.band === 2)!.seen).toBe(5)
+  })
+
+  it('시각이 뒤섞여 들어와도 시간순으로 자른다 — 기기 병합 순서에 안 흔들린다', () => {
+    const early = run('b1', 0, LEVEL_WINDOW) // at 이 작다
+    const late = run('b1', LEVEL_WINDOW, 0) // at 이 크다
+    const shuffled = [...late, ...early] // 일부러 거꾸로 넘긴다
+    expect(buildLevel(shuffled, bandOf).bands.find((b) => b.band === 1)!.rate).toBe(1)
   })
 })
