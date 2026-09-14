@@ -63,7 +63,7 @@ describe('planIntros', () => {
         card('a', 'meaning', false), card('c', 'reading', false),
         card('c', 'meaning', false), card('d', 'reading', true),
       ], none, fresh, ENOUGH, LIMIT)
-    expect(plan.cards.map((c) => c.idiomId)).toEqual(['a', 'b', 'c', 'd'])
+    expect(plan.cards.map((c) => c.idiomId).sort()).toEqual(['a', 'b', 'c', 'd'])
     expect([...plan.introIds].sort()).toEqual(['a', 'c'])
   })
 
@@ -158,5 +158,39 @@ describe('소개는 문제 수에 안 든다 (2026-09-14)', () => {
   it('세션이 아주 짧아도 최소 한 장은 소개한다', () => {
     const plan = planIntros([...news(2), ...olds(2)], none, fresh, ENOUGH, 2)
     expect(plan.introIds.size).toBe(1)
+  })
+})
+
+describe('소개를 문제 사이에 흩는다 (2026-09-14)', () => {
+  const news = (n: number) =>
+    Array.from({ length: n }, (_, i) => card(`n${i}`, 'reading', false))
+  const olds = (n: number) =>
+    Array.from({ length: n }, (_, i) => card(`o${i}`, 'reading', true))
+  const shape = (cards: SessionCard[], introIds: ReadonlySet<string>) =>
+    cards.map((c) => (introIds.has(c.idiomId) ? 'I' : 'Q')).join('')
+
+  it('덩어리로 들어와도 흩어져 나온다 — 집중 세션은 신규가 연속이다', () => {
+    // buildFocus 는 틀린 것 → 처음 보는 것 → 나머지 순이라 신규가 붙어 들어온다
+    const plan = planIntros(
+      [...olds(2), ...news(3), ...olds(10)], none, fresh, ENOUGH, 12)
+    expect(shape(plan.cards, plan.introIds)).not.toContain('III')
+    expect(plan.introIds.size).toBe(3)
+  })
+
+  it('첫 장은 문제다 — 설명부터 들이밀지 않는다', () => {
+    const plan = planIntros([...news(3), ...olds(9)], none, fresh, ENOUGH, 9)
+    expect(shape(plan.cards, plan.introIds).startsWith('Q')).toBe(true)
+  })
+
+  it('문제 순서는 안 흔든다 — 교정 우선과 표면형 대조가 거기 실려 있다', () => {
+    const plan = planIntros(
+      [...news(2), ...olds(6)], none, fresh, ENOUGH, 6)
+    const questions = plan.cards.filter((c) => !plan.introIds.has(c.idiomId))
+    expect(questions.map((c) => c.idiomId)).toEqual(['o0', 'o1', 'o2', 'o3', 'o4', 'o5'])
+  })
+
+  it('소개가 없으면 순서를 그대로 둔다', () => {
+    const cards = olds(4)
+    expect(planIntros(cards, none, fresh, ENOUGH, 4).cards).toEqual(cards)
   })
 })

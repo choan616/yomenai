@@ -71,6 +71,33 @@ async function resetState(page: Page): Promise<void> {
   await page.reload()
 }
 
+/**
+ * 소개는 문제 사이에 흩어져 나온다 (2026-09-14) — 첫 장이라는 보장이 없다.
+ * 소개가 뜰 때까지 앞의 문제들을 풀어 넘긴다.
+ */
+async function advanceToIntro(page: Page, budget = 30): Promise<void> {
+  const intro = page.locator('.intro-card')
+  for (let i = 0; i < budget; i++) {
+    await passClassReview(page)
+    if (await intro.isVisible().catch(() => false)) return
+    const input = page.locator('.kana-input')
+    if (await input.isVisible().catch(() => false)) {
+      await input.fill('あ')
+      await page.getByRole('button', { name: '확인', exact: true }).click()
+    } else {
+      // 뜻 카드는 「뜻 보기」 를 눌러야 채점 버튼이 나온다
+      const reveal = page.getByRole('button', { name: '뜻 보기', exact: true })
+      if (await reveal.isVisible().catch(() => false)) await reveal.click()
+      const dunno = page.getByRole('button', { name: '몰랐어요', exact: true })
+      if (await dunno.isVisible().catch(() => false)) await dunno.click()
+    }
+    const next = page.getByRole('button', { name: '다음', exact: true })
+    await next.click({ timeout: 5_000 }).catch(() => {})
+    await page.waitForTimeout(80)
+  }
+  throw new Error('소개 카드를 못 만났다')
+}
+
 test('새 숙어는 소개로 나오고, 채점도 이벤트도 없다', async ({ page }) => {
   await page.goto('/')
   await expect(page.getByRole('button', { name: '세션 시작' })).toBeVisible({ timeout: 20_000 })
@@ -80,7 +107,7 @@ test('새 숙어는 소개로 나오고, 채점도 이벤트도 없다', async (
   // 기록이 쌓였으니 이제 새 숙어는 소개로 나온다 — 확인 질문 뒤에 소개가 와야 한다
   await page.getByRole('button', { name: '세션 시작' }).click()
   await expect(page.locator('.card').first()).toBeVisible({ timeout: 10_000 })
-  await passClassReview(page)
+  await advanceToIntro(page)
   const intro = page.locator('.intro-card')
   await expect(intro).toBeVisible({ timeout: 10_000 })
 
@@ -99,11 +126,15 @@ test('새 숙어는 소개로 나오고, 채점도 이벤트도 없다', async (
   await page.waitForTimeout(150)
   expect(await eventCount(page)).toBe(before)
 
-  // 같은 숙어는 이번 세션에서 다시 안 나온다
+  // 같은 숙어는 이번 세션에서 다시 안 나온다. 소개는 문제 사이에 흩어져 있어
+  // (2026-09-14) 다음 소개까지는 문제를 풀어 넘겨야 한다
   const seen = new Set<string>([first])
-  for (let i = 0; i < 5; i++) {
-    await passClassReview(page)
-    if (!(await intro.isVisible().catch(() => false))) break
+  for (let i = 0; i < 2; i++) {
+    try {
+      await advanceToIntro(page)
+    } catch {
+      break // 이번 세션에 소개가 더 없다
+    }
     const h = await intro.locator('.headword').innerText()
     expect(seen.has(h)).toBe(false)
     seen.add(h)
@@ -139,9 +170,9 @@ test('모른다고 답해야 소개가 뜬다', async ({ page }) => {
   await seedReadings(page, 30)
 
   await page.getByRole('button', { name: '세션 시작' }).click()
-  const unknown = page.getByRole('button', { name: '몰랐다', exact: true })
-  await expect(unknown).toBeVisible({ timeout: 10_000 })
-  await unknown.click()
+  await expect(page.locator('.card').first()).toBeVisible({ timeout: 10_000 })
+  // advanceToIntro 는 확인 질문마다 「몰랐다」 를 고른다 — 그래서 소개까지 간다
+  await advanceToIntro(page)
 
   const intro = page.locator('.intro-card')
   await expect(intro).toBeVisible()

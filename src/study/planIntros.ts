@@ -47,8 +47,7 @@ export interface IntroPlan {
  * 소개에서 읽기와 뜻을 다 보여준 뒤 같은 세션에서 그걸 물으면 첫 채점이 부푼다.
  * 밴드 사다리가 최근 30회를 보므로(`LEVEL_WINDOW`) 그 부풀림이 바로 수준 판정을 흔든다.
  *
- * 세션 길이는 그만큼 짧아진다. 상한을 안 두는 대신 진행 막대가 처음부터 맞는 수를 쓴다 —
- * 중간에 카드를 건너뛰면 막대가 튄다.
+ * 낸 카드는 `spread` 로 소개를 문제 사이에 흩어 돌려준다 — 아래 참조.
  *
  * `readings` 가 `INTRO_MIN_READINGS` 미만이면 소개를 아예 안 낸다 — 위 상수 참조.
  * 소개 수는 INTRO_MAX_SHARE 로 제한하고, 넘친 신규 숙어는 그냥 출제된다.
@@ -95,5 +94,35 @@ export function planIntros(
     questions++
   }
 
-  return { cards: out, introIds }
+  return { cards: spread(out, introIds), introIds }
+}
+
+/**
+ * 소개 카드를 문제 사이에 고르게 흩는다 (2026-09-14).
+ *
+ * 원래는 고른 순서를 그대로 뒀는데, **집중 세션에서 소개가 한 덩어리로 나왔다.**
+ * `buildFocus` 가 틀린 것 → 처음 보는 것 → 본 적 있고 안 틀린 것 순으로 세우기 때문에
+ * 소개 후보(처음 보는 것)가 애초에 연속이다. 설명만 연달아 넘기는 벽이 생긴다.
+ *
+ * 문제의 순서는 안 건드린다 — 교정 우선도, 표면형 대조(`interleaveBySurface`)도 그 순서에
+ * 실려 있다. 소개만 사이사이로 옮긴다. 첫 장은 문제가 되도록 첫 소개를 한 칸 뒤부터 둔다.
+ */
+function spread(cards: SessionCard[], introIds: ReadonlySet<string>): SessionCard[] {
+  const intros = cards.filter((c) => introIds.has(c.idiomId))
+  if (intros.length === 0) return cards
+  const questions = cards.filter((c) => !introIds.has(c.idiomId))
+  if (questions.length === 0) return cards
+
+  const gap = questions.length / (intros.length + 1)
+  const out: SessionCard[] = []
+  let k = 0
+  for (let i = 0; i <= questions.length; i++) {
+    // 같은 자리에 둘 이상 몰리면(소개가 문제보다 많을 때) 붙어 나오는 건 어쩔 수 없다
+    while (k < intros.length && Math.min(questions.length, Math.round(gap * (k + 1))) === i) {
+      out.push(intros[k])
+      k++
+    }
+    if (i < questions.length) out.push(questions[i])
+  }
+  return out
 }
