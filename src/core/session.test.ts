@@ -49,6 +49,22 @@ describe('isCorrectReading', () => {
     expect(isCorrectReading('がっこう', '')).toBe(false)
     expect(isCorrectReading('がっこう', '   ')).toBe(false)
   })
+
+  // 동형이독 — 읽기 카드는 한자만 보여주므로 어느 쪽을 묻는지 알 수 없다 (2026-09-14)
+  it('같은 표기의 다른 읽기도 정답으로 받는다', () => {
+    const alts = ['いちば']
+    expect(isCorrectReading('しじょう', 'いちば', alts)).toBe(true)
+    expect(isCorrectReading('しじょう', 'イチバ', alts)).toBe(true)
+  })
+
+  it('alts 를 안 주면 예전 그대로 오답이다', () => {
+    expect(isCorrectReading('しじょう', 'いちば')).toBe(false)
+    expect(isCorrectReading('しじょう', 'いちば', [])).toBe(false)
+  })
+
+  it('빈 입력은 alts 가 있어도 정답이 아니다', () => {
+    expect(isCorrectReading('しじょう', '', ['いちば'])).toBe(false)
+  })
 })
 
 describe('recordReadingAnswer', () => {
@@ -58,6 +74,18 @@ describe('recordReadingAnswer', () => {
     })
     expect(e).toMatchObject({ correct: true, grade: 3, mistakeType: null, cardType: 'reading' })
     expect(e.expected).toBe('がっこう')
+  })
+
+  // 동형이독을 오답으로 세면 진단 리포트가 오염된다 (2026-09-14)
+  it('같은 표기의 다른 읽기로 답해도 정답이고 오답 유형이 안 붙는다', () => {
+    const e = recordReadingAnswer({
+      item: readingItem, headword: '学校', reading: 'がっこう', answer: 'がくこう',
+      altReadings: ['がくこう'], ctx, mistakes,
+    })
+    expect(e).toMatchObject({ correct: true, mistakeType: null })
+    // 기록에는 이 카드가 물은 읽기가 그대로 남는다
+    expect(e.expected).toBe('がっこう')
+    expect(e.answer).toBe('がくこう')
   })
 
   it('오답이면 Again 등급에 유형이 붙는다', () => {

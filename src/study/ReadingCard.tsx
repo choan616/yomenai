@@ -60,6 +60,15 @@ export function ReadingCard({ idiom, feedback: fb, onSubmit, onPass, onNext }: P
                 </ruby>
               ))}
             </p>
+            {/* 동형이독의 다른 읽기로 맞힌 경우 (2026-09-14). 정답으로 치되 이 카드가
+                묻는 읽기를 알려준다 — 위 루비가 내가 안 쓴 글자라 이 줄이 없으면
+                「정답인데 왜 다른 글자가 뜨지」 가 된다 */}
+            {fb.viaAlt && (
+              <p className="rule-hint">
+                <span lang="ja">{fb.answer}</span> 도 맞는 읽기예요. 이 카드가 묻는 건{' '}
+                <span lang="ja">{fb.expected}</span> 입니다.
+              </p>
+            )}
             {/* 입력값은 아래 입력창(locked)에 그대로 남아 있어 여기선 유형과 규칙만 (Phase 9-C 이후) */}
             {!fb.correct && fb.mistakeType && (
               <p className="wrong-answer">

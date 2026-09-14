@@ -107,10 +107,18 @@ export interface AnswerContext {
  * 읽기 정오답은 문자열 비교로 자동 판정한다.
  * 가타카나 입력과 앞뒤 공백을 정규화한다 — wanakana 가 붙은 입력 필드라도
  * 변환이 덜 끝난 상태로 제출될 수 있다.
+ *
+ * `alts` 는 같은 표기의 *다른* 읽기다 (동형이독 — 市場 いちば/しじょう).
+ * 읽기 카드는 한자만 보여 주므로 사용자는 둘 중 어느 쪽을 묻는지 알 방법이 없다.
+ * 그래서 어느 쪽을 써도 정답으로 받는다 — 안 그러면 맞는 답이 오답이 되고,
+ * 오답 유형까지 붙어 진단 리포트가 오염된다 (사용자 결정 2026-09-14).
+ * 출처는 사전의 `altReadings` 이며 `tools/build-runtime-dict.ts` 가 싣는다.
  */
-export function isCorrectReading(expected: string, answer: string): boolean {
+export function isCorrectReading(expected: string, answer: string, alts?: string[]): boolean {
   const a = toHiragana(answer.trim())
-  return a !== '' && a === toHiragana(expected.trim())
+  if (a === '') return false
+  if (a === toHiragana(expected.trim())) return true
+  return (alts ?? []).some((alt) => a === toHiragana(alt.trim()))
 }
 
 /** 읽기 카드 채점 — 정오답 판정과 오답 유형 분류를 한 번에 한다 */
@@ -121,12 +129,14 @@ export function recordReadingAnswer(input: {
   reading: string
   /** 사용자 입력 */
   answer: string
+  /** 같은 표기의 다른 읽기 — 있으면 이것도 정답으로 받는다 */
+  altReadings?: string[]
   confidence?: Confidence
   ctx: AnswerContext
   mistakes: MistakeContext
 }): ReviewEvent {
   const { item, headword, reading, answer, ctx } = input
-  const correct = isCorrectReading(reading, answer)
+  const correct = isCorrectReading(reading, answer, input.altReadings)
   return {
     ...base(item.idiomId, 'reading', ctx),
     type: 'review',

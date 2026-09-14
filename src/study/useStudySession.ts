@@ -42,6 +42,11 @@ export interface ReadingFeedback {
   ruby: RubySegment[]
   /** 루프 안 관찰 한 줄 (Phase 9-C). 빈도 게이트를 통과했을 때만 채워진다 */
   observe: Observation | null
+  /**
+   * 동형이독의 *다른* 읽기로 맞힌 경우. 정답으로 치되 이 카드가 묻는 읽기는
+   * 따로 알려줘야 한다 — 안 그러면 「정답」 옆에 내가 안 쓴 글자가 떠서 헷갈린다
+   */
+  viaAlt: boolean
 }
 
 export type StudyStatus =
@@ -295,7 +300,9 @@ export function useStudySession({
   const submitReading = useCallback(
     (answer: string) => {
       if (!card || !idiom || !mistakes.current) return
-      const correct = isCorrectReading(idiom.reading, answer)
+      const correct = isCorrectReading(idiom.reading, answer, idiom.altReadings)
+      // 정답이지만 이 카드의 읽기와는 다르다 = 동형이독의 다른 쪽을 쓴 것
+      const viaAlt = correct && !isCorrectReading(idiom.reading, answer)
       const mistakeType = correct
         ? null
         : classifyMistake(
@@ -322,7 +329,7 @@ export function useStudySession({
       }
 
       const ruby = rubyOf(idiom.headword, idiom.reading, mistakes.current.lookup)
-      setFeedback({ correct, expected: idiom.reading, mistakeType, answer, echo, ruby, observe })
+      setFeedback({ correct, expected: idiom.reading, mistakeType, answer, echo, ruby, observe, viaAlt })
     },
     [card, idiom, session, sessionEvents, byId],
   )
@@ -346,6 +353,7 @@ export function useStudySession({
       echo: [],
       ruby: rubyOf(idiom.headword, idiom.reading, mistakes.current.lookup),
       observe: null,
+      viaAlt: false,
     })
   }, [card, idiom])
 
@@ -383,6 +391,7 @@ export function useStudySession({
             headword: idiom.headword,
             reading: idiom.reading,
             answer: feedback.answer,
+            altReadings: idiom.altReadings,
             confidence,
             ctx: answerCtx(),
             mistakes: mistakes.current!,

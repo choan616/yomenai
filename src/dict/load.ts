@@ -15,6 +15,8 @@ interface RawIdiom {
   classSource: ClassSource | null
   koMeaning: KoMeaning | null
   pairIds: string[]
+  /** 같은 표기의 다른 읽기 (동형이독). 겹치는 표기가 없으면 필드 자체가 없다 */
+  altReadings?: string[]
 }
 
 export interface KoMeaning {
@@ -33,6 +35,8 @@ export interface KoMeaning {
  */
 export interface RuntimeIdiom extends IdiomEntry {
   headword: string
+  /** 같은 표기의 다른 읽기. 읽기 채점이 이것도 정답으로 받는다 (2026-09-14) */
+  altReadings?: string[]
   reading: string
   pos: string[]
   common: boolean
@@ -67,6 +71,7 @@ export function normalizeIdiom(r: RawIdiom): RuntimeIdiom {
     pos: r.pos,
     common: r.common,
     koMeaning: r.koMeaning,
+    altReadings: r.altReadings,
   }
 }
 
