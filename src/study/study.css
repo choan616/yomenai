@@ -849,3 +849,22 @@
   line-height: 1.65;
   text-align: left;
 }
+
+/* ── 동형이독 이어 묻기 (2026-09-14) — 다른 읽기로 맞혔을 때 제외 조건을 문제에 붙인다.
+   .rule-hint 와 같은 상자를 쓰되 여기는 **문제 화면**이라 숙어 바로 아래에 붙는다.
+   답을 알려주는 줄이 아니므로 강조하지 않는다 ── */
+.follow-up {
+  margin: 18px auto 0;
+  max-width: 26em;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--surface-2);
+  color: var(--text-dim);
+  font-size: 13px;
+  line-height: 1.65;
+  text-align: center;
+}
+.follow-up b {
+  color: var(--text);
+  font-weight: 600;
+}

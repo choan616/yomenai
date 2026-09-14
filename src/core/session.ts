@@ -131,6 +131,13 @@ export function recordReadingAnswer(input: {
   answer: string
   /** 같은 표기의 다른 읽기 — 있으면 이것도 정답으로 받는다 */
   altReadings?: string[]
+  /**
+   * false 면 오답이어도 유형을 안 붙인다.
+   * 답이 **무엇을 잘못 골랐는지 말해주지 않을 때** 쓴다 — 이어 묻기에서 방금 맞힌
+   * 다른 읽기를 또 쓴 경우가 그렇다. 읽기를 잘못 고른 게 아니라 다른 쪽을 못 꺼낸
+   * 것이라, 유형을 붙이면 오답 분포가 거짓이 된다 (「모르겠어요」 와 같은 이유).
+   */
+  classify?: boolean
   confidence?: Confidence
   ctx: AnswerContext
   mistakes: MistakeContext
@@ -140,9 +147,10 @@ export function recordReadingAnswer(input: {
   return {
     ...base(item.idiomId, 'reading', ctx),
     type: 'review',
-    mistakeType: correct
-      ? null
-      : classifyMistake({ headword, expected: reading, answer }, input.mistakes),
+    mistakeType:
+      correct || input.classify === false
+        ? null
+        : classifyMistake({ headword, expected: reading, answer }, input.mistakes),
     grade: gradeFor(correct, input.confidence ?? null),
     answer,
     expected: reading,

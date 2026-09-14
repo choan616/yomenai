@@ -97,8 +97,10 @@ export function Study({
           <ReadingCard
             idiom={s.idiom}
             feedback={s.feedback}
-            onSubmit={a.submitReading}
-            onPass={a.passReading}
+            followUp={s.followUp}
+            {...(s.followUp
+              ? { onSubmit: a.submitFollowUp, onPass: a.passFollowUp }
+              : { onSubmit: a.submitReading, onPass: a.passReading })}
             onNext={a.next}
           />
         )}

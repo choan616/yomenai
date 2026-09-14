@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import type { Confidence } from '../core/scheduler.ts'
 import { loadExamples } from '../dict/load.ts'
 import type { RuntimeIdiom } from '../dict/load.ts'
-import type { ReadingFeedback } from './useStudySession.ts'
+import type { FollowUp, ReadingFeedback } from './useStudySession.ts'
 import { KanaInput } from './KanaInput.tsx'
 import { MistakeDetail } from './MistakeDetail.tsx'
 import { MISTAKE_ADVICE, MISTAKE_LABEL, RULE_MISTAKES } from './mistakeLabels.ts'
@@ -13,13 +13,22 @@ import { tts } from './tts.ts'
 interface Props {
   idiom: RuntimeIdiom
   feedback?: ReadingFeedback
+  /** 채워져 있으면 이어 묻기 중 — 다른 읽기로 맞혀서 이 카드의 읽기를 다시 묻는 상태 */
+  followUp?: FollowUp
   onSubmit: (answer: string) => void
   /** 모르겠다고 넘기기 — 정답 화면으로 바로 간다 */
   onPass: () => void
   onNext: (confidence?: Confidence) => void
 }
 
-export function ReadingCard({ idiom, feedback: fb, onSubmit, onPass, onNext }: Props) {
+export function ReadingCard({
+  idiom,
+  feedback: fb,
+  followUp,
+  onSubmit,
+  onPass,
+  onNext,
+}: Props) {
   const [detail, setDetail] = useState(false)
 
   // 다음 카드로 넘어갈 때 오답 상세 뷰를 닫는다 (effect 로 setState 하지 않으려고 핸들러에서)
@@ -63,6 +72,12 @@ export function ReadingCard({ idiom, feedback: fb, onSubmit, onPass, onNext }: P
             {/* 동형이독의 다른 읽기로 맞힌 경우 (2026-09-14). 정답으로 치되 이 카드가
                 묻는 읽기를 알려준다 — 위 루비가 내가 안 쓴 글자라 이 줄이 없으면
                 「정답인데 왜 다른 글자가 뜨지」 가 된다 */}
+            {/* 이어 묻기를 거친 경우 — 맞힌 쪽도 기록에 남았다는 걸 알려준다 */}
+            {fb.alsoKnew !== null && (
+              <p className="rule-hint">
+                <span lang="ja">{fb.alsoKnew}</span> 도 맞혔어요. 두 읽기를 따로 익히게 됩니다.
+              </p>
+            )}
             {fb.viaAlt && (
               <p className="rule-hint">
                 <span lang="ja">{fb.answer}</span> 도 맞는 읽기예요. 이 카드가 묻는 건{' '}
@@ -110,15 +125,31 @@ export function ReadingCard({ idiom, feedback: fb, onSubmit, onPass, onNext }: P
             )}
           </>
         ) : (
-          <p className="headword" lang="ja">
-            {idiom.headword}
-          </p>
+          <>
+            <p className="headword" lang="ja">
+              {idiom.headword}
+            </p>
+            {/* 이어 묻기 (2026-09-14). 제외할 읽기를 문제에 못박는다 — 이걸 안 쓰면
+                상대 카드가 나와도 화면이 똑같아서 같은 답을 또 쓰게 된다 */}
+            {followUp && (
+              <p className="follow-up">
+                <span lang="ja">{followUp.knownReading}</span> 맞아요. 이 표기엔 읽기가 하나 더
+                있어요 — <b>그것 말고</b> 다른 읽기를 써 보세요.
+              </p>
+            )}
+          </>
         )}
       </div>
 
       <div className="card-bottom">
         {/* 카드가 바뀌어도 리마운트하지 않는다 — 포커스·키보드 유지. 피드백 중엔 locked(제출만 무시) */}
-        <KanaInput onSubmit={onSubmit} resetKey={idiom.idiomId} locked={!!fb} />
+        {/* resetKey 에 이어 묻기 여부를 넣어 방금 친 답을 비운다 — 컴포넌트는 그대로라
+            포커스와 키보드는 유지된다 */}
+        <KanaInput
+          onSubmit={onSubmit}
+          resetKey={idiom.idiomId + (followUp ? ':2' : '')}
+          locked={!!fb}
+        />
         {/* 모를 때 넘기는 길 (2026-09-14). 없으면 아무 글자나 쳐서 오답을 만들어야 했고,
             그 입력이 오답 유형 분포까지 오염시켰다. 자리는 피드백 뒤의 버튼 줄과 같다 */}
         {!fb && (

@@ -88,6 +88,30 @@ describe('recordReadingAnswer', () => {
     expect(e.answer).toBe('がくこう')
   })
 
+  // 이어 묻기가 맞힌 쪽 숙어에도 남기는 이벤트. 두 읽기는 처음부터 별도 숙어라
+  // 스키마에 더할 것이 없다 — 세션에 없던 카드도 SessionItem 을 만들어 그대로 쓴다
+  // 이어 묻기에서 방금 맞힌 다른 읽기를 또 쓴 경우. 오답이되 유형은 안 붙는다 —
+  // 읽기를 잘못 고른 게 아니라 다른 쪽을 못 꺼낸 것이다 (2026-09-14)
+  it('classify:false 면 오답이어도 유형이 안 붙는다', () => {
+    const args = {
+      item: readingItem, headword: '学校', reading: 'がっこう', answer: 'がくこう',
+      ctx, mistakes,
+    }
+    // 같은 답인데 분류만 끈다 — 끄지 않으면 유형이 붙는 답이라야 시험이 된다
+    expect(recordReadingAnswer(args).mistakeType).not.toBeNull()
+    const e = recordReadingAnswer({ ...args, classify: false })
+    expect(e).toMatchObject({ correct: false, mistakeType: null, answer: 'がくこう' })
+  })
+
+  it('상대 숙어에 남기는 정답 이벤트는 평범한 read 이벤트다', () => {
+    const e = recordReadingAnswer({
+      item: { idiomId: 'other-1', cardType: 'reading', mode: 'correction', due: false },
+      headword: '学校', reading: 'がくこう', answer: 'がくこう', ctx, mistakes,
+    })
+    expect(e).toMatchObject({ idiomId: 'other-1', cardType: 'reading', correct: true, mistakeType: null })
+    expect(e.expected).toBe('がくこう')
+  })
+
   it('오답이면 Again 등급에 유형이 붙는다', () => {
     const e = recordReadingAnswer({
       item: readingItem, headword: '学校', reading: 'がっこう', answer: 'がくこう', ctx, mistakes,
