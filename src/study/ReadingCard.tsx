@@ -57,7 +57,17 @@ export function ReadingCard({
             <span className="tag muted band-tag">밴드 {idiom.band}</span>
           </>
         ) : (
-          <span className="tag">읽기 · 밴드 {idiom.band}</span>
+          <>
+            <span className="tag">읽기 · 밴드 {idiom.band}</span>
+            {/* 「읽기 둘」 표시를 헤더 태그로 옮겼다 (2026-09-14). 본문에 같은 정보를
+                문장으로 또 적으면 카드가 넘쳐 내부 스크롤이 생기고, 그 스크롤이
+                눈에 잘 안 띈다는 지적(사용자) — 문장 대신 태그 한 줄로 줄인다 */}
+            {dualAsk && (
+              <span className="tag muted band-tag">
+                읽기 둘 · {dualAsk.given.length + 1}/{dualAsk.total}
+              </span>
+            )}
+          </>
         )}
       </div>
 
@@ -144,22 +154,13 @@ export function ReadingCard({
             </p>
             {/* 「읽기 둘」 카드 (2026-09-14). 처음부터 둘 다 묻는다 — 답을 보고 발동하면
                 같은 실력이 순서에 따라 다르게 처리된다. 이미 쓴 읽기는 제외 조건으로
-                못박는다. 안 그러면 같은 답을 또 쓰게 된다 */}
-            {dualAsk && (
+                못박는다. 안 그러면 같은 답을 또 쓰게 된다.
+                「읽기가 둘이다」 자체와 진행률(n/total)은 위 헤더 태그가 말하므로,
+                여기는 **이미 쓴 답을 빼라는 제외 조건 한 줄**만 남긴다 (given 이 있을 때만) */}
+            {dualAsk && dualAsk.given.length > 0 && (
               <p className="follow-up">
-                {dualAsk.given.length === 0 ? (
-                  <>
-                    이 표기는 읽기가 <b>둘</b>이에요. 하나씩 써 보세요.
-                  </>
-                ) : (
-                  <>
-                    <span lang="ja">{dualAsk.given[dualAsk.given.length - 1]}</span> 맞아요 —{' '}
-                    <b>그것 말고</b> 나머지 하나를 써 보세요.
-                  </>
-                )}
-                <span className="follow-up-count">
-                  {dualAsk.given.length + 1}/{dualAsk.total}
-                </span>
+                <span lang="ja">{dualAsk.given[dualAsk.given.length - 1]}</span> 은 맞았어요 —{' '}
+                <b>그것 말고</b> 나머지 하나를 써 보세요.
               </p>
             )}
           </>
