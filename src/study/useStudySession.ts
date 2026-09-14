@@ -82,6 +82,8 @@ export interface StudyState {
 export interface StudyActions {
   /** 읽기 답안 제출 — 판정만 하고 피드백을 띄운다 */
   submitReading: (answer: string) => void
+  /** 모르겠다고 넘긴다 — 빈 답으로 남아 오답 유형이 안 붙는다 (2026-09-14) */
+  passReading: () => void
   /** 뜻 카드 자기 채점 — 뜻을 확인한 뒤 안다/모른다 */
   submitMeaning: (known: boolean) => void
   /** "뜻은 알고 계셨나요" 지연 검수 응답 */
@@ -325,6 +327,28 @@ export function useStudySession({
     [card, idiom, session, sessionEvents, byId],
   )
 
+  /**
+   * 모르겠다고 넘긴다 (테스터 피드백 2026-09-14).
+   *
+   * 전에는 넘길 길이 없어 **아무 글자나 쳐야 했다.** 그 입력이 오답 유형 분류기를 거쳐
+   * 밴드 판정과 처방까지 오염시켰다. 넘기기는 빈 답으로 남는다 —
+   * 못 읽은 건 사실이니 오답으로 세되(`isCorrectReading` 이 false),
+   * **오답 유형은 안 붙는다** (`classifyMistake` 가 빈 답에 null 을 돌려준다).
+   * 무엇을 잘못 골랐는지가 없는데 유형을 붙이면 분포가 거짓이 된다.
+   */
+  const passReading = useCallback(() => {
+    if (!card || !idiom || !mistakes.current) return
+    setFeedback({
+      correct: false,
+      expected: idiom.reading,
+      mistakeType: null,
+      answer: '',
+      echo: [],
+      ruby: rubyOf(idiom.headword, idiom.reading, mistakes.current.lookup),
+      observe: null,
+    })
+  }, [card, idiom])
+
   const submitMeaning = useCallback(
     (known: boolean) => {
       if (!card) return
@@ -412,5 +436,5 @@ export function useStudySession({
     transitionSeq,
   }
 
-  return [state, { submitReading, submitMeaning, answerClassReview, seenIntro, next }]
+  return [state, { submitReading, passReading, submitMeaning, answerClassReview, seenIntro, next }]
 }

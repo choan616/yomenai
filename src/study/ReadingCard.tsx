@@ -14,10 +14,12 @@ interface Props {
   idiom: RuntimeIdiom
   feedback?: ReadingFeedback
   onSubmit: (answer: string) => void
+  /** 모르겠다고 넘기기 — 정답 화면으로 바로 간다 */
+  onPass: () => void
   onNext: (confidence?: Confidence) => void
 }
 
-export function ReadingCard({ idiom, feedback: fb, onSubmit, onNext }: Props) {
+export function ReadingCard({ idiom, feedback: fb, onSubmit, onPass, onNext }: Props) {
   const [detail, setDetail] = useState(false)
 
   // 다음 카드로 넘어갈 때 오답 상세 뷰를 닫는다 (effect 로 setState 하지 않으려고 핸들러에서)
@@ -108,6 +110,17 @@ export function ReadingCard({ idiom, feedback: fb, onSubmit, onNext }: Props) {
       <div className="card-bottom">
         {/* 카드가 바뀌어도 리마운트하지 않는다 — 포커스·키보드 유지. 피드백 중엔 locked(제출만 무시) */}
         <KanaInput onSubmit={onSubmit} resetKey={idiom.idiomId} locked={!!fb} />
+        {/* 모를 때 넘기는 길 (2026-09-14). 없으면 아무 글자나 쳐서 오답을 만들어야 했고,
+            그 입력이 오답 유형 분포까지 오염시켰다. 자리는 피드백 뒤의 버튼 줄과 같다 */}
+        {!fb && (
+          <div className="answer-row">
+            <span className="slot" aria-hidden="true" />
+            <button type="button" className="btn" onClick={onPass}>
+              모르겠어요
+            </button>
+            <span className="slot" aria-hidden="true" />
+          </div>
+        )}
         {fb &&
           (fb.correct ? (
             <div className="answer-row">

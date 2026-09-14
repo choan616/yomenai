@@ -98,6 +98,7 @@ export function Study({
             idiom={s.idiom}
             feedback={s.feedback}
             onSubmit={a.submitReading}
+            onPass={a.passReading}
             onNext={a.next}
           />
         )}

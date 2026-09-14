@@ -79,6 +79,8 @@ export function KanaInput({ onSubmit, resetKey, locked }: Props) {
         autoComplete="off"
         autoCorrect="off"
         spellCheck={false}
+        /* 직전 화면이 「뜻은 알고 있었어요?」 라 뜻을 쓰는 칸으로 오해된다 (테스터 2026-09-14) */
+        placeholder="읽는 법 (히라가나)"
         enterKeyHint="done"
         aria-label="읽기 입력"
         onKeyDown={(e) => {
