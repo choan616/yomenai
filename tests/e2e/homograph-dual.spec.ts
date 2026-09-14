@@ -1,5 +1,9 @@
-// 동형이독 이어 묻기 (2026-09-14). 市場 처럼 한 표기에 읽기가 둘인 숙어에서
-// 다른 쪽 읽기로 답하면, 정답 처리하고 넘어가는 대신 **이 카드의 읽기를 한 번 더 묻는다.**
+// 「읽기 둘」 카드 (2026-09-14). 한 표기에 읽기가 둘인 말은 한 장으로 접어
+// **처음부터 둘 다 묻는다.** 답을 보고 발동하면 같은 실력이 순서에 따라 다르게
+// 처리되고, 맞는 읽기를 쓰고도 카드가 오답이 된다.
+//
+// 기록 규칙은 한 줄이다 — 쓴 읽기의 카드에만 정답을 남기고 못 쓴 쪽에는 아무것도
+// 안 남긴다. 오답은 어느 읽기로도 못 읽었을 때만 생긴다.
 //
 // 代替 를 쓴다 — だいたい 와 だいがわり 가 각각 자기만 쓰는 음독 쌍을 가져서
 // 오답 하나만 심으면 재도전 세션에 그 카드 한 장이 결정적으로 뜬다.
@@ -120,7 +124,7 @@ async function readingEvents(page: Page): Promise<ReviewRow[]> {
   )
 }
 
-test('다른 읽기로 맞히면 이어 묻고, 두 읽기가 각자의 카드에 기록된다', async ({ page }) => {
+test('처음부터 둘 다 묻고, 쓴 읽기의 카드에만 정답이 남는다', async ({ page }) => {
   await page.goto('/')
   await expect(page.locator('.home')).toBeVisible({ timeout: 20_000 })
   await resetState(page)
@@ -130,33 +134,64 @@ test('다른 읽기로 맞히면 이어 묻고, 두 읽기가 각자의 카드�
   await advanceToReading(page)
   await expect(page.locator('.headword').first()).toContainText('代替')
 
-  // 다른 쪽 읽기로 답한다 — 맞는 답이지만 이 카드가 묻는 읽기는 아니다
+  // 답을 쓰기 전부터 둘이라고 말한다 — 답을 보고 발동하는 게 아니다
+  const prompt = page.locator('.follow-up')
+  await expect(prompt).toBeVisible({ timeout: 5_000 })
+  await expect(prompt).toContainText('둘')
+  await expect(prompt).toContainText('1/2')
+
+  // 상대 쪽 읽기부터 쓴다 — 순서는 상관없어야 한다
   await page.locator('.kana-input').fill('daigawari')
   await page.locator('.kana-input').press('Enter')
 
-  // 넘어가지 않고 제외 조건을 붙여 다시 묻는다
-  const prompt = page.locator('.follow-up')
-  await expect(prompt).toBeVisible({ timeout: 5_000 })
+  // 판정이 아직 안 났고, 쓴 읽기를 제외 조건으로 못박아 다시 묻는다
+  await expect(page.locator('.card.feedback')).toHaveCount(0)
   await expect(prompt).toContainText('だいがわり')
   await expect(prompt).toContainText('그것 말고')
-  // 아직 판정이 안 났다 — 정답/오답 화면이면 안 된다
-  await expect(page.locator('.card.feedback')).toHaveCount(0)
+  await expect(prompt).toContainText('2/2')
 
-  // 이번엔 이 카드의 읽기를 쓴다
   await page.locator('.kana-input').fill('daitai')
   await page.locator('.kana-input').press('Enter')
   await expect(page.locator('.card.feedback.is-ok')).toBeVisible({ timeout: 5_000 })
-  await expect(page.locator('.rule-hint')).toContainText('だいがわり')
+  await expect(page.locator('.rule-hint')).toContainText('두 읽기를 다 맞혔어요')
 
   await page.getByRole('button', { name: '다음', exact: true }).click()
   await page.waitForTimeout(300)
 
   const rows = await readingEvents(page)
-  // 이 카드 — 이어 묻기에서 맞혔다
+  // 두 읽기가 각자의 카드에 정답으로 남는다. 처음부터 별도 숙어라 스키마는 그대로다
   const own = rows.filter((e) => e.idiomId === DAITAI && e.id !== '00000000-seed')
   expect(own.some((e) => e.correct && e.expected === 'だいたい')).toBe(true)
-  // 맞힌 쪽 숙어에도 정답이 남는다. 두 읽기는 처음부터 별도 카드다
   const sib = rows.filter((e) => e.idiomId === DAIGAWARI)
   expect(sib.length, 'だいがわり 숙어에 이벤트가 없다').toBeGreaterThan(0)
   expect(sib[0]).toMatchObject({ correct: true, expected: 'だいがわり', mistakeType: null })
+})
+
+// 한쪽만 아는 사람이 맞는 읽기를 쓰고도 정답률이 깎이면 안 된다 (사용자 지적 2026-09-14)
+test('한쪽만 쓰고 넘기면 그 읽기는 정답으로 남고 오답은 안 생긴다', async ({ page }) => {
+  await page.goto('/')
+  await expect(page.locator('.home')).toBeVisible({ timeout: 20_000 })
+  await resetState(page)
+  await seedWrong(page, DAITAI)
+
+  await page.getByRole('button', { name: /재도전/ }).click()
+  await advanceToReading(page)
+  await expect(page.locator('.headword').first()).toContainText('代替')
+
+  await page.locator('.kana-input').fill('daigawari')
+  await page.locator('.kana-input').press('Enter')
+  await page.getByRole('button', { name: '모르겠어요', exact: true }).click()
+
+  await expect(page.locator('.card.feedback.is-ok')).toBeVisible({ timeout: 5_000 })
+  await expect(page.locator('.rule-hint')).toContainText('아직 안 배운 것')
+  await page.getByRole('button', { name: '다음', exact: true }).click()
+  await page.waitForTimeout(300)
+
+  const rows = await readingEvents(page)
+  const fresh = rows.filter((e) => e.id !== '00000000-seed')
+  // 쓴 읽기만 남는다
+  expect(fresh).toHaveLength(1)
+  expect(fresh[0]).toMatchObject({ idiomId: DAIGAWARI, correct: true, expected: 'だいがわり' })
+  // 못 쓴 쪽에는 오답이 안 생긴다 — 아직 안 배운 카드로 남는다
+  expect(fresh.some((e) => e.idiomId === DAITAI)).toBe(false)
 })

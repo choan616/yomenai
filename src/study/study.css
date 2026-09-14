@@ -868,3 +868,11 @@
   color: var(--text);
   font-weight: 600;
 }
+.follow-up-count {
+  display: block;
+  margin-top: 6px;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  color: var(--text-faint);
+  font-variant-numeric: tabular-nums;
+}

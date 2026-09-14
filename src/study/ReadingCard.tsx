@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import type { Confidence } from '../core/scheduler.ts'
 import { loadExamples } from '../dict/load.ts'
 import type { RuntimeIdiom } from '../dict/load.ts'
-import type { FollowUp, ReadingFeedback } from './useStudySession.ts'
+import type { ReadingFeedback } from './useStudySession.ts'
 import { KanaInput } from './KanaInput.tsx'
 import { MistakeDetail } from './MistakeDetail.tsx'
 import { MISTAKE_ADVICE, MISTAKE_LABEL, RULE_MISTAKES } from './mistakeLabels.ts'
@@ -13,8 +13,11 @@ import { tts } from './tts.ts'
 interface Props {
   idiom: RuntimeIdiom
   feedback?: ReadingFeedback
-  /** 채워져 있으면 이어 묻기 중 — 다른 읽기로 맞혀서 이 카드의 읽기를 다시 묻는 상태 */
-  followUp?: FollowUp
+  /**
+   * 「읽기 둘」 카드면 채워진다. `given` 은 여태 맞힌 읽기 —
+   * 문제에 「그것 말고」 로 못박아 같은 답을 또 쓰지 않게 한다
+   */
+  dualAsk?: { total: number; given: string[] }
   onSubmit: (answer: string) => void
   /** 모르겠다고 넘기기 — 정답 화면으로 바로 간다 */
   onPass: () => void
@@ -24,7 +27,7 @@ interface Props {
 export function ReadingCard({
   idiom,
   feedback: fb,
-  followUp,
+  dualAsk,
   onSubmit,
   onPass,
   onNext,
@@ -72,10 +75,20 @@ export function ReadingCard({
             {/* 동형이독의 다른 읽기로 맞힌 경우 (2026-09-14). 정답으로 치되 이 카드가
                 묻는 읽기를 알려준다 — 위 루비가 내가 안 쓴 글자라 이 줄이 없으면
                 「정답인데 왜 다른 글자가 뜨지」 가 된다 */}
-            {/* 이어 묻기를 거친 경우 — 맞힌 쪽도 기록에 남았다는 걸 알려준다 */}
-            {fb.alsoKnew !== null && (
+            {/* 「읽기 둘」 결과. 맞힌 쪽만 기록에 남고 못 쓴 쪽은 아직 안 배운 카드로
+                남는다 — 맞는 읽기를 쓰고 정답률이 깎이면 안 된다 */}
+            {fb.dual && (
               <p className="rule-hint">
-                <span lang="ja">{fb.alsoKnew}</span> 도 맞혔어요. 두 읽기를 따로 익히게 됩니다.
+                {fb.dual.got.length === 2 ? (
+                  <>두 읽기를 다 맞혔어요. 각각 따로 익히게 됩니다.</>
+                ) : fb.dual.got.length === 1 ? (
+                  <>
+                    <span lang="ja">{fb.dual.got[0].reading}</span> 는 맞혔어요. 나머지 하나는
+                    아직 안 배운 것으로 두고 다음에 다시 냅니다.
+                  </>
+                ) : (
+                  <>이 표기는 읽기가 둘이에요. 둘 다 다음에 다시 냅니다.</>
+                )}
               </p>
             )}
             {fb.viaAlt && (
@@ -129,12 +142,24 @@ export function ReadingCard({
             <p className="headword" lang="ja">
               {idiom.headword}
             </p>
-            {/* 이어 묻기 (2026-09-14). 제외할 읽기를 문제에 못박는다 — 이걸 안 쓰면
-                상대 카드가 나와도 화면이 똑같아서 같은 답을 또 쓰게 된다 */}
-            {followUp && (
+            {/* 「읽기 둘」 카드 (2026-09-14). 처음부터 둘 다 묻는다 — 답을 보고 발동하면
+                같은 실력이 순서에 따라 다르게 처리된다. 이미 쓴 읽기는 제외 조건으로
+                못박는다. 안 그러면 같은 답을 또 쓰게 된다 */}
+            {dualAsk && (
               <p className="follow-up">
-                <span lang="ja">{followUp.knownReading}</span> 맞아요. 이 표기엔 읽기가 하나 더
-                있어요 — <b>그것 말고</b> 다른 읽기를 써 보세요.
+                {dualAsk.given.length === 0 ? (
+                  <>
+                    이 표기는 읽기가 <b>둘</b>이에요. 하나씩 써 보세요.
+                  </>
+                ) : (
+                  <>
+                    <span lang="ja">{dualAsk.given[dualAsk.given.length - 1]}</span> 맞아요 —{' '}
+                    <b>그것 말고</b> 나머지 하나를 써 보세요.
+                  </>
+                )}
+                <span className="follow-up-count">
+                  {dualAsk.given.length + 1}/{dualAsk.total}
+                </span>
               </p>
             )}
           </>
@@ -147,7 +172,7 @@ export function ReadingCard({
             포커스와 키보드는 유지된다 */}
         <KanaInput
           onSubmit={onSubmit}
-          resetKey={idiom.idiomId + (followUp ? ':2' : '')}
+          resetKey={idiom.idiomId + ':' + (dualAsk?.given.length ?? 0)}
           locked={!!fb}
         />
         {/* 모를 때 넘기는 길 (2026-09-14). 없으면 아무 글자나 쳐서 오답을 만들어야 했고,

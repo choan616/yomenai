@@ -15,7 +15,7 @@ import { classifyMistake } from '../core/mistakes.ts'
 import { onyomiEcho, type OnyomiEcho } from '../core/echo.ts'
 import { observeReading, type Observation } from '../core/observe.ts'
 import { rubyOf, type RubySegment } from '../core/ruby.ts'
-import { siblingFor } from './homograph.ts'
+import { foldHomographs, pairOf } from './homograph.ts'
 import { buildFocus, buildRematch } from '../core/session.ts'
 import { surfaceOfPair } from '../core/surface.ts'
 import type { Confidence } from '../core/scheduler.ts'
@@ -49,11 +49,8 @@ export interface ReadingFeedback {
    * 정답으로 치되 이 카드가 묻는 읽기는 한 줄로 알려준다
    */
   viaAlt: boolean
-  /**
-   * 이어 묻기를 거쳤고 다른 읽기는 맞혔을 때 그 읽기. 이 카드의 정오답과는 별개다 —
-   * 「いちば 는 맞혔어요」 를 보여주려고 남긴다
-   */
-  alsoKnew: string | null
+  /** 「읽기 둘」 카드였다면 그 결과. 보통 카드면 null */
+  dual: DualOutcome | null
   /**
    * 오답 유형을 붙여도 되는 답인지. **이벤트에도 그대로 넘긴다** —
    * `recordReadingAnswer` 가 유형을 다시 계산하므로 화면에만 걸면 기록이 어긋난다
@@ -62,20 +59,26 @@ export interface ReadingFeedback {
 }
 
 /**
- * 동형이독 이어 묻기 (2026-09-14).
+ * 「읽기 둘」 카드의 결과 (2026-09-14).
  *
- * 市場 에 いちば 라고 쓰면 맞는 답이다. 하지만 이 카드가 묻는 건 しじょう 다.
- * 그냥 정답 처리하고 넘어가면 **다른 쪽을 아는지는 끝내 모른 채** 지나간다.
- * 그래서 넘어가지 않고 「いちば 말고」 를 붙여 한 번 더 묻는다.
+ * 한 표기에 읽기가 둘인 말(市場 いちば/しじょう)은 답이 하나인 카드 모델에 안 맞는다.
+ * 그래서 정규 읽기 카드로 내지 않고 **한 장으로 접어 처음부터 둘 다 묻는다.**
+ * 두 읽기는 이미 각각 별도의 숙어라 스키마에 더할 것은 없다 — 이벤트는 그대로
+ * 각 숙어의 reading 이벤트이고, 「읽기 둘」인지는 사전과 풀에서 파생된다.
  *
- * 두 읽기는 이미 각각 별도의 숙어(별도 idiomId)이므로 새 카드 종류를 만들 필요가 없다.
- * 맞힌 읽기 쪽 숙어에도 정답 이벤트를 남기면 그 카드의 FSRS 도 같이 전진한다.
+ * 기록 규칙은 한 줄이다.
+ * **쓴 읽기의 카드에만 정답을 남기고, 못 쓴 쪽에는 아무것도 안 남긴다.**
+ * 오답은 어느 읽기로도 못 읽었을 때만 생긴다 — 못 쓴 쪽은 "틀린 것" 이 아니라
+ * "아직 안 배운 것" 이라 정규 세션에서 다시 나온다.
  */
-export interface FollowUp {
-  /** 방금 맞힌 *다른* 읽기 — 문제에 「이것 말고」 로 띄운다 */
-  knownReading: string
-  /** 그 읽기를 가진 숙어. 여기에도 정답 이벤트를 남긴다 */
-  knownIdiomId: string
+export interface DualOutcome {
+  /** 맞힌 읽기들. 각각 그 숙어의 카드에 정답 이벤트가 된다 */
+  got: { idiomId: string; reading: string }[]
+  /**
+   * 어느 읽기로도 못 읽었을 때의 답. 이때만 서빙된 카드에 오답 이벤트를 남긴다.
+   * 하나라도 맞혔으면 null — 맞는 읽기를 쓰고 정답률이 깎이면 안 된다
+   */
+  missedAnswer: string | null
 }
 
 export type StudyStatus =
@@ -109,8 +112,11 @@ export interface StudyState {
    * 소개·뜻 카드처럼 읽기를 이미 보여주는 자리에서만 쓴다 (2026-09-14).
    */
   idiomRuby?: RubySegment[]
-  /** 이어 묻기 중이면 채워진다 — 같은 카드에서 다른 읽기를 한 번 더 묻는 상태 */
-  followUp?: FollowUp
+  /**
+   * 「읽기 둘」 카드면 채워진다. `given` 은 여태 맞힌 읽기 — 화면이 「그것 말고」 로
+   * 제외 조건을 띄우는 데 쓴다
+   */
+  dualAsk?: { total: number; given: string[] }
   /** 카드 전환마다 1 증가. 화면이 전환 시간을 실측하는 트리거 (PLAN §7) */
   transitionSeq: number
 }
@@ -120,10 +126,6 @@ export interface StudyActions {
   submitReading: (answer: string) => void
   /** 모르겠다고 넘긴다 — 빈 답으로 남아 오답 유형이 안 붙는다 (2026-09-14) */
   passReading: () => void
-  /** 이어 묻기의 답 — 대체 읽기는 안 받는다 (「그것 말고」 라고 물었으니) */
-  submitFollowUp: (answer: string) => void
-  /** 이어 묻기를 모르겠다고 넘긴다 — 이 카드는 오답, 맞힌 쪽은 그대로 */
-  passFollowUp: () => void
   /** 뜻 카드 자기 채점 — 뜻을 확인한 뒤 안다/모른다 */
   submitMeaning: (known: boolean) => void
   /** "뜻은 알고 계셨나요" 지연 검수 응답 */
@@ -173,8 +175,8 @@ export function useStudySession({
   /** 지연 검수 질문을 아직 안 지난 카드인지 */
   const [inClassReview, setInClassReview] = useState(false)
   const [feedback, setFeedback] = useState<ReadingFeedback | null>(null)
-  // 이어 묻기 상태. settle 에서 지우지 않는다 — next 가 맞힌 쪽 숙어 id 를 여기서 읽는다
-  const [followUp, setFollowUp] = useState<FollowUp | null>(null)
+  /** 「읽기 둘」 카드에서 여태 맞힌 읽기. 카드가 바뀌면 비운다 */
+  const [dualGot, setDualGot] = useState<{ idiomId: string; reading: string }[]>([])
   /** 뜻 카드에서 자기 채점을 마쳤는지 (피드백 표시용) */
   const [meaningDone, setMeaningDone] = useState<boolean | null>(null)
   const [results, setResults] = useState<boolean[]>([])
@@ -273,8 +275,13 @@ export function useStudySession({
         for (const e of events) {
           if (e.type === 'review' && e.deletedAt === null) seen.add(e.idiomId)
         }
+        // 같은 표기의 읽기 카드는 한 장으로 접는다 — 「읽기 둘」 카드가 한 번에 다
+        // 물으므로, 안 접으면 방금 물어본 표기가 세션 뒤에 또 나온다 (2026-09-14).
+        // 소개 배치보다 먼저 해야 한다 — 접힌 카드 자리로 소개 간격이 어긋나지 않게
+        const byIdLoaded = new Map(loaded.map((x) => [x.idiomId, x.headword]))
+        const folded = foldHomographs(built.cards, (id) => byIdLoaded.get(id))
         const plan = planIntros(
-          built.cards,
+          folded,
           (id) => introduced.has(id),
           (id) => seen.has(id),
           readings,
@@ -296,6 +303,18 @@ export function useStudySession({
 
   const card = session?.cards[idx]
   const idiom = card ? byId.get(card.idiomId) : undefined
+
+  /**
+   * 같은 표기를 쓰는 다른 숙어가 풀에 있으면 이 카드는 「읽기 둘」 카드다.
+   * 답을 안 보고 표기만으로 정한다 — 순서에 따라 다르게 처리되면 안 된다.
+   * 상대가 풀에 없으면(밴드 4 만 가진 읽기) 물어볼 카드가 없으니 보통 카드로 둔다.
+   */
+  const dualPair = useMemo(
+    () => (idiom && card?.cardType === 'reading'
+      ? pairOf(idiom, byHeadword.get(idiom.headword))
+      : undefined),
+    [idiom, card, byHeadword],
+  )
 
   const answerCtx = useCallback(
     (): AnswerContext => ({
@@ -320,7 +339,7 @@ export function useStudySession({
       setResults((r) => [...r, correct])
       setKnewMeaning(false)
       setFeedback(null)
-      setFollowUp(null)
+      setDualGot([])
       setMeaningDone(null)
       setIdx((i) => {
         const nextCard = session?.cards[i + 1]
@@ -351,17 +370,21 @@ export function useStudySession({
    * 판정이 끝난 뒤 피드백을 세운다. 첫 제출과 이어 묻기가 같이 쓴다 —
    * 메아리·관찰 게이트를 두 군데에 복사해 두면 한쪽만 고치는 사고가 난다
    */
+  /**
+   * 판정이 끝난 뒤 피드백을 세운다. 보통 카드와 「읽기 둘」 카드가 같이 쓴다 —
+   * 메아리·관찰 게이트를 두 군데에 복사해 두면 한쪽만 고치는 사고가 난다
+   */
   const settle = useCallback(
     (args: {
       answer: string
       correct: boolean
-      alsoKnew: string | null
       viaAlt: boolean
+      dual: DualOutcome | null
       /** false 면 오답이어도 유형을 안 붙인다 — 「모르겠어요」 와 같은 이유 */
       classify?: boolean
     }) => {
       if (!idiom || !mistakes.current) return
-      const { answer, correct, alsoKnew, viaAlt } = args
+      const { answer, correct, viaAlt, dual } = args
       const mistakeType =
         correct || args.classify === false
           ? null
@@ -388,76 +411,75 @@ export function useStudySession({
         }
       }
 
-      const ruby = rubyOf(idiom.headword, idiom.reading, mistakes.current.lookup)
       setFeedback({
         correct,
         expected: idiom.reading,
         mistakeType,
         answer,
         echo,
-        ruby,
+        ruby: rubyOf(idiom.headword, idiom.reading, mistakes.current.lookup),
         observe,
         viaAlt,
-        alsoKnew,
+        dual,
         classify: args.classify !== false,
       })
     },
     [idiom, session, sessionEvents, byId],
   )
 
+  /**
+   * 「읽기 둘」 카드의 답을 받는다.
+   *
+   * 규칙은 한 줄이다 — **쓴 읽기의 카드에만 정답을 남기고, 못 쓴 쪽에는 아무것도 안
+   * 남긴다.** 오답은 어느 읽기로도 못 읽었을 때만 생긴다. 그래서 한쪽만 아는 사람이
+   * 맞는 읽기를 쓰고도 정답률이 깎이는 일이 없다 (사용자 지적 2026-09-14).
+   */
+  const answerDual = useCallback(
+    (answer: string) => {
+      if (!idiom || !dualPair) return
+      const all = [
+        { idiomId: idiom.idiomId, reading: idiom.reading },
+        { idiomId: dualPair.idiomId, reading: dualPair.reading },
+      ]
+      const left = all.filter((r) => !dualGot.some((g) => g.idiomId === r.idiomId))
+      const hit = left.find((r) => isCorrectReading(r.reading, answer))
+
+      if (!hit) {
+        // 남은 읽기를 못 썼다. 하나라도 맞힌 게 있으면 오답을 남기지 않는다 —
+        // 못 쓴 쪽은 "아직 안 배운 것" 이지 "틀린 것" 이 아니다
+        settle({
+          answer,
+          correct: dualGot.length > 0,
+          viaAlt: false,
+          dual: { got: dualGot, missedAnswer: dualGot.length > 0 ? null : answer },
+        })
+        return
+      }
+
+      const got = [...dualGot, hit]
+      setDualGot(got)
+      // 아직 남았으면 이어서 묻는다. 화면은 방금 쓴 읽기를 제외 조건으로 보여준다
+      if (got.length < all.length) return
+      settle({ answer, correct: true, viaAlt: false, dual: { got, missedAnswer: null } })
+    },
+    [idiom, dualPair, dualGot, settle],
+  )
+
   const submitReading = useCallback(
     (answer: string) => {
       if (!card || !idiom || !mistakes.current) return
-      const correct = isCorrectReading(idiom.reading, answer, idiom.altReadings)
-      // 정답이지만 이 카드의 읽기와는 다르다 = 동형이독의 다른 쪽을 쓴 것
-      const viaAlt = correct && !isCorrectReading(idiom.reading, answer)
-
-      // 이어 묻기 — 상대 숙어가 지금 풀에 있을 때만 할 수 있다. 없으면(밴드 4 만 가진
-      // 읽기 등) 물어볼 카드가 없으니 한 줄 안내로 끝낸다
-      if (viaAlt) {
-        const sib = siblingFor(idiom, answer, byHeadword.get(idiom.headword))
-        if (sib) {
-          setFollowUp({ knownReading: sib.reading, knownIdiomId: sib.idiomId })
-          return
-        }
+      if (dualPair) {
+        answerDual(answer)
+        return
       }
-      settle({ answer, correct, alsoKnew: null, viaAlt })
+      const correct = isCorrectReading(idiom.reading, answer, idiom.altReadings)
+      // 상대 숙어가 풀에 없어 물어볼 수 없는 읽기로 맞힌 경우 — 정답으로 치고
+      // 이 카드가 묻는 읽기를 한 줄로 알려준다
+      const viaAlt = correct && !isCorrectReading(idiom.reading, answer)
+      settle({ answer, correct, viaAlt, dual: null })
     },
-    [card, idiom, byHeadword, settle],
+    [card, idiom, dualPair, answerDual, settle],
   )
-
-  /**
-   * 이어 묻기의 답. 여기서는 **대체 읽기를 안 받는다** — 방금 「그것 말고」 라고
-   * 물었으니 이 카드의 읽기만 정답이다.
-   */
-  const submitFollowUp = useCallback(
-    (answer: string) => {
-      if (!idiom || !followUp) return
-      const correct = isCorrectReading(idiom.reading, answer)
-      // 또 대체 읽기를 쓴 경우 — 오답이되 **유형은 안 붙인다.** 읽기를 잘못 고른 게
-      // 아니라 다른 쪽을 못 꺼낸 것이라, 유형을 붙이면 오답 분포가 거짓이 된다
-      // (「모르겠어요」 와 같은 이유, context-notes 2026-09-14)
-      const repeated =
-        !correct && isCorrectReading(idiom.reading, answer, idiom.altReadings)
-      settle({
-        answer,
-        correct,
-        alsoKnew: followUp.knownReading,
-        viaAlt: false,
-        classify: !repeated,
-      })
-    },
-    [idiom, followUp, settle],
-  )
-
-  /** 이어 묻기에서 모르겠다고 넘긴다 — 이 카드는 오답, 맞힌 쪽은 그대로 남는다 */
-  const passFollowUp = useCallback(() => {
-    if (!followUp) return
-    settle({ answer: '', correct: false, alsoKnew: followUp.knownReading, viaAlt: false })
-  }, [followUp, settle])
-
-  // 첫 제출의 「모르겠어요」 는 빈 답이라 분류기가 스스로 null 을 낸다 — classify 를
-  // 따로 넘길 일이 없다 (src/core/mistakes.ts 의 빈 답 처리)
 
   /**
    * 모르겠다고 넘긴다 (테스터 피드백 2026-09-14).
@@ -469,8 +491,18 @@ export function useStudySession({
    * 무엇을 잘못 골랐는지가 없는데 유형을 붙이면 분포가 거짓이 된다.
    */
   const passReading = useCallback(() => {
-    settle({ answer: '', correct: false, alsoKnew: null, viaAlt: false })
-  }, [settle])
+    if (dualPair) {
+      // 「읽기 둘」 에서 넘기면 여태 맞힌 것만 남는다. 하나라도 맞혔으면 오답은 없다
+      settle({
+        answer: '',
+        correct: dualGot.length > 0,
+        viaAlt: false,
+        dual: { got: dualGot, missedAnswer: dualGot.length > 0 ? null : '' },
+      })
+      return
+    }
+    settle({ answer: '', correct: false, viaAlt: false, dual: null })
+  }, [dualPair, dualGot, settle])
 
   const submitMeaning = useCallback(
     (known: boolean) => {
@@ -499,32 +531,31 @@ export function useStudySession({
   const next = useCallback(
     (confidence?: Confidence) => {
       if (!card || !idiom) return
-      if (feedback) {
-        record(
-          recordReadingAnswer({
-            item: card,
-            headword: idiom.headword,
-            reading: idiom.reading,
-            answer: feedback.answer,
-            // 이어 묻기를 거쳤으면 대체 읽기를 다시 받아주면 안 된다 —
-            // 방금 「그것 말고」 라고 물었다
-            altReadings: feedback.alsoKnew === null ? idiom.altReadings : undefined,
-            classify: feedback.classify,
-            confidence,
-            ctx: answerCtx(),
-            mistakes: mistakes.current!,
-          }),
-        )
-        // 이어 묻기에서 맞힌 다른 읽기는 **그 숙어의 카드**에도 남긴다.
-        // 두 읽기는 처음부터 별도 숙어라 스키마를 건드릴 것이 없다 —
-        // 그 카드의 FSRS 도 같이 전진한다 (2026-09-14)
-        if (followUp) {
+      if (feedback?.dual) {
+        // 「읽기 둘」 — 쓴 읽기의 카드에만 정답을 남긴다. 두 읽기는 처음부터 별도
+        // 숙어라 평범한 reading 이벤트 두 개로 끝난다
+        for (const g of feedback.dual.got) {
           record(
             recordReadingAnswer({
-              item: { idiomId: followUp.knownIdiomId, cardType: 'reading', mode: card.mode, due: false },
+              item: { idiomId: g.idiomId, cardType: 'reading', mode: card.mode, due: false },
               headword: idiom.headword,
-              reading: followUp.knownReading,
-              answer: followUp.knownReading,
+              reading: g.reading,
+              answer: g.reading,
+              confidence,
+              ctx: answerCtx(),
+              mistakes: mistakes.current!,
+            }),
+          )
+        }
+        // 오답은 어느 읽기로도 못 읽었을 때만. 못 쓴 쪽은 무기록으로 두어
+        // 「아직 안 배운 카드」 로 남긴다
+        if (feedback.dual.missedAnswer !== null) {
+          record(
+            recordReadingAnswer({
+              item: card,
+              headword: idiom.headword,
+              reading: idiom.reading,
+              answer: feedback.dual.missedAnswer,
               confidence,
               ctx: answerCtx(),
               mistakes: mistakes.current!,
@@ -532,11 +563,25 @@ export function useStudySession({
           )
         }
         advance(feedback.correct)
+      } else if (feedback) {
+        record(
+          recordReadingAnswer({
+            item: card,
+            headword: idiom.headword,
+            reading: idiom.reading,
+            answer: feedback.answer,
+            altReadings: idiom.altReadings,
+            confidence,
+            ctx: answerCtx(),
+            mistakes: mistakes.current!,
+          }),
+        )
+        advance(feedback.correct)
       } else if (meaningDone !== null) {
         advance(meaningDone)
       }
     },
-    [card, idiom, feedback, followUp, meaningDone, answerCtx, advance, record],
+    [card, idiom, feedback, meaningDone, answerCtx, advance, record],
   )
 
   const events = useMemo(
@@ -576,7 +621,9 @@ export function useStudySession({
         : undefined,
     events,
     pool: poolOut,
-    followUp: followUp ?? undefined,
+    dualAsk: dualPair
+      ? { total: 2, given: dualGot.map((g) => g.reading) }
+      : undefined,
     transitionSeq,
   }
 
@@ -585,8 +632,6 @@ export function useStudySession({
     {
       submitReading,
       passReading,
-      submitFollowUp,
-      passFollowUp,
       submitMeaning,
       answerClassReview,
       seenIntro,
