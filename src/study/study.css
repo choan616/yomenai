@@ -624,24 +624,36 @@
 
 /* ── 루비 — 정답 읽기를 한자 위에 얹는다 (校正紙 컨셉).
    아래에 한 줄 더 놓는 것과 달리 "고쳐졌다"는 감각이 남는다. ── */
+/* 네이티브 ruby 배치로는 간격을 못 잡는다. rt 와 한자 사이의 틈은 행간이 아니라
+   폰트 메트릭에서 온다 — Noto Sans JP 는 ascent 가 1.16em 이라 한자 윗변 위로
+   0.28em 의 빈 공간이 늘 남고 루비는 그 위에 얹힌다. 행간을 줄여도 안 없어지고,
+   그 여백을 다루는 방식이 엔진마다 달라 PC 와 iOS 가 어긋났다 (2026-09-14).
+   그래서 <ruby> 를 세로 flex 로 직접 쌓는다 — 간격이 gap 한 곳에서 결정된다.
+   마크업(<ruby>/<rt>)은 그대로라 의미와 복사 동작은 유지된다. */
 .headword.has-ruby {
-  /* rt 가 위로 자리를 먹으므로 본문 글자는 조금 줄이고 여백을 준다.
-     1.9 는 과했다 — Blink 는 남는 행간에 rt 를 끼워 넣지만 WebKit 은 rt 를 한자 위에
-     쌓고 행간을 더한다. 그래서 같은 값이 PC(Chrome)에서는 붙어 보이고 모바일에서는
-     멀어진다 (2026-09-14) */
   font-size: clamp(40px, 13vw, 72px);
-  line-height: 1.6;
-  ruby-position: over;
+  /* 루비 한 덩어리는 1.23em 이다(한자 0.92 + gap 0.01 + rt 0.3). 줄 상자가 그보다
+     커야 위가 잘리지 않는다 */
+  line-height: 1.4;
 }
 .headword.has-ruby ruby {
-  ruby-align: center;
+  display: inline-flex;
+  /* 자식 순서는 [한자, rt] 다. column-reverse 라야 rt 가 위로 간다 */
+  flex-direction: column-reverse;
+  align-items: center;
+  vertical-align: bottom;
+  /* 1 미만이라야 한자 윗변의 ascent 여백(0.28em)이 상자 밖으로 빠진다.
+     0.92 에서 잉크 기준 간격이 0.059em — 인쇄물 후리가나와 같은 값이다.
+     캔버스 actualBoundingBox 로 실측해 정했다 (2026-09-14) */
+  line-height: 0.92;
+  /* 한자와 요미가나 사이 — 간격은 여기 한 곳에서만 정한다 */
+  gap: 0.01em;
 }
 .headword.has-ruby rt {
+  display: block;
   font-size: 0.3em;
+  line-height: 1;
   font-weight: 400;
-  /* 행간을 물려받으면 안 된다 — rt 아래쪽 반행간이 그대로 한자와의 틈이 된다.
-     normal 은 폰트 메트릭 그대로(Noto Sans JP 는 1.448)라 반행간이 0 이다 */
-  line-height: normal;
   /* 기본은 무채다. 朱 는 "고쳐졌다" 는 표시라 오답 자리에서만 쓴다 —
      설명 카드(알아 두기·다시보기·오답 상세)에서 붉으면 틀린 것처럼 읽힌다 (2026-09-14) */
   color: var(--text-dim);
