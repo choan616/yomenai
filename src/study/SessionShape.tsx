@@ -7,6 +7,9 @@ import { useEffect, useState } from 'react'
  *
  * 소개는 문제 수에 안 드니 **갈라서 말한다** (2026-09-14). 「20장」 이 설정값인데
  * 화면에 25가 뜨면 설정이 거짓말한 것처럼 보인다.
+ *
+ * "먼저 알려 드릴게요" 라고 쓰지 않는다 — 소개는 앞에 모이지 않고 **그 숙어가 나올 자리에**
+ * 문제 대신 끼어든다(`planIntros` 가 첫 등장 자리를 지킨다). 안 지킬 약속을 문구로 하지 않는다.
  */
 export function ChapterTitle({ total, intros }: { total: number; intros: number }) {
   const [gone, setGone] = useState(false)
@@ -22,7 +25,7 @@ export function ChapterTitle({ total, intros }: { total: number; intros: number 
       </p>
       {intros > 0 && (
         <p className="dim">
-          처음 보는 <b>{intros}개</b>는 먼저 알려 드릴게요
+          처음 보는 <b>{intros}개</b>는 문제 대신 설명으로 나와요
         </p>
       )}
       <p className="dim">시작할게요</p>
