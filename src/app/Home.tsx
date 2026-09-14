@@ -14,6 +14,7 @@ import {
 import { loadSettings, QUICK_SESSION_LIMIT } from './settings.ts'
 import type { Screen } from '../App.tsx'
 import { openGuide } from './guide.ts'
+import { isWelcomeSeen, markWelcomeSeen } from './welcome.ts'
 
 interface Preview {
   ready: number
@@ -29,6 +30,8 @@ export function Home({ onNavigate }: { onNavigate: (screen: Screen) => void }) {
   const [error, setError] = useState<string | null>(null)
   // 로그를 읽기 전엔 플래그만 보고, 읽고 나면 수준까지 보고 다시 정한다
   const [needsDiagnostic, setNeedsDiagnostic] = useState(!isDiagnosticDone())
+  /** 첫 안내를 아직 안 봤나. 화면 하나를 더 만들지 않고 홈 위에 얹는다 — 아래 주석 참조 */
+  const [showWelcome, setShowWelcome] = useState(!isWelcomeSeen())
 
   useEffect(() => {
     let alive = true
@@ -83,6 +86,44 @@ export function Home({ onNavigate }: { onNavigate: (screen: Screen) => void }) {
       </div>
       <h1 lang="ja">読めない</h1>
       <p className="tagline">뜻은 아는데 못 읽는 숙어를 바로잡아요</p>
+
+      {/* 첫 안내 (테스터 피드백 2026-09-14 — "튜토리얼처럼 안내화면이 뜨면").
+          **별도 화면이 아니라 홈 위의 패널이다.** 화면을 가로막으면 첫 동작(「세션 시작」)이
+          가려지고, 무엇보다 이 앱은 어디에도 모달을 안 쓴다. 세 줄만 적고 비킨다 */}
+      {showWelcome && (
+        <section className="welcome">
+          <p className="welcome-title">처음이시면 이것만</p>
+          <ul>
+            <li>
+              <b>읽기만 다뤄요.</b> 뜻은 이미 아신다고 보고 <b>음독</b>을 묻습니다.
+            </li>
+            <li>
+              <b>모르면 넘기세요.</b> 입력칸 아래 「모르겠어요」를 누르면 정답과 해설로 바로 갑니다.
+            </li>
+            <li>
+              <b>처음 30문항은 레벨 테스트예요.</b> 설명 없이 풀립니다. 그 뒤부터 모르는 단어를
+              먼저 알려 드려요.
+            </li>
+            <li>
+              다루는 난이도는 <b>N2 이상</b>이에요. 쉬운 구간(N3 이하)은 기본에서 빠져 있어요.
+            </li>
+          </ul>
+          <div className="welcome-actions">
+            <button type="button" className="link" onClick={openGuide}>
+              안내서 먼저 보기
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                markWelcomeSeen()
+                setShowWelcome(false)
+              }}
+            >
+              알겠어요
+            </button>
+          </div>
+        </section>
+      )}
 
       {needsDiagnostic ? (
         <>

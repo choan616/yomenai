@@ -761,3 +761,58 @@
   font-size: 12px;
   color: var(--text-faint);
 }
+
+/* ── 첫 안내 (2026-09-14) ── */
+/* 모달이 아니다. 홈 위에 얹혀 첫 동작을 가리지 않고, 「알겠어요」 를 누르면 영영 사라진다 */
+.welcome {
+  width: 100%;
+  max-width: 320px;
+  margin-top: 4px;
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  text-align: left;
+}
+.welcome-title {
+  margin: 0;
+  font-size: 0.82rem;
+  letter-spacing: 0.04em;
+  color: var(--text-faint);
+}
+.welcome ul {
+  margin: 0;
+  padding-left: 1.1em;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text-dim);
+}
+.welcome li b {
+  color: var(--text);
+  font-weight: 500;
+}
+.welcome-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+.welcome-actions button {
+  background: none;
+  border: 0;
+  color: var(--text-dim);
+  font-size: 13px;
+  padding: 6px 4px;
+}
+.welcome-actions button:last-child {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 6px 14px;
+  color: var(--text);
+}

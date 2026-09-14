@@ -17,6 +17,7 @@ import { resetLearning, syncNow, type SyncProgress } from '../sync/sync.ts'
 import { clearIntroduced } from '../study/introduced.ts'
 import { getLastSyncAt, setLastSyncAt, setSignedIn, wasSignedIn } from '../sync/syncState.ts'
 import { clearDiagnosticDone } from './diagnostic-state.ts'
+import { clearWelcomeSeen } from './welcome.ts'
 
 const STEP = 5
 
@@ -194,6 +195,8 @@ function ResetSetting() {
       .then(() => {
         // 기록이 비었으니 진입 진단도 다시 받을 수 있어야 한다. 안 지우면 영영 안 뜬다
         clearDiagnosticDone()
+        // 기록이 비었으면 처음 쓰는 상태다. 첫 안내도 다시 보여준다
+        clearWelcomeSeen()
         // 세션 훅·홈 통계 등 곳곳의 파생 상태를 확실히 비우려고 통째로 새로고침한다
         window.location.reload()
       })
