@@ -709,12 +709,21 @@
   display: flex;
   gap: 8px;
 }
-/* 한 줄에 둘이 서므로 각자 절반을 쓴다. 하나뿐이면 그대로 다 쓴다 */
+/* 한 줄에 둘이 서므로 각자 절반을 쓴다. 하나뿐이면 그대로 다 쓴다.
+   `.btn` 이 height 를 --tap(52px) 으로 고정하므로 **반드시 풀어야 한다** —
+   안 풀면 두 번째 줄이 버튼 박스 밖으로 흘러나온다 (2026-09-14) */
 .wrong-group-row .btn.rematch {
   flex: 1;
   max-width: none;
+  height: auto;
+  min-height: var(--tap);
   padding: 10px 12px;
   font-size: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
 }
 
 /* 설정 버튼 — 아이콘만으로는 눈에 안 띄어 글자와 테두리를 붙였다 (2026-09-14) */
@@ -731,24 +740,21 @@
   font-size: 14px;
 }
 
-/* 「틀렸던 것」 버튼 — 이름 / 수 뱃지 / 설명 세 줄. 수는 뱃지라 한눈에 잡힌다 */
-.wrong-group-row .btn.rematch {
-  display: flex;
-  flex-direction: column;
+/* 「틀렸던 것」 버튼 — 이름과 수가 한 줄, 설명이 그 아래 */
+.wg-head {
+  display: inline-flex;
   align-items: center;
-  gap: 4px;
-}
-.wg-name {
-  font-size: 14px;
+  gap: 6px;
   color: var(--text);
 }
 .wg-badge {
-  min-width: 26px;
-  padding: 1px 8px;
+  min-width: 22px;
+  padding: 0 7px;
   border-radius: 999px;
   background: var(--ng-bg);
   color: var(--ng);
-  font-size: 13px;
+  font-size: 12px;
+  line-height: 1.7;
   font-variant-numeric: tabular-nums;
 }
 .wg-note {

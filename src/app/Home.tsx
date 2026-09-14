@@ -146,15 +146,17 @@ export function Home({ onNavigate }: { onNavigate: (screen: Screen) => void }) {
               <div className="wrong-group-row">
                 {preview.rematch > 0 && (
                   <button type="button" className="btn rematch" onClick={() => onNavigate('rematch')}>
-                    <span className="wg-name">재도전</span>
-                    <span className="wg-badge">{preview.rematch}</span>
+                    <span className="wg-head">
+                      재도전 <span className="wg-badge">{preview.rematch}</span>
+                    </span>
                     <span className="wg-note">채점해요</span>
                   </button>
                 )}
                 {preview.browse > 0 && (
                   <button type="button" className="btn rematch" onClick={() => onNavigate('browse')}>
-                    <span className="wg-name">다시보기</span>
-                    <span className="wg-badge">{preview.browse}</span>
+                    <span className="wg-head">
+                      다시보기 <span className="wg-badge">{preview.browse}</span>
+                    </span>
                     <span className="wg-note">채점 없이</span>
                   </button>
                 )}
