@@ -145,14 +145,15 @@ export function Browse({ onExit }: { onExit: () => void }) {
           <button type="button" className="btn" disabled={at === 0} onClick={() => move(-1)}>
             ‹ 이전
           </button>
-          <button
-            type="button"
-            className="btn-primary"
-            disabled={at === items.length - 1}
-            onClick={() => move(1)}
-          >
-            다음 ›
-          </button>
+          {at === items.length - 1 ? (
+            <button type="button" className="btn-primary" onClick={onExit}>
+              돌아가기
+            </button>
+          ) : (
+            <button type="button" className="btn-primary" onClick={() => move(1)}>
+              다음 ›
+            </button>
+          )}
         </div>
       </div>
     </div>
