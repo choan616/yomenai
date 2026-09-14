@@ -680,15 +680,7 @@
   justify-content: flex-end;
   padding: 4px 4px 0;
 }
-.home-gear {
-  background: none;
-  border: 0;
-  color: var(--text-faint);
-  font-size: 20px;
-  line-height: 1;
-  min-height: var(--tap);
-  min-width: var(--tap);
-}
+
 
 /* ── 「틀렸던 것」 묶음 (2026-09-14) ── */
 /* 재대결과 다시보기는 대상이 같다. 나란히 세워 채점 유무의 선택으로 읽히게 한다 */

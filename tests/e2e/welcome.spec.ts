@@ -27,8 +27,7 @@ test('첫 안내는 한 번만 뜨고, 뜬 동안에도 시작 버튼에 닿는�
   const welcome = page.locator('.welcome')
   await expect(welcome).toBeVisible({ timeout: 10_000 })
 
-  // 알아야 할 세 가지가 실제로 적혀 있다 — 테스터가 몰라서 막혔던 것들이다
-  await expect(welcome).toContainText('음독')
+  // 테스터가 실제로 막혔던 둘이 적혀 있다. 나머지는 안내서로 보냈다
   await expect(welcome).toContainText('모르겠어요')
   await expect(welcome).toContainText('N2')
 
