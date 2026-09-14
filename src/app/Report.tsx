@@ -275,12 +275,8 @@ function LevelSection({
         읽기 {reviews}회 · 전체 정답률 {accuracy}%
       </p>
       {/* 한 화면에 정답률이 두 개다 — 위는 누적 전체, 아래 막대는 밴드별 최근 창.
-          같은 말에 다른 뜻이라 무엇을 재는지 밝히지 않으면 반드시 오해를 부른다 */}
-      <p className="hint">
-        아래 막대는 <b>그 밴드의 정답률</b>이에요. 위의 전체 정답률과 달리 최근 {LEVEL_WINDOW}회만 봅니다.
-        {Math.round(LEVEL_SOLID_RATE * 100)}% 이상이면 안정, 그 아래면 흔들림, {LEVEL_MIN_SEEN}회 미만이면 표본
-        부족이에요.
-      </p>
+          제목으로 무엇을 재는지 밝히고, 판정 기준은 표 끝에 캡션으로 붙인다 */}
+      <p className="ladder-title">밴드 정답률</p>
 
       <div className="ladder">
         {level.bands.map((b, i) => (
@@ -319,6 +315,10 @@ function LevelSection({
           </div>
         ))}
       </div>
+      <p className="ladder-caption">
+        최근 {LEVEL_WINDOW}회 기준 · {Math.round(LEVEL_SOLID_RATE * 100)}% 이상 안정 ·
+        {Math.round(LEVEL_SOLID_RATE * 100)}% 미만 흔들림 · {LEVEL_MIN_SEEN}회 미만 표본 부족
+      </p>
     </section>
   )
 }

@@ -70,8 +70,11 @@ export interface StudyState {
   events: { prior: LearningEvent[]; session: LearningEvent[] }
   /** 요약이 숙어 이름과 음독 쌍을 찾는 데 쓴다 */
   pool: RuntimeIdiom[]
-  /** 소개 카드의 요미가나. 한자 위에 읽기를 얹어 보여준다 (2026-09-14) */
-  introRuby?: RubySegment[]
+  /**
+   * 지금 카드의 요미가나. **읽기 문제에는 안 준다** — 답을 그대로 보여주는 꼴이다.
+   * 소개·뜻 카드처럼 읽기를 이미 보여주는 자리에서만 쓴다 (2026-09-14).
+   */
+  idiomRuby?: RubySegment[]
   /** 카드 전환마다 1 증가. 화면이 전환 시간을 실측하는 트리거 (PLAN §7) */
   transitionSeq: number
 }
@@ -397,9 +400,11 @@ export function useStudySession({
       intros: introIds.size,
     },
     summary: { total: results.length, correct: results.filter(Boolean).length },
-    // 사전이 아직 안 왔으면 루비 없이 — 소개 카드가 한자와 읽기를 따로 보여준다
-    introRuby:
-      status === 'intro' && idiom !== undefined && rubyOfIdiom !== null
+    // 사전이 아직 안 왔으면 루비 없이 — 카드가 한자와 읽기를 따로 보여준다
+    idiomRuby:
+      (status === 'intro' || status === 'meaning' || status === 'meaning-feedback') &&
+      idiom !== undefined &&
+      rubyOfIdiom !== null
         ? rubyOfIdiom(idiom)
         : undefined,
     events,

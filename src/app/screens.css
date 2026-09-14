@@ -656,3 +656,18 @@
   font-size: 0.9rem;
   color: var(--text);
 }
+
+/* 밴드 막대의 제목과 판정 기준 캡션 (2026-09-14).
+   기준은 표 끝에 작게 — 읽기 전에 설명부터 들이밀면 표를 안 본다 */
+.level .ladder-title {
+  margin: 14px 0 8px;
+  font-size: 0.82rem;
+  letter-spacing: 0.04em;
+  color: var(--text-dim);
+}
+.level .ladder-caption {
+  margin: 12px 0 0;
+  font-size: 0.72rem;
+  line-height: 1.6;
+  color: var(--text-faint);
+}

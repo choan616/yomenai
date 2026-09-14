@@ -641,7 +641,9 @@
   color: var(--text-dim);
   letter-spacing: 0.02em;
 }
-.feedback.is-ng .headword.has-ruby rt {
+/* 朱 는 "방금 고쳐진 읽기" 에만. 뜻 카드도 채점 뒤 feedback is-ng 를 달기 때문에
+   `.has-ruby` 로 걸면 거기까지 붉어진다 (2026-09-14) */
+.feedback.is-ng .headword.answer-ruby rt {
   color: var(--ng);
 }
 

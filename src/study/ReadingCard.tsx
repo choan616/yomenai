@@ -50,7 +50,7 @@ export function ReadingCard({ idiom, feedback: fb, onSubmit, onNext }: Props) {
       <div className="card-body">
         {fb ? (
           <>
-            <p className="headword has-ruby" lang="ja">
+            <p className="headword has-ruby answer-ruby" lang="ja">
               {fb.ruby.map((r, i) => (
                 <ruby key={i}>
                   {r.text}

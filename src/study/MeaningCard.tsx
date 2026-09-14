@@ -1,17 +1,20 @@
 // 어휘 확장 카드 — 뜻 + 읽기 확인. 동형이의·일본 고유 그룹에서만 나온다 (PLAN §6)
 import { useState } from 'react'
+import type { RubySegment } from '../core/ruby.ts'
 import type { RuntimeIdiom } from '../dict/load.ts'
 import { tts } from './tts.ts'
 
 interface Props {
   idiom: RuntimeIdiom
+  /** 한자 위에 얹을 읽기. 없으면 한자와 읽기를 따로 보여준다 */
+  ruby?: RubySegment[]
   /** 자기 채점을 마쳤는지 (오답이면 뜻을 다시 보여준다) */
   graded: boolean
   onGrade: (known: boolean) => void
   onNext: () => void
 }
 
-export function MeaningCard({ idiom, graded, onGrade, onNext }: Props) {
+export function MeaningCard({ idiom, ruby, graded, onGrade, onNext }: Props) {
   const [revealed, setRevealed] = useState(false)
   const meaning = idiom.koMeaning?.definition?.trim()
 
@@ -24,12 +27,27 @@ export function MeaningCard({ idiom, graded, onGrade, onNext }: Props) {
         )}
       </div>
       <div className="card-body">
-        <p className="headword" lang="ja">
-          {idiom.headword}
-        </p>
-        <p className="reading-shown" lang="ja">
-          {idiom.reading}
-        </p>
+        {/* 읽기는 묻지 않는 카드라 한자 위에 얹는다 (2026-09-14) — 글자와 소리의 대응이
+            한눈에 들어와야 뜻을 떠올리는 데 방해가 없다 */}
+        {ruby === undefined ? (
+          <>
+            <p className="headword" lang="ja">
+              {idiom.headword}
+            </p>
+            <p className="reading-shown" lang="ja">
+              {idiom.reading}
+            </p>
+          </>
+        ) : (
+          <p className="headword has-ruby" lang="ja">
+            {ruby.map((r, i) => (
+              <ruby key={i}>
+                {r.text}
+                <rt>{r.rt}</rt>
+              </ruby>
+            ))}
+          </p>
+        )}
         {/* 확인 단계(뜻 확인 후)에만 소리를 보탠다 — 문제 풀이(뜻 떠올리기) 중엔 안 준다 */}
         {(revealed || graded) && tts.available && (
           <button type="button" className="tts-btn" onClick={() => tts.speak(idiom.reading)}>
