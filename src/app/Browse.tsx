@@ -1,4 +1,4 @@
-// 훑어보기 화면 — 자주 틀린 숙어를 채점 없이 한 장씩 넘겨 본다 (사용자 요청 2026-09-12).
+// 다시보기 화면 — 자주 틀린 숙어를 채점 없이 한 장씩 넘겨 본다 (사용자 요청 2026-09-12).
 // 세션과 같은 카드 셸을 쓰되 입력·채점·이벤트가 없다. FSRS 도 안 건드린다.
 //
 // 넘김은 **CSS scroll-snap 캐러셀**이다 (사용자 요청). 손가락을 따라 오는 움직임·관성·
@@ -93,7 +93,7 @@ export function Browse({ onExit }: { onExit: () => void }) {
   if (items.length === 0) {
     return (
       <Centered
-        message="아직 훑어볼 게 없어요."
+        message="아직 다시 볼 게 없어요."
         detail="틀린 숙어가 쌓이면 여기 모여요."
         onExit={onExit}
       />
@@ -110,7 +110,7 @@ export function Browse({ onExit }: { onExit: () => void }) {
   return (
     <div className="study browse-screen">
       <header className="study-bar">
-        <button type="button" className="link" onClick={onExit} aria-label="훑어보기 나가기">
+        <button type="button" className="link" onClick={onExit} aria-label="다시보기 나가기">
           ✕
         </button>
         <progress value={at + 1} max={items.length} />
@@ -180,7 +180,7 @@ function BrowseSlide({
     <div className="browse-slide">
       <div className="card">
         <div className="card-head">
-          <span className="tag">훑어보기</span>
+          <span className="tag">다시보기</span>
           <span className="tag muted">{item.wrong}회 틀림</span>
         </div>
         <div className="card-body">

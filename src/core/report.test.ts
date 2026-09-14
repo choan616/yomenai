@@ -136,7 +136,7 @@ describe('buildReport — 분류에 실패한 오답', () => {
   })
 })
 
-describe('훑어보기 후보 — 틀린 카드만', () => {
+describe('다시보기 후보 — 틀린 카드만', () => {
   const nameOf = (id: string) => names[id]
   const anyName = (id: string) => names[id] ?? { headword: 'x', reading: 'x' }
   const seen = (id: string, wrong: number, reps = 3): CardState => ({

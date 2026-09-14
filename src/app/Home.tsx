@@ -1,6 +1,7 @@
 // 홈 — 진단 전엔 진단이 주 동작, 진단 후엔 세션이 주 동작 (Phase 9-A). 그 아래 리포트·음독 맵·설정
 import { useEffect, useState } from 'react'
 import { buildSession, rematchCount } from '../core/session.ts'
+import { browseCount } from '../core/report.ts'
 import { LOCAL_USER_ID, listEvents } from '../db/events.ts'
 import { db } from '../db/schema.ts'
 import { loadBaseIdioms } from '../dict/load.ts'
@@ -19,6 +20,8 @@ interface Preview {
   due: number
   /** 예전에 틀린 읽기 카드 수 — 재대결 대상 */
   rematch: number
+  /** 한 번이라도 틀린 읽기 카드 수 — 다시보기 대상. 재대결보다 넓다 */
+  browse: number
 }
 
 export function Home({ onNavigate }: { onNavigate: (screen: Screen) => void }) {
@@ -42,6 +45,7 @@ export function Home({ onNavigate }: { onNavigate: (screen: Screen) => void }) {
           ready: session.cards.length,
           due: session.cards.filter((c) => c.due).length,
           rematch: rematchCount(pool, events),
+          browse: browseCount(pool, events),
         })
 
         // 동기화로 받아온 기록만 있고 이 기기의 플래그는 비어 있을 수 있다 (플래그는 안 옮겨온다)
@@ -65,6 +69,18 @@ export function Home({ onNavigate }: { onNavigate: (screen: Screen) => void }) {
 
   return (
     <main className="home">
+      {/* 설정을 헤더로 올린다 (2026-09-14). 하단 메뉴를 비워 다시보기 자리를 만들고,
+          첫 진입에서도 바로 닿게 한다 — Google 로그인이 설정에 있다 */}
+      <div className="home-top">
+        <button
+          type="button"
+          className="home-gear"
+          onClick={() => onNavigate('settings')}
+          aria-label="설정"
+        >
+          ⚙
+        </button>
+      </div>
       <h1 lang="ja">読めない</h1>
       <p className="tagline">뜻은 아는데 못 읽는 숙어를 바로잡아요</p>
 
@@ -121,11 +137,27 @@ export function Home({ onNavigate }: { onNavigate: (screen: Screen) => void }) {
             </button>
           )}
 
-          {preview && preview.rematch > 0 && (
-            <button type="button" className="btn rematch" onClick={() => onNavigate('rematch')}>
-              재대결 <b>{preview.rematch}</b>
-              <span className="dim"> · 예전에 틀린 것만</span>
-            </button>
+          {/* 재대결과 다시보기는 **대상이 같다** — 틀렸던 숙어다. 차이는 채점 유무뿐이라
+              한 줄에 세워 "풀래, 볼래" 의 선택으로 읽히게 한다 (2026-09-14).
+              틀린 게 없으면 줄째로 사라진다 — 첫 진입에는 안 보이는 게 맞다 */}
+          {preview && (preview.rematch > 0 || preview.browse > 0) && (
+            <div className="wrong-group">
+              <p className="wrong-group-label">틀렸던 것</p>
+              <div className="wrong-group-row">
+                {preview.rematch > 0 && (
+                  <button type="button" className="btn rematch" onClick={() => onNavigate('rematch')}>
+                    다시 풀기 <b>{preview.rematch}</b>
+                    <span className="dim"> · 채점해요</span>
+                  </button>
+                )}
+                {preview.browse > 0 && (
+                  <button type="button" className="btn rematch" onClick={() => onNavigate('browse')}>
+                    다시보기 <b>{preview.browse}</b>
+                    <span className="dim"> · 채점 없이</span>
+                  </button>
+                )}
+              </div>
+            </div>
           )}
         </>
       )}
@@ -139,9 +171,6 @@ export function Home({ onNavigate }: { onNavigate: (screen: Screen) => void }) {
         </button>
         <button type="button" onClick={openGuide}>
           사용 안내서 <span className="chev">›</span>
-        </button>
-        <button type="button" onClick={() => onNavigate('settings')}>
-          설정 <span className="chev">›</span>
         </button>
       </nav>
     </main>

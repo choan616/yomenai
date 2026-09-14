@@ -1,14 +1,16 @@
 // 진단 리포트의 파생 로직 — 오답 유형 분포, 취약 음독, 한국음 간섭 패턴 (PLAN §7 "이 앱의 얼굴")
 import type { OnyomiPair } from '../dict/load.ts'
 import { pickWeighted } from './pick.ts'
-import { mistakeTotals, type ReplayState } from './replay.ts'
+import { mistakeTotals, replay, type ReplayState } from './replay.ts'
+import type { IdiomEntry } from './session.ts'
+import type { LearningEvent } from './types.ts'
 import type { MistakeType } from './types.ts'
 
 /** 취약 음독으로 올리는 최소 노출 수 */
 export const WEAK_MIN_SEEN = 3
 /** 리포트에 싣는 취약 음독·간섭 숙어 상한 */
 export const TOP_N = 8
-/** 훑어보기에 싣는 숙어 상한. 읽는 목록이라 출제 목록보다 길게 둔다 (12 → 30, 사용자 요청) */
+/** 다시보기에 싣는 숙어 상한. 읽는 목록이라 출제 목록보다 길게 둔다 (12 → 30, 사용자 요청) */
 export const BROWSE_N = 30
 
 /** 동점 정렬용 고정 순서 (진단 가치 순, src/core/mistakes.ts 우선순위와 같은 계열) */
@@ -44,7 +46,7 @@ export interface NamedIdiom {
   reading: string
 }
 
-/** 훑어보기 행 — 채점 없이 읽기·뜻·소리·예문을 다시 보는 대상 */
+/** 다시보기 행 — 채점 없이 읽기·뜻·소리·예문을 다시 보는 대상 */
 export interface FrequentIdiom extends NamedIdiom {
   wrong: number
 }
@@ -69,7 +71,7 @@ export interface Report {
   weakOnyomi: WeakOnyomi[]
   koInterferenceCount: number
   koInterferenceIdioms: NamedIdiom[]
-  /** 훑어보기 후보 전량. 화면에 몇 장 낼지는 `pickBrowse` 가 정한다 */
+  /** 다시보기 후보 전량. 화면에 몇 장 낼지는 `pickBrowse` 가 정한다 */
   frequent: FrequentIdiom[]
 }
 
@@ -130,8 +132,22 @@ export function buildReport(
 }
 
 /**
- * 훑어보기 **후보 전량** — 한 번이라도 틀린 읽기 카드.
- * 리포트와 훑어보기 화면이 같은 기준을 쓰도록 여기 둔다. 실제로 낼 장수는 `pickBrowse`.
+ * 다시보기 후보 수만 센다 — 홈 버튼이 쓴다 (2026-09-14).
+ * `rematchCount` 와 같은 관례로 (pool, events) 를 받는다. 기준은 `frequentIdioms` 와 같다.
+ */
+export function browseCount(pool: IdiomEntry[], events: LearningEvent[]): number {
+  const byId = new Map(pool.map((p) => [p.idiomId, p]))
+  const state = replay(events, { pairsOf: (id) => byId.get(id)?.pairIds ?? [] })
+  let n = 0
+  for (const c of state.cards.values()) {
+    if (c.cardType === 'reading' && c.wrong > 0 && byId.has(c.idiomId)) n++
+  }
+  return n
+}
+
+/**
+ * 다시보기 **후보 전량** — 한 번이라도 틀린 읽기 카드.
+ * 리포트와 다시보기 화면이 같은 기준을 쓰도록 여기 둔다. 실제로 낼 장수는 `pickBrowse`.
  *
  * 틀린 적 없는 카드는 안 담는다 (사용자 결정 2026-09-12). 넘길 카드를 늘리는 건
  * `BROWSE_N` 상한으로 하지, 기준을 흐려서 하지 않는다 — "틀린 것을 다시 본다" 가
@@ -157,7 +173,7 @@ export function frequentIdioms(
 }
 
 /**
- * 훑어볼 카드를 **오답 수 가중 무작위**로 뽑는다 (사용자 요청 2026-09-12 "섞여서 노출").
+ * 다시 볼 카드를 **오답 수 가중 무작위**로 뽑는다 (사용자 요청 2026-09-12 "섞여서 노출").
  *
  * 오답 수로 결정적으로 정렬해 앞에서 자르면 들어갈 때마다 같은 카드가 같은 순서로 나온다 —
  * 재대결이 같은 이유로 가중 무작위로 바뀌었다 (2026-09-11). 자주 틀린 것이 더 자주·앞쪽에

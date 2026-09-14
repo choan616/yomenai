@@ -1,4 +1,4 @@
-// 훑어보기 검증 — 리포트에서 들어가 캐러셀로 넘겨 본다 (사용자 요청 2026-09-12).
+// 다시보기 검증 — 리포트에서 들어가 캐러셀로 넘겨 본다 (사용자 요청 2026-09-12).
 // 손가락 제스처 자체는 브라우저 몫이라, 여기선 스냅 설정과 스크롤↔머리말 동기화를 본다.
 import { expect, test, type Page } from '@playwright/test'
 
@@ -23,7 +23,7 @@ async function scrollToSlide(page: Page, n: number): Promise<void> {
   }, n)
 }
 
-test('훑어보기가 스냅되는 캐러셀이다', async ({ page }) => {
+test('다시보기가 스냅되는 캐러셀이다', async ({ page }) => {
   await page.goto('/')
   await expect(page.getByRole('button', { name: '세션 시작' })).toBeVisible({ timeout: 20_000 })
   await page.evaluate(() => {
@@ -39,7 +39,7 @@ test('훑어보기가 스냅되는 캐러셀이다', async ({ page }) => {
   })
   await page.reload()
 
-  // 세션을 전부 틀리며 완주해 훑어볼 카드를 쌓는다
+  // 세션을 전부 틀리며 완주해 다시 볼 카드를 쌓는다
   await page.getByRole('button', { name: '세션 시작' }).click()
   await expect(page.locator('.headword').first()).toBeVisible({ timeout: 10_000 })
   let replayed = false
@@ -77,7 +77,7 @@ test('훑어보기가 스냅되는 캐러셀이다', async ({ page }) => {
   }
   await page.getByRole('button', { name: '홈으로' }).click()
   await page.getByRole('button', { name: /진단 리포트/ }).click()
-  const enter = page.getByRole('button', { name: /훑어보기 \d+장/ })
+  const enter = page.getByRole('button', { name: /다시보기 \d+장/ })
   const label = await enter.innerText()
   const total = Number(/(\d+)장/.exec(label)?.[1])
   await enter.click()
@@ -182,7 +182,7 @@ test('훑어보기가 스냅되는 캐러셀이다', async ({ page }) => {
   await expect(page.locator('.browse-row')).toHaveCount(0)
 
   // 나가면 홈이 아니라 리포트로 돌아온다
-  await page.getByRole('button', { name: '훑어보기 나가기' }).click()
+  await page.getByRole('button', { name: '다시보기 나가기' }).click()
   await expect(page.locator('.report')).toBeVisible()
 
   // 들어갈 때마다 섞인다 — 같은 후보라도 순서가 달라진다
@@ -191,11 +191,11 @@ test('훑어보기가 스냅되는 캐러셀이다', async ({ page }) => {
     await expect(slides).toHaveCount(total)
     return slides.locator('.headword').allInnerTexts()
   }
-  await page.getByRole('button', { name: /훑어보기 \d+장/ }).click()
+  await page.getByRole('button', { name: /다시보기 \d+장/ }).click()
   const runA = await order()
-  await page.getByRole('button', { name: '훑어보기 나가기' }).click()
+  await page.getByRole('button', { name: '다시보기 나가기' }).click()
   await expect(page.locator('.report')).toBeVisible()
-  await page.getByRole('button', { name: /훑어보기 \d+장/ }).click()
+  await page.getByRole('button', { name: /다시보기 \d+장/ }).click()
   const runB = await order()
   expect(runA).toHaveLength(total)
   expect(runB).not.toEqual(runA)

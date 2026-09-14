@@ -519,7 +519,7 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* 훑어보기 — 리포트의 진입 자리. 카드 화면 자체는 study.css 의 .card 셸을 그대로 쓴다
+/* 다시보기 — 리포트의 진입 자리. 카드 화면 자체는 study.css 의 .card 셸을 그대로 쓴다
    (사용자 요청 2026-09-12: 목록이 아니라 카드로 넘겨 본다) */
 .browse-lead {
   margin: 0 0 12px;
@@ -670,4 +670,53 @@
   font-size: 0.72rem;
   line-height: 1.6;
   color: var(--text-faint);
+}
+
+/* ── 홈 헤더의 설정 (2026-09-14) ── */
+/* 하단 메뉴에서 설정을 빼 다시보기 자리를 만들었다. 첫 진입에서도 닿아야 한다 */
+.home-top {
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+  padding: 4px 4px 0;
+}
+.home-gear {
+  background: none;
+  border: 0;
+  color: var(--text-faint);
+  font-size: 20px;
+  line-height: 1;
+  min-height: var(--tap);
+  min-width: var(--tap);
+}
+
+/* ── 「틀렸던 것」 묶음 (2026-09-14) ── */
+/* 재대결과 다시보기는 대상이 같다. 나란히 세워 채점 유무의 선택으로 읽히게 한다 */
+.wrong-group {
+  width: 100%;
+  max-width: 320px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.wrong-group-label {
+  margin: 4px 0 0;
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  color: var(--text-faint);
+}
+.wrong-group-row {
+  display: flex;
+  gap: 8px;
+}
+/* 한 줄에 둘이 서므로 각자 절반을 쓴다. 하나뿐이면 그대로 다 쓴다 */
+.wrong-group-row .btn.rematch {
+  flex: 1;
+  max-width: none;
+  padding: 10px 12px;
+  font-size: 14px;
+}
+.wrong-group-row .btn.rematch .dim {
+  display: block;
+  font-size: 12px;
 }

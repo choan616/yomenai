@@ -1,4 +1,4 @@
-// 진단 리포트 화면 — 수준, 다음에 볼 것, 훑어보기 진입, 오답 유형 분포, 한국음 간섭, 취약 음독. 이 앱의 얼굴이다 (PLAN §7)
+// 진단 리포트 화면 — 수준, 다음에 볼 것, 다시보기 진입, 오답 유형 분포, 한국음 간섭, 취약 음독. 이 앱의 얼굴이다 (PLAN §7)
 import { useEffect, useState } from 'react'
 import {
   buildLevel,
@@ -145,10 +145,10 @@ function ReportBody({
 
       {report.frequent.length > 0 && (
         <section className="browse-entry">
-          <p className="section-title">훑어보기</p>
+          <p className="section-title">다시보기</p>
           <p className="browse-lead">자주 틀린 것들을 채점 없이 한 장씩 넘겨 봐요. 들어갈 때마다 섞여요.</p>
           <button type="button" className="btn-primary" onClick={onBrowse}>
-            훑어보기 {Math.min(report.frequent.length, BROWSE_N)}장 ›
+            다시보기 {Math.min(report.frequent.length, BROWSE_N)}장 ›
           </button>
         </section>
       )}
