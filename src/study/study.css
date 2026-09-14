@@ -625,9 +625,12 @@
 /* ── 루비 — 정답 읽기를 한자 위에 얹는다 (校正紙 컨셉).
    아래에 한 줄 더 놓는 것과 달리 "고쳐졌다"는 감각이 남는다. ── */
 .headword.has-ruby {
-  /* rt 가 위로 자리를 먹으므로 본문 글자는 조금 줄이고 여백을 준다 */
+  /* rt 가 위로 자리를 먹으므로 본문 글자는 조금 줄이고 여백을 준다.
+     1.9 는 과했다 — Blink 는 남는 행간에 rt 를 끼워 넣지만 WebKit 은 rt 를 한자 위에
+     쌓고 행간을 더한다. 그래서 같은 값이 PC(Chrome)에서는 붙어 보이고 모바일에서는
+     멀어진다 (2026-09-14) */
   font-size: clamp(40px, 13vw, 72px);
-  line-height: 1.9;
+  line-height: 1.6;
   ruby-position: over;
 }
 .headword.has-ruby ruby {
@@ -636,6 +639,9 @@
 .headword.has-ruby rt {
   font-size: 0.3em;
   font-weight: 400;
+  /* 행간을 물려받으면 안 된다 — rt 아래쪽 반행간이 그대로 한자와의 틈이 된다.
+     normal 은 폰트 메트릭 그대로(Noto Sans JP 는 1.448)라 반행간이 0 이다 */
+  line-height: normal;
   /* 기본은 무채다. 朱 는 "고쳐졌다" 는 표시라 오답 자리에서만 쓴다 —
      설명 카드(알아 두기·다시보기·오답 상세)에서 붉으면 틀린 것처럼 읽힌다 (2026-09-14) */
   color: var(--text-dim);
