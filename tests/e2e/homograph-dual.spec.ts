@@ -134,11 +134,13 @@ test('처음부터 둘 다 묻고, 쓴 읽기의 카드에만 정답이 남는�
   await advanceToReading(page)
   await expect(page.locator('.headword').first()).toContainText('代替')
 
-  // 답을 쓰기 전부터 둘이라고 말한다 — 답을 보고 발동하는 게 아니다
-  const prompt = page.locator('.follow-up')
-  await expect(prompt).toBeVisible({ timeout: 5_000 })
-  await expect(prompt).toContainText('둘')
-  await expect(prompt).toContainText('1/2')
+  // 답을 쓰기 전부터 둘이라고 말한다 — 답을 보고 발동하는 게 아니다.
+  // 「둘이다」와 진행률은 헤더 태그에 있다(2026-09-14, 본문 스크롤 지적 반영).
+  const dualTag = page.locator('.card-head').getByText(/읽기 둘/)
+  await expect(dualTag).toBeVisible({ timeout: 5_000 })
+  await expect(dualTag).toContainText('1/2')
+  // 첫 질문엔 본문에 안내 문장이 없다 — 뺄 답이 아직 없다
+  await expect(page.locator('.follow-up')).toHaveCount(0)
 
   // 상대 쪽 읽기부터 쓴다 — 순서는 상관없어야 한다
   await page.locator('.kana-input').fill('daigawari')
@@ -146,9 +148,11 @@ test('처음부터 둘 다 묻고, 쓴 읽기의 카드에만 정답이 남는�
 
   // 판정이 아직 안 났고, 쓴 읽기를 제외 조건으로 못박아 다시 묻는다
   await expect(page.locator('.card.feedback')).toHaveCount(0)
+  await expect(dualTag).toContainText('2/2')
+  const prompt = page.locator('.follow-up')
+  await expect(prompt).toBeVisible()
   await expect(prompt).toContainText('だいがわり')
   await expect(prompt).toContainText('그것 말고')
-  await expect(prompt).toContainText('2/2')
 
   await page.locator('.kana-input').fill('daitai')
   await page.locator('.kana-input').press('Enter')

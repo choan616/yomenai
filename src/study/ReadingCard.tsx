@@ -159,8 +159,7 @@ export function ReadingCard({
                 여기는 **이미 쓴 답을 빼라는 제외 조건 한 줄**만 남긴다 (given 이 있을 때만) */}
             {dualAsk && dualAsk.given.length > 0 && (
               <p className="follow-up">
-                <span lang="ja">{dualAsk.given[dualAsk.given.length - 1]}</span> 은 맞았어요 —{' '}
-                <b>그것 말고</b> 나머지 하나를 써 보세요.
+                <b>그것 말고</b> — <span lang="ja">{dualAsk.given[dualAsk.given.length - 1]}</span>
               </p>
             )}
           </>
