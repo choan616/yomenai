@@ -632,7 +632,7 @@
    마크업(<ruby>/<rt>)은 그대로라 의미와 복사 동작은 유지된다. */
 .headword.has-ruby {
   font-size: clamp(40px, 13vw, 72px);
-  /* 루비 한 덩어리는 1.23em 이다(한자 0.92 + gap 0.01 + rt 0.3). 줄 상자가 그보다
+  /* 루비 한 덩어리는 1.275em 이다(한자 0.95 + gap 0.025 + rt 0.3). 줄 상자가 그보다
      커야 위가 잘리지 않는다 */
   line-height: 1.4;
 }
@@ -643,11 +643,12 @@
   align-items: center;
   vertical-align: bottom;
   /* 1 미만이라야 한자 윗변의 ascent 여백(0.28em)이 상자 밖으로 빠진다.
-     0.92 에서 잉크 기준 간격이 0.059em — 인쇄물 후리가나와 같은 값이다.
-     캔버스 actualBoundingBox 로 실측해 정했다 (2026-09-14) */
-  line-height: 0.92;
+     아래 gap 과 합쳐 잉크 기준 간격이 결정된다. 캔버스 actualBoundingBox 로
+     실측하며 맞췄다 — 네이티브 ruby 0.124em(멀다) → 0.059em(붙는다) →
+     0.081em 으로 정착 (2026-09-14, 실기기 확인) */
+  line-height: 0.95;
   /* 한자와 요미가나 사이 — 간격은 여기 한 곳에서만 정한다 */
-  gap: 0.01em;
+  gap: 0.025em;
 }
 .headword.has-ruby rt {
   display: block;
