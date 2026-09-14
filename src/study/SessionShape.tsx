@@ -2,8 +2,13 @@
 // progress 로만 파생하고 새 상태는 useStudySession 에 안 만든다. 모션은 셸 급(느리게).
 import { useEffect, useState } from 'react'
 
-/** 세션 첫 카드 앞에 잠깐 뜨는 챕터 타이틀. 1.2초 뒤 사라진다 */
-export function ChapterTitle({ total }: { total: number }) {
+/**
+ * 세션 첫 카드 앞에 잠깐 뜨는 챕터 타이틀. 1.2초 뒤 사라진다.
+ *
+ * 소개는 문제 수에 안 드니 **갈라서 말한다** (2026-09-14). 「20장」 이 설정값인데
+ * 화면에 25가 뜨면 설정이 거짓말한 것처럼 보인다.
+ */
+export function ChapterTitle({ total, intros }: { total: number; intros: number }) {
   const [gone, setGone] = useState(false)
   useEffect(() => {
     const t = setTimeout(() => setGone(true), 1200)
@@ -13,8 +18,13 @@ export function ChapterTitle({ total }: { total: number }) {
   return (
     <div className="chapter-title">
       <p>
-        이번 세션, <b>{total}장</b>이에요
+        이번 세션, 문제 <b>{total - intros}장</b>이에요
       </p>
+      {intros > 0 && (
+        <p className="dim">
+          처음 보는 <b>{intros}개</b>는 먼저 알려 드릴게요
+        </p>
+      )}
       <p className="dim">시작할게요</p>
     </div>
   )

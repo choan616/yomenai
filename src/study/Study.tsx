@@ -72,7 +72,7 @@ export function Study({
 
   return (
     <div className="study">
-      <ChapterTitle total={s.progress.total} />
+      <ChapterTitle total={s.progress.total} intros={s.progress.intros} />
       <header className={`study-bar${nearEnd ? ' near-end' : ''}`}>
         <button type="button" className="link" onClick={onExit} aria-label="세션 나가기">
           ✕

@@ -21,7 +21,7 @@ import type { Confidence } from '../core/scheduler.ts'
 import type { LearningEvent, MistakeType } from '../core/types.ts'
 import { appendEvent } from '../db/events.ts'
 import { loadIntroduced, markIntroduced } from './introduced.ts'
-import { planIntros } from './planIntros.ts'
+import { INTRO_MAX_SHARE, planIntros } from './planIntros.ts'
 import { getDeviceId } from '../db/device.ts'
 import { db } from '../db/schema.ts'
 import { LOCAL_USER_ID } from '../db/events.ts'
@@ -63,7 +63,8 @@ export interface StudyState {
   card?: SessionCard
   idiom?: RuntimeIdiom
   feedback?: ReadingFeedback
-  progress: { index: number; total: number }
+  /** `total` 은 소개까지 포함한 전체 장수. `intros` 는 그중 소개 수 — 화면이 갈라 보여준다 */
+  progress: { index: number; total: number; intros: number }
   summary: { total: number; correct: number }
   /** 종료 요약이 쓰는 이벤트 — 세션 이전 로그와 이번 세션에 쌓은 로그 */
   events: { prior: LearningEvent[]; session: LearningEvent[] }
@@ -166,17 +167,21 @@ export function useStudySession({
         observeLevel.current = lvl
         const now = Date.now()
         const limit = limitOverride ?? sessionLimit
+        // 소개는 문제 수에 안 드니(planIntros) 그만큼 더 만들어 둔다. 소개 숙어 하나가
+        // 문제 자리를 최대 두 장(읽기·뜻) 먹으므로 상한의 두 배면 충분하다
+        const introCap = Math.max(1, Math.floor(limit * INTRO_MAX_SHARE))
+        const buildLimit = limit + introCap * 2
         // byId(useMemo) 는 pool 상태가 반영된 다음 렌더에서야 채워지므로 여기선 직접 만든다
         const loadedById = new Map(loaded.map((p) => [p.idiomId, p]))
         const lookup = mistakes.current.lookup
         const built =
           kind === 'rematch'
-            ? buildRematch(loaded, events, { now, limit })
+            ? buildRematch(loaded, events, { now, limit: buildLimit })
             : kind === 'focus' && focusPairId !== undefined
               ? buildFocus(loaded, events, {
                   pairId: focusPairId,
                   now,
-                  limit,
+                  limit: buildLimit,
                   // 대조 — 표면형이 갈리게 번갈아 낸다 (Phase 11). 分解 실패면 null 이라 정렬만 유지된다
                   surfaceOf: (id) => {
                     const it = loadedById.get(id)
@@ -184,7 +189,7 @@ export function useStudySession({
                   },
                 })
               : // seed 로 제시 순서를 매 세션 섞는다 — 순서를 예측해 모르는 한자를 찍는 걸 막는다 (2026-09-07)
-                buildSession(loaded, events, { now, limit, ratio, seed: now })
+                buildSession(loaded, events, { now, limit: buildLimit, ratio, seed: now })
         // 처음 만나는 숙어는 시험 대신 소개로. 그 숙어의 나머지 카드는 이번 세션에서 걷는다.
         // 단, 기록이 얕으면 소개를 안 낸다 — 먼저 풀게 해서 이 사람을 알아야 한다
         const introduced = loadIntroduced()
@@ -202,6 +207,7 @@ export function useStudySession({
           (id) => introduced.has(id),
           (id) => seen.has(id),
           readings,
+          limit,
         )
         setIntroIds(plan.introIds)
         const built2 = { ...built, cards: plan.cards }
@@ -373,7 +379,11 @@ export function useStudySession({
     card,
     idiom,
     feedback: feedback ?? undefined,
-    progress: { index: Math.min(idx, session?.cards.length ?? 0), total: session?.cards.length ?? 0 },
+    progress: {
+      index: Math.min(idx, session?.cards.length ?? 0),
+      total: session?.cards.length ?? 0,
+      intros: introIds.size,
+    },
     summary: { total: results.length, correct: results.filter(Boolean).length },
     events,
     pool: poolOut,
