@@ -191,7 +191,18 @@ export function useStudySession({
         const readings = events.filter(
           (e) => e.type === 'review' && e.cardType === 'reading' && e.deletedAt === null,
         ).length
-        const plan = planIntros(built.cards, (id) => introduced.has(id), readings)
+        // 한 번이라도 푼 숙어는 소개 대상이 아니다. 카드 종류를 가리지 않고 숙어 단위로 본다 —
+        // 읽기로 푼 숙어의 뜻 카드가 처음 나오는 경우가 있어서다 (2026-09-14)
+        const seen = new Set<string>()
+        for (const e of events) {
+          if (e.type === 'review' && e.deletedAt === null) seen.add(e.idiomId)
+        }
+        const plan = planIntros(
+          built.cards,
+          (id) => introduced.has(id),
+          (id) => seen.has(id),
+          readings,
+        )
         setIntroIds(plan.introIds)
         const built2 = { ...built, cards: plan.cards }
         setSession(built2)

@@ -12,42 +12,44 @@ const card = (idiomId: string, cardType: 'reading' | 'meaning', due: boolean): S
 })
 
 const none = () => false
+/** 기본값 — 아무것도 풀어 본 적 없다 */
+const fresh = () => false
 /** 기존 케이스는 이미 데이터가 쌓인 상태를 전제한다 */
 const ENOUGH = INTRO_MIN_READINGS
 
 describe('planIntros', () => {
   it('처음 만나는 숙어를 소개 대상으로 잡는다', () => {
-    const plan = planIntros([card('a', 'reading', false)], none, ENOUGH)
+    const plan = planIntros([card('a', 'reading', false)], none, fresh, ENOUGH)
     expect([...plan.introIds]).toEqual(['a'])
   })
 
   it('복습 기한 카드는 소개 대상이 아니다', () => {
-    const plan = planIntros([card('a', 'reading', true)], none, ENOUGH)
+    const plan = planIntros([card('a', 'reading', true)], none, fresh, ENOUGH)
     expect(plan.introIds.size).toBe(0)
     expect(plan.cards).toHaveLength(1)
   })
 
   it('이미 소개한 숙어는 그냥 출제된다', () => {
-    const plan = planIntros([card('a', 'reading', false)], (id) => id === 'a', ENOUGH)
+    const plan = planIntros([card('a', 'reading', false)], (id) => id === 'a', fresh, ENOUGH)
     expect(plan.introIds.size).toBe(0)
     expect(plan.cards).toHaveLength(1)
   })
 
   it('소개 대상은 한 장만 남는다 — 같은 세션에서 그 숙어를 묻지 않는다', () => {
     const plan = planIntros(
-      [card('a', 'reading', false), card('a', 'meaning', false)], none, ENOUGH)
+      [card('a', 'reading', false), card('a', 'meaning', false)], none, fresh, ENOUGH)
     expect(plan.cards).toHaveLength(1)
     expect(plan.cards[0].cardType).toBe('reading')
   })
 
   it('첫 등장 자리를 지킨다 — 순서를 안 흔든다', () => {
-    const plan = planIntros([card('x', 'reading', true), card('a', 'meaning', false), card('a', 'reading', false)], none, ENOUGH)
+    const plan = planIntros([card('x', 'reading', true), card('a', 'meaning', false), card('a', 'reading', false)], none, fresh, ENOUGH)
     expect(plan.cards.map((c) => `${c.idiomId}:${c.cardType}`)).toEqual(['x:reading', 'a:meaning'])
   })
 
   it('한 숙어가 소개 대상이면 그 숙어의 기한 카드도 걷는다 — 같은 숙어를 두 번 안 낸다', () => {
-    // 읽기는 신규인데 뜻은 기한이 찬 경우. 소개에서 둘 다 보여주므로 묻지 않는다
-    const plan = planIntros([card('a', 'reading', false), card('a', 'meaning', true)], none, ENOUGH)
+    // 읽기·뜻이 둘 다 신규인데 한쪽만 소개 자리가 되는 일이 없어야 한다
+    const plan = planIntros([card('a', 'reading', false), card('a', 'meaning', false)], none, fresh, ENOUGH)
     expect(plan.cards).toHaveLength(1)
     expect(plan.introIds.has('a')).toBe(true)
   })
@@ -57,15 +59,15 @@ describe('planIntros', () => {
       [
         card('a', 'reading', false), card('b', 'reading', true),
         card('a', 'meaning', false), card('c', 'reading', false),
-        card('c', 'meaning', false),
-      ], none, ENOUGH)
-    expect(plan.cards.map((c) => c.idiomId)).toEqual(['a', 'b', 'c'])
+        card('c', 'meaning', false), card('d', 'reading', true),
+      ], none, fresh, ENOUGH)
+    expect(plan.cards.map((c) => c.idiomId)).toEqual(['a', 'b', 'c', 'd'])
     expect([...plan.introIds].sort()).toEqual(['a', 'c'])
   })
 
   it('소개할 게 없으면 카드가 그대로다', () => {
     const cards = [card('a', 'reading', true), card('b', 'meaning', true)]
-    const plan = planIntros(cards, none, ENOUGH)
+    const plan = planIntros(cards, none, fresh, ENOUGH)
     expect(plan.cards).toEqual(cards)
   })
 })
@@ -74,23 +76,69 @@ describe('데이터가 쌓이기 전에는 소개하지 않는다 (2026-09-13)',
   const newCards = [card('a', 'reading', false), card('b', 'reading', false)]
 
   it('읽기 채점이 문턱 미만이면 소개가 없다 — 먼저 풀게 한다', () => {
-    const plan = planIntros(newCards, none, INTRO_MIN_READINGS - 1)
+    const plan = planIntros(newCards, none, fresh, INTRO_MIN_READINGS - 1)
     expect(plan.introIds.size).toBe(0)
     expect(plan.cards).toHaveLength(2)
   })
 
   it('기록이 아예 없으면 당연히 없다', () => {
-    expect(planIntros(newCards, none, 0).introIds.size).toBe(0)
+    expect(planIntros(newCards, none, fresh, 0).introIds.size).toBe(0)
   })
 
   it('문턱에 닿으면 그때부터 소개한다', () => {
-    const plan = planIntros(newCards, none, INTRO_MIN_READINGS)
-    expect([...plan.introIds].sort()).toEqual(['a', 'b'])
+    const plan = planIntros(newCards, none, fresh, INTRO_MIN_READINGS)
+    // 두 장짜리라 상한이 1 이다. 첫 등장 순서대로 a 만 소개된다
+    expect([...plan.introIds]).toEqual(['a'])
   })
 
   it('문턱 미만이어도 카드를 걷지 않는다 — 세션이 짧아지면 안 된다', () => {
     const both = [card('a', 'reading', false), card('a', 'meaning', false)]
-    expect(planIntros(both, none, 0).cards).toHaveLength(2)
-    expect(planIntros(both, none, INTRO_MIN_READINGS).cards).toHaveLength(1)
+    expect(planIntros(both, none, fresh, 0).cards).toHaveLength(2)
+    expect(planIntros(both, none, fresh, INTRO_MIN_READINGS).cards).toHaveLength(1)
+  })
+})
+
+describe('이미 푼 숙어는 소개하지 않는다 (2026-09-14)', () => {
+  it('다른 카드 종류로 풀어 봤으면 소개 대상이 아니다 — due 는 카드 종류 단위다', () => {
+    // 읽기로 푼 숙어의 뜻 카드가 처음 나오는 상황. due 만 보면 신규로 보인다
+    const plan = planIntros(
+      [card('a', 'meaning', false)], none, (id) => id === 'a', ENOUGH)
+    expect(plan.introIds.size).toBe(0)
+    expect(plan.cards).toHaveLength(1)
+  })
+
+  it('기록이 있는 숙어와 없는 숙어가 섞이면 없는 쪽만 소개한다', () => {
+    const cards = [
+      card('old', 'meaning', false), card('new1', 'reading', false),
+      card('new2', 'reading', false),
+    ]
+    const plan = planIntros(cards, none, (id) => id === 'old', ENOUGH)
+    expect([...plan.introIds]).toEqual(['new1'])
+  })
+})
+
+describe('소개가 세션을 통째로 차지하지 않는다 (2026-09-14)', () => {
+  const many = (n: number) =>
+    Array.from({ length: n }, (_, i) => card(`n${i}`, 'reading', false))
+
+  it('상한은 세션의 3분의 1 이다', () => {
+    const plan = planIntros(many(12), none, fresh, ENOUGH)
+    expect(plan.introIds.size).toBe(4)
+  })
+
+  it('상한을 넘은 신규 숙어는 걷어내지 않고 그냥 출제한다 — 세션이 짧아지면 안 된다', () => {
+    const cards = many(12)
+    const plan = planIntros(cards, none, fresh, ENOUGH)
+    expect(plan.cards).toHaveLength(12)
+  })
+
+  it('앞에서부터 채운다 — 첫 등장 순서를 지킨다', () => {
+    const plan = planIntros(many(9), none, fresh, ENOUGH)
+    expect([...plan.introIds]).toEqual(['n0', 'n1', 'n2'])
+  })
+
+  it('세션이 아주 짧아도 최소 한 장은 소개한다', () => {
+    const plan = planIntros(many(1), none, fresh, ENOUGH)
+    expect(plan.introIds.size).toBe(1)
   })
 })
