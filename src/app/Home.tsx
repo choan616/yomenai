@@ -72,13 +72,13 @@ export function Home({ onNavigate }: { onNavigate: (screen: Screen) => void }) {
       {/* 설정을 헤더로 올린다 (2026-09-14). 하단 메뉴를 비워 다시보기 자리를 만들고,
           첫 진입에서도 바로 닿게 한다 — Google 로그인이 설정에 있다 */}
       <div className="home-top">
+        {/* 아이콘만 두면 눈에 안 띈다 (사용자 지적 2026-09-14) — 글자를 붙이고 테두리를 준다 */}
         <button
           type="button"
           className="home-gear"
           onClick={() => onNavigate('settings')}
-          aria-label="설정"
         >
-          ⚙
+          <span aria-hidden="true">⚙</span> 설정
         </button>
       </div>
       <h1 lang="ja">読めない</h1>
@@ -146,14 +146,16 @@ export function Home({ onNavigate }: { onNavigate: (screen: Screen) => void }) {
               <div className="wrong-group-row">
                 {preview.rematch > 0 && (
                   <button type="button" className="btn rematch" onClick={() => onNavigate('rematch')}>
-                    다시 풀기 <b>{preview.rematch}</b>
-                    <span className="dim"> · 채점해요</span>
+                    <span className="wg-name">재도전</span>
+                    <span className="wg-badge">{preview.rematch}</span>
+                    <span className="wg-note">채점해요</span>
                   </button>
                 )}
                 {preview.browse > 0 && (
                   <button type="button" className="btn rematch" onClick={() => onNavigate('browse')}>
-                    다시보기 <b>{preview.browse}</b>
-                    <span className="dim"> · 채점 없이</span>
+                    <span className="wg-name">다시보기</span>
+                    <span className="wg-badge">{preview.browse}</span>
+                    <span className="wg-note">채점 없이</span>
                   </button>
                 )}
               </div>

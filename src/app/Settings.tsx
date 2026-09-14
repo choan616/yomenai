@@ -1,5 +1,5 @@
 // 설정 화면 — 세션 길이, 모드 비율, 백업. 값은 localStorage 에 즉시 저장 (PLAN §7)
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import {
   DEFAULT_SETTINGS,
   LIMIT_MAX,
@@ -78,19 +78,22 @@ function BackupSetting() {
   const [progress, setProgress] = useState<SyncProgress | null>(null)
   const [syncMsg, setSyncMsg] = useState<string | null>(null)
 
-  useEffect(() => {
-    if (!wasSignedIn() || authed) return
-    void googleDrive.restoreSession().then((ok) => {
-      if (ok) setAuthed(true)
-    })
-    // authed 가 바뀌면 재평가되지만 guard 가 바로 막아 실질적으로 1회만 시도한다
-  }, [authed])
-
+  /**
+   * 전에는 설정에 들어오기만 해도 세션 복구를 시도했다. `prompt: ''` 라도 GIS 가
+   * 조용히 못 풀면 **계정 선택 화면을 띄운다** — 설정을 열었을 뿐인데 구글 화면이 떴다
+   * (사용자 지적 2026-09-14). 이제 복구도 버튼을 눌렀을 때만 한다.
+   *
+   * 대가는 전에 로그인했던 사람이 매번 한 번 누르는 것이다. 구글 화면이 불쑥 뜨는
+   * 것보다는 낫다 — 누르는 건 의도한 행동이고, 뜨는 건 아니다.
+   */
   const handleSignIn = () => {
     setBusy('signIn')
     setError(null)
-    void googleDrive
-      .signIn()
+    // 전에 동의한 세션이면 팝업 없이 풀린다. 안 풀릴 때만 구글 화면이 뜬다
+    const attempt = wasSignedIn()
+      ? googleDrive.restoreSession().then((ok) => (ok ? true : googleDrive.signIn()))
+      : googleDrive.signIn()
+    void attempt
       .then((ok) => {
         setAuthed(ok)
         setSignedIn(ok)
@@ -99,6 +102,7 @@ function BackupSetting() {
       .catch((err: unknown) => setError(err instanceof Error ? err.message : String(err)))
       .finally(() => setBusy('idle'))
   }
+
 
   const handleSignOut = () => {
     googleDrive.signOut()
@@ -161,9 +165,13 @@ function BackupSetting() {
       ) : (
         <>
           <button type="button" onClick={handleSignIn} disabled={busy !== 'idle'}>
-            {busy === 'signIn' ? '로그인 중…' : 'Google로 로그인'}
+            {busy === 'signIn' ? '로그인 중…' : wasSignedIn() ? 'Google 다시 연결' : 'Google로 로그인'}
           </button>
-          <span className="hint">기기 간 학습 기록을 Google Drive 로 백업해요.</span>
+          <span className="hint">
+            {wasSignedIn()
+              ? '전에 연결해 두셨어요. 누르면 다시 이어져요 — 기록은 그대로 있어요.'
+              : '기기 간 학습 기록을 Google Drive 로 백업해요.'}
+          </span>
         </>
       )}
       {error !== null && <span className="hint error">{error}</span>}

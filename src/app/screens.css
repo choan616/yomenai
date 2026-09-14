@@ -716,7 +716,42 @@
   padding: 10px 12px;
   font-size: 14px;
 }
-.wrong-group-row .btn.rematch .dim {
-  display: block;
+
+/* 설정 버튼 — 아이콘만으로는 눈에 안 띄어 글자와 테두리를 붙였다 (2026-09-14) */
+.home-gear {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 40px;
+  padding: 0 14px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--text-dim);
+  font-size: 14px;
+}
+
+/* 「틀렸던 것」 버튼 — 이름 / 수 뱃지 / 설명 세 줄. 수는 뱃지라 한눈에 잡힌다 */
+.wrong-group-row .btn.rematch {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.wg-name {
+  font-size: 14px;
+  color: var(--text);
+}
+.wg-badge {
+  min-width: 26px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--ng-bg);
+  color: var(--ng);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+.wg-note {
   font-size: 12px;
+  color: var(--text-faint);
 }
