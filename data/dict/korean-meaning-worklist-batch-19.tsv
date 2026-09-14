@@ -1,0 +1,41 @@
+﻿verdict	cat	fix	tier	flags	manual	headword	reading	glossEn	llm_ko	stdict_def	manual_reason	category	classSource	band	id
+o			5			連動	れんどう	operating together; working together; being linked (to); being tied (to)	연동, 연결			3	default	1	1559710
+o			5			連名	れんめい	joint signature	연명			3	default	1	1781740
+o			5			連鎖	れんさ	chain; series; connection; linkage	연쇄, 연결			3	default	1	1559490
+o			5			連座	れんざ	implication (in a crime); involvement; sitting in a row (in the same seat)	연좌, 연좌제			3	default	1	1559500
+o			5			連中	れんちゅう	company; lot; people; bunch	무리, 무리 지어 다니는 사람들			3	default	1	1559700
+o			5			連投	れんとう	pitching in consecutive games; making multiple posts (on a website); posting multiple comments	연속 투구, 연달아 게시			3	default	1	1781760
+o			5			連行	れんこう	taking (a suspect to the police); dragging (someone) away	연행, 끌고 감			3	default	1	1559440
+o			5			連戦	れんせん	series of battles; successive battles	연속 전투, 스포츠 등에서 연이은 경기			3	default	1	1559570
+o			5			劣勢	れっせい	inferiority (e.g. numerical); inferior position; disadvantage; unfavorable situation	열세, 불리한 상황			3	default	1	1558480
+o			5			列挙	れっきょ	enumeration; list	열거, 나열			3	default	1	1558340
+o			5			領空	りょうくう	territorial airspace	영공			3	default	1	1612280
+o			5			領事	りょうじ	consul	영사			3	default	1	1554730
+o			5			領事館	りょうじかん	consulate	영사관			3	default	1	1554740
+o			5			零細	れいさい	insignificant; trifling; paltry; cottage (industry)	소규모, 영세함			3	default	1	1557680
+o			5			領袖	りょうしゅう	leader; chief; boss	지도자, 우두머리			3	default	1	1644980
+o			5			領有	りょうゆう	possession (esp. of a territory)	영유			3	default	1	1554810
+o			5			領海	りょうかい	territorial waters	영해			3	default	1	1612270
+o			5			領収書	りょうしゅうしょ	formal receipt (of payment; oft. hand-written)	영수증			3	default	1	1554760
+o			5			例外的	れいがいてき	exceptional; unusual	예외적인, 특이한			3	default	1	1556430
+o			5			例会	れいかい	regular meeting	정기 회의			3	default	1	1556390
+o			5			露骨	ろこつ	open; unconcealed; undisguised; blatant	노골적, 숨김없음			3	default	1	1560120
+o			5			老年	ろうねん	old age	노년			3	default	1	1644640
+o			5			路面	ろめん	road surface	노면			3	default	1	1644630
+o			5			露店	ろてん	street stall; stand; booth	노점			3	default	1	1560190
+o			5			路地	ろじ	alley; alleyway; lane; path through a gate or garden	골목, 좁은 길	임시로 거처하는 오두막집.		3	llm	1	1560050
+o			5			老化	ろうか	ageing; aging; senile deterioration	노화			3	default	1	1612310
+o			5			老朽	ろうきゅう	infirmity (due to old age); decrepitude; senility; senescence	노후함, 낡음			3	default	1	1561030
+o			5			論客	ろんきゃく	controversialist; polemic; disputant	논쟁가, 논쟁을 벌이는 사람			3	default	1	1561670
+o			5			論告	ろんこく	prosecutor's closing argument	논고, 자기 의견을 말하는 것			3	default	1	1738670
+o			5			論点	ろんてん	point in question (at issue)	논점, 문제점			3	default	1	1561800
+o			5			論調	ろんちょう	tone (of argument); tenor; drift	논조, 분위기	중국 수나라 때에, 지금의 장쑤성(江蘇省) 전장현(鎭江縣)에 두었던 주.		3	llm	1	1561790
+o			5			論評	ろんぴょう	comment; criticism; critique; review	논평, 비평			3	default	1	1561830
+o			5			論拠	ろんきょ	grounds of an argument	논거, 의논의 근거	바퀴 달린 수레라는 뜻으로, 자동차나 기차를 이르는 말.		3	llm	1	1561690
+o			5			論説	ろんせつ	article; discourse; dissertation; (written) argument	논설, 기고문			3	default	1	1561740
+o			5			老齢	ろうれい	old age; advanced age	노년, 늙음			3	default	1	1561150
+o			5			累計	るいけい	cumulative total; accumulated total; total up to now	누적된 합			3	default	1	1555970
+o			5			流動的	りゅうどうてき	fluid; unsettled	유동적인, 불안정한			3	default	1	1552490
+o			5			留保	りゅうほ	reserving; withholding	유보, 보류			3	default	1	1552830
+o			5			類似	るいじ	resemblance; similarity; likeness; analogy	유사함, 비슷함			3	default	1	1556100
+o			5			留守	るす	absence; being away from home; house-sitting; house-sitter	부재, 집을 비움			3	default	1	1552760

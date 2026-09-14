@@ -1,0 +1,41 @@
+﻿verdict	cat	fix	tier	flags	manual	headword	reading	glossEn	llm_ko	stdict_def	manual_reason	category	classSource	band	id
+o			5			留守番	るすばん	care-taking; house-sitting; house-watching; staying at home	집을 지키는 것, 집을 지키는 사람, 집을 비우는 동안 돌봄			3	default	1	1552800
+o			5			流用	りゅうよう	diversion (e.g. of funds); appropriation; misappropriation; making use of (for another purpose)	유용, 전용, 남의 돈이나 물건을 마음대로 다른 일에 쓰는 것			3	default	1	1552550
+o			5			留任	りゅうにん	remaining in office; staying in office; remaining at one's post	유임, 원래의 직에 그대로 머뭄			3	default	1	1618750
+o			5			陸路	りくろ	land route; overland route; by land; overland	육로			3	default	1	1551150
+o			5			陸海	りくかい	land and sea; army and navy	육지와 바다, 육군과 해군			3	default	1	1823900
+o			5			輪郭	りんかく	contour; outline; silhouette; summary	윤곽, 개요			3	default	1	1555740
+o			5			理工	りこう	science and engineering	이공계			3	default	1	1549960
+o			5			理工学部	りこうがくぶ	faculty of science and engineering; college of science and engineering; school of science and engineering	이공학부			3	default	1	1549970
+o			5			裏金	うらがね	bribe; secret fund; slush fund; money for bribery	비자금, 뇌물			3	default	1	1550260
+o			5			離島	りとう	isolated island; outlying island; leaving an island	외딴 섬, 섬을 떠나는 것			3	default	1	1644480
+o			5			離陸	りりく	takeoff	이륙, 착륙과 반대			3	default	1	1550970
+o			5			裏面	うらめん	back (side); reverse; B side (of a record); secret levels	뒷면, 이면			3	default	1	1550670
+o			5			裏面	りめん	back (side); reverse; the inside; background	뒷면, 이면			3	default	1	2858813
+o			5			裏目	うらめ	reverse side; opposite (of the expected); purl stitch (knitting)	뒷면, 반대, (뜨개질) 안뜨기			3	default	1	1550710
+o			5			裏方	うらかた	someone working behind-the-scenes; scene shifter; lady consort (to a high personage)	배후 인물, 조력자			3	default	1	1550650
+o			5			裏腹	うらはら	opposite; reverse; contrary; front and back	정반대, 서로 이웃함, 물건의 앞뒤			3	default	1	1550610
+o			5			理想的	りそうてき	ideal	이상적인			3	default	1	1550040
+o			5			理性	りせい	reason; reasoning power; (one's) sense	이성, 분별력			3	default	1	1550010
+o			5			里子	さとご	foster child; adopted animal (e.g. pet)	양자, 입양된 동물			3	default	1	1550800
+o			5			利点	りてん	advantage; point in favor; point in favour	장점, 이점			3	default	1	1549620
+o			5			離着陸	りちゃくりく	takeoff and landing	이착륙			3	default	1	1821660
+o			5			裏側	うらがわ	the reverse (side); back (side); other side; hidden side	뒷면, 이면			3	default	1	1550410
+o			5			利便	りべん	convenience	편리함			3	default	1	1758320
+o			5			履行	りこう	performance (of a duty); fulfillment (of a promise); fulfilment; execution (of a contract)	이행, 이행함			3	default	1	1549790
+o			5			隣家	りんか	neighbouring house; neighboring house	옆집			3	default	1	1555840
+o			5			隣人	りんじん	neighbour; neighbor; (people in the) neighbourhood; neighborhood	이웃			3	default	1	1555850
+o			5			隣接	りんせつ	adjacency; contiguity; being adjoined	인접함			3	default	1	1555870
+o			5			臨界	りんかい	boundary; (nuclear) criticality; critical (mass, pressure, temperature, state, point, etc.)	임계점, 한계			3	default	1	1555570
+o			5			林野庁	りんやちょう	Forestry Agency	일본의 행정부서의 하나, 산림청에 해당			3	default	1	1838520
+o			5			林業	りんぎょう	forestry	임업			3	default	1	1555470
+o			5			臨場感	りんじょうかん	(sense of) presence; feeling as if one was there; feeling of actually being there; realism	현장감, 생생함			3	default	1	1555670
+o			5			立案	りつあん	planning; devising (a plan); drafting; drawing up	계획 수립, 초안 작성			3	default	1	1551590
+o			5			立往生	たちおうじょう	being brought to a standstill; being stranded; getting stuck; stalling	발을 멈추다, 곤경에 처하다, 꼼짝 못함			3	default	1	1838030
+o			5			粒子	りゅうし	particle; grain	입자			3	default	1	1552910
+o			5			立証	りっしょう	establishing proof; demonstration; substantiation	입증, 증명			3	default	1	1551690
+o			5			立憲	りっけん	constitutionalism; Constitutional Democratic Party of Japan	입헌, 헌법을 세움			3	default	1	1551630
+o			5			立会	たちあい	presence (e.g. of an observer); observation; observer; witness	참관, 입회			3	default	1	1837710
+o			5			立国	りっこく	founding of a nation	국가 건국			3	default	1	1838060
+o			5			理学	りがく	(physical) science; natural science; physics; philosophy	물리학, 자연과학			3	default	1	1549920
+o			5			幕末	ばくまつ	Bakumatsu period; closing days of the Tokugawa shogunate; end of the Edo period	막부 시대의 말기	나오는 대로 함부로 하거나 속되게 말함. 또는 그렇게 하는 말.		3	llm	1	1607460
