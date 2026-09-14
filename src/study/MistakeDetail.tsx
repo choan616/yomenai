@@ -4,6 +4,7 @@ import { loadKanji, loadPairs, type RuntimeIdiom } from '../dict/load.ts'
 import { loadPairIndex } from '../dict/pairIndex.ts'
 import { mistakeContextFromKanji } from '../dict/mistakeContext.ts'
 import type { MistakeType } from '../core/types.ts'
+import { rubyOf, type RubySegment } from '../core/ruby.ts'
 import {
   breakdown,
   contrastGroups,
@@ -25,6 +26,8 @@ export function MistakeDetail({ idiom, mistakeType, onClose }: Props) {
   const [parts, setParts] = useState<BreakdownPart[] | null>(null)
   const [shared, setShared] = useState<Map<string, SharedIdiom[]>>(new Map())
   const [contrast, setContrast] = useState<Map<string, ContrastGroup[]>>(new Map())
+  /** 한자 위에 얹을 읽기. 사전이 오기 전에는 null 이라 읽기를 따로 한 줄로 보여준다 */
+  const [ruby, setRuby] = useState<RubySegment[] | null>(null)
 
   useEffect(() => {
     let alive = true
@@ -38,6 +41,7 @@ export function MistakeDetail({ idiom, mistakeType, onClose }: Props) {
         m.set(p.pairId, sharedIdioms(p.pairId, index, idiom.idiomId, 4))
         c.set(p.pairId, contrastGroups(p.pairId, p.base, index, lookup, idiom.idiomId))
       }
+      setRuby(rubyOf(idiom.headword, idiom.reading, lookup))
       setParts(bd)
       setShared(m)
       setContrast(c)
@@ -59,12 +63,27 @@ export function MistakeDetail({ idiom, mistakeType, onClose }: Props) {
       </div>
 
       <div className="card-body md-body">
-        <p className="headword sm" lang="ja">
-          {idiom.headword}
-        </p>
-        <p className="reading-shown" lang="ja">
-          {idiom.reading}
-        </p>
+        {/* 설명 카드는 한자 위에 읽기를 얹는다 (2026-09-14) — 줄을 따로 두면 눈이 두 번
+            움직이고 글자와 소리의 대응을 직접 맞춰야 한다 */}
+        {ruby === null ? (
+          <>
+            <p className="headword sm" lang="ja">
+              {idiom.headword}
+            </p>
+            <p className="reading-shown" lang="ja">
+              {idiom.reading}
+            </p>
+          </>
+        ) : (
+          <p className="headword sm has-ruby" lang="ja">
+            {ruby.map((r, i) => (
+              <ruby key={i}>
+                {r.text}
+                <rt>{r.rt}</rt>
+              </ruby>
+            ))}
+          </p>
+        )}
 
         {/* 해설은 규칙형 오답에만. 대조 바로 위에 놓아 "무엇을 볼지" 가리키는 라벨로 쓴다 */}
         {advice && (

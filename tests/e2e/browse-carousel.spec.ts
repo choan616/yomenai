@@ -129,7 +129,8 @@ test('훑어보기가 스냅되는 캐러셀이다', async ({ page }) => {
   // 첫 장에 읽기·뜻이 있고, 예문은 몇 장 안에 적어도 한 번 붙는다
   const first = slides.first()
   await expect(first.locator('.headword')).not.toBeEmpty()
-  await expect(first.locator('.reading-shown')).not.toBeEmpty()
+  // 읽기는 한자 위 요미가나로 얹힌다 (2026-09-14)
+  await expect(first.locator('rt').first()).not.toBeEmpty()
   expect(await slides.locator('.browse-ex').count()).toBeGreaterThan(0)
 
   // 예문은 카드마다 한 줄씩만 뜬다

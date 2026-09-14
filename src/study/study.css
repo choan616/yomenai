@@ -636,12 +636,19 @@
 .headword.has-ruby rt {
   font-size: 0.3em;
   font-weight: 400;
-  color: var(--ng);
+  /* 기본은 무채다. 朱 는 "고쳐졌다" 는 표시라 오답 자리에서만 쓴다 —
+     설명 카드(알아 두기·훑어보기·오답 상세)에서 붉으면 틀린 것처럼 읽힌다 (2026-09-14) */
+  color: var(--text-dim);
   letter-spacing: 0.02em;
 }
-/* 정답이면 루비도 무채로 — 오답일 때만 朱 로 선다 */
-.feedback.is-ok .headword.has-ruby rt {
-  color: var(--text-dim);
+.feedback.is-ng .headword.has-ruby rt {
+  color: var(--ng);
+}
+
+/* 오답 상세의 작은 헤드워드에 루비가 붙는 경우. `.sm` 과 `.has-ruby` 는 특정도가 같아
+   뒤에 선언된 쪽이 이겨 버린다 — 둘이 겹칠 때의 크기를 따로 못박는다 */
+.headword.sm.has-ruby {
+  font-size: clamp(32px, 10vw, 52px);
 }
 
 /* ── 루프 안 관찰 (Phase 9-C) — 정답 직후 스치는 격려 한 줄. 세션 요약 "발견"의 축소판.

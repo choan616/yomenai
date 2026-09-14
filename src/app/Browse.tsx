@@ -9,7 +9,9 @@ import { frequentIdioms, pickBrowse } from '../core/report.ts'
 import { replay } from '../core/replay.ts'
 import { LOCAL_USER_ID, listEvents } from '../db/events.ts'
 import { db } from '../db/schema.ts'
-import { loadBaseIdioms, loadExamples } from '../dict/load.ts'
+import { loadBaseIdioms, loadExamples, loadKanji } from '../dict/load.ts'
+import { mistakeContextFromKanji } from '../dict/mistakeContext.ts'
+import { rubyOf, type RubySegment } from '../core/ruby.ts'
 import { tts } from '../study/tts.ts'
 import { useViewportLock } from '../study/useViewportLock.ts'
 
@@ -20,6 +22,8 @@ interface BrowseItem {
   meaning: string
   wrong: number
   sentences: string[]
+  /** 한자 위에 얹을 읽기 — 목록을 만들 때 같이 계산한다 */
+  ruby: RubySegment[]
 }
 
 export function Browse({ onExit }: { onExit: () => void }) {
@@ -46,9 +50,10 @@ export function Browse({ onExit }: { onExit: () => void }) {
     ;(async () => {
       try {
         // 예문은 목록과 같이 받는다 — 카드를 넘길 때마다 기다리면 넘기는 맛이 죽는다
-        const [pool, examples, events] = await Promise.all([
+        const [pool, examples, kanji, events] = await Promise.all([
           loadBaseIdioms(),
           loadExamples(),
+          loadKanji(),
           listEvents(db(), LOCAL_USER_ID),
         ])
         if (!alive) return
@@ -61,11 +66,13 @@ export function Browse({ onExit }: { onExit: () => void }) {
             return it ? { headword: it.headword, reading: it.reading } : undefined
           }),
         )
+        const lookup = mistakeContextFromKanji(kanji).lookup
         setItems(
           rows.map((r) => ({
             ...r,
             meaning: byId.get(r.id)?.koMeaning?.definition?.trim() ?? '',
             sentences: examples.get(r.id) ?? [],
+            ruby: rubyOf(r.headword, r.reading, lookup),
           })),
         )
       } catch (e) {
@@ -177,11 +184,14 @@ function BrowseSlide({
           <span className="tag muted">{item.wrong}회 틀림</span>
         </div>
         <div className="card-body">
-          <p className="headword" lang="ja">
-            {item.headword}
-          </p>
-          <p className="reading-shown" lang="ja">
-            {item.reading}
+          {/* 설명 카드는 한자 위에 읽기를 얹는다 (2026-09-14) */}
+          <p className="headword has-ruby" lang="ja">
+            {item.ruby.map((r, i) => (
+              <ruby key={i}>
+                {r.text}
+                <rt>{r.rt}</rt>
+              </ruby>
+            ))}
           </p>
           {item.meaning && <p className="meaning">{item.meaning}</p>}
           {tts.available && (
