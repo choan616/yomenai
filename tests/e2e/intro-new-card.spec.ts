@@ -113,7 +113,8 @@ test('새 숙어는 소개로 나오고, 채점도 이벤트도 없다', async (
 
   // 소개는 한자어·읽기·뜻을 다 보여준다. 입력창은 없다
   await expect(intro.locator('.headword')).not.toBeEmpty()
-  await expect(intro.locator('.reading-shown')).not.toBeEmpty()
+  // 읽기는 한자 위 요미가나로 얹힌다
+  await expect(intro.locator('rt').first()).not.toBeEmpty()
   await expect(page.locator('.kana-input')).toHaveCount(0)
   await expect(intro.getByRole('button', { name: '봤어요' })).toBeVisible()
 
@@ -177,7 +178,7 @@ test('모른다고 답해야 소개가 뜬다', async ({ page }) => {
   const intro = page.locator('.intro-card')
   await expect(intro).toBeVisible()
   // 모른다고 한 뒤라 보여주는 게 정당하다 — 읽기·뜻이 다 나온다
-  await expect(intro.locator('.reading-shown')).not.toBeEmpty()
+  await expect(intro.locator('rt').first()).not.toBeEmpty()
   await expect(page.locator('.kana-input')).toHaveCount(0)
 })
 

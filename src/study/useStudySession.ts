@@ -70,6 +70,8 @@ export interface StudyState {
   events: { prior: LearningEvent[]; session: LearningEvent[] }
   /** 요약이 숙어 이름과 음독 쌍을 찾는 데 쓴다 */
   pool: RuntimeIdiom[]
+  /** 소개 카드의 요미가나. 한자 위에 읽기를 얹어 보여준다 (2026-09-14) */
+  introRuby?: RubySegment[]
   /** 카드 전환마다 1 증가. 화면이 전환 시간을 실측하는 트리거 (PLAN §7) */
   transitionSeq: number
 }
@@ -137,6 +139,14 @@ export function useStudySession({
   const [transitionSeq, setTransitionSeq] = useState(0)
 
   const mistakes = useRef<MistakeContext | null>(null)
+  /**
+   * 소개 카드의 요미가나를 렌더 중에 만들려면 사전이 필요한데, `mistakes` 는 ref 라
+   * 렌더에서 읽으면 갱신이 안 보일 수 있다. 그래서 사전이 오면 상태로도 한 번 남긴다.
+   * 채점 경로(이벤트 핸들러)는 ref 를 그대로 쓴다 — 거기선 ref 가 맞다.
+   */
+  const [rubyOfIdiom, setRubyOfIdiom] = useState<((i: RuntimeIdiom) => RubySegment[]) | null>(
+    null,
+  )
   const shownAt = useRef(0)
   const ctxBase = useRef({ userId: LOCAL_USER_ID, deviceId: getDeviceId() })
   // 관찰 문구 빈도 게이트 (Phase 9-C) — 세션 시작 시 설정을 한 번 읽어 고정한다
@@ -163,6 +173,8 @@ export function useStudySession({
         setPool(loaded)
         setPriorEvents(events)
         mistakes.current = mistakeContextFromKanji(kanji)
+        const rubyLookup = mistakes.current.lookup
+        setRubyOfIdiom(() => (i: RuntimeIdiom) => rubyOf(i.headword, i.reading, rubyLookup))
         const { sessionLimit, ratio, observeLevel: lvl } = loadSettings()
         observeLevel.current = lvl
         const now = Date.now()
@@ -385,6 +397,11 @@ export function useStudySession({
       intros: introIds.size,
     },
     summary: { total: results.length, correct: results.filter(Boolean).length },
+    // 사전이 아직 안 왔으면 루비 없이 — 소개 카드가 한자와 읽기를 따로 보여준다
+    introRuby:
+      status === 'intro' && idiom !== undefined && rubyOfIdiom !== null
+        ? rubyOfIdiom(idiom)
+        : undefined,
     events,
     pool: poolOut,
     transitionSeq,

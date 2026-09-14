@@ -1,6 +1,13 @@
 // 진단 리포트 화면 — 수준, 다음에 볼 것, 훑어보기 진입, 오답 유형 분포, 한국음 간섭, 취약 음독. 이 앱의 얼굴이다 (PLAN §7)
 import { useEffect, useState } from 'react'
-import { buildLevel, LEVEL_WINDOW, type BandRow, type LevelProfile } from '../core/level.ts'
+import {
+  buildLevel,
+  LEVEL_MIN_SEEN,
+  LEVEL_SOLID_RATE,
+  LEVEL_WINDOW,
+  type BandRow,
+  type LevelProfile,
+} from '../core/level.ts'
 import { prescribe, type Prescription } from '../core/prescription.ts'
 import { replay } from '../core/replay.ts'
 import { BROWSE_N, buildReport, type Report as ReportData } from '../core/report.ts'
@@ -265,10 +272,15 @@ function LevelSection({
       <p className="section-title">지금 수준</p>
       <p className="report-lead">{levelHeadline(level)}</p>
       <p className="stat-line">
-        읽기 {reviews}회 · 정답률 {accuracy}%
+        읽기 {reviews}회 · 전체 정답률 {accuracy}%
       </p>
-      {/* 밴드 행의 숫자가 왜 {LEVEL_WINDOW} 에서 멈추는지 안 밝히면 오해를 부른다 */}
-      <p className="hint">밴드 판정은 최근 {LEVEL_WINDOW}회 기준이에요.</p>
+      {/* 한 화면에 정답률이 두 개다 — 위는 누적 전체, 아래 막대는 밴드별 최근 창.
+          같은 말에 다른 뜻이라 무엇을 재는지 밝히지 않으면 반드시 오해를 부른다 */}
+      <p className="hint">
+        아래 막대는 <b>그 밴드의 정답률</b>이에요. 위의 전체 정답률과 달리 최근 {LEVEL_WINDOW}회만 봅니다.
+        {Math.round(LEVEL_SOLID_RATE * 100)}% 이상이면 안정, 그 아래면 흔들림, {LEVEL_MIN_SEEN}회 미만이면 표본
+        부족이에요.
+      </p>
 
       <div className="ladder">
         {level.bands.map((b, i) => (

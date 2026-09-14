@@ -90,7 +90,9 @@ export function Study({
         {s.status === 'classReview' && s.idiom && (
           <ClassReviewPrompt idiom={s.idiom} onAnswer={a.answerClassReview} />
         )}
-        {s.status === 'intro' && s.idiom && <IntroCard idiom={s.idiom} onSeen={a.seenIntro} />}
+        {s.status === 'intro' && s.idiom && (
+          <IntroCard idiom={s.idiom} ruby={s.introRuby} onSeen={a.seenIntro} />
+        )}
         {(s.status === 'reading' || s.status === 'reading-feedback') && s.idiom && (
           <ReadingCard
             idiom={s.idiom}
