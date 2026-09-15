@@ -15,7 +15,7 @@ interface Props {
   feedback?: ReadingFeedback
   /**
    * 「읽기 둘」 카드면 채워진다. `given` 은 여태 맞힌 읽기 —
-   * 문제에 「그것 말고」 로 못박아 같은 답을 또 쓰지 않게 한다
+   * 답 칸에 채워 보여줘 같은 답을 또 쓰지 않게 한다
    */
   dualAsk?: { total: number; given: string[] }
   onSubmit: (answer: string) => void
@@ -153,13 +153,24 @@ export function ReadingCard({
               {idiom.headword}
             </p>
             {/* 「읽기 둘」 카드 (2026-09-14). 처음부터 둘 다 묻는다 — 답을 보고 발동하면
-                같은 실력이 순서에 따라 다르게 처리된다. 이미 쓴 읽기는 제외 조건으로
-                못박는다. 안 그러면 같은 답을 또 쓰게 된다.
-                「읽기가 둘이다」 자체와 진행률(n/total)은 위 헤더 태그가 말하므로,
-                여기는 **이미 쓴 답을 빼라는 제외 조건 한 줄**만 남긴다 (given 이 있을 때만) */}
-            {dualAsk && dualAsk.given.length > 0 && (
-              <p className="follow-up">
-                <b>그것 말고</b> — <span lang="ja">{dualAsk.given[dualAsk.given.length - 1]}</span>
+                같은 실력이 순서에 따라 다르게 처리된다.
+                답 칸 두 개로 보여준다 (2026-09-15). 문장으로 쓰면 이미 쓴 읽기를 가리키는
+                말이 필요한데, 「그것 말고 — <읽기>」 는 「A 말고 B」 어순 때문에 **그 읽기를
+                쓰라는 뜻으로 뒤집혀 읽혔다.** 칸은 지시어가 없어 뒤집히지 않고, 맞혔다는
+                확인(✓)과 아직 안 쓴 칸을 한 줄이 같이 말한다 — 첫 질문에도 뜬다 */}
+            {dualAsk && (
+              <p className="dual-slots">
+                {dualAsk.given.map((r) => (
+                  <span className="dual-slot done" key={r}>
+                    <span lang="ja">{r}</span>
+                    <span aria-hidden="true"> ✓</span>
+                  </span>
+                ))}
+                {Array.from({ length: dualAsk.total - dualAsk.given.length }, (_, i) => (
+                  <span className="dual-slot" key={i}>
+                    ?
+                  </span>
+                ))}
               </p>
             )}
           </>

@@ -139,8 +139,9 @@ test('처음부터 둘 다 묻고, 쓴 읽기의 카드에만 정답이 남는�
   const dualTag = page.locator('.card-head').getByText(/읽기 둘/)
   await expect(dualTag).toBeVisible({ timeout: 5_000 })
   await expect(dualTag).toContainText('1/2')
-  // 첫 질문엔 본문에 안내 문장이 없다 — 뺄 답이 아직 없다
-  await expect(page.locator('.follow-up')).toHaveCount(0)
+  // 첫 질문엔 답 칸 두 개가 다 비어 있다 (2026-09-15) — 아직 맞힌 읽기가 없다
+  await expect(page.locator('.dual-slot')).toHaveCount(2)
+  await expect(page.locator('.dual-slot.done')).toHaveCount(0)
 
   // 상대 쪽 읽기부터 쓴다 — 순서는 상관없어야 한다
   await page.locator('.kana-input').fill('daigawari')
@@ -149,10 +150,12 @@ test('처음부터 둘 다 묻고, 쓴 읽기의 카드에만 정답이 남는�
   // 판정이 아직 안 났고, 쓴 읽기를 제외 조건으로 못박아 다시 묻는다
   await expect(page.locator('.card.feedback')).toHaveCount(0)
   await expect(dualTag).toContainText('2/2')
-  const prompt = page.locator('.follow-up')
-  await expect(prompt).toBeVisible()
-  await expect(prompt).toContainText('だいがわり')
-  await expect(prompt).toContainText('그것 말고')
+  // 맞힌 읽기가 한 칸을 채우고 나머지 한 칸은 비어 있다 — 「그것 말고」 같은 지시어를
+  // 안 쓴다. 어순 때문에 그 읽기를 쓰라는 뜻으로 뒤집혀 읽혔다 (2026-09-15)
+  const done = page.locator('.dual-slot.done')
+  await expect(done).toHaveCount(1)
+  await expect(done).toContainText('だいがわり')
+  await expect(page.locator('.dual-slot:not(.done)')).toHaveCount(1)
 
   await page.locator('.kana-input').fill('daitai')
   await page.locator('.kana-input').press('Enter')

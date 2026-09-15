@@ -854,18 +854,28 @@
   text-align: left;
 }
 
-/* ── 동형이독 이어 묻기 (2026-09-14) — 다른 읽기로 맞혔을 때 제외 조건을 문제에 붙인다.
-   .rule-hint 와 같은 캡션 톤, 여기는 **문제 화면**이라 숙어 바로 아래에 붙는다.
-   답을 알려주는 줄이 아니므로 강조하지 않는다 ── */
-.follow-up {
-  margin: 10px auto 0;
-  max-width: 26em;
-  color: var(--text-dim);
-  font-size: 13px;
-  line-height: 1.6;
-  text-align: center;
+/* ── 「읽기 둘」 답 칸 (2026-09-15) — 숙어 아래 두 칸. 맞힌 읽기가 한 칸씩 채워진다.
+   문장을 안 쓴다. 앞선 문구(「그것 말고 — <읽기>」)는 한국어로 「A 말고 B」= "A가 아니라
+   B" 로 읽혀 **가리키는 대상이 정반대로 잡혔다** (2026-09-15 검토). 칸은 지시어가 없어
+   뒤집힐 여지가 없고, 첫 질문(둘 다 빈 칸)에서도 답이 두 개라는 걸 그림으로 말한다.
+   margin 과 font-size 는 SE + 두꺼운 키보드(375x376) 실측으로 잡았다 — 이 값이면
+   .card-body 바닥에 9px 남는다 ── */
+.dual-slots {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin: 4px 0 0;
 }
-.follow-up b {
-  color: var(--text);
-  font-weight: 600;
+.dual-slot {
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 0 10px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-faint);
+}
+/* 이미 맞힌 칸 — 테두리와 글자를 한 단계 올려 빈 칸과 구분한다 */
+.dual-slot.done {
+  border-color: var(--text-faint);
+  color: var(--text-dim);
 }
