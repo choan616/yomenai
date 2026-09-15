@@ -24,6 +24,9 @@
 
 **주차장** — 한국 한자음 종성 → 일본 음독 꼬리 규칙(ㄱ→く·き 등)을 `KO_INTERFERENCE` 규칙으로.
 커스텀 키패드(`inputMode="none"`)는 IME 후보 바가 실제로 방해된다는 피드백이 오면.
+`justify-content: safe center` 앞에 `center` 폴백 한 줄 (`.card-body`·`.summary-screen`) —
+`safe` 를 모르는 브라우저는 선언째 버려 중앙 정렬이 사라진다. 잘림은 안 생겨 급하진 않다
+(2026-09-15 검토, 근거는 `context-notes.md` 같은 날 절).
 
 **자주 쓰는 것**
 
