@@ -75,6 +75,15 @@ export function Home({ onNavigate }: { onNavigate: (screen: Screen) => void }) {
       {/* 설정을 헤더로 올린다 (2026-09-14). 하단 메뉴를 비워 다시보기 자리를 만들고,
           첫 진입에서도 바로 닿게 한다 — Google 로그인이 설정에 있다 */}
       <div className="home-top">
+        {/* 읽기로 찾기 — 오답과 무관하게 생각날 때 스스로 여는 자리라 상단으로 올렸다
+            (사용자 요청 2026-09-16). 리포트·음독 맵과 같은 무게로 읽히면 안 된다 */}
+        <button
+          type="button"
+          className="home-find"
+          onClick={() => onNavigate('search')}
+        >
+          <span aria-hidden="true">🔍</span> 읽기로 찾기
+        </button>
         {/* 아이콘만 두면 눈에 안 띈다 (사용자 지적 2026-09-14) — 글자를 붙이고 테두리를 준다 */}
         <button
           type="button"
@@ -210,11 +219,6 @@ export function Home({ onNavigate }: { onNavigate: (screen: Screen) => void }) {
         </button>
         <button type="button" onClick={() => onNavigate('onyomi')}>
           음독 맵 <span className="chev">›</span>
-        </button>
-        {/* 읽기로 찾기 — 오답과 무관하게 생각날 때 스스로 여는 자리다 (2026-09-16).
-            하단 탭이 미결이라 새 진입 방식을 안 만들고 이 줄에 한 칸을 더한다 */}
-        <button type="button" onClick={() => onNavigate('search')}>
-          읽기로 찾기 <span className="chev">›</span>
         </button>
         <button type="button" onClick={openGuide}>
           사용 안내서 <span className="chev">›</span>

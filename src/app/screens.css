@@ -677,7 +677,9 @@
 .home-top {
   width: 100%;
   display: flex;
-  justify-content: flex-end;
+  /* 좌 = 읽기로 찾기, 우 = 설정 (2026-09-16) */
+  justify-content: space-between;
+  gap: 8px;
   padding: 4px 4px 0;
 }
 
@@ -718,8 +720,10 @@
   gap: 2px;
 }
 
-/* 설정 버튼 — 아이콘만으로는 눈에 안 띄어 글자와 테두리를 붙였다 (2026-09-14) */
-.home-gear {
+/* 상단 알약 버튼 — 아이콘만으로는 눈에 안 띄어 글자와 테두리를 붙였다 (2026-09-14).
+   읽기로 찾기가 같은 층에 올라오며 둘이 같은 모양을 쓴다 (2026-09-16) */
+.home-gear,
+.home-find {
   display: inline-flex;
   align-items: center;
   gap: 6px;
