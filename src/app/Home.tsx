@@ -82,7 +82,14 @@ export function Home({ onNavigate }: { onNavigate: (screen: Screen) => void }) {
           className="home-find"
           onClick={() => onNavigate('search')}
         >
-          <span aria-hidden="true">🔍</span> 읽기로 찾기
+          {/* 컬러 이모지(🔍)를 쓰면 옆의 ⚙ 와 톤이 안 맞는다 (사용자 지적 2026-09-16).
+              폰트에 기대는 단색 글리프(⌕)는 기기에 따라 두부가 되므로 인라인 SVG 로 그린다 —
+              currentColor 라 알약 글자색을 그대로 따라간다 */}
+          <svg className="pill-icon" viewBox="0 0 16 16" aria-hidden="true">
+            <circle cx="7" cy="7" r="4.3" />
+            <path d="M10.4 10.4 14 14" />
+          </svg>
+          읽기로 찾기
         </button>
         {/* 아이콘만 두면 눈에 안 띈다 (사용자 지적 2026-09-14) — 글자를 붙이고 테두리를 준다 */}
         <button

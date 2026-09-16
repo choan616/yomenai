@@ -722,6 +722,16 @@
 
 /* 상단 알약 버튼 — 아이콘만으로는 눈에 안 띄어 글자와 테두리를 붙였다 (2026-09-14).
    읽기로 찾기가 같은 층에 올라오며 둘이 같은 모양을 쓴다 (2026-09-16) */
+/* 알약 아이콘 — 글자색을 그대로 쓰는 단색 선화. 글자 크기를 따라 커진다 */
+.pill-icon {
+  width: 1.05em;
+  height: 1.05em;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+}
+
 .home-gear,
 .home-find {
   display: inline-flex;
