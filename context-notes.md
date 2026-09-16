@@ -4798,3 +4798,28 @@ listener 로 `el.value` 를 고쳐 쓴다 — React 의 onChange 와 'input' 이
 
 **같이 안 고친 것** — `🔊`(소리 듣기)는 Browse·IntroCard·MeaningCard·ReadingCard 에서
 컬러 이모지로 남아 있다. 상단 알약 한 쌍의 톤 문제라 그 범위만 고쳤다.
+
+## 개발 로직 캔버스 갱신 (2026-09-16)
+
+`docs/개발로직.canvas` 를 709a5ff 이후 60여 커밋의 현재 상태로 다시 그렸다. 틀린 채
+남아 있던 것은 서비스 워커 설명(`autoUpdate · skipWaiting` → 실제로는
+`registerType: 'prompt'` + UpdateBanner 대기)과 동기화 구조(`reviews-{기기}.json` 단일
+→ `backup.json` 하나 + `sync-{기기}.json` n개)였다. 둘 다 사고를 겪고 바꾼 부분이라
+옛 그림을 보고 판단하면 같은 사고로 되돌아간다.
+
+**추가한 노드** — 화면 쪽 Search·Browse·Feedback·UpdateBanner·IntroCard·「읽기 둘」
+카드·SessionSummary, 코어 쪽 level·sessionSummary·diagnostic·onyomiMap 과 「카드
+순간들」(echo·observe·ruby·readable·nextUp·surface·pick) 묶음, 빌드 쪽 한국음 감사
+(kr/krOld)·뜻 검수 화면·build-event-worklist·build-icon·일회성 조사 도구, DB 쪽
+localStorage 경계 노드, 동기화 쪽 assertBackupGrows.
+
+**연결선을 전부 그리지 않기로 했다.** 빌드 파이프라인 왼쪽 줄기는 산출물 의존이 아니라
+**실행 순서**로 읽고 (그룹 라벨에 명시), 화면 → 코어 호출도 `useStudySession` 두 개와
+리포트 처방 하나만 남겼다. 대안은 실제 의존을 모두 선으로 긋는 것이었는데, 그룹이 다섯
+줄로 늘어난 지금은 선이 남의 노드 상자를 관통해서 오히려 못 읽는다. 호출 관계는 각 노드
+본문에 적어 두는 쪽이 정확도를 안 잃는다.
+
+**localStorage 노드를 사용자 DB 그룹 안에 둔 이유** — 설정·테마·소개 여부·진단 완료는
+스키마 불변 조건(CLAUDE.md)의 대상이 아니다. 밖에 두면 "왜 이건 이벤트가 아닌가"를
+매번 다시 따지게 된다. 같은 그룹 안에 「이벤트 로그가 아니다」라고 붙여 두면 경계가
+한눈에 보인다.
