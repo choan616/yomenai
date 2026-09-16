@@ -211,6 +211,11 @@ export function Home({ onNavigate }: { onNavigate: (screen: Screen) => void }) {
         <button type="button" onClick={() => onNavigate('onyomi')}>
           음독 맵 <span className="chev">›</span>
         </button>
+        {/* 읽기로 찾기 — 오답과 무관하게 생각날 때 스스로 여는 자리다 (2026-09-16).
+            하단 탭이 미결이라 새 진입 방식을 안 만들고 이 줄에 한 칸을 더한다 */}
+        <button type="button" onClick={() => onNavigate('search')}>
+          읽기로 찾기 <span className="chev">›</span>
+        </button>
         <button type="button" onClick={openGuide}>
           사용 안내서 <span className="chev">›</span>
         </button>

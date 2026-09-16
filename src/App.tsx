@@ -8,6 +8,7 @@ import { OnyomiMap } from './app/OnyomiMap.tsx'
 import { Report } from './app/Report.tsx'
 import { Settings } from './app/Settings.tsx'
 import { Browse } from './app/Browse.tsx'
+import { Search } from './app/Search.tsx'
 import { Feedback } from './app/Feedback.tsx'
 import { Study } from './study/Study.tsx'
 import { UpdateBanner } from './app/UpdateBanner.tsx'
@@ -22,6 +23,7 @@ export type Screen =
   | 'onyomi'
   | 'report'
   | 'browse'
+  | 'search'
   | 'feedback'
   | 'diagnostic'
   | 'settings'
@@ -84,6 +86,8 @@ function Screens() {
           }}
         />
       )
+    case 'search':
+      return <Search onBack={home} />
     case 'browse':
       return <Browse onExit={() => setScreen(browseFrom)} />
     case 'feedback':

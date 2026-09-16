@@ -808,3 +808,40 @@
   padding: 6px 14px;
   color: var(--text);
 }
+
+/* ── 읽기로 찾기 ── */
+.search-input {
+  width: 100%;
+  padding: 10px 14px;
+  font-size: 18px;
+  font-family: var(--font-ja);
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+.search-scope {
+  color: var(--text-faint);
+  font-size: 13px;
+  line-height: 1.7;
+  text-align: center;
+  padding: 24px 0;
+}
+.hit-group .section-title {
+  font-family: var(--font-ja);
+}
+/* 뜻은 길어도 줄을 안 밀어낸다 — 표기·한국음이 왼쪽에 고정돼야 훑어진다 */
+.rows .r-meaning {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* 한국 한자음까지 겹치는 줄 (後期/후기 · 後記/후기) — 색만으로 구분하지 않는다 (PLAN §7) */
+.kr-dup {
+  color: var(--ng);
+}
+.section-title.exact {
+  color: var(--text);
+}
