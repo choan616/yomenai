@@ -191,3 +191,28 @@ describe('explainMistake — 탁음 갈래를 가른다', () => {
     }
   })
 })
+
+/**
+ * 탁음이 어긋났다고 다 연탁이 아니다 (2026-09-17, 사용자 지적).
+ *
+ * 문자열 경로는 `unvoiceAll` 만 보고 판정해서, **원형부터 탁음인 한자**(額 = がく, 청음
+ * かく 가 없다)를 청음으로 쓴 답까지 연탁으로 보냈다. 규칙 배지가 엉뚱한 절을 가리킨다.
+ */
+describe('정답에 변형이 안 걸렸으면 연탁이 아니다', () => {
+  it('원형이 이미 탁음인 자리 — 月額 げつがく ← げつかく', () => {
+    // 額의 음독은 ガク 하나뿐이다. 연탁이 일어날 청음 원형이 없다
+    expect(explainMistake({ headword: '月額', expected: 'げつがく', answer: 'げつかく' }, ctx))
+      .toEqual({ type: null, voicing: null })
+  })
+
+  it('같은 한자를 쓰는 다른 숙어도 — 金額 きんがく ← きんかく', () => {
+    expect(explainMistake({ headword: '金額', expected: 'きんがく', answer: 'きんかく' }, ctx))
+      .toEqual({ type: null, voicing: null })
+  })
+
+  it('진짜 연탁은 답이 분해 안 돼도 그대로 잡는다 — 近所 きんじょ ← きんちょ', () => {
+    // ちょ 는 所의 읽기가 아니라 답이 분해되지 않는다. 그래도 정답 쪽 しょ→じょ 가 연탁이다
+    expect(explainMistake({ headword: '近所', expected: 'きんじょ', answer: 'きんちょ' }, ctx))
+      .toEqual({ type: 'RENDAKU', voicing: 'rendaku' })
+  })
+})

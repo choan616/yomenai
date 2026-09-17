@@ -47,9 +47,12 @@ export const KANJI_FIXTURE: Record<string, { onyomi: string[]; kunyomi: string[]
   '認': { onyomi: ["ニン"], kunyomi: ["みと.める","したた.める"], koreanH: ["인"] },
   '謝': { onyomi: ["シャ"], kunyomi: ["あやま.る"], koreanH: ["사"] },
   '識': { onyomi: ["シキ"], kunyomi: ["し.る","しる.す"], koreanH: ["식","지"] },
+  '近': { onyomi: ["キン","コン"], kunyomi: ["ちか.い"], koreanH: ["근"] },
   '達': { onyomi: ["タツ","ダ"], kunyomi: ["-たち"], koreanH: ["달"] },
   '配': { onyomi: ["ハイ"], kunyomi: ["くば.る"], koreanH: ["배"] },
   '重': { onyomi: ["ジュウ","チョウ"], kunyomi: ["え","おも.い","おも.り","おも.なう","かさ.ねる","かさ.なる","おも"], koreanH: ["중"] },
+  '金': { onyomi: ["キン","コン","ゴン"], kunyomi: ["かね","かな-","-がね"], koreanH: ["김","금"] },
+  '額': { onyomi: ["ガク"], kunyomi: ["ひたい"], koreanH: ["액"] },
   '食': { onyomi: ["ショク","ジキ"], kunyomi: ["く.う","く.らう","た.べる","は.む"], koreanH: ["식","사"] },
   '高': { onyomi: ["コウ"], kunyomi: ["たか.い","たか","-だか","たか.まる","たか.める"], koreanH: ["고"] },
 }

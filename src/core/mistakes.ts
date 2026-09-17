@@ -78,7 +78,7 @@ export function explainMistake(input: MistakeInput, ctx: MistakeContext): Mistak
       return fromSegments(exp.segments, ans.segments)
     }
   }
-  return fromStrings(input.headword, expected, answer, ctx)
+  return fromStrings(input.headword, expected, answer, ctx, exp.ok ? exp.segments : null)
 }
 
 const NO_MISTAKE: MistakeVerdict = { type: null, voicing: null }
@@ -129,9 +129,12 @@ function fromStrings(
   expected: string,
   answer: string,
   ctx: MistakeContext,
+  /** 정답 쪽 분해. 탁음 차이가 *실제 변형*인지 가리는 데 쓴다 */
+  expSegments: Segment[] | null,
 ): MistakeVerdict {
   if (unvoiceAll(expected) === unvoiceAll(answer)) {
-    return verdict('RENDAKU', stringVoicing(expected, answer))
+    const voicing = stringVoicing(expected, answer, expSegments)
+    if (voicing !== null) return verdict('RENDAKU', voicing)
   }
   if (sokuonVariants(expected).includes(answer) || sokuonVariants(answer).includes(expected)) {
     return verdict('SOKUON')
@@ -143,22 +146,51 @@ function fromStrings(
 const HANDAKU_ROW = 'ぱぴぷぺぽ'
 const SEION_ROW = 'はひふへほ'
 
+/** 정답 조각에 붙어 있으면 「소리가 탁해지는 변형이 실제로 걸렸다」는 표식 */
+const VOICING_VARIANTS = ['rendaku', 'renjo', 'handaku']
+
+/**
+ * 표면 `index` 자리를 덮는 정답 조각에 탁음 변형이 걸려 있나.
+ *
+ * 정답 쪽이 분해에 실패하면(드묾) 가릴 근거가 없으니 `true` 로 둔다. 근거 없이 판정을
+ * 없애는 것보다, 문자열 관계만 보던 기존 판정을 남기는 쪽이 잃는 게 적다.
+ */
+function voicedAt(segments: Segment[] | null, index: number): boolean {
+  if (segments === null) return true
+  let end = 0
+  for (const s of segments) {
+    end += s.surface.length
+    if (index < end) return s.variants.some((v) => VOICING_VARIANTS.includes(v))
+  }
+  return false
+}
+
 /**
  * 분해가 안 되는 답의 탁음 갈래. `unvoiceAll` 이 같다는 건 자리 수가 같다는 뜻이라
  * 처음 어긋난 자리만 본다. は행 ↔ ぱ행이면 반탁, 아니면 연탁이다.
  *
+ * **정답 쪽에 변형이 안 걸린 자리면 `null`** — 탁음이 어긋났다고 다 연탁이 아니다.
+ * 月額 げつがく 의 額는 원형이 がく 고 청음 かく 가 없다. げつかく 는 연탁을 놓친 답이
+ * 아니라 원형을 잘못 안 답이다. 여기에 연탁 규칙을 붙이면 엉뚱한 절을 가르친다.
+ * 어긋난 자리가 여럿이면 처음 자리로 판단한다 — `fromSegments` 와 같은 규약이다.
+ *
  * 연성(ん + 모음 → な행)은 여기 안 온다 — の 와 お 는 청탁 짝이 아니라 `unvoiceAll` 이
  * 같아지지 않는다. 분해 경로에서만 잡힌다.
  */
-function stringVoicing(expected: string, answer: string): VoicingKind {
+function stringVoicing(
+  expected: string,
+  answer: string,
+  expSegments: Segment[] | null,
+): VoicingKind | null {
   for (let i = 0; i < Math.min(expected.length, answer.length); i++) {
     if (expected[i] === answer[i]) continue
+    if (!voicedAt(expSegments, i)) return null
     const pair = expected[i] + answer[i]
     const handaku = [...pair].some((c) => HANDAKU_ROW.includes(c))
     const seion = [...pair].some((c) => SEION_ROW.includes(c))
     return handaku && seion ? 'handaku' : 'rendaku'
   }
-  return 'rendaku'
+  return null
 }
 
 /**
