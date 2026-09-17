@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { decompose } from '../lib/onyomi.ts'
-import type { VariantKind } from '../lib/readings.ts'
+import { toHiragana, unvoiceAll, type VariantKind } from '../lib/readings.ts'
 import type { MistakeType } from '../core/types.ts'
 import {
   RULE_OF_MISTAKE,
@@ -279,5 +279,104 @@ describe('연탁 절의 서술이 코퍼스와 맞는다', () => {
   it('「그 넷 중 셋은 앞이 ん 이나 장음」 — 70% 이상이다', () => {
     const share = spots.onAfterNOrLong / spots.on
     expect(share, `${spots.onAfterNOrLong} / ${spots.on}`).toBeGreaterThan(0.7)
+  })
+})
+
+/**
+ * 종성 대응 절의 서술을 읽기 표로 고정한다 (2026-09-17, 축 A′).
+ *
+ * 이 절은 **나머지 규칙이 갈라져 나오는 줄기**인데(ㄱ·ㄹ 꼬리가 촉음의 재료, ㅇ 꼬리가
+ * 장음, ん 꼬리가 반탁·연성) 정작 그 대응이 맞는지는 아무도 안 봤다. 표를 귀납해 맞춘다.
+ * `tools/audit-ko-interference.ts` 가 같은 표를 사람이 읽는 형태로 낸다.
+ */
+describe('종성 대응 절의 서술이 읽기 표와 맞는다', () => {
+  const kanji = JSON.parse(
+    readFileSync(resolve(process.cwd(), 'public/dict/kanji.json'), 'utf8'),
+  ).kanji as Record<string, { on: string[]; kr: string[] }>
+
+  /** 종성 색인. 0번은 받침 없음이라 '.' 을 자리표시로 쓴다 */
+  const NO_CODA = '.'
+  const JONG = NO_CODA + 'ㄱㄲㄳㄴㄵㄶㄷㄹㄺㄻㄼㄽㄾㄿㅀㅁㅂㅄㅅㅆㅇㅈㅊㅋㅌㅍㅎ'
+  const coda = (syllable: string): string | null => {
+    const at = (syllable.codePointAt(0) ?? 0) - 0xac00
+    return at < 0 || at >= 11172 ? null : JONG[at % 28]
+  }
+  /** 음독의 꼬리 갈래 — 종성과 짝을 이루는 자리 */
+  const tail = (raw: string): string => {
+    const r = toHiragana(raw.replace(/-/g, ''))
+    const last = r.at(-1) ?? ''
+    if (last === 'く' || last === 'き') return 'kaki'
+    if (last === 'つ' || last === 'ち') return 'tuti'
+    if (last === 'ん') return 'n'
+    if (r.length >= 2 && (last === 'う' || last === 'い')) return 'long'
+    return 'open'
+  }
+
+  /** 종성 → 꼬리 갈래 비율 */
+  const share = (wanted: string, ...kinds: string[]): number => {
+    let hit = 0
+    let total = 0
+    for (const rec of Object.values(kanji)) {
+      for (const kr of rec.kr) {
+        if (coda(kr) !== wanted) continue
+        for (const on of rec.on) {
+          total++
+          if (kinds.includes(tail(on))) hit++
+        }
+      }
+    }
+    return total === 0 ? 0 : hit / total
+  }
+
+  it('「ㄱ 받침은 く·き 로」 — 80% 이상', () => {
+    expect(share('ㄱ', 'kaki')).toBeGreaterThan(0.8)
+  })
+
+  it('「ㄹ 받침은 つ·ち 로」 — 80% 이상', () => {
+    expect(share('ㄹ', 'tuti')).toBeGreaterThan(0.8)
+  })
+
+  it('「ㅁ·ㄴ 받침은 ん 으로」 — 둘 다 90% 이상', () => {
+    expect(share('ㅁ', 'n')).toBeGreaterThan(0.9)
+    expect(share('ㄴ', 'n')).toBeGreaterThan(0.9)
+  })
+
+  it('「ㅂ 받침은 う 로」 — 70% 이상', () => {
+    expect(share('ㅂ', 'long')).toBeGreaterThan(0.7)
+  })
+
+  it('「ㅇ 받침은 う·い 로 늘어나요」 — 85% 이상', () => {
+    expect(share('ㅇ', 'long')).toBeGreaterThan(0.85)
+  })
+
+  it('「받침 없는 글자의 열에 넷이 장음」 — 35~50% 사이다', () => {
+    const n = share(NO_CODA, 'long')
+    expect(n).toBeGreaterThan(0.35)
+    expect(n).toBeLessThan(0.5)
+  })
+
+  it('「한국음은 청탁을 안 가른다」 — 같은 한국음에 청탁만 다른 음독 짝이 실재한다', () => {
+    const bySound = new Map<string, string[][]>()
+    for (const rec of Object.values(kanji)) {
+      for (const kr of rec.kr) {
+        const list = bySound.get(kr) ?? []
+        list.push(rec.on.map((o) => toHiragana(o.replace(/-/g, ''))))
+        bySound.set(kr, list)
+      }
+    }
+    let pairs = 0
+    for (const list of bySound.values()) {
+      for (let i = 0; i < list.length; i++) {
+        for (let j = i + 1; j < list.length; j++) {
+          for (const a of list[i]) {
+            for (const b of list[j]) {
+              if (a !== b && unvoiceAll(a) === unvoiceAll(b)) pairs++
+            }
+          }
+        }
+      }
+    }
+    // 본문이 예로 든 化 カ ↔ 画 ガ, 介 カイ ↔ 慨 ガイ 가 예외가 아니라는 근거
+    expect(pairs).toBeGreaterThan(50)
   })
 })
