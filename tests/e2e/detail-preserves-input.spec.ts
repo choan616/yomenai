@@ -71,6 +71,15 @@ test('오답 상세를 닫고 돌아오면 입력한 답이 그대로 남아 있
   // 자세히 열기 → 닫기
   await page.getByRole('button', { name: '자세히', exact: true }).click()
   await expect(page.locator('.mistake-detail')).toBeVisible()
+
+  // 규칙 유형이 붙은 오답이면 "왜 그런가" 가 여기서 펼쳐진다 (2026-09-17).
+  // 세션 중에는 규칙 화면으로 못 나가므로(큐가 초기화된다) 이 자리가 심화의 유일한 통로다
+  const more = page.locator('.md-rule-more')
+  if ((await more.count()) > 0) {
+    await expect(more).toContainText('왜 그런가')
+    await expect(more.locator('.rule-examples > li').first()).toBeVisible()
+  }
+
   await page.getByRole('button', { name: '닫기', exact: true }).click()
 
   // 돌아왔을 때 입력창 값이 그대로여야 한다

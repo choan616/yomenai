@@ -10,6 +10,8 @@ import { Settings } from './app/Settings.tsx'
 import { Browse } from './app/Browse.tsx'
 import { Search } from './app/Search.tsx'
 import { Feedback } from './app/Feedback.tsx'
+import { Rules } from './app/Rules.tsx'
+import type { RuleId } from './app/rules.ts'
 import { Study } from './study/Study.tsx'
 import { UpdateBanner } from './app/UpdateBanner.tsx'
 import { QUICK_SESSION_LIMIT } from './app/settings.ts'
@@ -25,6 +27,7 @@ export type Screen =
   | 'browse'
   | 'search'
   | 'feedback'
+  | 'rules'
   | 'diagnostic'
   | 'settings'
 
@@ -46,9 +49,23 @@ function Screens() {
    */
   const [browseFrom, setBrowseFrom] = useState<Screen>('report')
 
-  /** 홈에서 나가는 모든 이동. 다시보기로 갈 때만 돌아올 자리를 적어 둔다 */
+  /**
+   * 규칙 화면을 어디서 열었나 (2026-09-17). 홈과 리포트 처방 두 군데서 들어온다 —
+   * `browseFrom` 과 같은 이유로 돌아갈 자리를 적어 둔다.
+   * 세션 중에는 여기로 안 온다 (나가면 세션 큐가 초기화된다). 카드 옆에서는 오답 상세가
+   * 같은 절을 인라인으로 펼친다
+   */
+  const [rulesFrom, setRulesFrom] = useState<Screen>('home')
+  /** 열린 채로 뜰 절. 처방에서 들어올 때만 채운다 */
+  const [focusRule, setFocusRule] = useState<RuleId | null>(null)
+
+  /** 홈에서 나가는 모든 이동. 다시보기·규칙으로 갈 때만 돌아올 자리를 적어 둔다 */
   const fromHome = (next: Screen) => {
     if (next === 'browse') setBrowseFrom('home')
+    if (next === 'rules') {
+      setRulesFrom('home')
+      setFocusRule(null)
+    }
     setScreen(next)
   }
   // 집중 세션이 붙을 (한자, 음독) 쌍. 리포트의 처방이 정한다 (Phase 10)
@@ -84,12 +101,19 @@ function Screens() {
             setFocusPair(pairId)
             setScreen('focus')
           }}
+          onRule={(id) => {
+            setRulesFrom('report')
+            setFocusRule(id)
+            setScreen('rules')
+          }}
         />
       )
     case 'search':
       return <Search onBack={home} />
     case 'browse':
       return <Browse onExit={() => setScreen(browseFrom)} />
+    case 'rules':
+      return <Rules onBack={() => setScreen(rulesFrom)} focus={focusRule} />
     case 'feedback':
       return <Feedback onBack={() => setScreen('settings')} />
     case 'diagnostic':

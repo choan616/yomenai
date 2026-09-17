@@ -14,6 +14,8 @@ import {
   type SharedIdiom,
 } from './mistakeDetail.ts'
 import { MISTAKE_ADVICE, MISTAKE_LABEL, RULE_MISTAKES } from './mistakeLabels.ts'
+import { Mixed, RuleBody } from '../app/RuleBody.tsx'
+import { RULE_OF_MISTAKE, ruleSection } from '../app/rules.ts'
 
 interface Props {
   idiom: RuntimeIdiom
@@ -52,6 +54,13 @@ export function MistakeDetail({ idiom, mistakeType, onClose }: Props) {
   }, [idiom])
 
   const advice = mistakeType !== null && RULE_MISTAKES.has(mistakeType) ? mistakeType : null
+  /**
+   * 아래에 펼칠 규칙 절. 위의 advice 와 기준이 다르다 — 카드 한 줄은 RULE_MISTAKES 경계를
+   * 그대로 쓰지만(2026-09-07), 여기는 오버레이라 자리가 있어 KO_INTERFERENCE(종성 대응)
+   * 절까지 펼친다
+   */
+  const ruleId = mistakeType === null ? null : RULE_OF_MISTAKE[mistakeType]
+  const rule = ruleId === null ? undefined : ruleSection(ruleId)
 
   return (
     <div className="card mistake-detail">
@@ -89,7 +98,9 @@ export function MistakeDetail({ idiom, mistakeType, onClose }: Props) {
         {advice && (
           <p className="md-rule">
             <span className="tag">{MISTAKE_LABEL[advice]}</span>
-            <span className="md-rule-text">{MISTAKE_ADVICE[advice]}</span>
+            <span className="md-rule-text">
+              <Mixed text={MISTAKE_ADVICE[advice]} />
+            </span>
           </p>
         )}
 
@@ -134,6 +145,19 @@ export function MistakeDetail({ idiom, mistakeType, onClose }: Props) {
             </li>
           ))}
         </ul>
+        )}
+
+        {/* 규칙 심화 (2026-09-17) — 위의 한 줄이 "무슨 유형인지" 라면 여기는 "왜 그런지" 다.
+            세션 중에 규칙 화면으로 나가면 세션 큐가 초기화되므로 그 절을 여기서 인라인으로
+            펼친다. 전체 지도는 홈·리포트에서 연다 (context-notes 2026-09-17) */}
+        {rule && (
+          <div className="md-rule-more">
+            <p className="md-rule-more-title">왜 그런가 — {rule.title}</p>
+            <RuleBody section={rule} short />
+            <p className="md-rule-more-tail dim">
+              규칙 전체는 홈의 「읽기 규칙」에서 볼 수 있어요.
+            </p>
+          </div>
         )}
       </div>
 

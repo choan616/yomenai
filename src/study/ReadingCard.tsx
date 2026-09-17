@@ -8,6 +8,7 @@ import type { ReadingFeedback } from './useStudySession.ts'
 import { KanaInput } from './KanaInput.tsx'
 import { MistakeDetail } from './MistakeDetail.tsx'
 import { MISTAKE_ADVICE, MISTAKE_LABEL, RULE_MISTAKES } from './mistakeLabels.ts'
+import { Mixed } from '../app/RuleBody.tsx'
 import { tts } from './tts.ts'
 
 interface Props {
@@ -118,7 +119,11 @@ export function ReadingCard({
                 어휘형(음독 선택·한국음 간섭)에는 안 붙인다 — 규칙이 없는 자리에 글을
                 늘리면 있는 해설까지 안 읽힌다 (context-notes 2026-09-07) */}
             {!fb.correct && fb.mistakeType && RULE_MISTAKES.has(fb.mistakeType) && (
-              <p className="rule-hint">{MISTAKE_ADVICE[fb.mistakeType]}</p>
+              <p className="rule-hint">
+                {/* 해설 문장에 섞인 일본어에도 lang="ja" 를 붙인다 (2026-09-17) — 안 붙이면
+                    三日月·発達 이 한국 자형으로 나가서 틀린 글자 모양을 학습한다 */}
+                <Mixed text={MISTAKE_ADVICE[fb.mistakeType]} />
+              </p>
             )}
             {tts.available && (
               <button type="button" className="tts-btn" onClick={() => tts.speak(fb.expected)}>

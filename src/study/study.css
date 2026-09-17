@@ -879,3 +879,22 @@
   border-color: var(--text-faint);
   color: var(--text-dim);
 }
+
+/* 오답 상세의 규칙 심화 (2026-09-17) — 위의 .md-rule 이 "무슨 유형인지" 라면 여기는 "왜 그런지".
+   오버레이는 스크롤이 있어 카드 본문과 달리 세로 여유가 있다 (2026-09-14 절 참조) */
+.md-rule-more {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.md-rule-more-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+.md-rule-more-tail {
+  font-size: 12px;
+}

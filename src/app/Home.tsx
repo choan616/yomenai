@@ -227,6 +227,11 @@ export function Home({ onNavigate }: { onNavigate: (screen: Screen) => void }) {
         <button type="button" onClick={() => onNavigate('onyomi')}>
           음독 맵 <span className="chev">›</span>
         </button>
+        {/* 읽기 규칙 — 안내서 옆이 맞는 자리다. 둘 다 "언제든 꺼내 보는 것" 이다 (2026-09-17).
+            네 칸이 된 것 자체가 내비게이션 모델 결정의 재료다 (checklist 「지켜볼 신호」) */}
+        <button type="button" onClick={() => onNavigate('rules')}>
+          읽기 규칙 <span className="chev">›</span>
+        </button>
         <button type="button" onClick={openGuide}>
           사용 안내서 <span className="chev">›</span>
         </button>

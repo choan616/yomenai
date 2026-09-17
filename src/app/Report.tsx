@@ -17,6 +17,7 @@ import { loadBaseIdioms, loadPairs } from '../dict/load.ts'
 import { loadPairIndex } from '../dict/pairIndex.ts'
 import { BAND_NOTE } from '../lib/bands.ts'
 import { MISTAKE_ADVICE, MISTAKE_LABEL } from '../study/mistakeLabels.ts'
+import { RULE_OF_MISTAKE, type RuleId } from './rules.ts'
 
 interface Loaded {
   report: ReportData
@@ -28,12 +29,15 @@ export function Report({
   onBack,
   onBrowse,
   onFocus,
+  onRule,
 }: {
   onBack: () => void
   /** 자주 틀린 숙어를 채점 없이 넘겨 보는 화면으로 (2026-09-12) */
   onBrowse: () => void
   /** 처방의 음독을 그 자리에서 집중 세션으로 (Phase 10) */
   onFocus: (pairId: string) => void
+  /** 규칙 처방에서 그 절로 (2026-09-17). 세션이 없는 자리라 화면을 옮겨도 잃을 게 없다 */
+  onRule: (id: RuleId) => void
 }) {
   const [data, setData] = useState<Loaded | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -95,7 +99,7 @@ export function Report({
             세션을 마치면 오답 패턴이 여기 쌓여요.
           </p>
         ) : (
-          <ReportBody data={data} onBrowse={onBrowse} onFocus={onFocus} />
+          <ReportBody data={data} onBrowse={onBrowse} onFocus={onFocus} onRule={onRule} />
         )}
       </div>
     </section>
@@ -106,10 +110,12 @@ function ReportBody({
   data,
   onBrowse,
   onFocus,
+  onRule,
 }: {
   data: Loaded
   onBrowse: () => void
   onFocus: (pairId: string) => void
+  onRule: (id: RuleId) => void
 }) {
   const { report, level, prescriptions } = data
   // 정답률은 *실제* 오답으로 센다. 분류된 오답만 쓰면 미분류분이 정답으로 둔갑한다
@@ -135,7 +141,7 @@ function ReportBody({
                   {i + 1}
                 </span>
                 <div className="rx-body">
-                  <RxItem p={p} onFocus={onFocus} />
+                  <RxItem p={p} onFocus={onFocus} onRule={onRule} />
                 </div>
               </li>
             ))}
@@ -329,7 +335,15 @@ function rxKey(p: Prescription): string {
   return p.kind === 'ONYOMI' ? `ONYOMI:${p.pairId}` : p.kind === 'BAND' ? `BAND:${p.band}` : p.kind
 }
 
-function RxItem({ p, onFocus }: { p: Prescription; onFocus: (pairId: string) => void }) {
+function RxItem({
+  p,
+  onFocus,
+  onRule,
+}: {
+  p: Prescription
+  onFocus: (pairId: string) => void
+  onRule: (id: RuleId) => void
+}) {
   switch (p.kind) {
     case 'MORE_DATA':
       return (
@@ -340,7 +354,9 @@ function RxItem({ p, onFocus }: { p: Prescription; onFocus: (pairId: string) => 
           </p>
         </>
       )
-    case 'MISTAKE_RULE':
+    case 'MISTAKE_RULE': {
+      // 규칙 처방은 세션으로 못 만든다 (prescription.ts). 대신 **읽을 곳**은 생겼다 (2026-09-17)
+      const rule = RULE_OF_MISTAKE[p.type]
       return (
         <>
           <p className="rx-title">
@@ -348,8 +364,14 @@ function RxItem({ p, onFocus }: { p: Prescription; onFocus: (pairId: string) => 
             <span className="dim"> · 오답의 {Math.round(p.share * 100)}%</span>
           </p>
           <p className="rx-why">{MISTAKE_ADVICE[p.type]}</p>
+          {rule && (
+            <button type="button" className="btn rx-run" onClick={() => onRule(rule)}>
+              이 규칙 읽기 <span className="chev">›</span>
+            </button>
+          )}
         </>
       )
+    }
     case 'ONYOMI':
       return (
         <>
