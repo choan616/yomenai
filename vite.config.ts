@@ -22,7 +22,7 @@ export default defineConfig(({ command, isPreview }) => ({
       manifest: {
         name: 'yomenai — 読めない',
         short_name: 'yomenai',
-        description: '뜻은 아는데 못 읽는 일본어 숙어를 바로잡는 앱',
+        description: '일본어 한자 읽기를 진단하고 교정하는 앱',
         lang: 'ko',
         start_url: '/yomenai/',
         scope: '/yomenai/',

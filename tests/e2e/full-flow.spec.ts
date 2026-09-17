@@ -70,8 +70,8 @@ test('진입 진단 → 세션 → 리포트 전체 흐름을 완주한다', asy
   await expect(page.locator('.ko-callout')).toBeVisible()
   await expect(page.getByText('취약 음독')).toBeVisible()
 
-  // ── 학습 탭: 진단을 마쳤으니 진입점이 사라진다 (리포트는 탭 루트라 「‹」 가 없다) ──
-  await page.getByRole('button', { name: '학습', exact: true }).click()
+  // ── 홈 탭: 진단을 마쳤으니 진입점이 사라진다 (리포트는 탭 루트라 「‹」 가 없다) ──
+  await page.getByRole('button', { name: '홈', exact: true }).click()
   await expect(page.getByRole('button', { name: '세션 시작' })).toBeVisible()
 
   // ── "3장만" — 설정을 안 건드리고 이번만 짧게 (Phase 11) ──

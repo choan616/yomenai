@@ -92,7 +92,7 @@ test('탭 넷을 오가고, 세션에서는 탭바가 사라진다', async ({ pa
   await expect(page.getByRole('heading', { name: '진단 리포트' })).toBeVisible()
 
   // 세션은 탭바를 덮는다 — 키보드가 올라오는 화면이라 하단이 비어 있어야 한다
-  await page.getByRole('button', { name: '학습', exact: true }).click()
+  await page.getByRole('button', { name: '홈', exact: true }).click()
   await page.getByRole('button', { name: '세션 시작' }).click()
   await expect(page.locator('.headword').first()).toBeVisible({ timeout: 20_000 })
   await expect(page.locator('.tabbar')).toHaveCount(0)

@@ -1,5 +1,5 @@
 // "오늘 맞힌 것으로 읽히는 문장" — 학습의 증거를 점수가 아니라 실제로 읽히는 문장으로 준다.
-// 뜻은 아는데 못 읽는 사람이 대상이라, 문장 하나가 술술 읽히는 순간이 이 앱의 보상이다 (PLAN §0)
+// 읽기에서 막히는 사람이 대상이라, 문장 하나가 술술 읽히는 순간이 이 앱의 보상이다 (PLAN §0)
 import type { LearningEvent } from './types.ts'
 
 export interface Readable {

@@ -45,7 +45,7 @@ test('히라가나로 한자 표기를 찾는다', async ({ page }) => {
   await expect(page.locator('.empty')).toContainText('없어요')
   await expect(page.locator('.search-scope')).toBeVisible()
 
-  // 찾기는 탭 루트라 「‹」 가 없다 — 학습 탭으로 돌아간다 (2026-09-17 하단 탭 전환)
-  await page.getByRole('button', { name: '학습', exact: true }).click()
+  // 찾기는 탭 루트라 「‹」 가 없다 — 홈 탭으로 돌아간다 (2026-09-17 하단 탭 전환)
+  await page.getByRole('button', { name: '홈', exact: true }).click()
   await expect(page.getByRole('button', { name: '세션 시작' })).toBeVisible()
 })

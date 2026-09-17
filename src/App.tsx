@@ -22,7 +22,7 @@ import { UpdateBanner } from './app/UpdateBanner.tsx'
 import { QUICK_SESSION_LIMIT } from './app/settings.ts'
 
 /** 하단 탭. 모든 화면이 이 넷 중 하나 아래에 있다 */
-export type Tab = 'learn' | 'report' | 'search' | 'settings'
+export type Tab = 'home' | 'report' | 'search' | 'settings'
 
 /** 탭 안에서 한 겹 들어간 화면. 자기 탭 루트로 돌아간다 */
 export type Sub = { kind: 'onyomi' } | { kind: 'rules'; focus: RuleId | null } | { kind: 'feedback' }
@@ -45,7 +45,7 @@ export default function App() {
 }
 
 function Shell() {
-  const [tab, setTab] = useState<Tab>('learn')
+  const [tab, setTab] = useState<Tab>('home')
   const [sub, setSub] = useState<Sub | null>(null)
   const [flow, setFlow] = useState<Flow | null>(null)
 
@@ -112,7 +112,7 @@ function TabRoot({
   onFlow: (f: Flow) => void
 }) {
   switch (tab) {
-    case 'learn':
+    case 'home':
       return <Home onFlow={onFlow} />
     case 'report':
       return (

@@ -1,4 +1,4 @@
-// 홈 — 학습 탭의 루트. 진단 전엔 진단이, 진단 후엔 세션이 주 동작 (Phase 9-A).
+// 홈 — 홈 탭의 루트. 진단 전엔 진단이, 진단 후엔 세션이 주 동작 (Phase 9-A).
 // 2026-09-17 하단 탭 전환 — 리포트·음독 맵·규칙·안내서·설정·찾기가 전부 탭으로 내려갔다.
 // 여기 남는 건 **세션을 시작하는 것들뿐**이다. 홈은 2초 안에 세션을 시작하는 자리다
 import { useEffect, useState } from 'react'
@@ -75,7 +75,7 @@ export function Home({ onFlow }: { onFlow: (flow: Flow) => void }) {
   return (
     <main className="home">
       <h1 lang="ja">読めない</h1>
-      <p className="tagline">뜻은 아는데 못 읽는 숙어를 바로잡아요</p>
+      <p className="tagline">일본어 한자, 당황하지 말자!</p>
 
       {/* 첫 안내 (테스터 피드백 2026-09-14 — "튜토리얼처럼 안내화면이 뜨면").
           **별도 화면이 아니라 홈 위의 패널이다.** 화면을 가로막으면 첫 동작이 가려지고,
