@@ -144,12 +144,6 @@ describe.runIf(existsSync(kanjiPath))('전체 KANJIDIC2 (data/dict/kanji.json)',
  * 셋이 다르다. 出発을 しゅっはつ 로 쓴 사람에게 연탁 설명을 내밀면 틀린 규칙을 가르친다.
  */
 describe('explainMistake — 탁음 갈래를 가른다', () => {
-  const renjoCtx = contextFor({
-    ...KANJI_FIXTURE,
-    反: { onyomi: ['ハン', 'ホン', 'タン'], kunyomi: ['そ.る', 'かえ.す'], koreanH: ['반'] },
-    応: { onyomi: ['オウ', 'ヨウ'], kunyomi: ['こた.える'], koreanH: ['응'] },
-  })
-
   it('연탁 — 뒷 글자 첫소리가 탁해지는 자리', () => {
     expect(explainMistake({ headword: '三日月', expected: 'みかづき', answer: 'みかつき' }, ctx))
       .toEqual({ type: 'RENDAKU', voicing: 'rendaku' })
@@ -161,8 +155,21 @@ describe('explainMistake — 탁음 갈래를 가른다', () => {
   })
 
   it('연성 — ん 뒤의 모음이 な행으로 당겨지는 자리', () => {
-    expect(explainMistake({ headword: '反応', expected: 'はんのう', answer: 'はんおう' }, renjoCtx))
+    expect(explainMistake({ headword: '天皇', expected: 'てんのう', answer: 'てんおう' }, ctx))
       .toEqual({ type: 'RENDAKU', voicing: 'renjo' })
+  })
+
+  /**
+   * 反応 은 연성이지만 **앱은 연성으로 안 본다** (2026-09-17, 문법 노출 점검 축 B).
+   *
+   * KANJIDIC 이 応의 읽기로 `-ノウ` 를 이미 싣는다 — 어휘화가 깊어 별도 읽기가 된 것이다.
+   * 그래서 분해가 のう 를 변형 없는 원형으로 읽고, はんおう 는 「다른 음독을 골랐다」가 된다.
+   * 전에는 픽스처에서 `-ノウ` 를 빼고 검증해서 **실재하지 않는 경로를 통과시키고 있었다.**
+   * 규칙 본문도 이 사실을 적는다 (`rules.ts` 연성 절 `offRule`).
+   */
+  it('사전이 결과형을 별도 읽기로 실은 연성은 음독 선택으로 간다 — 反応', () => {
+    expect(explainMistake({ headword: '反応', expected: 'はんのう', answer: 'はんおう' }, ctx))
+      .toEqual({ type: 'ONYOMI_CHOICE', voicing: null })
   })
 
   it('분해가 안 되는 답도 は행 ↔ ぱ행이면 반탁으로 가른다', () => {

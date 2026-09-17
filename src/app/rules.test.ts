@@ -3,6 +3,8 @@
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
+import { decompose } from '../lib/onyomi.ts'
+import type { VariantKind } from '../lib/readings.ts'
 import type { MistakeType } from '../core/types.ts'
 import {
   RULE_OF_MISTAKE,
@@ -140,5 +142,142 @@ describe('반탁 절의 과잉 적용 경계', () => {
       ...handaku.contrasts.slice(0, SHORT_RULE.contrasts).map((c) => c.blocked.word + c.because),
     ].join(' ')
     expect(shown).toContain('心不全')
+  })
+})
+
+/**
+ * 예시가 **그 절의 규칙을 실제로 보여주는지** (2026-09-17, 문법 노출 점검 축 B).
+ *
+ * 코퍼스에 실재하는지는 위에서 봤다. 여기서는 한 걸음 더 간다 — 연탁 절의 예시는 분해에
+ * `rendaku` 가 붙어 있어야 하고, 안 붙어 있으면 `offRule` 로 이유를 밝혀야 한다.
+ * 이 검사가 없어서 **연성 절 예시 다섯 중 셋이 연성으로 분해되지 않는 채 실려 있었다**
+ * (사전이 のう·のん·ねん 을 별도 읽기로 등재). 본문은 그 셋을 연성 예로 가르치는데 앱은
+ * 음독 선택으로 분류해 다른 절로 보내고 있었다.
+ */
+describe('예시가 그 절의 규칙을 실제로 갖고 있다', () => {
+  const kanji = JSON.parse(
+    readFileSync(resolve(process.cwd(), 'public/dict/kanji.json'), 'utf8'),
+  ).kanji as Record<string, { on: string[]; kun: string[] }>
+  const lookup = (k: string) => {
+    const r = kanji[k]
+    return r === undefined ? undefined : { onyomi: r.on, kunyomi: r.kun }
+  }
+
+  /** 변형으로 판정되는 절만. 종성 대응·장음·음독 층위·혼독은 변형 태그가 없는 축이다 */
+  const BY_VARIANT: Partial<Record<string, VariantKind>> = {
+    sokuon: 'sokuon',
+    handakuon: 'handaku',
+    renjo: 'renjo',
+    rendaku: 'rendaku',
+  }
+
+  const tagged = (ex: RuleExample, variant: VariantKind): boolean => {
+    const d = decompose(ex.word, ex.reading, lookup)
+    return d.ok && d.segments.some((s) => s.variants.includes(variant))
+  }
+
+  it('변형 절의 예시는 분해에 그 변형이 붙어 있다 — 아니면 offRule 로 밝힌다', () => {
+    for (const s of RULE_SECTIONS) {
+      const variant = BY_VARIANT[s.id]
+      if (variant === undefined) continue
+      for (const ex of s.examples) {
+        if (ex.outside) continue
+        const has = tagged(ex, variant)
+        expect(has || ex.offRule !== undefined, `${s.id} · ${ex.word} ${ex.reading}`).toBe(true)
+      }
+    }
+  })
+
+  it('offRule 이 붙은 예시는 정말로 그 변형이 없다 — 표시가 낡으면 설명이 거짓이 된다', () => {
+    for (const s of RULE_SECTIONS) {
+      const variant = BY_VARIANT[s.id]
+      if (variant === undefined) continue
+      for (const ex of s.examples) {
+        if (ex.offRule === undefined || ex.outside) continue
+        expect(tagged(ex, variant), `${s.id} · ${ex.word} ${ex.reading}`).toBe(false)
+      }
+    }
+  })
+
+  it('대조쌍은 applied 에 변형이 있고 blocked 에는 없다', () => {
+    for (const s of RULE_SECTIONS) {
+      const variant = BY_VARIANT[s.id]
+      if (variant === undefined) continue
+      for (const c of s.contrasts) {
+        expect(tagged(c.applied, variant), `${s.id} applied ${c.applied.word}`).toBe(true)
+        expect(tagged(c.blocked, variant), `${s.id} blocked ${c.blocked.word}`).toBe(false)
+      }
+    }
+  })
+
+  it('앱이 그 절로 보내는 예시가 요약본 안에 하나는 있다 — 카드에서 잘리면 없는 것과 같다', () => {
+    for (const s of RULE_SECTIONS) {
+      const variant = BY_VARIANT[s.id]
+      if (variant === undefined) continue
+      const shortList = s.examples.slice(0, SHORT_RULE.examples)
+      expect(
+        shortList.some((ex) => !ex.outside && tagged(ex, variant)),
+        `${s.id} 요약본`,
+      ).toBe(true)
+    }
+  })
+})
+
+/**
+ * 본문이 코퍼스에 대해 **말하는 숫자**를 코퍼스로 고정한다 (2026-09-17, 축 B).
+ *
+ * 연탁 절이 「음독 한자어는 거의 안 걸리고」라고 적고 있었는데 실제로는 연탁 자리의
+ * 3분의 1이 음독이었다. 心不全 건과 같은 모양 — 본문이 한쪽만 가르치면 반대 경우를 만난
+ * 학습자에게 틀린 것을 강화한다. 코퍼스가 갱신돼 서술이 어긋나면 여기서 걸린다.
+ */
+describe('연탁 절의 서술이 코퍼스와 맞는다', () => {
+  const kanji = JSON.parse(
+    readFileSync(resolve(process.cwd(), 'public/dict/kanji.json'), 'utf8'),
+  ).kanji as Record<string, { on: string[]; kun: string[] }>
+  const lookup = (k: string) => {
+    const r = kanji[k]
+    return r === undefined ? undefined : { onyomi: r.on, kunyomi: r.kun }
+  }
+  const idioms = JSON.parse(
+    readFileSync(resolve(process.cwd(), 'public/dict/base.json'), 'utf8'),
+  ).idioms as { headword: string; reading: string }[]
+
+  /** 연탁이 걸린 자리를 음훈과 앞 글자로 모은다 */
+  const spots = (() => {
+    let on = 0
+    let kun = 0
+    let onAfterNOrLong = 0
+    for (const it of idioms) {
+      const d = decompose(it.headword, it.reading, lookup)
+      if (!d.ok) continue
+      let off = 0
+      for (const s of d.segments) {
+        const start = off
+        off += s.surface.length
+        if (!s.variants.includes('rendaku')) continue
+        if (s.kind === 'kun') {
+          kun++
+          continue
+        }
+        on++
+        if (start > 0 && 'んうい'.includes(it.reading[start - 1])) onAfterNOrLong++
+      }
+    }
+    return { on, kun, onAfterNOrLong }
+  })()
+
+  it('「셋 중 둘이 훈독 쪽」 — 60~75% 사이다', () => {
+    const share = spots.kun / (spots.kun + spots.on)
+    expect(share, `훈독 ${spots.kun} / 음독 ${spots.on}`).toBeGreaterThan(0.6)
+    expect(share).toBeLessThan(0.75)
+  })
+
+  it('「음독도 안 걸리는 건 아니다」 — 음독 연탁이 실제로 있다', () => {
+    expect(spots.on).toBeGreaterThan(100)
+  })
+
+  it('「그 넷 중 셋은 앞이 ん 이나 장음」 — 70% 이상이다', () => {
+    const share = spots.onAfterNOrLong / spots.on
+    expect(share, `${spots.onAfterNOrLong} / ${spots.on}`).toBeGreaterThan(0.7)
   })
 })
