@@ -155,7 +155,9 @@ export function MistakeDetail({ idiom, mistakeType, voicing = null, onClose }: P
             펼친다. 전체 지도는 홈·리포트에서 연다 (context-notes 2026-09-17) */}
         {rule && (
           <div className="md-rule-more">
-            <p className="md-rule-more-title">왜 그런가 — {rule.title}</p>
+            <p className="md-rule-more-title">
+              왜 그런가 — <Mixed text={rule.title} />
+            </p>
             <RuleBody section={rule} short />
             <p className="md-rule-more-tail dim">
               규칙 전체는 리포트의 「읽기 규칙」에서 볼 수 있어요.

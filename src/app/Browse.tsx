@@ -14,7 +14,7 @@ import { loadBaseIdioms, loadExamples, loadKanji } from '../dict/load.ts'
 import { mistakeContextFromKanji } from '../dict/mistakeContext.ts'
 import { rubyOf, type RubySegment } from '../core/ruby.ts'
 import { mistakeLabel } from '../study/mistakeLabels.ts'
-import { RuleBody } from './RuleBody.tsx'
+import { Mixed, RuleBody } from './RuleBody.tsx'
 import { ruleForMistake, ruleSection, type RuleSection } from './rules.ts'
 import { tts } from '../study/tts.ts'
 import { useViewportLock } from '../study/useViewportLock.ts'
@@ -256,7 +256,9 @@ function BrowseSlide({
           )}
           {item.rule !== null && ruleOpen && (
             <div className="browse-rule">
-              <p className="browse-rule-title">{item.rule.section.title}</p>
+              <p className="browse-rule-title">
+                <Mixed text={item.rule.section.title} />
+              </p>
               <RuleBody section={item.rule.section} short />
               <p className="browse-rule-tail dim">
                 규칙 전체는 리포트의 「읽기 규칙」에서 볼 수 있어요.

@@ -133,7 +133,9 @@ function RuleBlock({
   return (
     <div className="rule-block" ref={ref}>
       <button type="button" className="rule-head" onClick={onToggle} aria-expanded={open}>
-        <span className="rule-title">{section.title}</span>
+        <span className="rule-title">
+          <Mixed text={section.title} />
+        </span>
         <span className="rule-mark" aria-hidden="true">
           {open ? '−' : '+'}
         </span>
