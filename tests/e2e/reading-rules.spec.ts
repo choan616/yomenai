@@ -52,6 +52,16 @@ test('리포트 탭에서 읽기 규칙을 열고 절을 펼친다', async ({ pa
   await expect(page.locator('.rule-open')).toHaveCount(1)
   await expect(blocks.nth(1).locator('.rule-open')).toContainText('촉음')
 
+  // 열린 촉음 절에서 — 강조는 굵게 그린다. 마크다운 별표가 글자로 찍히면 안 된다 (2026-09-17).
+  // 절의 비대칭 설명이 그 자리였다
+  const sokuon = blocks.nth(1).locator('.rule-open')
+  await expect(sokuon).not.toContainText('**')
+  const strong = sokuon.locator('.rule-para strong').first()
+  await expect(strong).toBeVisible()
+  expect(Number(await strong.evaluate((el) => getComputedStyle(el).fontWeight))).toBeGreaterThan(400)
+  // 굵은 구간 안의 일본어에도 lang="ja" 가 살아 있다 (자형 규칙은 강조보다 우선한다)
+  await expect(strong.locator('[lang="ja"]').first()).toBeVisible()
+
   // 연탁 절이 라이먼의 법칙과 대등 합성을 다 짚는다 — 사용자가 물은 자리다
   const rendaku = blocks.filter({ hasText: '연탁' }).first()
   await rendaku.locator('.rule-head').click()

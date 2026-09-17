@@ -1,6 +1,6 @@
 // 한일 혼합 문장 가르기 검증 — 이어 붙이면 원문이고, 한글 자모가 일본어로 안 샌다
 import { describe, expect, it } from 'vitest'
-import { hasJa, splitJa } from './ja.ts'
+import { hasJa, splitBold, splitJa } from './ja.ts'
 import { RULE_SECTIONS } from './rules.ts'
 
 describe('splitJa', () => {
@@ -43,5 +43,42 @@ describe('splitJa', () => {
   it('규칙 본문에 실제로 일본어가 섞여 있다 — 이 장치가 필요한 이유다', () => {
     const mixed = RULE_SECTIONS.flatMap((s) => s.body).filter(hasJa)
     expect(mixed.length).toBeGreaterThan(5)
+  })
+})
+
+describe('splitBold', () => {
+  it('강조 구간만 bold 로 표시하고 별표는 걷어낸다', () => {
+    expect(splitBold('비대칭이 있어요. **つ·ち 꼬리**는 달라요.')).toEqual([
+      { text: '비대칭이 있어요. ', bold: false },
+      { text: 'つ·ち 꼬리', bold: true },
+      { text: '는 달라요.', bold: false },
+    ])
+  })
+
+  it('강조가 없으면 통째로 한 구간이다', () => {
+    expect(splitBold('별표가 없는 문장')).toEqual([{ text: '별표가 없는 문장', bold: false }])
+  })
+
+  it('짝이 안 맞는 별표는 그대로 둔다 — 글자를 잃는 것보다 낫다', () => {
+    expect(splitBold('여는 **별표만 있어요')).toEqual([{ text: '여는 **별표만 있어요', bold: false }])
+  })
+
+  /**
+   * 화면에 별표가 글자로 찍히면 안 된다 (2026-09-17).
+   * `RuleBody` 가 텍스트 노드만 그려서 본문 네 군데가 별표째 보이고 있었다.
+   */
+  it('규칙 본문 어디에도 별표가 남지 않는다', () => {
+    for (const s of RULE_SECTIONS) {
+      const prose = [
+        s.title,
+        s.summary,
+        ...s.body,
+        ...s.examples.map((e) => e.note),
+        ...s.contrasts.flatMap((c) => [c.applied.note, c.blocked.note, c.because]),
+      ]
+      for (const p of prose) {
+        expect(splitBold(p).map((r) => r.text).join(''), `${s.id}: ${p}`).not.toContain('*')
+      }
+    }
   })
 })

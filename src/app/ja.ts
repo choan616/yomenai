@@ -33,3 +33,30 @@ export function splitJa(text: string): JaRun[] {
 export function hasJa(text: string): boolean {
   return new RegExp(JA_RUN.source).test(text)
 }
+
+/** `**…**` 로 감싼 강조 구간 — 규칙 본문이 마크다운 관례로 쓰여 있다 */
+const BOLD_RUN = /\*\*([^*]+)\*\*/g
+
+export interface BoldRun {
+  text: string
+  bold: boolean
+}
+
+/**
+ * 강조 구간을 갈라낸다 (2026-09-17).
+ *
+ * `RuleBody` 는 텍스트 노드만 그려서 `**…**` 가 별표째 화면에 찍혀 있었다.
+ * 짝이 안 맞는 별표는 건드리지 않는다 — 원문 그대로 두는 쪽이 글자를 잃는 것보다 낫다.
+ */
+export function splitBold(text: string): BoldRun[] {
+  const runs: BoldRun[] = []
+  let last = 0
+  for (const m of text.matchAll(BOLD_RUN)) {
+    const at = m.index
+    if (at > last) runs.push({ text: text.slice(last, at), bold: false })
+    runs.push({ text: m[1], bold: true })
+    last = at + m[0].length
+  }
+  if (last < text.length) runs.push({ text: text.slice(last), bold: false })
+  return runs
+}

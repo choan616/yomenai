@@ -1,15 +1,27 @@
 // 규칙 절의 본문·예시·대조를 그리는 조각 (2026-09-17).
 // 규칙 화면과 오답 상세가 **같은 것**을 보여주도록 한 곳에 둔다. 화면 모듈과 갈라 둔 이유는
 // 오답 상세가 이걸 쓰면서 사전 로더·IndexedDB 까지 끌고 오면 안 되기 때문이다.
-import { splitJa } from './ja.ts'
+import { Fragment } from 'react'
+import { splitBold, splitJa } from './ja.ts'
 import { SHORT_RULE, type RuleSection } from './rules.ts'
 
 /**
- * 한국어 문장 속 일본어에 `lang="ja"` 를 붙여 그린다.
+ * 한국어 문장 속 일본어에 `lang="ja"` 를 붙이고, `**…**` 를 굵게 그린다.
  * 안 붙이면 한중일 통합 코드포인트가 한국 자형으로 나가서 틀린 글자 모양을 학습한다
  * (CLAUDE.md 「일본어 렌더링」). 규칙 본문은 한 문장에 두 언어가 섞여 문장 단위로는 못 붙인다.
  */
 export function Mixed({ text }: { text: string }) {
+  return (
+    <>
+      {splitBold(text).map((b, i) => (
+        <Fragment key={i}>{b.bold ? <strong><Ja text={b.text} /></strong> : <Ja text={b.text} />}</Fragment>
+      ))}
+    </>
+  )
+}
+
+/** 일본어 구간에만 `lang="ja"` 를 붙여 그린다 */
+function Ja({ text }: { text: string }) {
   return (
     <>
       {splitJa(text).map((r, i) =>
