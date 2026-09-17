@@ -216,3 +216,22 @@ describe('정답에 변형이 안 걸렸으면 연탁이 아니다', () => {
       .toEqual({ type: 'RENDAKU', voicing: 'rendaku' })
   })
 })
+
+/**
+ * 가리는 건 「규칙을 놓친 방향」뿐이다 (2026-09-17, 사용자 지적 「愛好도 연탁이 맞나」).
+ *
+ * 정답이 청음인데 답이 탁음이면 **정답에 변형이 없다는 것이 곧 오답의 내용**이다 —
+ * 규칙을 걸면 안 되는 자리에 걸었다. 여기까지 가리면 과잉 적용을 통째로 잃는다.
+ */
+describe('과잉 적용 방향은 그대로 연탁으로 잡는다', () => {
+  it('정답이 청음인데 답이 탁음 — 愛好 あいこう ← あいごう', () => {
+    expect(explainMistake({ headword: '愛好', expected: 'あいこう', answer: 'あいごう' }, ctx))
+      .toEqual({ type: 'RENDAKU', voicing: 'rendaku' })
+  })
+
+  it('답이 분해 안 되는 과잉 적용도 — 悪化 あっか ← あっが', () => {
+    // っ 뒤에 탁음은 올 수 없어 답이 분해되지 않는다. 그래도 탁음을 덧댄 오답이다
+    expect(explainMistake({ headword: '悪化', expected: 'あっか', answer: 'あっが' }, ctx))
+      .toEqual({ type: 'RENDAKU', voicing: 'rendaku' })
+  })
+})

@@ -169,9 +169,14 @@ function voicedAt(segments: Segment[] | null, index: number): boolean {
  * 분해가 안 되는 답의 탁음 갈래. `unvoiceAll` 이 같다는 건 자리 수가 같다는 뜻이라
  * 처음 어긋난 자리만 본다. は행 ↔ ぱ행이면 반탁, 아니면 연탁이다.
  *
- * **정답 쪽에 변형이 안 걸린 자리면 `null`** — 탁음이 어긋났다고 다 연탁이 아니다.
- * 月額 げつがく 의 額는 원형이 がく 고 청음 かく 가 없다. げつかく 는 연탁을 놓친 답이
- * 아니라 원형을 잘못 안 답이다. 여기에 연탁 규칙을 붙이면 엉뚱한 절을 가르친다.
+ * **가리는 건 「규칙을 놓친 방향」뿐이다.** 정답이 탁음이고 답이 청음이면, 정답 쪽 조각에
+ * 변형이 안 걸린 자리는 `null` 을 낸다 — 月額 げつがく 의 額는 원형이 がく 고 청음 かく 가
+ * 없어서, げつかく 는 연탁을 놓친 답이 아니라 원형을 잘못 안 답이다.
+ *
+ * 반대 방향(정답이 청음인데 답이 탁음)은 그대로 낸다. 거기는 **정답에 변형이 없다는 것이
+ * 곧 오답의 내용**이라 — 규칙을 걸면 안 되는 자리에 걸었다 — 같은 잣대를 대면 과잉 적용을
+ * 통째로 잃는다. 과잉/누락을 이름으로 갈라 보여주는 건 아직 안 한다 (2026-09-17 보류한 2안).
+ *
  * 어긋난 자리가 여럿이면 처음 자리로 판단한다 — `fromSegments` 와 같은 규약이다.
  *
  * 연성(ん + 모음 → な행)은 여기 안 온다 — の 와 お 는 청탁 짝이 아니라 `unvoiceAll` 이
@@ -184,7 +189,9 @@ function stringVoicing(
 ): VoicingKind | null {
   for (let i = 0; i < Math.min(expected.length, answer.length); i++) {
     if (expected[i] === answer[i]) continue
-    if (!voicedAt(expSegments, i)) return null
+    // 규칙을 *놓친* 방향일 때만 정답 쪽 근거를 따진다 (위 주석)
+    const missed = unvoiceAll(expected[i]) !== expected[i] && unvoiceAll(answer[i]) === answer[i]
+    if (missed && !voicedAt(expSegments, i)) return null
     const pair = expected[i] + answer[i]
     const handaku = [...pair].some((c) => HANDAKU_ROW.includes(c))
     const seion = [...pair].some((c) => SEION_ROW.includes(c))
