@@ -62,6 +62,17 @@ test('홈은 첫 진입에도 기록이 쌓여도 안 넘친다', async ({ page 
   await seedWrong(page)
   await expect(page.locator('.wrong-group')).toBeVisible({ timeout: 20_000 })
   expect(await overflow(page)).toBeLessThanOrEqual(0)
+
+  // 홈의 숫자는 평가가 아니라 **오늘 할 일**이다 (context-notes 2026-09-14).
+  // 뒤 숫자는 그중 처음 보는 카드 — 기한이 지난 카드를 심었으니 전체보다 적어야 한다.
+  // 옛 「복습 기한 N」은 앞 숫자의 부분집합이라 대개 같은 수를 두 번 말했다 (사용자 지적 2026-09-17)
+  const stat = page.locator('.home-stat')
+  await expect(stat).not.toContainText('복습 기한')
+  await expect(stat).toContainText('새 표현')
+  const [ready, fresh] = [...(await stat.innerText()).matchAll(/[0-9]+/g)].map((m) => Number(m[0]))
+  expect(ready).toBeGreaterThan(0)
+  expect(fresh).toBeGreaterThan(0)
+  expect(fresh).toBeLessThan(ready)
 })
 
 test('탭 넷을 오가고, 세션에서는 탭바가 사라진다', async ({ page }) => {

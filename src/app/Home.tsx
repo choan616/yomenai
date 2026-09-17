@@ -20,7 +20,12 @@ import { isWelcomeSeen, markWelcomeSeen } from './welcome.ts'
 
 interface Preview {
   ready: number
-  due: number
+  /**
+   * 이번 세션에서 **처음 보는** 카드 수 (`due: false`). 기한이 지난 카드가 모자랄 때
+   * 그 나머지를 신규가 채우므로(`selectSession`), 설정이 아니라 매일 달라지는 값이다.
+   * 옛 「복습 기한 N」은 `ready` 의 부분집합이라 대개 같은 숫자를 두 번 말했다 (2026-09-17)
+   */
+  fresh: number
   /** 예전에 틀린 읽기 카드 수 — 재대결 대상 */
   rematch: number
   /** 한 번이라도 틀린 읽기 카드 수 — 다시보기 대상. 재대결보다 넓다 */
@@ -48,7 +53,7 @@ export function Home({ onFlow }: { onFlow: (flow: Flow) => void }) {
         const session = buildSession(pool, events, { now: Date.now(), limit: sessionLimit, ratio })
         setPreview({
           ready: session.cards.length,
-          due: session.cards.filter((c) => c.due).length,
+          fresh: session.cards.filter((c) => !c.due).length,
           rematch: rematchCount(pool, events),
           browse: browseCount(pool, events),
         })
@@ -141,7 +146,9 @@ export function Home({ onFlow }: { onFlow: (flow: Flow) => void }) {
             ) : preview ? (
               <>
                 이번 세션 <b>{preview.ready}</b>장
-                {preview.due > 0 && <span className="dim"> · 복습 기한 {preview.due}</span>}
+                {/* 오늘 얼마나 새것을 만나는지. 전부 복습인 날은 아예 안 뜬다 —
+                    앞 숫자와 같은 말을 두 번 하지 않는다 (사용자 지적 2026-09-17) */}
+                {preview.fresh > 0 && <span className="dim"> · 새 표현 {preview.fresh}</span>}
               </>
             ) : (
               <span className="dim">불러오는 중…</span>
