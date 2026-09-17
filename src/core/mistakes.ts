@@ -34,6 +34,24 @@ export interface MistakeInput {
 const DECOMPOSED_PRIORITY: MistakeType[] = ['MIXED_READING', 'ONYOMI_CHOICE', 'RENDAKU', 'SOKUON', 'CHOON']
 
 /**
+ * `RENDAKU` 한 바구니 안에서 실제로 무엇이 달랐나 (2026-09-17).
+ *
+ * 분류기는 소리가 탁해지는 세 현상을 한 유형으로 묶는다 — 진단 축으로는 그게 맞지만,
+ * **학습자에게 보여줄 규칙은 셋이 다르다.** 出発을 しゅつはつ 로 쓴 사람에게 필요한 건
+ * 연탁 설명이 아니라 반탁 설명이다.
+ *
+ * 이벤트에는 저장하지 않는다 (`mistakeType` 은 스키마 불변 조건, CLAUDE.md). 대신
+ * 저장된 `answer`·`expected` 로 언제든 다시 매길 수 있다 — 지난 기록에도 소급된다.
+ */
+export type VoicingKind = 'rendaku' | 'renjo' | 'handaku'
+
+export interface MistakeVerdict {
+  type: MistakeType | null
+  /** `type === 'RENDAKU'` 일 때만 채워진다 */
+  voicing: VoicingKind | null
+}
+
+/**
  * 오답 유형을 판정한다. 정답이거나 어느 유형에도 해당하지 않으면 null.
  *
  * 두 경로로 나뉜다.
@@ -44,9 +62,14 @@ const DECOMPOSED_PRIORITY: MistakeType[] = ['MIXED_READING', 'ONYOMI_CHOICE', 'R
  *    엄밀한 동치라 오탐이 거의 없다. 그다음에야 KO_INTERFERENCE 를 본다
  */
 export function classifyMistake(input: MistakeInput, ctx: MistakeContext): MistakeType | null {
+  return explainMistake(input, ctx).type
+}
+
+/** `classifyMistake` 와 같은 판정에 **어느 갈래였는지**를 얹어 돌려준다 */
+export function explainMistake(input: MistakeInput, ctx: MistakeContext): MistakeVerdict {
   const expected = toHiragana(input.expected.trim())
   const answer = toHiragana(input.answer.trim())
-  if (answer === '' || answer === expected) return null
+  if (answer === '' || answer === expected) return NO_MISTAKE
 
   const exp = decompose(input.headword, expected, ctx.lookup)
   if (exp.ok) {
@@ -58,9 +81,17 @@ export function classifyMistake(input: MistakeInput, ctx: MistakeContext): Mista
   return fromStrings(input.headword, expected, answer, ctx)
 }
 
+const NO_MISTAKE: MistakeVerdict = { type: null, voicing: null }
+const verdict = (type: MistakeType | null, voicing: VoicingKind | null = null): MistakeVerdict => ({
+  type,
+  voicing: type === 'RENDAKU' ? voicing : null,
+})
+
 /** 자리별로 정답 조각과 오답 조각을 비교해 후보를 모으고 우선순위로 하나 고른다 */
-function fromSegments(expected: Segment[], answer: Segment[]): MistakeType | null {
+function fromSegments(expected: Segment[], answer: Segment[]): MistakeVerdict {
   const found = new Set<MistakeType>()
+  /** 탁음 갈래는 **처음 어긋난 자리**의 것을 쓴다. 앞자리가 뒤를 끌고 가므로 */
+  let voicing: VoicingKind | null = null
   let prevDiffered = false
   for (let i = 0; i < expected.length; i++) {
     const e = expected[i]
@@ -76,15 +107,20 @@ function fromSegments(expected: Segment[], answer: Segment[]): MistakeType | nul
       // 원형이 장음 유무로만 갈리면(すう ↔ す) 다른 음독을 고른 게 아니라 장음을 흘린 것이다.
       // 우연히 짧은 쪽도 실재 음독인 경우가 있어(数 의 ス) 분해만으로는 구분되지 않는다
       found.add(stripLongVowels(e.base) === stripLongVowels(a.base) ? 'CHOON' : 'ONYOMI_CHOICE')
-    } else if (differs('rendaku') || differs('renjo')) found.add('RENDAKU')
-    else if (differs('handaku')) {
+    } else if (differs('rendaku') || differs('renjo')) {
+      found.add('RENDAKU')
+      voicing ??= differs('rendaku') ? 'rendaku' : 'renjo'
+    } else if (differs('handaku')) {
       // 半濁音은 っ·ん 뒤에서만 일어난다. 앞 자리가 이미 틀렸으면 이건 그 결과이지 별개 오답이 아니다
       // (発表 はっぴょう → はつひょう 의 원인은 促音便 미적용 하나다)
-      if (!prevDiffered) found.add('RENDAKU')
+      if (!prevDiffered) {
+        found.add('RENDAKU')
+        voicing ??= 'handaku'
+      }
     } else if (differs('sokuon')) found.add('SOKUON')
     prevDiffered = true
   }
-  return DECOMPOSED_PRIORITY.find((t) => found.has(t)) ?? null
+  return verdict(DECOMPOSED_PRIORITY.find((t) => found.has(t)) ?? null, voicing)
 }
 
 /** 분해가 안 되는 답 — 문자열 관계와 한국 한자음 간섭을 본다 */
@@ -93,13 +129,36 @@ function fromStrings(
   expected: string,
   answer: string,
   ctx: MistakeContext,
-): MistakeType | null {
-  if (unvoiceAll(expected) === unvoiceAll(answer)) return 'RENDAKU'
-  if (sokuonVariants(expected).includes(answer) || sokuonVariants(answer).includes(expected)) {
-    return 'SOKUON'
+): MistakeVerdict {
+  if (unvoiceAll(expected) === unvoiceAll(answer)) {
+    return verdict('RENDAKU', stringVoicing(expected, answer))
   }
-  if (stripLongVowels(expected) === stripLongVowels(answer)) return 'CHOON'
-  return koInterference(headword, answer, ctx) ? 'KO_INTERFERENCE' : null
+  if (sokuonVariants(expected).includes(answer) || sokuonVariants(answer).includes(expected)) {
+    return verdict('SOKUON')
+  }
+  if (stripLongVowels(expected) === stripLongVowels(answer)) return verdict('CHOON')
+  return verdict(koInterference(headword, answer, ctx) ? 'KO_INTERFERENCE' : null)
+}
+
+const HANDAKU_ROW = 'ぱぴぷぺぽ'
+const SEION_ROW = 'はひふへほ'
+
+/**
+ * 분해가 안 되는 답의 탁음 갈래. `unvoiceAll` 이 같다는 건 자리 수가 같다는 뜻이라
+ * 처음 어긋난 자리만 본다. は행 ↔ ぱ행이면 반탁, 아니면 연탁이다.
+ *
+ * 연성(ん + 모음 → な행)은 여기 안 온다 — の 와 お 는 청탁 짝이 아니라 `unvoiceAll` 이
+ * 같아지지 않는다. 분해 경로에서만 잡힌다.
+ */
+function stringVoicing(expected: string, answer: string): VoicingKind {
+  for (let i = 0; i < Math.min(expected.length, answer.length); i++) {
+    if (expected[i] === answer[i]) continue
+    const pair = expected[i] + answer[i]
+    const handaku = [...pair].some((c) => HANDAKU_ROW.includes(c))
+    const seion = [...pair].some((c) => SEION_ROW.includes(c))
+    return handaku && seion ? 'handaku' : 'rendaku'
+  }
+  return 'rendaku'
 }
 
 /**

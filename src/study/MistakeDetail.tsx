@@ -13,18 +13,21 @@ import {
   type ContrastGroup,
   type SharedIdiom,
 } from './mistakeDetail.ts'
-import { MISTAKE_ADVICE, MISTAKE_LABEL, RULE_MISTAKES } from './mistakeLabels.ts'
+import { mistakeHint, mistakeLabel, RULE_MISTAKES } from './mistakeLabels.ts'
 import { Mixed, RuleBody } from '../app/RuleBody.tsx'
-import { RULE_OF_MISTAKE, ruleSection } from '../app/rules.ts'
+import { ruleForMistake, ruleSection } from '../app/rules.ts'
+import type { VoicingKind } from '../core/mistakes.ts'
 
 interface Props {
   idiom: RuntimeIdiom
   /** 방금 붙은 오답 유형. 규칙형이면 해설 한 줄을 대조 바로 위에 놓는다 (Phase 11) */
   mistakeType: MistakeType | null
+  /** RENDAKU 안에서 어느 갈래였나 (2026-09-17). 펼칠 절과 이름을 이게 정한다 */
+  voicing?: VoicingKind | null
   onClose: () => void
 }
 
-export function MistakeDetail({ idiom, mistakeType, onClose }: Props) {
+export function MistakeDetail({ idiom, mistakeType, voicing = null, onClose }: Props) {
   const [parts, setParts] = useState<BreakdownPart[] | null>(null)
   const [shared, setShared] = useState<Map<string, SharedIdiom[]>>(new Map())
   const [contrast, setContrast] = useState<Map<string, ContrastGroup[]>>(new Map())
@@ -59,7 +62,7 @@ export function MistakeDetail({ idiom, mistakeType, onClose }: Props) {
    * 그대로 쓰지만(2026-09-07), 여기는 오버레이라 자리가 있어 KO_INTERFERENCE(종성 대응)
    * 절까지 펼친다
    */
-  const ruleId = mistakeType === null ? null : RULE_OF_MISTAKE[mistakeType]
+  const ruleId = ruleForMistake(mistakeType, voicing)
   const rule = ruleId === null ? undefined : ruleSection(ruleId)
 
   return (
@@ -97,9 +100,9 @@ export function MistakeDetail({ idiom, mistakeType, onClose }: Props) {
         {/* 해설은 규칙형 오답에만. 대조 바로 위에 놓아 "무엇을 볼지" 가리키는 라벨로 쓴다 */}
         {advice && (
           <p className="md-rule">
-            <span className="tag">{MISTAKE_LABEL[advice]}</span>
+            <span className="tag">{mistakeLabel(advice, voicing)}</span>
             <span className="md-rule-text">
-              <Mixed text={MISTAKE_ADVICE[advice]} />
+              <Mixed text={mistakeHint(advice, voicing)} />
             </span>
           </p>
         )}

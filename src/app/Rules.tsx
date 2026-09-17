@@ -4,12 +4,13 @@
 // 세션 중에는 여기로 안 온다 — 나가면 세션 큐가 초기화되므로, 카드 옆에서는 오답 상세가
 // 같은 절을 인라인으로 펼친다 (context-notes 2026-09-17).
 import { useEffect, useRef, useState } from 'react'
-import { replay } from '../core/replay.ts'
-import { ruleRecord, type RuleRecord } from '../core/ruleRecord.ts'
+import { explainMistake } from '../core/mistakes.ts'
+import { classifiedMistakes, ruleRecord, type RuleRecord } from '../core/ruleRecord.ts'
 import { LOCAL_USER_ID, listEvents } from '../db/events.ts'
 import { db } from '../db/schema.ts'
-import { loadBaseIdioms } from '../dict/load.ts'
-import { MISTAKE_LABEL } from '../study/mistakeLabels.ts'
+import { loadBaseIdioms, loadKanji } from '../dict/load.ts'
+import { mistakeContextFromKanji } from '../dict/mistakeContext.ts'
+import { MISTAKE_LABEL, VOICING_LABEL } from '../study/mistakeLabels.ts'
 import { Mixed, RuleBody } from './RuleBody.tsx'
 import { RULE_SECTIONS, type RuleId, type RuleSection } from './rules.ts'
 
@@ -28,15 +29,52 @@ export function Rules({ onBack, focus = null }: Props) {
     let alive = true
     ;(async () => {
       try {
-        const [pool, events] = await Promise.all([loadBaseIdioms(), listEvents(db(), LOCAL_USER_ID)])
+        const [pool, kanji, events] = await Promise.all([
+          loadBaseIdioms(),
+          loadKanji(),
+          listEvents(db(), LOCAL_USER_ID),
+        ])
         if (!alive) return
         const byId = new Map(pool.map((p) => [p.idiomId, p]))
-        const state = replay(events, { pairsOf: (id) => byId.get(id)?.pairIds ?? [] })
         const nameOf = (id: string) => {
           const p = byId.get(id)
           return p && { headword: p.headword, reading: p.reading }
         }
-        setRecords(new Map(RULE_SECTIONS.map((s) => [s.id, ruleRecord(state, s.mistakes, nameOf)])))
+
+        /**
+         * 이벤트마다 탁음 갈래를 **다시 매긴다** (2026-09-17).
+         * 이벤트에는 유형만 있고 갈래가 없다 — 대신 답이 남아 있어 계산이 된다.
+         * 한 번만 돌고 절마다 재사용한다 (절 8개 × 이벤트 N 을 피한다)
+         */
+        const ctx = mistakeContextFromKanji(kanji)
+        const wrong = classifiedMistakes(events)
+        const voicingOf = new Map<string, string>()
+        for (const e of wrong) {
+          if (e.mistakeType !== 'RENDAKU') continue
+          const p = byId.get(e.idiomId)
+          if (!p) continue
+          const { voicing } = explainMistake(
+            { headword: p.headword, expected: e.expected, answer: e.answer },
+            ctx,
+          )
+          // 갈래를 못 가리면 연탁 절에 둔다 — 어느 절에도 안 들어가 사라지는 것보다 낫다
+          voicingOf.set(e.id, voicing ?? 'rendaku')
+        }
+
+        setRecords(
+          new Map(
+            RULE_SECTIONS.map((s) => [
+              s.id,
+              ruleRecord(
+                wrong,
+                (e) =>
+                  s.mistakes.includes(e.mistakeType!) &&
+                  (s.voicing === undefined || voicingOf.get(e.id) === s.voicing),
+                nameOf,
+              ),
+            ]),
+          ),
+        )
       } catch {
         // 기록을 못 읽어도 본문은 읽을 수 있어야 한다 — 빈 기록으로 둔다
         if (alive) setRecords(new Map())
@@ -120,7 +158,12 @@ function RuleBlock({
 }
 
 function RuleRecordView({ section, record }: { section: RuleSection; record: RuleRecord | null }) {
-  const labels = section.mistakes.map((m) => MISTAKE_LABEL[m]).join(' · ')
+  // 탁음 세 절은 같은 유형(RENDAKU)을 나눠 가지므로 절의 갈래 이름을 쓴다 — 셋 다
+  // 「연탁」으로 뜨면 숫자가 왜 다른지 설명이 안 된다
+  const labels =
+    section.voicing !== undefined
+      ? VOICING_LABEL[section.voicing]
+      : section.mistakes.map((m) => MISTAKE_LABEL[m]).join(' · ')
   if (record === null) return <p className="dim rule-record">기록을 불러오고 있어요…</p>
   if (record.count === 0) {
     return (

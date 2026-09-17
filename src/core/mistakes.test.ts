@@ -2,7 +2,12 @@
 import { describe, expect, it } from 'vitest'
 import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { buildKoSiblingIndex, classifyMistake, type MistakeContext } from './mistakes.ts'
+import {
+  buildKoSiblingIndex,
+  classifyMistake,
+  explainMistake,
+  type MistakeContext,
+} from './mistakes.ts'
 import { KANJI_FIXTURE } from './mistakes.fixture.ts'
 import type { MistakeType } from './types.ts'
 
@@ -128,6 +133,61 @@ describe.runIf(existsSync(kanjiPath))('전체 KANJIDIC2 (data/dict/kanji.json)',
     const chars = Object.keys(kanji).slice(0, 1000)
     for (const c of chars) {
       expect(() => classifyMistake({ headword: c, expected: 'あ', answer: 'い' }, full)).not.toThrow()
+    }
+  })
+})
+
+/**
+ * RENDAKU 바구니 안의 갈래 판정 (2026-09-17).
+ *
+ * 분류기가 세 현상을 한 유형으로 묶는 건 진단 축으로 맞지만, 학습자에게 보여줄 규칙은
+ * 셋이 다르다. 出発을 しゅっはつ 로 쓴 사람에게 연탁 설명을 내밀면 틀린 규칙을 가르친다.
+ */
+describe('explainMistake — 탁음 갈래를 가른다', () => {
+  const renjoCtx = contextFor({
+    ...KANJI_FIXTURE,
+    反: { onyomi: ['ハン', 'ホン', 'タン'], kunyomi: ['そ.る', 'かえ.す'], koreanH: ['반'] },
+    応: { onyomi: ['オウ', 'ヨウ'], kunyomi: ['こた.える'], koreanH: ['응'] },
+  })
+
+  it('연탁 — 뒷 글자 첫소리가 탁해지는 자리', () => {
+    expect(explainMistake({ headword: '三日月', expected: 'みかづき', answer: 'みかつき' }, ctx))
+      .toEqual({ type: 'RENDAKU', voicing: 'rendaku' })
+  })
+
+  it('반탁 — っ·ん 뒤에서 は행이 ぱ행이 되는 자리', () => {
+    expect(explainMistake({ headword: '心配', expected: 'しんぱい', answer: 'しんはい' }, ctx))
+      .toEqual({ type: 'RENDAKU', voicing: 'handaku' })
+  })
+
+  it('연성 — ん 뒤의 모음이 な행으로 당겨지는 자리', () => {
+    expect(explainMistake({ headword: '反応', expected: 'はんのう', answer: 'はんおう' }, renjoCtx))
+      .toEqual({ type: 'RENDAKU', voicing: 'renjo' })
+  })
+
+  it('분해가 안 되는 답도 は행 ↔ ぱ행이면 반탁으로 가른다', () => {
+    // 한자 읽기를 모르면 문자열 경로로 떨어진다. 그래도 갈래는 글자가 말해준다
+    const bare: MistakeContext = { lookup: () => undefined }
+    expect(explainMistake({ headword: '心配', expected: 'しんぱい', answer: 'しんはい' }, bare))
+      .toEqual({ type: 'RENDAKU', voicing: 'handaku' })
+    expect(explainMistake({ headword: '三日月', expected: 'みかづき', answer: 'みかつき' }, bare))
+      .toEqual({ type: 'RENDAKU', voicing: 'rendaku' })
+  })
+
+  it('RENDAKU 가 아니면 갈래는 비어 있다', () => {
+    expect(explainMistake({ headword: '発達', expected: 'はったつ', answer: 'はつたつ' }, ctx))
+      .toEqual({ type: 'SOKUON', voicing: null })
+    expect(explainMistake({ headword: '学校', expected: 'がっこう', answer: 'がっこう' }, ctx))
+      .toEqual({ type: null, voicing: null })
+  })
+
+  it('판정 자체는 classifyMistake 와 언제나 같다 — 진단 축은 안 바뀐다', () => {
+    for (const [type, cases] of Object.entries(CASES) as [MistakeType, Case[]][]) {
+      for (const [headword, expected, answer] of cases) {
+        const input = { headword, expected, answer }
+        expect(explainMistake(input, ctx).type, `${headword} ${answer}`).toBe(classifyMistake(input, ctx))
+        expect(explainMistake(input, ctx).type).toBe(type)
+      }
     }
   })
 })

@@ -4,7 +4,13 @@ import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import type { MistakeType } from '../core/types.ts'
-import { RULE_OF_MISTAKE, RULE_SECTIONS, ruleSection, type RuleExample } from './rules.ts'
+import {
+  RULE_OF_MISTAKE,
+  RULE_SECTIONS,
+  ruleForMistake,
+  ruleSection,
+  type RuleExample,
+} from './rules.ts'
 
 /** 배포되는 사전 번들 그대로 읽는다 — 화면이 보는 것과 같은 코퍼스여야 한다 */
 const corpus: ReadonlySet<string> = (() => {
@@ -82,5 +88,32 @@ describe('rules 본문', () => {
 
   it('한국음 대응 절이 맨 앞이다 — 나머지 규칙이 여기서 갈린다', () => {
     expect(RULE_SECTIONS[0].id).toBe('korean-coda')
+  })
+})
+
+describe('ruleForMistake — 갈래까지 보고 절을 고른다', () => {
+  it('탁음 셋이 각자의 절로 간다', () => {
+    expect(ruleForMistake('RENDAKU', 'rendaku')).toBe('rendaku')
+    expect(ruleForMistake('RENDAKU', 'handaku')).toBe('handakuon')
+    expect(ruleForMistake('RENDAKU', 'renjo')).toBe('renjo')
+  })
+
+  it('갈래를 모르면 대표 절(연탁)로 간다 — 어디에도 안 보내는 것보다 낫다', () => {
+    expect(ruleForMistake('RENDAKU', null)).toBe('rendaku')
+    expect(ruleForMistake('RENDAKU')).toBe('rendaku')
+  })
+
+  it('탁음이 아닌 유형은 갈래와 무관하다', () => {
+    expect(ruleForMistake('SOKUON', 'handaku')).toBe('sokuon')
+    expect(ruleForMistake('KO_INTERFERENCE', null)).toBe('korean-coda')
+    expect(ruleForMistake('OKURIGANA', null)).toBeNull()
+    expect(ruleForMistake(null, null)).toBeNull()
+  })
+
+  it('갈래가 붙은 절은 셋뿐이고 서로 다르다 — 한 갈래가 두 절로 가면 기록이 겹친다', () => {
+    const tagged = RULE_SECTIONS.filter((s) => s.voicing !== undefined)
+    expect(tagged).toHaveLength(3)
+    expect(new Set(tagged.map((s) => s.voicing)).size).toBe(3)
+    for (const s of tagged) expect(s.mistakes).toEqual(['RENDAKU'])
   })
 })

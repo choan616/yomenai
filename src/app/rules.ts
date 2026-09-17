@@ -6,6 +6,7 @@
 // 예시로 쓴 숙어와 읽기는 **코퍼스(public/dict/base.json)에 실재하는 것만** 싣는다
 // (`rules.test.ts` 가 전수 확인). 개념 설명에 꼭 필요한 코퍼스 밖 단어만 `outside` 로 표시한다.
 // 서술 근거는 `context-notes.md` 2026-09-17 절 (Vance 2008 · Frellesvig 2010 · 窪薗晴夫).
+import type { VoicingKind } from '../core/mistakes.ts'
 import type { MistakeType } from '../core/types.ts'
 
 export type RuleId =
@@ -48,6 +49,12 @@ export interface RuleSection {
   contrasts: RuleContrast[]
   /** 이 절이 다루는 오답 유형. 기록 색인이 이 유형들로 모은다 */
   mistakes: MistakeType[]
+  /**
+   * RENDAKU 바구니 안에서 이 절이 맡는 갈래 (2026-09-17).
+   * 분류기는 연탁·반탁·연성을 한 유형으로 묶으므로 세 절이 같은 유형을 나눠 갖는다 —
+   * 어느 절로 보낼지는 `explainMistake` 의 `voicing` 이 정한다
+   */
+  voicing?: VoicingKind
 }
 
 /**
@@ -129,7 +136,7 @@ export const RULE_SECTIONS: RuleSection[] = [
     body: [
       'は행은 옛 일본어에서 p 였다가 오늘의 h 로 바뀌었어요. 그런데 っ 와 ん 바로 뒤에서는 옛 p 가 그대로 남았습니다. 그래서 発 はつ 가 出発 에서는 しゅっぱつ 가 돼요 — 촉음과 반탁이 연달아 일어난 자리예요.',
       'ん 뒤에서는 ば행이 되기도 해요 — 半分 はんぶん (分 ふん → ぶん).',
-      '카드에서 「연탁」이라고 뜬 오답에 이 자리가 섞여 있어요. 분류기는 반탁과 연성을 따로 이름 붙이지 않고 연탁으로 묶어요 — 소리가 탁해진다는 점이 같아서예요.',
+      '틀리면 카드에 「반탁」으로 떠요. 다만 리포트의 오답 분포에서는 연탁·연성과 한 칸으로 묶여요 — 소리가 탁해진다는 점이 같아 진단 축은 하나로 세기 때문이에요.',
     ],
     examples: [
       { word: '出発', reading: 'しゅっぱつ', note: 'しゅつ + はつ — 촉음이 생기고 그 뒤 は 가 ぱ 로' },
@@ -147,6 +154,7 @@ export const RULE_SECTIONS: RuleSection[] = [
       },
     ],
     mistakes: ['RENDAKU'],
+    voicing: 'handaku',
   },
   {
     id: 'renjo',
@@ -166,6 +174,7 @@ export const RULE_SECTIONS: RuleSection[] = [
     ],
     contrasts: [],
     mistakes: ['RENDAKU'],
+    voicing: 'renjo',
   },
   {
     id: 'choon',
@@ -226,6 +235,7 @@ export const RULE_SECTIONS: RuleSection[] = [
       },
     ],
     mistakes: ['RENDAKU'],
+    voicing: 'rendaku',
   },
   {
     id: 'onyomi-layers',
@@ -300,4 +310,22 @@ export const RULE_OF_MISTAKE: Record<MistakeType, RuleId | null> = {
 
 export function ruleSection(id: RuleId): RuleSection | undefined {
   return RULE_SECTIONS.find((s) => s.id === id)
+}
+
+/**
+ * 오답 하나를 **정확히 맞는 절**로 보낸다 (2026-09-17).
+ *
+ * `RULE_OF_MISTAKE` 는 유형만 보므로 탁음 셋을 다 연탁 절로 보낸다. 갈래를 알면 반탁·연성은
+ * 제 절로 간다 — 出発을 しゅっはつ 로 쓴 사람에게 연탁 설명을 내밀면 틀린 규칙을 가르친다.
+ */
+export function ruleForMistake(
+  type: MistakeType | null,
+  voicing: VoicingKind | null = null,
+): RuleId | null {
+  if (type === null) return null
+  if (type === 'RENDAKU' && voicing !== null) {
+    const s = RULE_SECTIONS.find((x) => x.voicing === voicing)
+    if (s) return s.id
+  }
+  return RULE_OF_MISTAKE[type]
 }

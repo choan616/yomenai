@@ -11,7 +11,7 @@ import {
   type Session,
   type SessionCard,
 } from '../core/session.ts'
-import { classifyMistake } from '../core/mistakes.ts'
+import { explainMistake, type VoicingKind } from '../core/mistakes.ts'
 import { onyomiEcho, type OnyomiEcho } from '../core/echo.ts'
 import { observeReading, type Observation } from '../core/observe.ts'
 import { rubyOf, type RubySegment } from '../core/ruby.ts'
@@ -36,6 +36,11 @@ export interface ReadingFeedback {
   correct: boolean
   expected: string
   mistakeType: MistakeType | null
+  /**
+   * RENDAKU 안에서 어느 갈래였나 (2026-09-17). 이벤트에는 안 들어간다 —
+   * 화면이 맞는 규칙 절을 고르고 이름을 정확히 붙이는 데만 쓴다
+   */
+  voicing: VoicingKind | null
   answer: string
   /** 정답일 때만. 방금 쓴 음독과 그걸 만난 횟수 (PLAN §6 "음독은 진단 도구") */
   echo: OnyomiEcho[]
@@ -385,10 +390,10 @@ export function useStudySession({
     }) => {
       if (!idiom || !mistakes.current) return
       const { answer, correct, viaAlt, dual } = args
-      const mistakeType =
+      const { type: mistakeType, voicing } =
         correct || args.classify === false
-          ? null
-          : classifyMistake(
+          ? { type: null, voicing: null }
+          : explainMistake(
               { headword: idiom.headword, expected: idiom.reading, answer },
               mistakes.current,
             )
@@ -415,6 +420,7 @@ export function useStudySession({
         correct,
         expected: idiom.reading,
         mistakeType,
+        voicing,
         answer,
         echo,
         ruby: rubyOf(idiom.headword, idiom.reading, mistakes.current.lookup),

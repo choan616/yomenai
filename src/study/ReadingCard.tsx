@@ -7,7 +7,7 @@ import type { RuntimeIdiom } from '../dict/load.ts'
 import type { ReadingFeedback } from './useStudySession.ts'
 import { KanaInput } from './KanaInput.tsx'
 import { MistakeDetail } from './MistakeDetail.tsx'
-import { MISTAKE_ADVICE, MISTAKE_LABEL, RULE_MISTAKES } from './mistakeLabels.ts'
+import { mistakeHint, mistakeLabel, RULE_MISTAKES } from './mistakeLabels.ts'
 import { Mixed } from '../app/RuleBody.tsx'
 import { tts } from './tts.ts'
 
@@ -46,7 +46,12 @@ export function ReadingCard({
   return (
     <div className={`card${fb ? ` feedback ${fb.correct ? 'is-ok' : 'is-ng'}` : ''}`}>
       {detail && fb && (
-        <MistakeDetail idiom={idiom} mistakeType={fb.mistakeType} onClose={() => setDetail(false)} />
+        <MistakeDetail
+          idiom={idiom}
+          mistakeType={fb.mistakeType}
+          voicing={fb.voicing}
+          onClose={() => setDetail(false)}
+        />
       )}
       <div className="card-head">
         {fb ? (
@@ -109,9 +114,11 @@ export function ReadingCard({
               </p>
             )}
             {/* 입력값은 아래 입력창(locked)에 그대로 남아 있어 여기선 유형과 규칙만 (Phase 9-C 이후) */}
+            {/* 이름은 갈래까지 정확하게 (2026-09-17). 분류기가 연탁·반탁·연성을 한 유형으로
+                묶어도 사용자가 보는 이름은 방금 틀린 그 현상이어야 한다 */}
             {!fb.correct && fb.mistakeType && (
               <p className="wrong-answer">
-                <span className="tag">{MISTAKE_LABEL[fb.mistakeType]}</span>
+                <span className="tag">{mistakeLabel(fb.mistakeType, fb.voicing)}</span>
               </p>
             )}
             {/* 규칙형 오답이면 규칙 한 줄을 여기서 바로 보여준다 (2026-09-13).
@@ -122,7 +129,7 @@ export function ReadingCard({
               <p className="rule-hint">
                 {/* 해설 문장에 섞인 일본어에도 lang="ja" 를 붙인다 (2026-09-17) — 안 붙이면
                     三日月·発達 이 한국 자형으로 나가서 틀린 글자 모양을 학습한다 */}
-                <Mixed text={MISTAKE_ADVICE[fb.mistakeType]} />
+                <Mixed text={mistakeHint(fb.mistakeType, fb.voicing)} />
               </p>
             )}
             {tts.available && (

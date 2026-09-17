@@ -1,4 +1,6 @@
 // 오답 유형의 한국어 라벨 (PLAN §6). 오답 상세·진단 리포트가 공유한다
+import { ruleForMistake, ruleSection } from '../app/rules.ts'
+import type { VoicingKind } from '../core/mistakes.ts'
 import type { MistakeType } from '../core/types.ts'
 
 export const MISTAKE_LABEL: Record<MistakeType, string> = {
@@ -49,3 +51,36 @@ export const RULE_MISTAKES: ReadonlySet<MistakeType> = new Set<MistakeType>([
   'MIXED_READING',
   'OKURIGANA',
 ])
+
+/**
+ * 탁음 갈래의 한국어 라벨 (2026-09-17).
+ *
+ * 분류기는 연탁·반탁·연성을 `RENDAKU` 하나로 묶는다 — 진단 축(리포트 분포·이벤트)은 그대로
+ * 두고, **학습자가 보는 이름만** 정확하게 한다. 出発을 しゅっはつ 로 쓴 자리는 반탁이다.
+ */
+export const VOICING_LABEL: Record<VoicingKind, string> = {
+  rendaku: '연탁',
+  handaku: '반탁',
+  renjo: '연성',
+}
+
+/** 화면에 띄울 오답 이름. 갈래를 알면 그쪽이 이긴다 */
+export function mistakeLabel(type: MistakeType, voicing: VoicingKind | null = null): string {
+  return type === 'RENDAKU' && voicing !== null ? VOICING_LABEL[voicing] : MISTAKE_LABEL[type]
+}
+
+/**
+ * 오답 한 줄 해설. 카드와 오답 상세가 같이 쓴다 (2026-09-17).
+ *
+ * 기본은 MISTAKE_ADVICE 다 — Phase 12-E 에서 문헌 대조를 거친 문장이라 그대로 쓴다.
+ * **반탁·연성만 예외**다. 그 둘은 RENDAKU 로 묶여 들어오는데 저 문장은 연탁 설명이라
+ * 그대로 두면 틀린 규칙을 가르치게 된다. 그때만 해당 절의 요약으로 바꾼다.
+ */
+export function mistakeHint(type: MistakeType, voicing: VoicingKind | null = null): string {
+  if (type === 'RENDAKU' && (voicing === 'handaku' || voicing === 'renjo')) {
+    const id = ruleForMistake(type, voicing)
+    const s = id === null ? undefined : ruleSection(id)
+    if (s) return s.summary
+  }
+  return MISTAKE_ADVICE[type]
+}

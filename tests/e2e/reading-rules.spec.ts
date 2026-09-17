@@ -55,3 +55,23 @@ test('홈에서 읽기 규칙을 열고 절을 펼친다', async ({ page }) => {
   await page.getByRole('button', { name: '돌아가기' }).click()
   await expect(page.getByRole('button', { name: '읽기 규칙' })).toBeVisible()
 })
+
+test('반탁 오답은 연탁이 아니라 반탁으로 불린다', async ({ page }) => {
+  // 분류기는 연탁·반탁·연성을 한 유형으로 묶는다. 이름과 규칙 절만 갈래를 따라간다 (2026-09-17)
+  await page.goto('/')
+  await expect(page.getByRole('button', { name: '읽기 규칙' })).toBeVisible({ timeout: 20_000 })
+  await page.getByRole('button', { name: '읽기 규칙' }).click()
+
+  const handaku = page.locator('.rule-block').filter({ hasText: 'ぱ행으로' }).first()
+  await handaku.locator('.rule-head').click()
+  const open = handaku.locator('.rule-open')
+  // 기록이 0이어도 그 절이 무슨 이름으로 세는지는 보인다
+  await expect(open.locator('.rule-record')).toContainText('반탁')
+  await expect(open.locator('.rule-record')).not.toContainText('연탁')
+
+  // 펼친 반탁 절 본문에도 「연성」 이라는 낱말이 있어 텍스트 필터는 그쪽을 먼저 잡는다 — 차례로 지목한다
+  const renjo = page.locator('.rule-block').nth(3)
+  await expect(renjo.locator('.rule-title')).toContainText('연성')
+  await renjo.locator('.rule-head').click()
+  await expect(renjo.locator('.rule-open .rule-record')).toContainText('연성')
+})
