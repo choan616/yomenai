@@ -7,6 +7,7 @@ import {
   type LearningEvent,
   type MistakeType,
   type OnyomiStat,
+  type ReviewEvent,
 } from './types.ts'
 
 export interface ReplayOptions {
@@ -16,6 +17,14 @@ export interface ReplayOptions {
    * 주지 않으면 집계를 건너뛴다.
    */
   pairsOf?: (idiomId: string) => string[]
+  /**
+   * 오답 유형을 **다시 매긴다** (2026-09-17). 주지 않으면 저장된 `mistakeType` 을 쓴다.
+   *
+   * replay 는 사전을 모르는 순수 접기라 분류기를 고쳐도 저장값을 그대로 셌다. 그래서
+   * 규칙 화면에서는 빠진 오답이 **리포트에서는 그 유형으로 남아 있었다.** 사전을 아는 쪽이
+   * 함수를 넘겨주는 식으로 푼다 — `pairsOf` 와 같은 관례다.
+   */
+  mistakeOf?: (e: ReviewEvent) => MistakeType | null
 }
 
 export interface ReplayState {
@@ -63,8 +72,9 @@ export function replay(events: LearningEvent[], options: ReplayOptions = {}): Re
       streak: e.correct ? (prev?.streak ?? 0) + 1 : 0,
       lastAt: e.at,
     }
-    if (e.mistakeType !== null) {
-      next.mistakes[e.mistakeType] = (next.mistakes[e.mistakeType] ?? 0) + 1
+    const mistakeType = options.mistakeOf ? options.mistakeOf(e) : e.mistakeType
+    if (mistakeType !== null) {
+      next.mistakes[mistakeType] = (next.mistakes[mistakeType] ?? 0) + 1
     }
     state.cards.set(key, next)
 

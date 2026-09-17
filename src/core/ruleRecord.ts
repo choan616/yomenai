@@ -89,15 +89,37 @@ export function verdictByEvent(
   ctx: MistakeContext,
   headwordOf: (idiomId: string) => string | undefined,
 ): Map<string, MistakeVerdict> {
+  const again = reclassifier(ctx, headwordOf)
   const out = new Map<string, MistakeVerdict>()
   for (const e of events) {
     if (e.mistakeType !== 'RENDAKU') continue
-    const headword = headwordOf(e.idiomId)
-    if (headword === undefined) continue
-    const v = explainMistake({ headword, expected: e.expected, answer: e.answer }, ctx)
-    out.set(e.id, v.type === 'RENDAKU' ? { type: 'RENDAKU', voicing: v.voicing ?? 'rendaku' } : v)
+    if (headwordOf(e.idiomId) === undefined) continue
+    out.set(e.id, again(e))
   }
   return out
+}
+
+/**
+ * 이벤트 하나를 지금 분류기로 다시 매기는 함수를 만든다 (2026-09-17, 노출 경로 일관성).
+ *
+ * **다시 매기는 자리가 여럿이면 언젠가 갈라진다.** 규칙 화면·다시보기는 `verdictByEvent`
+ * 로, 리포트는 `replay` 의 `mistakeOf` 로 들어오는데 둘 다 이 함수를 지난다.
+ *
+ * `RENDAKU` 로 저장된 것만 다시 본다 — 그 축만 분류기를 고쳤다. 숙어를 모르면 저장값을
+ * 그대로 돌려준다. 근거 없이 판정을 바꾸지 않는다.
+ */
+export function reclassifier(
+  ctx: MistakeContext,
+  headwordOf: (idiomId: string) => string | undefined,
+): (e: ReviewEvent) => MistakeVerdict {
+  return (e) => {
+    const stored: MistakeVerdict = { type: e.mistakeType, voicing: null }
+    if (e.mistakeType !== 'RENDAKU') return stored
+    const headword = headwordOf(e.idiomId)
+    if (headword === undefined) return stored
+    const v = explainMistake({ headword, expected: e.expected, answer: e.answer }, ctx)
+    return v.type === 'RENDAKU' ? { type: 'RENDAKU', voicing: v.voicing ?? 'rendaku' } : v
+  }
 }
 
 /**

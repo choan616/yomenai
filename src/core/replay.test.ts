@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest'
 import { State } from 'ts-fsrs'
 import { mistakeTotals, replay } from './replay.ts'
 import { newEventId } from '../db/events.ts'
-import type { LearningEvent, MistakeType, ReviewEvent } from './types.ts'
+import { cardKey, type LearningEvent, type MistakeType, type ReviewEvent } from './types.ts'
 
 const DAY = 86_400_000
 const T0 = Date.UTC(2026, 0, 1)
@@ -137,5 +137,42 @@ describe('newEventId — 시간순 정렬', () => {
 
   it('같은 시각이면 난수 부분으로 갈린다', () => {
     expect(newEventId(T0, () => 0)).not.toBe(newEventId(T0, () => 0.5))
+  })
+})
+
+/**
+ * 오답 유형을 다시 매기는 훅 (2026-09-17, 노출 경로 일관성).
+ *
+ * replay 는 사전을 모르는 순수 접기라 저장된 `mistakeType` 을 그대로 셌다. 그래서 분류기를
+ * 고친 뒤에도 **규칙 화면에서는 빠진 오답이 리포트에서는 그 유형으로 남아 있었다.**
+ * 사전을 아는 쪽이 함수를 넘겨준다 — `pairsOf` 와 같은 관례다.
+ */
+describe('replay — 오답 유형 다시 매기기', () => {
+  const events = (): LearningEvent[] => {
+    const nextId = idFactory()
+    return [
+      review(nextId, T0, '1', false, 'RENDAKU'),
+      review(nextId, T0 + DAY, '2', false, 'SOKUON'),
+    ]
+  }
+
+  it('훅이 없으면 저장값을 그대로 센다 — 기존 동작', () => {
+    const state = replay(events())
+    expect(state.cards.get(cardKey('1', 'reading'))?.mistakes).toEqual({ RENDAKU: 1 })
+  })
+
+  it('훅이 null 을 내면 그 오답은 어느 유형에도 안 든다 — 미분류로 남는다', () => {
+    const state = replay(events(), { mistakeOf: (e) => (e.mistakeType === 'RENDAKU' ? null : e.mistakeType) })
+    expect(state.cards.get(cardKey('1', 'reading'))?.mistakes).toEqual({})
+    // 틀린 횟수 자체는 그대로다 — 유형을 못 붙였을 뿐 오답은 오답이다
+    expect(state.cards.get(cardKey('1', 'reading'))?.wrong).toBe(1)
+  })
+
+  it('훅이 다른 유형을 내면 그쪽으로 센다', () => {
+    const state = replay(events(), {
+      mistakeOf: (e) => (e.mistakeType === 'RENDAKU' ? 'KO_INTERFERENCE' : e.mistakeType),
+    })
+    expect(state.cards.get(cardKey('1', 'reading'))?.mistakes).toEqual({ KO_INTERFERENCE: 1 })
+    expect(state.cards.get(cardKey('2', 'reading'))?.mistakes).toEqual({ SOKUON: 1 })
   })
 })

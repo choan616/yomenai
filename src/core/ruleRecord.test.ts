@@ -4,6 +4,7 @@ import {
   classifiedMistakes,
   effectiveMistake,
   mistakeOfIdiom,
+  reclassifier,
   ruleRecord,
   verdictByEvent,
 } from './ruleRecord.ts'
@@ -220,5 +221,33 @@ describe('지난 RENDAKU 이벤트를 지금 분류기로 다시 읽는다', () 
   it('RENDAKU 가 아닌 유형은 저장값을 그대로 쓴다 — 다시 안 매긴다', () => {
     const e = ev('3', 'SOKUON')
     expect(effectiveMistake(e, new Map())).toEqual({ type: 'SOKUON', voicing: null })
+  })
+})
+
+/**
+ * 다시 매기는 자리는 하나다 (2026-09-17, 노출 경로 일관성).
+ *
+ * 규칙 화면·다시보기는 `verdictByEvent` 로, 리포트는 `replay` 의 `mistakeOf` 로 들어오는데
+ * 둘 다 `reclassifier` 를 지난다. 두 곳에서 따로 매기면 리포트와 규칙 화면이 갈라진다 —
+ * 실제로 갈라져 있었다 (ee521b0 이 규칙 화면만 고쳤다).
+ */
+describe('reclassifier — 리포트와 규칙 화면이 같은 함수를 쓴다', () => {
+  const again = reclassifier(ctx, headwordOf)
+  const stale = ev('6', 'RENDAKU', { expected: 'げつがく', answer: 'げつかく' })
+
+  it('지난 RENDAKU 를 다시 매긴 결과가 verdictByEvent 와 같다', () => {
+    expect(again(stale)).toEqual(verdictByEvent([stale], ctx, headwordOf).get(stale.id))
+  })
+
+  it('月額 은 어느 유형도 아니게 된다 — 리포트에서도 빠진다', () => {
+    expect(again(stale).type).toBeNull()
+  })
+
+  it('RENDAKU 가 아닌 유형은 저장값을 그대로 돌려준다', () => {
+    expect(again(ev('3', 'SOKUON'))).toEqual({ type: 'SOKUON', voicing: null })
+  })
+
+  it('숙어를 모르면 저장값을 남긴다 — 근거 없이 바꾸지 않는다', () => {
+    expect(again(ev('9', 'RENDAKU'))).toEqual({ type: 'RENDAKU', voicing: null })
   })
 })

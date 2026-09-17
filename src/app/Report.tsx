@@ -10,10 +10,12 @@ import {
 } from '../core/level.ts'
 import { prescribe, type Prescription } from '../core/prescription.ts'
 import { replay } from '../core/replay.ts'
+import { reclassifier } from '../core/ruleRecord.ts'
 import { BROWSE_N, buildReport, type Report as ReportData } from '../core/report.ts'
 import { LOCAL_USER_ID, listEvents } from '../db/events.ts'
 import { db } from '../db/schema.ts'
-import { loadBaseIdioms, loadPairs } from '../dict/load.ts'
+import { loadBaseIdioms, loadKanji, loadPairs } from '../dict/load.ts'
+import { mistakeContextFromKanji } from '../dict/mistakeContext.ts'
 import { loadPairIndex } from '../dict/pairIndex.ts'
 import { BAND_NOTE } from '../lib/bands.ts'
 import { MISTAKE_ADVICE, MISTAKE_LABEL } from '../study/mistakeLabels.ts'
@@ -47,15 +49,22 @@ export function Report({
     let alive = true
     ;(async () => {
       try {
-        const [pool, pairs, index, events] = await Promise.all([
+        const [pool, pairs, index, kanji, events] = await Promise.all([
           loadBaseIdioms(),
           loadPairs(),
           loadPairIndex(),
+          loadKanji(),
           listEvents(db(), LOCAL_USER_ID),
         ])
         if (!alive) return
         const byId = new Map(pool.map((p) => [p.idiomId, p]))
-        const state = replay(events, { pairsOf: (id) => byId.get(id)?.pairIds ?? [] })
+        // 저장된 유형을 그대로 세면 규칙 화면에서 빠진 오답이 여기서는 남는다 (2026-09-17).
+        // 규칙 화면·다시보기와 **같은 함수**로 다시 매긴다
+        const again = reclassifier(mistakeContextFromKanji(kanji), (id) => byId.get(id)?.headword)
+        const state = replay(events, {
+          pairsOf: (id) => byId.get(id)?.pairIds ?? [],
+          mistakeOf: (e) => again(e).type,
+        })
         const report = buildReport(state, pairs, (id) => {
           const it = byId.get(id)
           return it ? { headword: it.headword, reading: it.reading } : undefined
