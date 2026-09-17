@@ -7,11 +7,15 @@
 import { useEffect, useRef, useState } from 'react'
 import { frequentIdioms, pickBrowse } from '../core/report.ts'
 import { replay } from '../core/replay.ts'
+import { classifiedMistakes, mistakeOfIdiom, voicingByEvent, type IdiomMistake } from '../core/ruleRecord.ts'
 import { LOCAL_USER_ID, listEvents } from '../db/events.ts'
 import { db } from '../db/schema.ts'
 import { loadBaseIdioms, loadExamples, loadKanji } from '../dict/load.ts'
 import { mistakeContextFromKanji } from '../dict/mistakeContext.ts'
 import { rubyOf, type RubySegment } from '../core/ruby.ts'
+import { mistakeLabel } from '../study/mistakeLabels.ts'
+import { RuleBody } from './RuleBody.tsx'
+import { ruleForMistake, ruleSection, type RuleSection } from './rules.ts'
 import { tts } from '../study/tts.ts'
 import { useViewportLock } from '../study/useViewportLock.ts'
 
@@ -24,6 +28,16 @@ interface BrowseItem {
   sentences: string[]
   /** 한자 위에 얹을 읽기 — 목록을 만들 때 같이 계산한다 */
   ruby: RubySegment[]
+  /** 이 숙어에서 제일 자주 난 오답의 규칙 절. 유형이 붙은 오답이 없으면 null */
+  rule: { section: RuleSection; label: string } | null
+}
+
+/** 대표 오답을 그 오답이 속한 절로 옮긴다. 규칙이 없는 유형이면 배지를 안 단다 */
+function ruleOf(m: IdiomMistake | undefined): BrowseItem['rule'] {
+  if (m === undefined) return null
+  const id = ruleForMistake(m.type, m.voicing)
+  const section = id === null ? undefined : ruleSection(id)
+  return section === undefined ? null : { section, label: mistakeLabel(m.type, m.voicing) }
 }
 
 export function Browse({ onExit }: { onExit: () => void }) {
@@ -38,11 +52,14 @@ export function Browse({ onExit }: { onExit: () => void }) {
    * 트랙이 모든 장을 띄워 두는 구조라 안 그러면 몇 장 전에 넘겨 둔 자리가 그대로 남는다.
    */
   const [exIndex, setExIndex] = useState(0)
+  /** 지금 카드에서 규칙을 펼쳐 뒀는지. 예문 자리와 같은 이유로 카드를 떠나면 접는다 */
+  const [ruleOpen, setRuleOpen] = useState(false)
   // 장이 바뀌면 렌더 중에 자리를 되돌린다. effect 로 하면 한 번 그린 뒤 다시 그리게 된다
   const [exCard, setExCard] = useState(0)
   if (exCard !== at) {
     setExCard(at)
     setExIndex(0)
+    setRuleOpen(false)
   }
 
   useEffect(() => {
@@ -66,13 +83,18 @@ export function Browse({ onExit }: { onExit: () => void }) {
             return it ? { headword: it.headword, reading: it.reading } : undefined
           }),
         )
-        const lookup = mistakeContextFromKanji(kanji).lookup
+        // 배지에 실을 규칙 — 규칙 화면과 **같은 함수**로 갈래를 매긴다 (2026-09-17)
+        const ctx = mistakeContextFromKanji(kanji)
+        const wrong = classifiedMistakes(events)
+        const worst = mistakeOfIdiom(wrong, voicingByEvent(wrong, ctx, (id) => byId.get(id)?.headword))
+        const lookup = ctx.lookup
         setItems(
           rows.map((r) => ({
             ...r,
             meaning: byId.get(r.id)?.koMeaning?.definition?.trim() ?? '',
             sentences: examples.get(r.id) ?? [],
             ruby: rubyOf(r.headword, r.reading, lookup),
+            rule: ruleOf(worst.get(r.id)),
           })),
         )
       } catch (e) {
@@ -134,6 +156,8 @@ export function Browse({ onExit }: { onExit: () => void }) {
             item={item}
             exAt={index === at ? exIndex : 0}
             onNextEx={() => setExIndex((n) => (n + 1) % item.sentences.length)}
+            ruleOpen={index === at && ruleOpen}
+            onToggleRule={() => setRuleOpen((v) => !v)}
             key={item.id}
           />
         ))}
@@ -170,10 +194,14 @@ function BrowseSlide({
   item,
   exAt,
   onNextEx,
+  ruleOpen,
+  onToggleRule,
 }: {
   item: BrowseItem
   exAt: number
   onNextEx: () => void
+  ruleOpen: boolean
+  onToggleRule: () => void
 }) {
   const sentence = item.sentences[exAt]
 
@@ -183,6 +211,18 @@ function BrowseSlide({
         <div className="card-head">
           <span className="tag">다시보기</span>
           <span className="tag muted">{item.wrong}회 틀림</span>
+          {/* 이 숙어를 왜 틀렸나 — 같은 줄에 규칙 이름으로 (사용자 요청 2026-09-17).
+              누르면 그 절이 카드 안에서 펼쳐진다. 규칙 화면으로 나가면 넘기던 자리를 잃는다 */}
+          {item.rule !== null && (
+            <button
+              type="button"
+              className="tag rule-tag"
+              aria-expanded={ruleOpen}
+              onClick={onToggleRule}
+            >
+              {item.rule.label} 규칙
+            </button>
+          )}
         </div>
         <div className="card-body">
           {/* 설명 카드는 한자 위에 읽기를 얹는다 (2026-09-14) */}
@@ -204,6 +244,15 @@ function BrowseSlide({
             <p className="browse-ex" lang="ja">
               {sentence}
             </p>
+          )}
+          {item.rule !== null && ruleOpen && (
+            <div className="browse-rule">
+              <p className="browse-rule-title">{item.rule.section.title}</p>
+              <RuleBody section={item.rule.section} short />
+              <p className="browse-rule-tail dim">
+                규칙 전체는 리포트의 「읽기 규칙」에서 볼 수 있어요.
+              </p>
+            </div>
           )}
           {item.sentences.length > 1 && (
             <button

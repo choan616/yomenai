@@ -187,6 +187,20 @@
 .tag.muted {
   color: var(--text-faint);
 }
+/* 누를 수 있는 배지 — 다시보기의 규칙 배지 (2026-09-17). 「N회 틀림」과 같은 줄·같은 무게로
+   두되 눌리는 것이라는 표시만 남긴다 */
+button.tag {
+  border: 0;
+  font-family: inherit;
+  cursor: pointer;
+}
+.tag.rule-tag {
+  color: var(--text-dim);
+}
+.tag.rule-tag[aria-expanded='true'] {
+  color: var(--bg);
+  background: var(--text-dim);
+}
 
 .headword {
   text-align: center;

@@ -579,6 +579,29 @@
   font-size: 13px;
 }
 
+/* 카드 안에서 펼쳐지는 규칙 절 (2026-09-17) — 배지를 누르면 열린다.
+   규칙 화면으로 나가면 넘기던 자리를 잃으므로 여기서 요약본만 편다 (오답 상세와 같은 처방).
+   본문·예시·대조의 생김새는 규칙 화면 것(.rule-*)을 그대로 쓴다 */
+.browse-rule {
+  margin: 16px auto 0;
+  width: 100%;
+  max-width: 34em;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.browse-rule-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+.browse-rule-tail {
+  font-size: 12px;
+}
+
 /* 피드백 화면 (2026-09-13) — 설정과 같은 .setting 골격을 쓰되 입력이 길다 */
 .fb-lead {
   margin: 0 0 0.5rem;

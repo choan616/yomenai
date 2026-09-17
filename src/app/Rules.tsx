@@ -4,8 +4,12 @@
 // 세션 중에는 여기로 안 온다 — 나가면 세션 큐가 초기화되므로, 카드 옆에서는 오답 상세가
 // 같은 절을 인라인으로 펼친다 (context-notes 2026-09-17).
 import { useEffect, useRef, useState } from 'react'
-import { explainMistake } from '../core/mistakes.ts'
-import { classifiedMistakes, ruleRecord, type RuleRecord } from '../core/ruleRecord.ts'
+import {
+  classifiedMistakes,
+  ruleRecord,
+  voicingByEvent,
+  type RuleRecord,
+} from '../core/ruleRecord.ts'
 import { LOCAL_USER_ID, listEvents } from '../db/events.ts'
 import { db } from '../db/schema.ts'
 import { loadBaseIdioms, loadKanji } from '../dict/load.ts'
@@ -41,25 +45,11 @@ export function Rules({ onBack, focus = null }: Props) {
           return p && { headword: p.headword, reading: p.reading }
         }
 
-        /**
-         * 이벤트마다 탁음 갈래를 **다시 매긴다** (2026-09-17).
-         * 이벤트에는 유형만 있고 갈래가 없다 — 대신 답이 남아 있어 계산이 된다.
-         * 한 번만 돌고 절마다 재사용한다 (절 8개 × 이벤트 N 을 피한다)
-         */
+        // 갈래는 한 번만 매기고 절마다 재사용한다 (절 8개 × 이벤트 N 을 피한다).
+        // 다시보기 배지도 같은 함수를 쓴다 — 갈라지면 배지와 절이 다른 규칙을 가리킨다
         const ctx = mistakeContextFromKanji(kanji)
         const wrong = classifiedMistakes(events)
-        const voicingOf = new Map<string, string>()
-        for (const e of wrong) {
-          if (e.mistakeType !== 'RENDAKU') continue
-          const p = byId.get(e.idiomId)
-          if (!p) continue
-          const { voicing } = explainMistake(
-            { headword: p.headword, expected: e.expected, answer: e.answer },
-            ctx,
-          )
-          // 갈래를 못 가리면 연탁 절에 둔다 — 어느 절에도 안 들어가 사라지는 것보다 낫다
-          voicingOf.set(e.id, voicing ?? 'rendaku')
-        }
+        const voicingOf = voicingByEvent(wrong, ctx, (id) => byId.get(id)?.headword)
 
         setRecords(
           new Map(

@@ -158,7 +158,7 @@ export function MistakeDetail({ idiom, mistakeType, voicing = null, onClose }: P
             <p className="md-rule-more-title">왜 그런가 — {rule.title}</p>
             <RuleBody section={rule} short />
             <p className="md-rule-more-tail dim">
-              규칙 전체는 홈의 「읽기 규칙」에서 볼 수 있어요.
+              규칙 전체는 리포트의 「읽기 규칙」에서 볼 수 있어요.
             </p>
           </div>
         )}
