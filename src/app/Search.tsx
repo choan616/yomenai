@@ -35,7 +35,7 @@ function koreanOf(headword: string, kanji: Map<string, KanjiInfo>): string {
   return [...headword].map((c) => kanji.get(c)?.kr[0] ?? '—').join('')
 }
 
-export function Search({ onBack }: { onBack: () => void }) {
+export function Search() {
   const [raw, setRaw] = useState('')
   const [loaded, setLoaded] = useState<Loaded | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -76,9 +76,6 @@ export function Search({ onBack }: { onBack: () => void }) {
   return (
     <section className="screen">
       <div className="screen-bar">
-        <button type="button" className="back" onClick={onBack} aria-label="홈으로">
-          ←
-        </button>
         <h2>읽기로 찾기</h2>
       </div>
 

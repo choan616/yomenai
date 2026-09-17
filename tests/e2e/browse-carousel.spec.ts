@@ -76,7 +76,7 @@ test('다시보기가 스냅되는 캐러셀이다', async ({ page }) => {
     await page.waitForTimeout(30)
   }
   await page.getByRole('button', { name: '홈으로' }).click()
-  await page.getByRole('button', { name: /진단 리포트/ }).click()
+  await page.getByRole('button', { name: '리포트', exact: true }).click()
   const enter = page.getByRole('button', { name: /다시보기 \d+장/ })
   const label = await enter.innerText()
   const total = Number(/(\d+)장/.exec(label)?.[1])

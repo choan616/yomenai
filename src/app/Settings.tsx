@@ -234,10 +234,8 @@ function ResetSetting() {
 }
 
 export function Settings({
-  onBack,
   onFeedback,
 }: {
-  onBack: () => void
   /** 테스터 피드백 화면으로 (2026-09-13) */
   onFeedback: () => void
 }) {
@@ -264,9 +262,6 @@ export function Settings({
   return (
     <section className="screen">
       <div className="screen-bar">
-        <button type="button" className="back" onClick={onBack} aria-label="홈으로">
-          ←
-        </button>
         <h2>설정</h2>
       </div>
 

@@ -1,11 +1,18 @@
 // 읽기 규칙 화면 검증 — 절이 접혀 있다가 펼쳐지고, 예시·대조가 뜨고, 기록이 없으면 그렇게 말한다 (2026-09-17).
 // 읽을거리가 아니라 색인이라는 게 이 화면의 정체라, 기록 자리가 있는지까지 본다.
-import { expect, test } from '@playwright/test'
+import { expect, test, type Page } from '@playwright/test'
 
-test('홈에서 읽기 규칙을 열고 절을 펼친다', async ({ page }) => {
+/** 규칙 화면은 리포트 탭 아래에 있다 (2026-09-17 하단 탭 전환). 기록이 없어도 도구 절에 뜬다 */
+async function openRules(page: Page): Promise<void> {
+  const tab = page.getByRole('button', { name: '리포트', exact: true })
+  await expect(tab).toBeVisible({ timeout: 20_000 })
+  await tab.click()
+  await page.getByRole('button', { name: /읽기 규칙/ }).click()
+}
+
+test('리포트 탭에서 읽기 규칙을 열고 절을 펼친다', async ({ page }) => {
   await page.goto('/')
-  await expect(page.getByRole('button', { name: '읽기 규칙' })).toBeVisible({ timeout: 20_000 })
-  await page.getByRole('button', { name: '읽기 규칙' }).click()
+  await openRules(page)
 
   await expect(page.getByRole('heading', { name: '읽기 규칙' })).toBeVisible()
 
@@ -51,16 +58,15 @@ test('홈에서 읽기 규칙을 열고 절을 펼친다', async ({ page }) => {
   await expect(rendaku.locator('.rule-open')).toContainText('라이먼')
   await expect(rendaku.locator('.rule-contrast').first()).toContainText('春風')
 
-  // 나가면 홈
+  // 나가면 자기 탭 루트(리포트)로 — 탭이 자리를 기억하므로 복귀 상태가 필요 없다
   await page.getByRole('button', { name: '돌아가기' }).click()
-  await expect(page.getByRole('button', { name: '읽기 규칙' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: '진단 리포트' })).toBeVisible()
 })
 
 test('반탁 오답은 연탁이 아니라 반탁으로 불린다', async ({ page }) => {
   // 분류기는 연탁·반탁·연성을 한 유형으로 묶는다. 이름과 규칙 절만 갈래를 따라간다 (2026-09-17)
   await page.goto('/')
-  await expect(page.getByRole('button', { name: '읽기 규칙' })).toBeVisible({ timeout: 20_000 })
-  await page.getByRole('button', { name: '읽기 규칙' }).click()
+  await openRules(page)
 
   const handaku = page.locator('.rule-block').filter({ hasText: 'ぱ행으로' }).first()
   await handaku.locator('.rule-head').click()

@@ -76,7 +76,7 @@ test('리포트의 처방에서 집중 세션으로 바로 들어간다', async 
   // 진단은 건너뛰고 세션만 반복한다 — 필요한 건 밴드 판정이 아니라 음독 노출 횟수다
   for (let i = 0; i < 3; i++) await runSessionWrong(page)
 
-  await page.getByRole('button', { name: /진단 리포트/ }).click()
+  await page.getByRole('button', { name: '리포트', exact: true }).click()
   await expect(page.locator('.report')).toBeVisible()
   await expect(page.getByText('취약 음독')).toBeVisible()
 

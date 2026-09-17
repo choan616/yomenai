@@ -4,8 +4,9 @@ import { expect, test } from '@playwright/test'
 
 test('히라가나로 한자 표기를 찾는다', async ({ page }) => {
   await page.goto('/')
-  await expect(page.getByRole('button', { name: '읽기로 찾기' })).toBeVisible({ timeout: 20_000 })
-  await page.getByRole('button', { name: '읽기로 찾기' }).click()
+  const tab = page.getByRole('button', { name: '찾기', exact: true })
+  await expect(tab).toBeVisible({ timeout: 20_000 })
+  await tab.click()
 
   await expect(page.getByRole('heading', { name: '읽기로 찾기' })).toBeVisible()
 
@@ -44,6 +45,7 @@ test('히라가나로 한자 표기를 찾는다', async ({ page }) => {
   await expect(page.locator('.empty')).toContainText('없어요')
   await expect(page.locator('.search-scope')).toBeVisible()
 
-  await page.getByRole('button', { name: '홈으로', exact: true }).click()
+  // 찾기는 탭 루트라 「‹」 가 없다 — 학습 탭으로 돌아간다 (2026-09-17 하단 탭 전환)
+  await page.getByRole('button', { name: '학습', exact: true }).click()
   await expect(page.getByRole('button', { name: '세션 시작' })).toBeVisible()
 })

@@ -26,18 +26,19 @@ interface Loaded {
 }
 
 export function Report({
-  onBack,
   onBrowse,
   onFocus,
   onRule,
+  onOnyomi,
 }: {
-  onBack: () => void
   /** 자주 틀린 숙어를 채점 없이 넘겨 보는 화면으로 (2026-09-12) */
   onBrowse: () => void
   /** 처방의 음독을 그 자리에서 집중 세션으로 (Phase 10) */
   onFocus: (pairId: string) => void
   /** 규칙 처방에서 그 절로 (2026-09-17). 세션이 없는 자리라 화면을 옮겨도 잃을 게 없다 */
-  onRule: (id: RuleId) => void
+  onRule: (id: RuleId | null) => void
+  /** 음독 맵으로 (2026-09-17). 홈 메뉴가 탭으로 내려가면서 이 탭 아래로 옮겨왔다 */
+  onOnyomi: () => void
 }) {
   const [data, setData] = useState<Loaded | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -81,9 +82,6 @@ export function Report({
   return (
     <section className="screen report">
       <div className="screen-bar">
-        <button type="button" className="back" onClick={onBack} aria-label="홈으로">
-          ←
-        </button>
         <h2>진단 리포트</h2>
       </div>
 
@@ -98,8 +96,19 @@ export function Report({
             <br />
             세션을 마치면 오답 패턴이 여기 쌓여요.
           </p>
-        ) : (
-          <ReportBody data={data} onBrowse={onBrowse} onFocus={onFocus} onRule={onRule} />
+        ) : null}
+
+        {/* 도구 둘은 **기록이 없어도** 보인다 (2026-09-17). 규칙은 처방에서만 닿게 두면
+            읽기 30회를 채우기 전에는 아예 못 여는데, 규칙은 처음 틀린 날 가장 필요하다 */}
+        <ToolsSection onOnyomi={onOnyomi} onRules={() => onRule(null)} />
+
+        {data && data.report.totalReviews > 0 && (
+          <ReportBody
+            data={data}
+            onBrowse={onBrowse}
+            onFocus={onFocus}
+            onRule={onRule}
+          />
         )}
       </div>
     </section>
@@ -115,7 +124,7 @@ function ReportBody({
   data: Loaded
   onBrowse: () => void
   onFocus: (pairId: string) => void
-  onRule: (id: RuleId) => void
+  onRule: (id: RuleId | null) => void
 }) {
   const { report, level, prescriptions } = data
   // 정답률은 *실제* 오답으로 센다. 분류된 오답만 쓰면 미분류분이 정답으로 둔갑한다
@@ -342,7 +351,7 @@ function RxItem({
 }: {
   p: Prescription
   onFocus: (pairId: string) => void
-  onRule: (id: RuleId) => void
+  onRule: (id: RuleId | null) => void
 }) {
   switch (p.kind) {
     case 'MORE_DATA':
@@ -405,4 +414,29 @@ function RxItem({
         </>
       )
   }
+}
+
+/**
+ * 도구 둘 — 음독 맵과 읽기 규칙 (2026-09-17).
+ *
+ * 홈 메뉴가 탭으로 내려가면서 이 탭 아래로 옮겨왔다. 리포트가 「내가 어디쯤인가」 라면
+ * 이 둘은 그 답을 들고 가는 자리다 — 음독 맵은 전체에서 어디까지 왔나, 규칙은 왜 틀리나.
+ * **기록이 없어도 보인다** — 처음 틀린 날 규칙이 가장 필요하다.
+ */
+function ToolsSection({ onOnyomi, onRules }: { onOnyomi: () => void; onRules: () => void }) {
+  return (
+    <section className="tools">
+      <p className="section-title">도구</p>
+      <button type="button" className="tool-row" onClick={onRules}>
+        <span className="tool-name">읽기 규칙</span>
+        <span className="tool-note">음운 변화의 지도 · 내가 틀린 기록</span>
+        <span className="chev">›</span>
+      </button>
+      <button type="button" className="tool-row" onClick={onOnyomi}>
+        <span className="tool-name">음독 맵</span>
+        <span className="tool-note">(한자, 음독) 쌍 숙달 현황</span>
+        <span className="chev">›</span>
+      </button>
+    </section>
+  )
 }

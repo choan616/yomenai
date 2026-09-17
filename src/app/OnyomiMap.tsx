@@ -57,7 +57,7 @@ export function OnyomiMap({ onBack }: { onBack: () => void }) {
   return (
     <section className="screen">
       <div className="screen-bar">
-        <button type="button" className="back" onClick={onBack} aria-label="홈으로">
+        <button type="button" className="back" onClick={onBack} aria-label="돌아가기">
           ←
         </button>
         <h2>음독 맵</h2>

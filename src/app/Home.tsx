@@ -1,4 +1,6 @@
-// 홈 — 진단 전엔 진단이 주 동작, 진단 후엔 세션이 주 동작 (Phase 9-A). 그 아래 리포트·음독 맵·설정
+// 홈 — 학습 탭의 루트. 진단 전엔 진단이, 진단 후엔 세션이 주 동작 (Phase 9-A).
+// 2026-09-17 하단 탭 전환 — 리포트·음독 맵·규칙·안내서·설정·찾기가 전부 탭으로 내려갔다.
+// 여기 남는 건 **세션을 시작하는 것들뿐**이다. 홈은 2초 안에 세션을 시작하는 자리다
 import { useEffect, useState } from 'react'
 import { buildSession, rematchCount } from '../core/session.ts'
 import { browseCount } from '../core/report.ts'
@@ -12,7 +14,7 @@ import {
   shouldOfferDiagnostic,
 } from './diagnostic-state.ts'
 import { loadSettings, QUICK_SESSION_LIMIT } from './settings.ts'
-import type { Screen } from '../App.tsx'
+import type { Flow } from '../App.tsx'
 import { openGuide } from './guide.ts'
 import { isWelcomeSeen, markWelcomeSeen } from './welcome.ts'
 
@@ -25,7 +27,7 @@ interface Preview {
   browse: number
 }
 
-export function Home({ onNavigate }: { onNavigate: (screen: Screen) => void }) {
+export function Home({ onFlow }: { onFlow: (flow: Flow) => void }) {
   const [preview, setPreview] = useState<Preview | null>(null)
   const [error, setError] = useState<string | null>(null)
   // 로그를 읽기 전엔 플래그만 보고, 읽고 나면 수준까지 보고 다시 정한다
@@ -72,34 +74,6 @@ export function Home({ onNavigate }: { onNavigate: (screen: Screen) => void }) {
 
   return (
     <main className="home">
-      {/* 설정을 헤더로 올린다 (2026-09-14). 하단 메뉴를 비워 다시보기 자리를 만들고,
-          첫 진입에서도 바로 닿게 한다 — Google 로그인이 설정에 있다 */}
-      <div className="home-top">
-        {/* 읽기로 찾기 — 오답과 무관하게 생각날 때 스스로 여는 자리라 상단으로 올렸다
-            (사용자 요청 2026-09-16). 리포트·음독 맵과 같은 무게로 읽히면 안 된다 */}
-        <button
-          type="button"
-          className="home-find"
-          onClick={() => onNavigate('search')}
-        >
-          {/* 컬러 이모지(🔍)를 쓰면 옆의 ⚙ 와 톤이 안 맞는다 (사용자 지적 2026-09-16).
-              폰트에 기대는 단색 글리프(⌕)는 기기에 따라 두부가 되므로 인라인 SVG 로 그린다 —
-              currentColor 라 알약 글자색을 그대로 따라간다 */}
-          <svg className="pill-icon" viewBox="0 0 16 16" aria-hidden="true">
-            <circle cx="7" cy="7" r="4.3" />
-            <path d="M10.4 10.4 14 14" />
-          </svg>
-          읽기로 찾기
-        </button>
-        {/* 아이콘만 두면 눈에 안 띈다 (사용자 지적 2026-09-14) — 글자를 붙이고 테두리를 준다 */}
-        <button
-          type="button"
-          className="home-gear"
-          onClick={() => onNavigate('settings')}
-        >
-          <span aria-hidden="true">⚙</span> 설정
-        </button>
-      </div>
       <h1 lang="ja">読めない</h1>
       <p className="tagline">뜻은 아는데 못 읽는 숙어를 바로잡아요</p>
 
@@ -146,14 +120,14 @@ export function Home({ onNavigate }: { onNavigate: (screen: Screen) => void }) {
           <button
             type="button"
             className="btn-primary big"
-            onClick={() => onNavigate('diagnostic')}
+            onClick={() => onFlow({ kind: 'diagnostic' })}
           >
             진입 진단 시작
           </button>
           <button
             type="button"
             className="btn rematch"
-            onClick={() => onNavigate('study')}
+            onClick={() => onFlow({ kind: 'study' })}
             disabled={!sessionReady}
           >
             세션 시작 <span className="dim"> · 진단 건너뛰기</span>
@@ -177,7 +151,7 @@ export function Home({ onNavigate }: { onNavigate: (screen: Screen) => void }) {
           <button
             type="button"
             className="btn-primary big"
-            onClick={() => onNavigate('study')}
+            onClick={() => onFlow({ kind: 'study' })}
             disabled={!sessionReady}
           >
             세션 시작
@@ -185,7 +159,7 @@ export function Home({ onNavigate }: { onNavigate: (screen: Screen) => void }) {
 
           {/* 의욕 없는 날의 진입로. 20장이냐 안 하냐의 양자택일에서 "안 함"이 이긴다 (Phase 11) */}
           {preview && preview.ready > QUICK_SESSION_LIMIT && (
-            <button type="button" className="btn quick" onClick={() => onNavigate('quick')}>
+            <button type="button" className="btn quick" onClick={() => onFlow({ kind: 'quick' })}>
               <b>{QUICK_SESSION_LIMIT}장</b>만
               <span className="dim"> · 오늘은 짧게</span>
             </button>
@@ -199,7 +173,7 @@ export function Home({ onNavigate }: { onNavigate: (screen: Screen) => void }) {
               <p className="wrong-group-label">틀렸던 것</p>
               <div className="wrong-group-row">
                 {preview.rematch > 0 && (
-                  <button type="button" className="btn rematch" onClick={() => onNavigate('rematch')}>
+                  <button type="button" className="btn rematch" onClick={() => onFlow({ kind: 'rematch' })}>
                     <span className="wg-head">
                       재도전 <span className="wg-badge">{preview.rematch}</span>
                     </span>
@@ -207,7 +181,7 @@ export function Home({ onNavigate }: { onNavigate: (screen: Screen) => void }) {
                   </button>
                 )}
                 {preview.browse > 0 && (
-                  <button type="button" className="btn rematch" onClick={() => onNavigate('browse')}>
+                  <button type="button" className="btn rematch" onClick={() => onFlow({ kind: 'browse' })}>
                     <span className="wg-head">
                       다시보기 <span className="wg-badge">{preview.browse}</span>
                     </span>
@@ -219,23 +193,6 @@ export function Home({ onNavigate }: { onNavigate: (screen: Screen) => void }) {
           )}
         </>
       )}
-
-      <nav className="home-nav">
-        <button type="button" onClick={() => onNavigate('report')}>
-          진단 리포트 <span className="chev">›</span>
-        </button>
-        <button type="button" onClick={() => onNavigate('onyomi')}>
-          음독 맵 <span className="chev">›</span>
-        </button>
-        {/* 읽기 규칙 — 안내서 옆이 맞는 자리다. 둘 다 "언제든 꺼내 보는 것" 이다 (2026-09-17).
-            네 칸이 된 것 자체가 내비게이션 모델 결정의 재료다 (checklist 「지켜볼 신호」) */}
-        <button type="button" onClick={() => onNavigate('rules')}>
-          읽기 규칙 <span className="chev">›</span>
-        </button>
-        <button type="button" onClick={openGuide}>
-          사용 안내서 <span className="chev">›</span>
-        </button>
-      </nav>
     </main>
   )
 }
