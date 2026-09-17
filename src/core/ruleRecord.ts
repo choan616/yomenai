@@ -187,3 +187,36 @@ export function mistakeOfIdiom(
   }
   return out
 }
+
+/**
+ * 탁음 바구니 안의 갈래별 횟수 (2026-09-17, 노출 경로 일관성).
+ *
+ * **분포 표시와 처방 문턱은 다른 축이다.** 리포트가 「연탁 5회」 한 칸으로만 보여줘서
+ * 반탁만 틀린 사람도 「연탁」이라는 이름을 받고 있었다. 이름은 갈래로 나누고, 처방이 뜨는
+ * 문턱(`DOMINANT_SHARE`)은 묶은 채로 둔다 — 셋으로 쪼개면 반탁 처방은 영원히 안 뜬다
+ * (반탁이 탁음 오답의 26%라, 전체 오답의 30%를 넘으려면 탁음 오답이 전체의 116%여야 한다).
+ *
+ * `replay` 가 아니라 이벤트를 직접 센다. 갈래는 저장돼 있지 않고 답에서 다시 매기는 값이라
+ * 순수 접기 안에서는 못 구한다 — `ruleRecord` 가 같은 이유로 이벤트를 직접 훑는다.
+ */
+export function voicingCounts(
+  events: readonly ReviewEvent[],
+  again: (e: ReviewEvent) => MistakeVerdict,
+): Record<VoicingKind, number> {
+  const out: Record<VoicingKind, number> = { rendaku: 0, handaku: 0, renjo: 0 }
+  for (const e of events) {
+    const v = again(e)
+    if (v.type === 'RENDAKU') out[v.voicing ?? 'rendaku']++
+  }
+  return out
+}
+
+/** 그 바구니에서 제일 많은 갈래. 동점이면 연탁 — 대표 절이다. 비어 있으면 null */
+export function dominantVoicing(counts: Record<VoicingKind, number>): VoicingKind | null {
+  const order: VoicingKind[] = ['rendaku', 'handaku', 'renjo']
+  let best: VoicingKind | null = null
+  for (const k of order) {
+    if (counts[k] > 0 && (best === null || counts[k] > counts[best])) best = k
+  }
+  return best
+}

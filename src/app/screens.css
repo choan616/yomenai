@@ -484,6 +484,13 @@
   color: var(--text);
   font-variant-numeric: tabular-nums;
 }
+/* 탁음 처방의 숫자가 셋을 묶은 값이라는 단서 (2026-09-17) */
+.rx-note {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: var(--text-dim);
+  opacity: 0.8;
+}
 .btn.rx-run {
   display: flex;
   justify-content: space-between;

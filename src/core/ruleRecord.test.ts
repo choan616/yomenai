@@ -3,10 +3,12 @@ import { describe, expect, it } from 'vitest'
 import {
   classifiedMistakes,
   effectiveMistake,
+  dominantVoicing,
   mistakeOfIdiom,
   reclassifier,
   ruleRecord,
   verdictByEvent,
+  voicingCounts,
 } from './ruleRecord.ts'
 import { buildKoSiblingIndex, type MistakeContext } from './mistakes.ts'
 import { KANJI_FIXTURE } from './mistakes.fixture.ts'
@@ -249,5 +251,39 @@ describe('reclassifier — 리포트와 규칙 화면이 같은 함수를 쓴다
 
   it('숙어를 모르면 저장값을 남긴다 — 근거 없이 바꾸지 않는다', () => {
     expect(again(ev('9', 'RENDAKU'))).toEqual({ type: 'RENDAKU', voicing: null })
+  })
+})
+
+/**
+ * 분포는 갈래로 나누고 처방 문턱은 묶은 채로 (2026-09-17, 노출 경로 일관성).
+ *
+ * 리포트가 「연탁 5회」 한 칸만 보여줘서, 반탁만 틀린 사람도 「연탁」이라는 이름을 받고
+ * 있었다 — 탁음 오답의 26%가 반탁이다. **표시 축과 판정 축은 다르다.**
+ */
+describe('voicingCounts — 탁음 바구니를 갈래로 센다', () => {
+  const again = reclassifier(ctx, headwordOf)
+
+  it('연탁과 반탁을 따로 센다', () => {
+    const es = [ev('1', 'RENDAKU'), handaku('5'), handaku('5')]
+    expect(voicingCounts(es, again)).toEqual({ rendaku: 1, handaku: 2, renjo: 0 })
+  })
+
+  it('다시 매겨 연탁이 아니게 된 것은 안 센다 — 리포트 분포에서도 빠진다', () => {
+    const stale = ev('6', 'RENDAKU', { expected: 'げつがく', answer: 'げつかく' })
+    expect(voicingCounts([stale], again)).toEqual({ rendaku: 0, handaku: 0, renjo: 0 })
+  })
+
+  it('탁음이 아닌 유형은 안 센다', () => {
+    expect(voicingCounts([ev('3', 'SOKUON')], again)).toEqual({
+      rendaku: 0,
+      handaku: 0,
+      renjo: 0,
+    })
+  })
+
+  it('제일 많은 갈래를 고른다 — 처방이 읽힐 절을 정한다', () => {
+    expect(dominantVoicing({ rendaku: 1, handaku: 2, renjo: 0 })).toBe('handaku')
+    expect(dominantVoicing({ rendaku: 2, handaku: 2, renjo: 0 })).toBe('rendaku') // 동점이면 대표 절
+    expect(dominantVoicing({ rendaku: 0, handaku: 0, renjo: 0 })).toBeNull()
   })
 })

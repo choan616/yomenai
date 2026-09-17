@@ -10,21 +10,34 @@ import {
 } from '../core/level.ts'
 import { prescribe, type Prescription } from '../core/prescription.ts'
 import { replay } from '../core/replay.ts'
-import { reclassifier } from '../core/ruleRecord.ts'
-import { BROWSE_N, buildReport, type Report as ReportData } from '../core/report.ts'
+import type { VoicingKind } from '../core/mistakes.ts'
+import {
+  classifiedMistakes,
+  dominantVoicing,
+  reclassifier,
+  voicingCounts,
+} from '../core/ruleRecord.ts'
+import { BROWSE_N, buildReport, type MistakeSlice, type Report as ReportData } from '../core/report.ts'
 import { LOCAL_USER_ID, listEvents } from '../db/events.ts'
 import { db } from '../db/schema.ts'
 import { loadBaseIdioms, loadKanji, loadPairs } from '../dict/load.ts'
 import { mistakeContextFromKanji } from '../dict/mistakeContext.ts'
 import { loadPairIndex } from '../dict/pairIndex.ts'
 import { BAND_NOTE } from '../lib/bands.ts'
-import { MISTAKE_ADVICE, MISTAKE_LABEL } from '../study/mistakeLabels.ts'
+import { MISTAKE_LABEL, mistakeHint, mistakeLabel, VOICING_LABEL } from '../study/mistakeLabels.ts'
+import { Mixed } from './RuleBody.tsx'
+import { ruleForMistake } from './rules.ts'
 import { RULE_OF_MISTAKE, type RuleId } from './rules.ts'
 
 interface Loaded {
   report: ReportData
   level: LevelProfile
   prescriptions: Prescription[]
+  /**
+   * 탁음 바구니 안의 갈래별 횟수 (2026-09-17).
+   * 분포는 이걸로 나눠 보여주고, 처방이 뜨는 문턱은 묶은 채로 둔다 — 축이 다르다.
+   */
+  voicing: Record<VoicingKind, number>
 }
 
 export function Report({
@@ -73,6 +86,7 @@ export function Report({
         setData({
           report,
           level,
+          voicing: voicingCounts(classifiedMistakes(events), again),
           prescriptions: prescribe({
             report,
             level,
@@ -135,13 +149,17 @@ function ReportBody({
   onFocus: (pairId: string) => void
   onRule: (id: RuleId | null) => void
 }) {
-  const { report, level, prescriptions } = data
+  const { report, level, prescriptions, voicing } = data
   // 정답률은 *실제* 오답으로 센다. 분류된 오답만 쓰면 미분류분이 정답으로 둔갑한다
   const accuracy =
     report.totalReviews > 0
       ? Math.round(((report.totalReviews - report.totalWrong) / report.totalReviews) * 100)
       : 100
-  const maxCount = Math.max(1, ...report.mistakes.map((m) => m.count))
+  const rows = mistakeRows(report.mistakes, voicing)
+  const maxCount = Math.max(1, ...rows.map((m) => m.count))
+  const topVoicing = dominantVoicing(voicing)
+  /** 탁음 바구니에 갈래가 둘 이상 섞여 있나 — 처방의 숫자가 묶인 값임을 밝혀야 한다 */
+  const voicingMixed = Object.values(voicing).filter((n) => n > 0).length > 1
 
   return (
     <>
@@ -159,7 +177,13 @@ function ReportBody({
                   {i + 1}
                 </span>
                 <div className="rx-body">
-                  <RxItem p={p} onFocus={onFocus} onRule={onRule} />
+                  <RxItem
+                    p={p}
+                    voicing={topVoicing}
+                    mixed={voicingMixed}
+                    onFocus={onFocus}
+                    onRule={onRule}
+                  />
                 </div>
               </li>
             ))}
@@ -185,9 +209,9 @@ function ReportBody({
           </p>
         ) : (
           <div className="bars">
-            {report.mistakes.map((m, i) => (
-              <div className="bar-row" key={m.type} style={{ '--i': i } as React.CSSProperties}>
-                <span>{MISTAKE_LABEL[m.type]}</span>
+            {rows.map((m, i) => (
+              <div className="bar-row" key={m.key} style={{ '--i': i } as React.CSSProperties}>
+                <span>{m.label}</span>
                 <span className="bar-track">
                   <span
                     className="bar-fill"
@@ -355,10 +379,16 @@ function rxKey(p: Prescription): string {
 
 function RxItem({
   p,
+  voicing,
+  mixed,
   onFocus,
   onRule,
 }: {
   p: Prescription
+  /** 탁음 처방일 때 제일 많이 틀린 갈래 (2026-09-17). 읽으라고 내밀 절을 정한다 */
+  voicing: VoicingKind | null
+  /** 그 바구니에 갈래가 둘 이상 섞였나 — 숫자가 묶인 값임을 밝힌다 */
+  mixed: boolean
   onFocus: (pairId: string) => void
   onRule: (id: RuleId | null) => void
 }) {
@@ -374,14 +404,24 @@ function RxItem({
       )
     case 'MISTAKE_RULE': {
       // 규칙 처방은 세션으로 못 만든다 (prescription.ts). 대신 **읽을 곳**은 생겼다 (2026-09-17)
-      const rule = RULE_OF_MISTAKE[p.type]
+      //
+      // 문턱은 탁음 셋을 묶어 넘지만(쪼개면 반탁 처방이 영원히 안 뜬다), **읽으라고 내미는
+      // 절은 제일 많이 틀린 갈래의 것**이어야 한다. 반탁만 틀리는 사람에게 연탁 절을
+      // 읽히던 자리다 (2026-09-17 노출 경로 점검).
+      const kind = p.type === 'RENDAKU' ? voicing : null
+      const rule = ruleForMistake(p.type, kind) ?? RULE_OF_MISTAKE[p.type]
       return (
         <>
           <p className="rx-title">
-            {MISTAKE_LABEL[p.type]}
+            {mistakeLabel(p.type, kind)}
             <span className="dim"> · 오답의 {Math.round(p.share * 100)}%</span>
           </p>
-          <p className="rx-why">{MISTAKE_ADVICE[p.type]}</p>
+          <p className="rx-why">
+            <Mixed text={mistakeHint(p.type, kind)} />
+          </p>
+          {mixed && (
+            <p className="rx-note">연탁·반탁·연성을 한 칸으로 묶어 센 값이에요.</p>
+          )}
           {rule && (
             <button type="button" className="btn rx-run" onClick={() => onRule(rule)}>
               이 규칙 읽기 <span className="chev">›</span>
@@ -448,4 +488,33 @@ function ToolsSection({ onOnyomi, onRules }: { onOnyomi: () => void; onRules: ()
       </button>
     </section>
   )
+}
+
+/**
+ * 오답 분포의 행들. **탁음 한 칸을 갈래 칸들로 편다** (2026-09-17).
+ *
+ * 카드는 「반탁」이라 말하는데 리포트는 같은 오답을 「연탁」이라 부르고 있었다 — 탁음 오답의
+ * 26%가 반탁이라 넷 중 하나에서 이름이 틀렸다. 갈래는 저장돼 있지 않고 답에서 다시 매기므로
+ * `voicingCounts` 가 따로 준다. 합계가 어긋나면(다시 매기기가 실패한 이벤트) 남는 만큼을
+ * 「탁음」 한 칸으로 남겨 **숫자를 잃지 않는다.**
+ */
+function mistakeRows(
+  mistakes: readonly MistakeSlice[],
+  voicing: Record<VoicingKind, number>,
+): { key: string; label: string; count: number }[] {
+  const out: { key: string; label: string; count: number }[] = []
+  for (const m of mistakes) {
+    if (m.type !== 'RENDAKU') {
+      out.push({ key: m.type, label: MISTAKE_LABEL[m.type], count: m.count })
+      continue
+    }
+    const split = (Object.entries(voicing) as [VoicingKind, number][])
+      .filter(([, n]) => n > 0)
+      .sort((a, b) => b[1] - a[1])
+    const counted = split.reduce((sum, [, n]) => sum + n, 0)
+    for (const [kind, n] of split) out.push({ key: kind, label: VOICING_LABEL[kind], count: n })
+    const rest = m.count - counted
+    if (rest > 0) out.push({ key: 'RENDAKU', label: MISTAKE_LABEL.RENDAKU, count: rest })
+  }
+  return out.sort((a, b) => b.count - a.count)
 }
