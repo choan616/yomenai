@@ -9,6 +9,7 @@ import {
   RULE_SECTIONS,
   ruleForMistake,
   ruleSection,
+  SHORT_RULE,
   type RuleExample,
 } from './rules.ts'
 
@@ -115,5 +116,29 @@ describe('ruleForMistake — 갈래까지 보고 절을 고른다', () => {
     expect(tagged).toHaveLength(3)
     expect(new Set(tagged.map((s) => s.voicing)).size).toBe(3)
     for (const s of tagged) expect(s.mistakes).toEqual(['RENDAKU'])
+  })
+})
+
+/**
+ * 반탁은 **안 걸리는 쪽**을 같이 가르쳐야 한다 (사용자 지적 2026-09-17).
+ *
+ * 분류기는 규칙을 덜 쓴 오답(出発 → しゅっはつ)과 과하게 쓴 오답(心不全 → しんぷぜん)을
+ * 같은 「반탁」으로 묶는다. 절이 거는 법만 가르치면 후자에게 틀린 것을 가르친다.
+ * 카드 옆에서는 요약본만 펴지므로 그 경계가 `SHORT_RULE` 안에 들어와 있어야 한다.
+ */
+describe('반탁 절의 과잉 적용 경계', () => {
+  const handaku = ruleSection('handakuon')!
+
+  it('같은 ん + ふ 환경에서 갈리는 최소 대립쌍이 있다', () => {
+    const pair = handaku.contrasts.find((c) => c.blocked.word === '心不全')
+    expect(pair?.applied.word).toBe('満腹')
+  })
+
+  it('그 경계가 카드 옆 요약본까지 닿는다', () => {
+    const shown = [
+      ...handaku.body.slice(0, SHORT_RULE.body),
+      ...handaku.contrasts.slice(0, SHORT_RULE.contrasts).map((c) => c.blocked.word + c.because),
+    ].join(' ')
+    expect(shown).toContain('心不全')
   })
 })

@@ -2,7 +2,7 @@
 // 규칙 화면과 오답 상세가 **같은 것**을 보여주도록 한 곳에 둔다. 화면 모듈과 갈라 둔 이유는
 // 오답 상세가 이걸 쓰면서 사전 로더·IndexedDB 까지 끌고 오면 안 되기 때문이다.
 import { splitJa } from './ja.ts'
-import type { RuleSection } from './rules.ts'
+import { SHORT_RULE, type RuleSection } from './rules.ts'
 
 /**
  * 한국어 문장 속 일본어에 `lang="ja"` 를 붙여 그린다.
@@ -27,9 +27,9 @@ export function Mixed({ text }: { text: string }) {
 
 /** 본문·예시·대조. 화면과 오답 상세가 같은 것을 보여주도록 여기 한 곳에서 그린다 */
 export function RuleBody({ section, short = false }: { section: RuleSection; short?: boolean }) {
-  const body = short ? section.body.slice(0, 2) : section.body
-  const examples = short ? section.examples.slice(0, 3) : section.examples
-  const contrasts = short ? section.contrasts.slice(0, 1) : section.contrasts
+  const body = short ? section.body.slice(0, SHORT_RULE.body) : section.body
+  const examples = short ? section.examples.slice(0, SHORT_RULE.examples) : section.examples
+  const contrasts = short ? section.contrasts.slice(0, SHORT_RULE.contrasts) : section.contrasts
   return (
     <>
       {body.map((p, i) => (
