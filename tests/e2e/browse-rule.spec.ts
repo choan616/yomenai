@@ -73,6 +73,10 @@ test('다시보기 배지가 그 숙어를 틀린 규칙을 가리킨다', async
   await expect(panel.locator('.rule-examples > li').first()).not.toBeEmpty()
   await expect(page.locator('.browse-track')).toBeVisible()
 
+  // 규칙은 카드 **맨 아래**다. 예문과 「다음 예문」 사이에 끼면 버튼이 제 예문에서 떨어진다
+  // (사용자 지적 2026-09-17)
+  await expect(slide.locator('.card-body > *').last()).toHaveClass(/browse-rule/)
+
   // 규칙 본문의 일본어에는 lang="ja" 가 붙는다 (CLAUDE.md 자형 규칙)
   const inline = panel.locator('.rule-para [lang="ja"]').first()
   await expect(inline).toBeVisible()

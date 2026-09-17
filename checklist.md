@@ -58,7 +58,8 @@
 - 검수 반영: `npm run apply:korean-meaning` → `npm run build:runtime-dict` (순서 중요)
 - 배포 확인: 아래 「배포 확인 방법 (함정)」 절을 반드시 읽는다. 같은 함정에 두 번 빠졌다.
   **이번 변경에만 있는 문자열**로 확인한다 — 기존 문구에 걸려 옛 번들을 성공으로 오판한 적이 있다
-- 배포 상태: `gh run list --limit 1` (gh 2.101 설치됨, choan616 계정 keyring)
+- 배포 상태: `& "C:\Program Files\GitHub CLI\gh.exe" run list --limit 1` — **PATH 에 안 잡힌다.
+  경로를 통째로 부른다** (bash·PowerShell 둘 다 `gh` 는 not found. gh 2.101, choan616 계정 keyring)
 - e2e: `npx playwright test` — 설치된 Chrome 채널을 쓴다(브라우저 다운로드 불필요).
   **돌리는 중에 소스를 고치지 않는다** — 이번 세션에서 두 번 실행을 버렸다
 - 홈 길이: `tab-shell.spec.ts` 가 넘침 0 을 지킨다. 홈에 뭘 더하면 여기서 걸린다

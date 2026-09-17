@@ -245,15 +245,6 @@ function BrowseSlide({
               {sentence}
             </p>
           )}
-          {item.rule !== null && ruleOpen && (
-            <div className="browse-rule">
-              <p className="browse-rule-title">{item.rule.section.title}</p>
-              <RuleBody section={item.rule.section} short />
-              <p className="browse-rule-tail dim">
-                규칙 전체는 리포트의 「읽기 규칙」에서 볼 수 있어요.
-              </p>
-            </div>
-          )}
           {item.sentences.length > 1 && (
             <button
               type="button"
@@ -262,6 +253,15 @@ function BrowseSlide({
             >
               다음 예문 <span className="dim">{exAt + 1}/{item.sentences.length}</span>
             </button>
+          )}
+          {item.rule !== null && ruleOpen && (
+            <div className="browse-rule">
+              <p className="browse-rule-title">{item.rule.section.title}</p>
+              <RuleBody section={item.rule.section} short />
+              <p className="browse-rule-tail dim">
+                규칙 전체는 리포트의 「읽기 규칙」에서 볼 수 있어요.
+              </p>
+            </div>
           )}
         </div>
       </div>
