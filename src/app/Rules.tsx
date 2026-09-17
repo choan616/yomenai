@@ -7,7 +7,8 @@ import { useEffect, useRef, useState } from 'react'
 import {
   classifiedMistakes,
   ruleRecord,
-  voicingByEvent,
+  effectiveMistake,
+  verdictByEvent,
   type RuleRecord,
 } from '../core/ruleRecord.ts'
 import { LOCAL_USER_ID, listEvents } from '../db/events.ts'
@@ -45,11 +46,11 @@ export function Rules({ onBack, focus = null }: Props) {
           return p && { headword: p.headword, reading: p.reading }
         }
 
-        // 갈래는 한 번만 매기고 절마다 재사용한다 (절 8개 × 이벤트 N 을 피한다).
+        // 유형·갈래는 한 번만 다시 매기고 절마다 재사용한다 (절 8개 × 이벤트 N 을 피한다).
         // 다시보기 배지도 같은 함수를 쓴다 — 갈라지면 배지와 절이 다른 규칙을 가리킨다
         const ctx = mistakeContextFromKanji(kanji)
         const wrong = classifiedMistakes(events)
-        const voicingOf = voicingByEvent(wrong, ctx, (id) => byId.get(id)?.headword)
+        const verdictOf = verdictByEvent(wrong, ctx, (id) => byId.get(id)?.headword)
 
         setRecords(
           new Map(
@@ -57,9 +58,14 @@ export function Rules({ onBack, focus = null }: Props) {
               s.id,
               ruleRecord(
                 wrong,
-                (e) =>
-                  s.mistakes.includes(e.mistakeType!) &&
-                  (s.voicing === undefined || voicingOf.get(e.id) === s.voicing),
+                (e) => {
+                  const now = effectiveMistake(e, verdictOf)
+                  if (now === null) return false
+                  return (
+                    s.mistakes.includes(now.type) &&
+                    (s.voicing === undefined || now.voicing === s.voicing)
+                  )
+                },
                 nameOf,
               ),
             ]),

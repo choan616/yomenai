@@ -1,7 +1,13 @@
 // 규칙 절에 붙는 오답 기록 파생 검증 — 절 조건별 합산, 정렬, 지워진 이벤트·미분류 제외
 import { describe, expect, it } from 'vitest'
-import { classifiedMistakes, mistakeOfIdiom, ruleRecord, voicingByEvent } from './ruleRecord.ts'
-import { buildKoSiblingIndex, type MistakeContext, type VoicingKind } from './mistakes.ts'
+import {
+  classifiedMistakes,
+  effectiveMistake,
+  mistakeOfIdiom,
+  ruleRecord,
+  verdictByEvent,
+} from './ruleRecord.ts'
+import { buildKoSiblingIndex, type MistakeContext } from './mistakes.ts'
 import { KANJI_FIXTURE } from './mistakes.fixture.ts'
 import type { LearningEvent, MistakeType, ReviewEvent } from './types.ts'
 
@@ -37,6 +43,8 @@ const names: Record<string, { headword: string; reading: string }> = {
   '3': { headword: '学校', reading: 'がっこう' },
   '4': { headword: '認識', reading: 'にんしき' },
   '5': { headword: '心配', reading: 'しんぱい' },
+  // 고치기 전 분류기가 RENDAKU 로 저장했지만 額는 원형이 がく 다 (2026-09-17)
+  '6': { headword: '月額', reading: 'げつがく' },
 }
 const nameOf = (id: string) => names[id]
 const isType = (t: MistakeType) => (e: ReviewEvent) => e.mistakeType === t
@@ -119,30 +127,37 @@ const headwordOf = (id: string) => names[id]?.headword
 const handaku = (idiomId: string, over: Partial<ReviewEvent> = {}) =>
   ev(idiomId, 'RENDAKU', { expected: 'しんぱい', answer: 'しんはい', ...over })
 
-describe('voicingByEvent', () => {
+describe('verdictByEvent', () => {
   it('저장된 답으로 연탁·반탁을 갈라 매긴다 — 이벤트에는 갈래가 없다', () => {
     const rendaku = ev('1', 'RENDAKU') // 三日月 みかつき
     const han = handaku('5')
-    const map = voicingByEvent([rendaku, han], ctx, headwordOf)
-    expect(map.get(rendaku.id)).toBe('rendaku')
-    expect(map.get(han.id)).toBe('handaku')
+    const map = verdictByEvent([rendaku, han], ctx, headwordOf)
+    expect(map.get(rendaku.id)).toEqual({ type: 'RENDAKU', voicing: 'rendaku' })
+    expect(map.get(han.id)).toEqual({ type: 'RENDAKU', voicing: 'handaku' })
   })
 
   it('RENDAKU 가 아니거나 이름을 모르는 숙어는 안 매긴다', () => {
     const sokuon = ev('3', 'SOKUON')
     const unknown = ev('9', 'RENDAKU')
-    const map = voicingByEvent([sokuon, unknown], ctx, headwordOf)
+    const map = verdictByEvent([sokuon, unknown], ctx, headwordOf)
     expect(map.size).toBe(0)
   })
 
-  it('갈래를 못 가리면 연탁으로 둔다 — 어느 절에도 안 들어가는 것보다 낫다', () => {
-    const odd = ev('2', 'RENDAKU', { expected: 'てがみ', answer: 'てがみ' })
-    expect(voicingByEvent([odd], { lookup: () => undefined }, headwordOf).get(odd.id)).toBe('rendaku')
+  it('사전을 못 읽으면 저장된 판정을 남긴다 — 근거 없이 지우지 않는다', () => {
+    const odd = ev('1', 'RENDAKU')
+    expect(verdictByEvent([odd], { lookup: () => undefined }, headwordOf).get(odd.id))
+      .toEqual({ type: 'RENDAKU', voicing: 'rendaku' })
+  })
+
+  it('지금 분류기가 연탁이 아니라고 하면 그대로 돌려준다 — 月額 げつがく ← げつかく', () => {
+    const stale = ev('6', 'RENDAKU', { expected: 'げつがく', answer: 'げつかく' })
+    expect(verdictByEvent([stale], ctx, headwordOf).get(stale.id))
+      .toEqual({ type: null, voicing: null })
   })
 })
 
 describe('mistakeOfIdiom', () => {
-  const voicing = (es: ReviewEvent[]) => voicingByEvent(es, ctx, headwordOf)
+  const verdicts = (es: ReviewEvent[]) => verdictByEvent(es, ctx, headwordOf)
 
   it('제일 자주 낸 갈래를 대표로 고른다', () => {
     const es = [ev('3', 'SOKUON'), ev('3', 'SOKUON'), ev('3', 'CHOON')]
@@ -153,7 +168,7 @@ describe('mistakeOfIdiom', () => {
 
   it('같은 RENDAKU 라도 연탁과 반탁은 따로 센다 — 읽을 절이 다르다', () => {
     const es = [handaku('5'), handaku('5'), ev('5', 'RENDAKU', { answer: 'みかつき' })]
-    const got = mistakeOfIdiom(es, voicing(es)).get('5')
+    const got = mistakeOfIdiom(es, verdicts(es)).get('5')
     expect(got).toEqual({ type: 'RENDAKU', voicing: 'handaku', wrong: 2 })
   })
 
@@ -170,7 +185,40 @@ describe('mistakeOfIdiom', () => {
   })
 
   it('갈래를 모르는 RENDAKU 는 voicing 이 비어 온다 — 배지는 대표 절(연탁)로 간다', () => {
-    const got = mistakeOfIdiom([ev('1', 'RENDAKU')], new Map<string, VoicingKind>()).get('1')
+    const got = mistakeOfIdiom([ev('1', 'RENDAKU')], new Map()).get('1')
     expect(got).toEqual({ type: 'RENDAKU', voicing: null, wrong: 1 })
+  })
+})
+
+/**
+ * 지난 이벤트의 **유형**까지 다시 매긴다 (2026-09-17, 사용자 지적 「絶好는 촉음 아닌가」).
+ *
+ * 처음엔 갈래만 다시 매기고 유형은 저장값을 썼다. 분류기를 고쳐도 **지난 기록의 배지는
+ * 그대로 연탁**이었다. 저장값은 못 고치니(스키마 불변 조건) 읽을 때 다시 매긴다.
+ */
+describe('지난 RENDAKU 이벤트를 지금 분류기로 다시 읽는다', () => {
+  const stale = () => ev('6', 'RENDAKU', { expected: 'げつがく', answer: 'げつかく' })
+
+  it('배지가 더는 연탁이 아니다 — 대표 오답에서 빠진다', () => {
+    const e = stale()
+    expect(mistakeOfIdiom([e], verdictByEvent([e], ctx, headwordOf)).size).toBe(0)
+  })
+
+  it('절 색인에서도 빠진다', () => {
+    const e = stale()
+    const verdictOf = verdictByEvent([e], ctx, headwordOf)
+    const match = (x: ReviewEvent) => effectiveMistake(x, verdictOf)?.type === 'RENDAKU'
+    expect(ruleRecord([e], match, nameOf).count).toBe(0)
+  })
+
+  it('진짜 연탁은 그대로 남는다 — 三日月 みかづき ← みかつき', () => {
+    const e = ev('1', 'RENDAKU')
+    const verdictOf = verdictByEvent([e], ctx, headwordOf)
+    expect(effectiveMistake(e, verdictOf)).toEqual({ type: 'RENDAKU', voicing: 'rendaku' })
+  })
+
+  it('RENDAKU 가 아닌 유형은 저장값을 그대로 쓴다 — 다시 안 매긴다', () => {
+    const e = ev('3', 'SOKUON')
+    expect(effectiveMistake(e, new Map())).toEqual({ type: 'SOKUON', voicing: null })
   })
 })

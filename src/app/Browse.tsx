@@ -7,7 +7,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { frequentIdioms, pickBrowse } from '../core/report.ts'
 import { replay } from '../core/replay.ts'
-import { classifiedMistakes, mistakeOfIdiom, voicingByEvent, type IdiomMistake } from '../core/ruleRecord.ts'
+import { classifiedMistakes, mistakeOfIdiom, verdictByEvent, type IdiomMistake } from '../core/ruleRecord.ts'
 import { LOCAL_USER_ID, listEvents } from '../db/events.ts'
 import { db } from '../db/schema.ts'
 import { loadBaseIdioms, loadExamples, loadKanji } from '../dict/load.ts'
@@ -86,7 +86,7 @@ export function Browse({ onExit }: { onExit: () => void }) {
         // 배지에 실을 규칙 — 규칙 화면과 **같은 함수**로 갈래를 매긴다 (2026-09-17)
         const ctx = mistakeContextFromKanji(kanji)
         const wrong = classifiedMistakes(events)
-        const worst = mistakeOfIdiom(wrong, voicingByEvent(wrong, ctx, (id) => byId.get(id)?.headword))
+        const worst = mistakeOfIdiom(wrong, verdictByEvent(wrong, ctx, (id) => byId.get(id)?.headword))
         const lookup = ctx.lookup
         setItems(
           rows.map((r) => ({

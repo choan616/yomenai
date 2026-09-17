@@ -7,7 +7,12 @@
 // 저장되므로 절을 가르려면 **그 이벤트의 답**이 필요한데, replay 가 접고 나면 답이 없다.
 // 이벤트에는 `answer`·`expected` 가 남아 있어 갈래를 언제든 다시 매길 수 있다 —
 // 지난 기록에도 소급된다 (스키마는 그대로, CLAUDE.md 불변 조건).
-import { explainMistake, type MistakeContext, type VoicingKind } from './mistakes.ts'
+import {
+  explainMistake,
+  type MistakeContext,
+  type MistakeVerdict,
+  type VoicingKind,
+} from './mistakes.ts'
 import type { NamedIdiom } from './report.ts'
 import type { LearningEvent, MistakeType, ReviewEvent } from './types.ts'
 
@@ -65,28 +70,49 @@ export function ruleRecord(
 }
 
 /**
- * 이벤트마다 탁음 갈래를 **다시 매긴다** (2026-09-17).
+ * `RENDAKU` 로 저장된 이벤트를 **지금 분류기로 다시 매긴다** (2026-09-17).
  *
- * 이벤트에는 유형만 있고 갈래가 없다 — 대신 답이 남아 있어 계산이 된다.
+ * 처음엔 갈래(연탁·반탁·연성)만 다시 매겼다. 유형은 맞다고 보고 저장값을 썼다.
+ * **그 전제가 틀렸다** — 분류기가 탁음 오답을 과하게 `RENDAKU` 로 보내고 있었고
+ * (月額 げつがく ← げつかく), 고친 뒤에도 지난 이벤트는 저장된 유형 때문에 계속 연탁으로
+ * 보였다. 저장값을 고칠 수는 없으니(스키마 불변 조건) **읽을 때 다시 매긴다.**
+ *
+ * 다시 매긴 유형이 `RENDAKU` 가 아니면 그 절에서 빠지고, `null` 이면 어느 절에도 안 든다
+ * (리포트의 `unclassified` 와 같은 자리다). 다시 못 매기면(숙어를 모르면) 항목을 안 넣어
+ * 저장된 유형이 그대로 쓰인다.
+ *
  * 규칙 화면과 다시보기가 **같은 함수**를 쓴다. 두 곳에서 따로 매기면 배지가 가리키는 절과
- * 규칙 화면이 언젠가 갈라진다.
- *
- * 갈래를 못 가리면 연탁으로 둔다 — 어느 절에도 안 들어가 사라지는 것보다 낫다.
+ * 규칙 화면이 언젠가 갈라진다. `RENDAKU` 로 남은 이벤트의 갈래를 못 가리면 연탁으로 둔다.
  */
-export function voicingByEvent(
+export function verdictByEvent(
   events: readonly ReviewEvent[],
   ctx: MistakeContext,
   headwordOf: (idiomId: string) => string | undefined,
-): Map<string, VoicingKind> {
-  const out = new Map<string, VoicingKind>()
+): Map<string, MistakeVerdict> {
+  const out = new Map<string, MistakeVerdict>()
   for (const e of events) {
     if (e.mistakeType !== 'RENDAKU') continue
     const headword = headwordOf(e.idiomId)
     if (headword === undefined) continue
-    const { voicing } = explainMistake({ headword, expected: e.expected, answer: e.answer }, ctx)
-    out.set(e.id, voicing ?? 'rendaku')
+    const v = explainMistake({ headword, expected: e.expected, answer: e.answer }, ctx)
+    out.set(e.id, v.type === 'RENDAKU' ? { type: 'RENDAKU', voicing: v.voicing ?? 'rendaku' } : v)
   }
   return out
+}
+
+/**
+ * 이 이벤트를 **지금** 어느 규칙으로 읽어야 하나. 다시 매긴 게 있으면 그것, 없으면 저장값.
+ *
+ * 규칙 화면의 절 색인과 다시보기 배지가 둘 다 이걸 통해서만 유형을 본다 — 한 곳에서만
+ * 고치면 배지와 절이 갈라진다.
+ */
+export function effectiveMistake(
+  e: ReviewEvent,
+  verdictOf: ReadonlyMap<string, MistakeVerdict>,
+): { type: MistakeType; voicing: VoicingKind | null } | null {
+  const v = verdictOf.get(e.id)
+  if (v === undefined) return e.mistakeType === null ? null : { type: e.mistakeType, voicing: null }
+  return v.type === null ? null : { type: v.type, voicing: v.voicing }
 }
 
 /** 숙어 하나를 대표하는 오답. 배지 한 개에 실을 것 */
@@ -107,13 +133,13 @@ export interface IdiomMistake {
  */
 export function mistakeOfIdiom(
   events: readonly ReviewEvent[],
-  voicingOf: ReadonlyMap<string, VoicingKind>,
+  verdictOf: ReadonlyMap<string, MistakeVerdict>,
 ): Map<string, IdiomMistake> {
   const tally = new Map<string, Map<string, { m: IdiomMistake; at: number }>>()
   for (const e of events) {
-    const type = e.mistakeType
-    if (type === null) continue
-    const voicing = type === 'RENDAKU' ? (voicingOf.get(e.id) ?? null) : null
+    const now = effectiveMistake(e, verdictOf)
+    if (now === null) continue
+    const { type, voicing } = now
     let byKind = tally.get(e.idiomId)
     if (byKind === undefined) {
       byKind = new Map()
