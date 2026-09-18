@@ -24,6 +24,10 @@
   --radius: 14px;
   --tap: 52px;
 
+  /* 글자 크기 설정 (src/app/textScale.ts). 일본어 학습 카드(study.css)는 안 걸린다 —
+     screens.css 의 font-size 만 이 변수를 곱한다 */
+  --ui-scale: 1;
+
   font-family: var(--font-ko);
   font-size: 17px;
   line-height: 1.55;
@@ -79,6 +83,13 @@
   --ok-bg: rgba(255, 255, 255, 0.05);
   --ng: #e8563c;
   --ng-bg: rgba(232, 86, 60, 0.13);
+}
+
+:root[data-text-scale='sm'] {
+  --ui-scale: 0.9;
+}
+:root[data-text-scale='lg'] {
+  --ui-scale: 1.2;
 }
 
 * {

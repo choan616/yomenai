@@ -9,6 +9,7 @@ import {
   type Settings as SettingsData,
 } from './settings.ts'
 import { applyTheme, loadTheme, saveTheme, type Theme } from './theme.ts'
+import { applyTextScale, loadTextScale, saveTextScale, type TextScale } from './textScale.ts'
 import { openGuide } from './guide.ts'
 import { db } from '../db/schema.ts'
 import { getDeviceId } from '../db/device.ts'
@@ -35,6 +36,12 @@ const THEMES: { label: string; value: Theme }[] = [
   { label: '시스템', value: 'system' },
   { label: '라이트', value: 'light' },
   { label: '다크', value: 'dark' },
+]
+
+const TEXT_SCALES: { label: string; value: TextScale }[] = [
+  { label: '작게', value: 'sm' },
+  { label: '기본', value: 'md' },
+  { label: '크게', value: 'lg' },
 ]
 
 const OBSERVE_LEVELS: { label: string; value: SettingsData['observeLevel'] }[] = [
@@ -241,6 +248,7 @@ export function Settings({
 }) {
   const [settings, setSettings] = useState<SettingsData>(loadSettings)
   const [theme, setThemeState] = useState<Theme>(loadTheme)
+  const [textScale, setTextScaleState] = useState<TextScale>(loadTextScale)
 
   const update = (next: SettingsData) => {
     setSettings(next)
@@ -251,6 +259,12 @@ export function Settings({
     setThemeState(next)
     saveTheme(next)
     applyTheme(next)
+  }
+
+  const setTextScale = (next: TextScale) => {
+    setTextScaleState(next)
+    saveTextScale(next)
+    applyTextScale(next)
   }
 
   const setLimit = (delta: number) =>
@@ -324,6 +338,25 @@ export function Settings({
             ))}
           </div>
           <span className="hint">시스템은 기기 설정을 따라요.</span>
+        </div>
+
+        <div className="setting">
+          <label>글자 크기</label>
+          <div className="seg" role="group" aria-label="글자 크기">
+            {TEXT_SCALES.map((s) => (
+              <button
+                key={s.value}
+                type="button"
+                aria-pressed={textScale === s.value}
+                onClick={() => setTextScale(s.value)}
+              >
+                {s.label}
+              </button>
+            ))}
+          </div>
+          <span className="hint">
+            탭바·리포트·설정·찾기 같은 화면 글자예요. 학습 카드의 숙어·읽기는 안 바뀌어요.
+          </span>
         </div>
 
         <div className="setting">

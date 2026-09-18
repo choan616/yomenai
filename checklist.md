@@ -380,6 +380,15 @@
   보도록 고침. 체크리스트의 이전 "e2e 4스펙 통과" 기록은 낡은 것이었다
 - [ ] **실기기 확인 필요(사용자)** — iOS Safari 에서 키보드를 올린 채 카드 3~4장
   연속 진행. 숙어·진행률 바 위치가 카드 간 변하지 않는지 육안 확인
+- [x] **설정에 글자 크기** (2026-09-18) — 탭바·리포트·설정·찾기 등 셸 화면 텍스트
+  3단(작게 0.9 / 기본 1 / 크게 1.2). `src/app/textScale.ts`(테마와 같은 패턴) +
+  `src/index.css` `--ui-scale`(`data-text-scale` 로 override) + `screens.css` 의
+  `font-size` 67곳을 `calc(원래값 * var(--ui-scale))` 로 감쌈. `study.css`(학습 카드)는
+  손대지 않아 자동으로 대상에서 빠진다. 근거는 context-notes 같은 날 절
+  (`rem` 통일 대신 `calc()` 개별 감싸기를 고른 이유 포함)
+  **검증: `npm run build`(tsc+vite) 클린 · `oxlint` 클린 · `npm test` 508 통과 ·
+  Playwright 실측 — tabbar 글자 13px→11.7px(작게)/15.6px(크게) 정확히 비례,
+  학습 카드 `.headword` 는 크게 상태에서도 clamp 값(62.4px) 그대로 유지되어 경계 확인**
 
 ---
 
