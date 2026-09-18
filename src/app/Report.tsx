@@ -264,7 +264,7 @@ function ReportBody({
               >
                 오답 유형별 다시보기
                 <span className="sub">
-                  {top.label} {top.count}회
+                  {top.label}
                 </span>
               </button>
             )}
