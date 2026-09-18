@@ -56,7 +56,7 @@ export function Browse({
   onExit: () => void
   /**
    * 있으면 이 오답 유형(+탁음이면 갈래)만 걸러 다시본다 (2026-09-18, 리포트 분포 그래프).
-   * `type` 이 `null` 이면 **이름이 안 붙은 오답**(「다른 읽기」)을 모은다
+   * `type` 이 `null` 이면 **이름이 안 붙은 오답**(「잘못 읽기」)을 모은다
    */
   filter?: { type: MistakeType | null; voicing: VoicingKind | null; label: string }
 }) {

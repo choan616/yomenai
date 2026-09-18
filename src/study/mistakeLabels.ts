@@ -74,7 +74,7 @@ export const VOICING_LABEL: Record<VoicingKind, string> = {
  * 「기타」로만 보였다. **저장은 계속 `null` 이다** — 스키마 불변 조건(CLAUDE.md)을 안 건드리고
  * 읽을 때만 이름을 준다. 진단적으로 이건 음운 규칙 오답이 아니라 「그 단어를 아직 모른다」다.
  */
-export const UNNAMED_LABEL = '다른 읽기'
+export const UNNAMED_LABEL = '잘못 읽기'
 
 /** 「모르겠어요」로 넘긴 오답. 답이 없어 분류기를 아예 안 거친다 */
 export const PASSED_LABEL = '넘김'

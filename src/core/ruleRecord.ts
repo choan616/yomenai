@@ -252,7 +252,7 @@ export function dominantVoicing(counts: Record<VoicingKind, number>): VoicingKin
 }
 
 /**
- * **이름이 안 붙은** 오답의 숙어들 (2026-09-18, 리포트 「다른 읽기」 다시보기).
+ * **이름이 안 붙은** 오답의 숙어들 (2026-09-18, 리포트 「잘못 읽기」 다시보기).
  *
  * `frequentIdiomsByMistake` 의 짝이다. 저건 유형이 정해진 오답을 거르고, 이건 유형이 없는
  * 오답을 모은다 — 저장값도 `null` 이고 다시 매겨도 `null` 인 것들이다. 그래서 입력이 다르다.

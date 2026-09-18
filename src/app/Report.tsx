@@ -48,7 +48,7 @@ interface Loaded {
    */
   voicing: Record<VoicingKind, number>
   /**
-   * 오답 분포의 행들 (탁음은 갈래별로 펴서, 이름 없는 오답은 「다른 읽기」로).
+   * 오답 분포의 행들 (탁음은 갈래별로 펴서, 이름 없는 오답은 「잘못 읽기」로).
    * 많은 순이라 `rows[0]` 이 1등 오답이다
    */
   rows: MistakeRow[]
@@ -103,7 +103,7 @@ export function Report({
         })
         const level = buildLevel(events, (id) => byId.get(id)?.band)
         const voicing = voicingCounts(classifiedMistakes(events), again)
-        // 미분류 중 답이 있는 몫만 「다른 읽기」다. 넘김(빈 답)은 이름 이전에 답이 없다
+        // 미분류 중 답이 있는 몫만 「잘못 읽기」다. 넘김(빈 답)은 이름 이전에 답이 없다
         const passed = passedCount(events)
         setData({
           report,
@@ -532,7 +532,7 @@ interface MistakeRow {
   key: string
   label: string
   count: number
-  /** 다시보기 필터에 그대로 넘길 값. `null` 은 이름이 안 붙은 오답(「다른 읽기」)이다 */
+  /** 다시보기 필터에 그대로 넘길 값. `null` 은 이름이 안 붙은 오답(「잘못 읽기」)이다 */
   type: MistakeType | null
   voicing: VoicingKind | null
 }

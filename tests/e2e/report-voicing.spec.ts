@@ -12,7 +12,7 @@ const MIKAZUKI = '1579550'
 /** 明白 めいはく — 다시보기에 실리려면 코퍼스에 있어야 한다 */
 const MEIHAKU = '1000220'
 
-test('리포트 분포가 반탁·연탁을 따로 세고 이름 없는 오답을 다른 읽기로 담는다', async ({ page }) => {
+test('리포트 분포가 반탁·연탁을 따로 세고 이름 없는 오답을 잘못 읽기로 담는다', async ({ page }) => {
   await page.goto('/')
   await expect(page.getByRole('button', { name: '세션 시작' })).toBeVisible({ timeout: 20_000 })
   await page.evaluate(() => {
@@ -72,8 +72,8 @@ test('리포트 분포가 반탁·연탁을 따로 세고 이름 없는 오답�
   await expect(rows.filter({ hasText: '반탁' }).locator('.bar-num')).toHaveText('2')
   await expect(rows.filter({ hasText: '연탁' }).locator('.bar-num')).toHaveText('1')
 
-  // 유형을 못 붙인 오답은 「다른 읽기」라는 이름을 받고, 등수대로 정렬에 든다 (2026-09-18)
-  await expect(rows.filter({ hasText: '다른 읽기' }).locator('.bar-num')).toHaveText('1')
+  // 유형을 못 붙인 오답은 「잘못 읽기」라는 이름을 받고, 등수대로 정렬에 든다 (2026-09-18)
+  await expect(rows.filter({ hasText: '잘못 읽기' }).locator('.bar-num')).toHaveText('1')
   // 넘김(빈 답)은 이름이 아니라 답이 없는 것이라 맨 아래 고정이다
   await expect(rows.last()).toContainText('넘김')
   await expect(rows.last().locator('.bar-num')).toHaveText('1')
@@ -92,7 +92,7 @@ test('리포트 분포가 반탁·연탁을 따로 세고 이름 없는 오답�
 })
 
 /**
- * 「다른 읽기」도 다시보기로 이어진다 (2026-09-18, 사용자 결정).
+ * 「잘못 읽기」도 다시보기로 이어진다 (2026-09-18, 사용자 결정).
  *
  * 저장값이 `null` 인 오답이라 유형 필터가 못 쓰던 길이다. 이름을 준 이상 그 숙어들만
  * 모아 볼 수 있어야 한다 — 이름만 붙이고 길이 없으면 분포에 글자만 하나 는 것이다.
@@ -111,7 +111,7 @@ test('이름 없는 오답이 1등이면 그 숙어들만 모아 다시본다', 
         req.onsuccess = () => {
           const tx = req.result.transaction('events', 'readwrite')
           const store = tx.objectStore('events')
-          // 이름이 안 붙은 오답 3회(心配) · 탁음 1회(明白) — 1등은 「다른 읽기」다.
+          // 이름이 안 붙은 오답 3회(心配) · 탁음 1회(明白) — 1등은 「잘못 읽기」다.
           // **둘 다 코퍼스에 있는 숙어여야 한다** — 다시보기는 이름을 못 찾는 숙어를 안 싣는다
           const rows: [string, string, string, number, string | null][] = [
             [han, 'しんぱい', 'ずぼぼぼ', 0, null],
@@ -150,10 +150,10 @@ test('이름 없는 오답이 1등이면 그 숙어들만 모아 다시본다', 
   const bars = page.locator('.bars')
   await expect(bars).toBeVisible({ timeout: 20_000 })
   // 정렬에 들어 1등이 된다 — 맨 아래 고정이던 「기타」와 다른 점이다
-  await expect(bars.locator('.bar-row').first()).toContainText('다른 읽기')
+  await expect(bars.locator('.bar-row').first()).toContainText('잘못 읽기')
 
   const byType = page.locator('.browse-pair').getByRole('button', { name: /오답 유형별 다시보기/ })
-  await expect(byType).toContainText('다른 읽기')
+  await expect(byType).toContainText('잘못 읽기')
   await byType.click()
   await expect(page.locator('.browse-slide').filter({ hasText: '心配' })).toHaveCount(1, {
     timeout: 20_000,
