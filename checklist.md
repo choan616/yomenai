@@ -80,11 +80,19 @@
    두 `.feedback`(오답 카드 vs 설정의 피드백 폼) 특정도 충돌도 잡았다. 근거는
    context-notes 같은 날 절 두 곳(도입 · 자리 수정)
    **검증: `answerDiff.test.ts` 6 · `npm test` 517 · `playwright` 29 스펙 · tsc/oxlint 클린**
+6. **오답 유형 분포에서 1등만 걸러 다시보기** (`7575686`) — 사용자가 그래프 아래
+   "한국음 간섭"이 그래프 1등을 보여주는 줄 알았는데 실은 항상 고정이었다. 그 섹션은
+   그대로 두고, 그래프 바로 아래에 진짜 1등(탁음이면 갈래까지)을 거른 "N회 다시보기"
+   버튼을 새로 뒀다. `ruleRecord.ts` `frequentIdiomsByMistake` 신규, `Flow['browse']`
+   가 선택적 `filter` 를 받는다. **주차장에 있던 "규칙 절 → 다시보기" 항목과 방향만
+   반대라 규모가 거의 같았다.** 근거는 context-notes 같은 날 절
+   **검증: `ruleRecord.test.ts` +5 · `npm test` 522 · `playwright` 29 스펙 · tsc/oxlint
+   클린 · IndexedDB 에 SOKUON 5건·CHOON 2건 심어 실측(버튼 "촉음 5회 다시보기", 진입
+   시 1/1장만 · 御金(CHOON) 안 섞임 확인)**
 
 **주차장** — 커스텀 키패드(`inputMode="none"`)는 IME 후보 바가 실제로 방해된다는 피드백이 오면.
 `justify-content: safe center` 앞에 `center` 폴백 한 줄 (`.card-body`·`.summary-screen`) —
 `safe` 를 모르는 브라우저는 선언째 버려 중앙 정렬이 사라진다. 잘림은 안 생겨 급하진 않다.
-규칙 절에서 「이 규칙으로 틀린 것만 다시보기」로 잇는 연결 (한 줄 규모).
 탭 순서 — 「읽기로 찾기」가 제일 자주 여는 화면이 될 수 있다. 며칠 쓴 뒤 조정한다.
 **자주 쓰는 것**
 
