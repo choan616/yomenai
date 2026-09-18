@@ -113,10 +113,11 @@ describe('ruleForMistake — 갈래까지 보고 절을 고른다', () => {
     expect(ruleForMistake(null, null)).toBeNull()
   })
 
-  it('갈래가 붙은 절은 셋뿐이고 서로 다르다 — 한 갈래가 두 절로 가면 기록이 겹친다', () => {
+  it('갈래가 붙은 절은 넷이고 서로 다르다 — 한 갈래가 두 절로 가면 기록이 겹친다', () => {
+    // 2026-09-18 청탁 미구분이 넷째로 들어왔다
     const tagged = RULE_SECTIONS.filter((s) => s.voicing !== undefined)
-    expect(tagged).toHaveLength(3)
-    expect(new Set(tagged.map((s) => s.voicing)).size).toBe(3)
+    expect(tagged).toHaveLength(4)
+    expect(new Set(tagged.map((s) => s.voicing)).size).toBe(4)
     for (const s of tagged) expect(s.mistakes).toEqual(['RENDAKU'])
   })
 })

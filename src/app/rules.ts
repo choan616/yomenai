@@ -290,7 +290,6 @@ export const RULE_SECTIONS: RuleSection[] = [
      * 연탁 절 바로 뒤다. 연탁이 「붙어서 탁해지는 변화」를 가르치고 나면, 바로 다음이
      * 「변한 게 아니라 원래 그런 것」이다. 둘을 갈라 보여줘야 연탁 규칙을 아무 데나 대지 않는다.
      *
-     * `mistakes` 가 비어 있다 — 판정이 아직 이 절로 안 온다. 2단계에서 채운다.
      */
     id: 'voicing-unmarked',
     title: '탁음인지 아닌지는 한국음이 안 알려준다',
@@ -310,7 +309,8 @@ export const RULE_SECTIONS: RuleSection[] = [
       { word: '悪化', reading: 'あっか', note: '化 화 → か. 같은 「화」인데 갈려요' },
     ],
     contrasts: [],
-    mistakes: [],
+    mistakes: ['RENDAKU'],
+    voicing: 'unmarked',
   },
   {
     id: 'onyomi-layers',

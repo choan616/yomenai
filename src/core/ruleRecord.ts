@@ -203,7 +203,7 @@ export function voicingCounts(
   events: readonly ReviewEvent[],
   again: (e: ReviewEvent) => MistakeVerdict,
 ): Record<VoicingKind, number> {
-  const out: Record<VoicingKind, number> = { rendaku: 0, handaku: 0, renjo: 0 }
+  const out: Record<VoicingKind, number> = { rendaku: 0, handaku: 0, renjo: 0, unmarked: 0 }
   for (const e of events) {
     const v = again(e)
     if (v.type === 'RENDAKU') out[v.voicing ?? 'rendaku']++
@@ -213,7 +213,7 @@ export function voicingCounts(
 
 /** 그 바구니에서 제일 많은 갈래. 동점이면 연탁 — 대표 절이다. 비어 있으면 null */
 export function dominantVoicing(counts: Record<VoicingKind, number>): VoicingKind | null {
-  const order: VoicingKind[] = ['rendaku', 'handaku', 'renjo']
+  const order: VoicingKind[] = ['rendaku', 'handaku', 'renjo', 'unmarked']
   let best: VoicingKind | null = null
   for (const k of order) {
     if (counts[k] > 0 && (best === null || counts[k] > counts[best])) best = k

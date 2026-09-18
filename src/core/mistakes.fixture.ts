@@ -33,6 +33,7 @@ export const KANJI_FIXTURE: Record<string, { onyomi: string[]; kunyomi: string[]
   '数': { onyomi: ["スウ","ス","サク","ソク","シュ"], kunyomi: ["かず","かぞ.える","しばしば","せ.める","わずらわ.しい"], koreanH: ["수","촉"] },
   '日': { onyomi: ["ニチ","ジツ"], kunyomi: ["ひ","-び","-か"], koreanH: ["일"] },
   '月': { onyomi: ["ゲツ","ガツ"], kunyomi: ["つき"], koreanH: ["월"] },
+  '春': { onyomi: ["シュン"], kunyomi: ["はる"], koreanH: ["춘"] },
   '査': { onyomi: ["サ"], kunyomi: [], koreanH: ["사"] },
   '校': { onyomi: ["コウ","キョウ"], kunyomi: [], koreanH: ["교","효"] },
   '桶': { onyomi: ["ヨウ","トウ"], kunyomi: ["おけ"], koreanH: ["통","용"] },
@@ -61,6 +62,7 @@ export const KANJI_FIXTURE: Record<string, { onyomi: string[]; kunyomi: string[]
   '重': { onyomi: ["ジュウ","チョウ"], kunyomi: ["え","おも.い","おも.り","おも.なう","かさ.ねる","かさ.なる","おも"], koreanH: ["중"] },
   '金': { onyomi: ["キン","コン","ゴン"], kunyomi: ["かね","かな-","-がね"], koreanH: ["김","금"] },
   '額': { onyomi: ["ガク"], kunyomi: ["ひたい"], koreanH: ["액"] },
+  '風': { onyomi: ["フウ","フ"], kunyomi: ["かぜ","かざ-"], koreanH: ["풍"] },
   '食': { onyomi: ["ショク","ジキ"], kunyomi: ["く.う","く.らう","た.べる","は.む"], koreanH: ["식","사"] },
   '高': { onyomi: ["コウ"], kunyomi: ["たか.い","たか","-だか","たか.まる","たか.める"], koreanH: ["고"] },
 }

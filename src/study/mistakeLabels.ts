@@ -62,6 +62,8 @@ export const VOICING_LABEL: Record<VoicingKind, string> = {
   rendaku: '연탁',
   handaku: '반탁',
   renjo: '연성',
+  // 규칙이 아니라 원형이 그런 것 — 한국음이 청탁을 안 가른다 (2026-09-18)
+  unmarked: '청탁 미구분',
 }
 
 /** 화면에 띄울 오답 이름. 갈래를 알면 그쪽이 이긴다 */
@@ -77,7 +79,7 @@ export function mistakeLabel(type: MistakeType, voicing: VoicingKind | null = nu
  * 그대로 두면 틀린 규칙을 가르치게 된다. 그때만 해당 절의 요약으로 바꾼다.
  */
 export function mistakeHint(type: MistakeType, voicing: VoicingKind | null = null): string {
-  if (type === 'RENDAKU' && (voicing === 'handaku' || voicing === 'renjo')) {
+  if (type === 'RENDAKU' && voicing !== null && voicing !== 'rendaku') {
     const id = ruleForMistake(type, voicing)
     const s = id === null ? undefined : ruleSection(id)
     if (s) return s.summary

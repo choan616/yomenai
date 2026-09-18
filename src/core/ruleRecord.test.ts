@@ -265,12 +265,12 @@ describe('voicingCounts — 탁음 바구니를 갈래로 센다', () => {
 
   it('연탁과 반탁을 따로 센다', () => {
     const es = [ev('1', 'RENDAKU'), handaku('5'), handaku('5')]
-    expect(voicingCounts(es, again)).toEqual({ rendaku: 1, handaku: 2, renjo: 0 })
+    expect(voicingCounts(es, again)).toEqual({ rendaku: 1, handaku: 2, renjo: 0, unmarked: 0 })
   })
 
   it('다시 매겨 연탁이 아니게 된 것은 안 센다 — 리포트 분포에서도 빠진다', () => {
     const stale = ev('6', 'RENDAKU', { expected: 'げつがく', answer: 'げつかく' })
-    expect(voicingCounts([stale], again)).toEqual({ rendaku: 0, handaku: 0, renjo: 0 })
+    expect(voicingCounts([stale], again)).toEqual({ rendaku: 0, handaku: 0, renjo: 0, unmarked: 0 })
   })
 
   it('탁음이 아닌 유형은 안 센다', () => {
@@ -278,12 +278,15 @@ describe('voicingCounts — 탁음 바구니를 갈래로 센다', () => {
       rendaku: 0,
       handaku: 0,
       renjo: 0,
+      unmarked: 0,
     })
   })
 
   it('제일 많은 갈래를 고른다 — 처방이 읽힐 절을 정한다', () => {
-    expect(dominantVoicing({ rendaku: 1, handaku: 2, renjo: 0 })).toBe('handaku')
-    expect(dominantVoicing({ rendaku: 2, handaku: 2, renjo: 0 })).toBe('rendaku') // 동점이면 대표 절
-    expect(dominantVoicing({ rendaku: 0, handaku: 0, renjo: 0 })).toBeNull()
+    expect(dominantVoicing({ rendaku: 1, handaku: 2, renjo: 0, unmarked: 0 })).toBe('handaku')
+    // 동점이면 대표 절
+    expect(dominantVoicing({ rendaku: 2, handaku: 2, renjo: 0, unmarked: 0 })).toBe('rendaku')
+    expect(dominantVoicing({ rendaku: 0, handaku: 0, renjo: 0, unmarked: 0 })).toBeNull()
+    expect(dominantVoicing({ rendaku: 0, handaku: 0, renjo: 0, unmarked: 3 })).toBe('unmarked')
   })
 })

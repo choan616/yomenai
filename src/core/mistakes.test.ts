@@ -230,15 +230,50 @@ describe('정답에 변형이 안 걸렸으면 연탁이 아니다', () => {
  * 정답이 청음인데 답이 탁음이면 **정답에 변형이 없다는 것이 곧 오답의 내용**이다 —
  * 규칙을 걸면 안 되는 자리에 걸었다. 여기까지 가리면 과잉 적용을 통째로 잃는다.
  */
-describe('과잉 적용 방향은 그대로 연탁으로 잡는다', () => {
+describe('과잉 적용 방향도 판정이 죽지 않는다', () => {
+  // 2026-09-18 — 갈래는 「청탁 미구분」으로 갈렸지만(아래 절) **유형은 그대로다.**
+  // 92e7381 이 지키려던 건 유형이 사라지지 않는 것이었고, 그건 여기서 계속 지킨다
   it('정답이 청음인데 답이 탁음 — 愛好 あいこう ← あいごう', () => {
-    expect(explainMistake({ headword: '愛好', expected: 'あいこう', answer: 'あいごう' }, ctx))
-      .toEqual({ type: 'RENDAKU', voicing: 'rendaku' })
+    expect(explainMistake({ headword: '愛好', expected: 'あいこう', answer: 'あいごう' }, ctx).type)
+      .toBe('RENDAKU')
   })
 
   it('답이 분해 안 되는 과잉 적용도 — 悪化 あっか ← あっが', () => {
     // っ 뒤에 탁음은 올 수 없어 답이 분해되지 않는다. 그래도 탁음을 덧댄 오답이다
+    expect(explainMistake({ headword: '悪化', expected: 'あっか', answer: 'あっが' }, ctx).type)
+      .toBe('RENDAKU')
+  })
+})
+
+/**
+ * 「청탁 미구분」 — 규칙이 아니라 원형이 그런 자리 (2026-09-18, 사용자 결정).
+ *
+ * 정답 조각이 **음독인데 탁음 변형이 안 걸렸다**면 그 글자의 청탁은 규칙이 아니라 원형이다
+ * (好 = コウ, 額 = ガク). 한국 한자음은 청탁을 안 가르니 학습자에게 단서가 없다 — 연탁을
+ * 과하게 쓴 게 아니라 **애초에 규칙이 없는 자리**라, 연탁 절을 내밀면 틀린 규칙을 가르친다.
+ *
+ * 저장되는 유형(`RENDAKU`)은 안 바뀐다. 갈래만 갈라 이름과 절을 맞춘다.
+ */
+describe('청탁 미구분 — 음독이고 변형이 없는 자리', () => {
+  it('음독 + 변형 없음 → unmarked (愛好 あいこう ← あいごう)', () => {
+    expect(explainMistake({ headword: '愛好', expected: 'あいこう', answer: 'あいごう' }, ctx))
+      .toEqual({ type: 'RENDAKU', voicing: 'unmarked' })
+  })
+
+  it('답이 분해 안 되는 자리도 (悪化 あっか ← あっが) — っ 뒤엔 탁음이 못 온다', () => {
     expect(explainMistake({ headword: '悪化', expected: 'あっか', answer: 'あっが' }, ctx))
+      .toEqual({ type: 'RENDAKU', voicing: 'unmarked' })
+  })
+
+  it('**훈독은 연탁 그대로** (春風 はるかぜ ← はるがぜ) — 라이먼의 법칙이 막는 진짜 과잉 적용', () => {
+    expect(explainMistake({ headword: '春風', expected: 'はるかぜ', answer: 'はるがぜ' }, ctx))
       .toEqual({ type: 'RENDAKU', voicing: 'rendaku' })
+  })
+
+  it('정답에 변형이 걸린 자리는 그대로 연탁/반탁이다', () => {
+    expect(explainMistake({ headword: '三日月', expected: 'みかづき', answer: 'みかつき' }, ctx))
+      .toEqual({ type: 'RENDAKU', voicing: 'rendaku' })
+    expect(explainMistake({ headword: '心配', expected: 'しんぱい', answer: 'しんはい' }, ctx))
+      .toEqual({ type: 'RENDAKU', voicing: 'handaku' })
   })
 })

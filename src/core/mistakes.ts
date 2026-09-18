@@ -43,7 +43,7 @@ const DECOMPOSED_PRIORITY: MistakeType[] = ['MIXED_READING', 'ONYOMI_CHOICE', 'R
  * 이벤트에는 저장하지 않는다 (`mistakeType` 은 스키마 불변 조건, CLAUDE.md). 대신
  * 저장된 `answer`·`expected` 로 언제든 다시 매길 수 있다 — 지난 기록에도 소급된다.
  */
-export type VoicingKind = 'rendaku' | 'renjo' | 'handaku'
+export type VoicingKind = 'rendaku' | 'renjo' | 'handaku' | 'unmarked'
 
 export interface MistakeVerdict {
   type: MistakeType | null
@@ -109,13 +109,13 @@ function fromSegments(expected: Segment[], answer: Segment[]): MistakeVerdict {
       found.add(stripLongVowels(e.base) === stripLongVowels(a.base) ? 'CHOON' : 'ONYOMI_CHOICE')
     } else if (differs('rendaku') || differs('renjo')) {
       found.add('RENDAKU')
-      voicing ??= differs('rendaku') ? 'rendaku' : 'renjo'
+      voicing ??= unmarkedVoicing(e) ? 'unmarked' : differs('rendaku') ? 'rendaku' : 'renjo'
     } else if (differs('handaku')) {
       // 半濁音은 っ·ん 뒤에서만 일어난다. 앞 자리가 이미 틀렸으면 이건 그 결과이지 별개 오답이 아니다
       // (発表 はっぴょう → はつひょう 의 원인은 促音便 미적용 하나다)
       if (!prevDiffered) {
         found.add('RENDAKU')
-        voicing ??= 'handaku'
+        voicing ??= unmarkedVoicing(e) ? 'unmarked' : 'handaku'
       }
     } else if (differs('sokuon')) found.add('SOKUON')
     prevDiffered = true
@@ -149,6 +149,20 @@ const SEION_ROW = 'はひふへほ'
 /** 정답 조각에 붙어 있으면 「소리가 탁해지는 변형이 실제로 걸렸다」는 표식 */
 const VOICING_VARIANTS = ['rendaku', 'renjo', 'handaku']
 
+const hasVoicingVariant = (s: Segment): boolean =>
+  s.variants.some((v) => VOICING_VARIANTS.includes(v))
+
+/** 표면 `index` 자리를 덮는 정답 조각 */
+function segmentAt(segments: Segment[] | null, index: number): Segment | null {
+  if (segments === null) return null
+  let end = 0
+  for (const s of segments) {
+    end += s.surface.length
+    if (index < end) return s
+  }
+  return null
+}
+
 /**
  * 표면 `index` 자리를 덮는 정답 조각에 탁음 변형이 걸려 있나.
  *
@@ -156,13 +170,22 @@ const VOICING_VARIANTS = ['rendaku', 'renjo', 'handaku']
  * 없애는 것보다, 문자열 관계만 보던 기존 판정을 남기는 쪽이 잃는 게 적다.
  */
 function voicedAt(segments: Segment[] | null, index: number): boolean {
-  if (segments === null) return true
-  let end = 0
-  for (const s of segments) {
-    end += s.surface.length
-    if (index < end) return s.variants.some((v) => VOICING_VARIANTS.includes(v))
-  }
-  return false
+  const s = segmentAt(segments, index)
+  return s === null ? segments === null : hasVoicingVariant(s)
+}
+
+/**
+ * 「청탁 미구분」 자리인가 (2026-09-18).
+ *
+ * 정답 조각이 **음독인데 탁음 변형이 안 걸렸다**면, 그 글자의 청탁은 규칙이 아니라 원형이다
+ * (額 = ガク, 好 = コウ). 한국 한자음은 청탁을 안 가르니 학습자에게 단서가 없다 —
+ * 연탁을 과하게 쓴 게 아니라 **애초에 규칙이 없는 자리**다.
+ *
+ * **훈독은 제외한다.** 훈독 자리에서 탁음을 덧댄 건 진짜 연탁 과잉 적용이다
+ * (春風 はるかぜ ← はるがぜ — 라이먼의 법칙이 막는 자리). 여기까지 끌어오면 92e7381 을 깨뜨린다.
+ */
+function unmarkedVoicing(s: Segment | null): boolean {
+  return s !== null && s.kind === 'on' && !hasVoicingVariant(s)
 }
 
 /**
@@ -192,6 +215,7 @@ function stringVoicing(
     // 규칙을 *놓친* 방향일 때만 정답 쪽 근거를 따진다 (위 주석)
     const missed = unvoiceAll(expected[i]) !== expected[i] && unvoiceAll(answer[i]) === answer[i]
     if (missed && !voicedAt(expSegments, i)) return null
+    if (unmarkedVoicing(segmentAt(expSegments, i))) return 'unmarked'
     const pair = expected[i] + answer[i]
     const handaku = [...pair].some((c) => HANDAKU_ROW.includes(c))
     const seion = [...pair].some((c) => SEION_ROW.includes(c))
