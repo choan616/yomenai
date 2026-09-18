@@ -316,3 +316,28 @@ describe('청탁 미구분은 다른 검사에서 뺏어오지 않는다', () =>
       .toEqual({ type: null, voicing: null })
   })
 })
+
+/**
+ * 갈래는 **정답 쪽 규칙**이 정한다 (2026-09-18, 사용자 지적 「寸法 는 반탁 아닌가」).
+ *
+ * 답이 어떻게 틀렸든 그 자리에 걸린 규칙은 정답이 들고 있다. 寸法 すんぽう 의 法는
+ * `handaku` 가 걸린 자리라, すんぼう 로 쓰든 すんほう 로 쓰든 읽어야 할 절은 반탁이다.
+ * 전에는 답이 ぼう 면 `differs('rendaku')` 가 먼저 걸려 **연탁 절로 보냈다** —
+ * 답의 모양이 갈래를 정하고 있었다.
+ */
+describe('갈래는 답이 아니라 정답 쪽 규칙이 정한다', () => {
+  it('반탁 자리는 답을 탁음으로 써도 반탁이다 — 寸法 すんぽう ← すんぼう', () => {
+    expect(explainMistake({ headword: '寸法', expected: 'すんぽう', answer: 'すんぼう' }, ctx))
+      .toEqual({ type: 'RENDAKU', voicing: 'handaku' })
+  })
+
+  it('반탁을 놓친 쪽도 물론 반탁이다 — 寸法 すんぽう ← すんほう', () => {
+    expect(explainMistake({ headword: '寸法', expected: 'すんぽう', answer: 'すんほう' }, ctx))
+      .toEqual({ type: 'RENDAKU', voicing: 'handaku' })
+  })
+
+  it('연탁 자리는 어느 쪽으로 틀려도 연탁이다 — 三日月', () => {
+    expect(explainMistake({ headword: '三日月', expected: 'みかづき', answer: 'みかつき' }, ctx).voicing)
+      .toBe('rendaku')
+  })
+})

@@ -109,13 +109,13 @@ function fromSegments(expected: Segment[], answer: Segment[]): MistakeVerdict {
       found.add(stripLongVowels(e.base) === stripLongVowels(a.base) ? 'CHOON' : 'ONYOMI_CHOICE')
     } else if (differs('rendaku') || differs('renjo')) {
       found.add('RENDAKU')
-      voicing ??= unmarkedVoicing(e) ? 'unmarked' : differs('rendaku') ? 'rendaku' : 'renjo'
+      voicing ??= voicingOfExpected(e) ?? (differs('rendaku') ? 'rendaku' : 'renjo')
     } else if (differs('handaku')) {
       // 半濁音은 っ·ん 뒤에서만 일어난다. 앞 자리가 이미 틀렸으면 이건 그 결과이지 별개 오답이 아니다
       // (発表 はっぴょう → はつひょう 의 원인은 促音便 미적용 하나다)
       if (!prevDiffered) {
         found.add('RENDAKU')
-        voicing ??= unmarkedVoicing(e) ? 'unmarked' : 'handaku'
+        voicing ??= voicingOfExpected(e) ?? 'handaku'
       }
     } else if (differs('sokuon')) found.add('SOKUON')
     prevDiffered = true
@@ -193,6 +193,23 @@ function unmarkedVoicing(s: Segment | null): boolean {
 }
 
 /**
+ * **갈래는 정답 쪽 규칙이 정한다** (2026-09-18, 사용자 지적 「寸法 는 반탁 아닌가」).
+ *
+ * 답이 어떻게 틀렸든 그 자리에 걸린 규칙은 정답이 들고 있다. 寸法 すんぽう 의 法는
+ * `handaku` 가 걸린 자리라, 학습자가 すんぼう 로 쓰든 すんほう 로 쓰든 읽어야 할 절은
+ * 반탁이다. 전에는 답이 ぼう 면 `differs('rendaku')` 가 먼저 걸려 연탁 절로 보냈다 —
+ * **답의 모양이 갈래를 정하고 있었다.**
+ *
+ * 정답에 변형이 없으면 음독은 「청탁 미구분」, 훈독은 판단을 부른 쪽에 맡긴다.
+ */
+function voicingOfExpected(e: Segment): VoicingKind | null {
+  for (const v of VOICING_VARIANTS) {
+    if (e.variants.includes(v)) return v as VoicingKind
+  }
+  return e.kind === 'on' ? 'unmarked' : null
+}
+
+/**
  * 분해가 안 되는 답의 탁음 갈래. `unvoiceAll` 이 같다는 건 자리 수가 같다는 뜻이라
  * 처음 어긋난 자리만 본다. は행 ↔ ぱ행이면 반탁, 아니면 연탁이다.
  *
@@ -231,7 +248,12 @@ function stringVoicing(
     if (missed && !voicedAt(expSegments, i)) {
       return unmarkedVoicing(segmentAt(expSegments, i)) ? 'defer' : null
     }
-    if (unmarkedVoicing(segmentAt(expSegments, i))) return 'unmarked'
+    // 정답 조각이 어떤 규칙을 들고 있으면 그게 답의 모양보다 앞선다 (위 `voicingOfExpected`)
+    const seg = segmentAt(expSegments, i)
+    if (seg !== null) {
+      const known = voicingOfExpected(seg)
+      if (known !== null) return known
+    }
     const pair = expected[i] + answer[i]
     const handaku = [...pair].some((c) => HANDAKU_ROW.includes(c))
     const seion = [...pair].some((c) => SEION_ROW.includes(c))
