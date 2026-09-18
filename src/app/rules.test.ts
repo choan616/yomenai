@@ -380,3 +380,60 @@ describe('종성 대응 절의 서술이 읽기 표와 맞는다', () => {
     expect(pairs).toBeGreaterThan(50)
   })
 })
+
+/**
+ * 청탁 절 예시의 `note` 가 말하는 것을 사전과 맞춘다 (2026-09-18).
+ *
+ * note 는 「護 호 → ご」 꼴이다. 이 셋이 다 맞아야 한다 — 그 한자의 한국음이 「호」이고,
+ * ご 가 그 한자의 실재 음독이고, 그 읽기가 숙어 안에 실제로 들어 있어야 한다.
+ *
+ * 이 검사가 없어서 **「画 화 → ガ」 의 예로 一画 いっかく 를 들었다.** 一画 의 画는 カク 라
+ * ガ 가 아니다. 짝을 보여주려고 든 예가 짝을 안 보여주고 있었다.
+ */
+describe('청탁 절 예시가 말하는 읽기가 실재한다', () => {
+  const kanji = JSON.parse(
+    readFileSync(resolve(process.cwd(), 'public/dict/kanji.json'), 'utf8'),
+  ).kanji as Record<string, { on: string[]; kr: string[] }>
+  const section = RULE_SECTIONS.find((s) => s.id === 'voicing-unmarked')
+
+  it('절이 있다', () => {
+    expect(section).toBeDefined()
+  })
+
+  it('note 의 (한자, 한국음, 읽기) 셋이 다 맞는다', () => {
+    for (const ex of section?.examples ?? []) {
+      // 「護 호 → ご. 탁음 쪽」 에서 앞의 셋을 뽑는다
+      const m = /^(.) ([가-힣]) → ([ぁ-ん]+)/.exec(ex.note)
+      expect(m, `note 형식: ${ex.note}`).not.toBeNull()
+      if (m === null) continue
+      const [, ch, kr, yomi] = m
+      const rec = kanji[ch]
+      expect(rec, `${ch} 가 사전에 없다`).toBeDefined()
+      expect(rec.kr, `${ch} 의 한국음에 ${kr} 가 없다`).toContain(kr)
+      const ons = rec.on.map((o) => toHiragana(o.replace(/-/g, '')))
+      expect(ons, `${yomi} 는 ${ch} 의 음독이 아니다`).toContain(yomi)
+      expect(ex.reading, `${ex.word} ${ex.reading} 에 ${yomi} 가 없다`).toContain(yomi)
+    }
+  })
+
+  it('같은 한국음에 청탁이 갈리는 짝이 예시 안에 둘 이상 있다 — 절의 논지다', () => {
+    const byKr = new Map<string, Set<string>>()
+    for (const ex of section?.examples ?? []) {
+      const m = /^(.) ([가-힣]) → ([ぁ-ん]+)/.exec(ex.note)
+      if (m === null) continue
+      const set = byKr.get(m[2]) ?? new Set<string>()
+      set.add(m[3])
+      byKr.set(m[2], set)
+    }
+    let pairs = 0
+    for (const readings of byKr.values()) {
+      const list = [...readings]
+      for (let i = 0; i < list.length; i++) {
+        for (let j = i + 1; j < list.length; j++) {
+          if (unvoiceAll(list[i])[0] === unvoiceAll(list[j])[0] && list[i][0] !== list[j][0]) pairs++
+        }
+      }
+    }
+    expect(pairs).toBeGreaterThanOrEqual(2)
+  })
+})

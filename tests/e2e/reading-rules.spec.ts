@@ -16,9 +16,9 @@ test('리포트 탭에서 읽기 규칙을 열고 절을 펼친다', async ({ pa
 
   await expect(page.getByRole('heading', { name: '읽기 규칙' })).toBeVisible()
 
-  // 여덟 절이 접힌 채로 — 다 펼쳐져 있으면 지도가 아니라 벽이다
+  // 아홉 절이 접힌 채로 — 다 펼쳐져 있으면 지도가 아니라 벽이다 (2026-09-18 청탁 절 추가)
   const blocks = page.locator('.rule-block')
-  await expect(blocks).toHaveCount(8)
+  await expect(blocks).toHaveCount(9)
   await expect(page.locator('.rule-open')).toHaveCount(0)
 
   // 맨 앞은 한국 한자음 대응. 나머지 규칙이 여기서 갈린다
