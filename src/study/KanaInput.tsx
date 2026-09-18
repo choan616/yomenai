@@ -83,6 +83,12 @@ export function KanaInput({ onSubmit, resetKey, locked }: Props) {
         placeholder="읽는 법 (히라가나)"
         enterKeyHint="done"
         aria-label="읽기 입력"
+        /* locked 여도 readonly/disabled 를 안 쓰는 이유는 위 주석대로다 — 대신 값이
+           바뀌는 것 자체를 막는다. beforeinput 은 타이핑·IME·붙여넣기 전부를 값이
+           바뀌기 전에 가로채므로 모바일 가상 키보드에서도 keydown 보다 안정적이다 */
+        onBeforeInput={(e) => {
+          if (locked) e.preventDefault()
+        }}
         onKeyDown={(e) => {
           if (e.key === 'Enter' && !e.nativeEvent.isComposing) {
             e.preventDefault()
