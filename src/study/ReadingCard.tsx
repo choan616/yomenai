@@ -90,24 +90,6 @@ export function ReadingCard({
                 </ruby>
               ))}
             </p>
-            {/* 내가 쓴 답을 정답과 자리별로 대조해 틀린 글자만 색으로 표시한다.
-                입력창(locked)엔 그대로 남아 있지만 native input 안이라 글자별로 못 칠한다.
-                채점(isCorrectReading)과 같은 정규화(toHiragana)를 거쳐야 표기 차이가
-                거짓 오답처럼 보이지 않는다 */}
-            {!fb.correct && fb.answer.trim() !== '' && (
-              <p className="answer-diff">
-                <span className="answer-diff-label">내가 쓴 답</span>
-                <span className="answer-diff-text" lang="ja">
-                  {diffAnswer(toHiragana(fb.expected.trim()), toHiragana(fb.answer.trim())).map(
-                    (d, i) => (
-                      <span key={i} className={d.match ? undefined : 'diff-wrong'}>
-                        {d.char}
-                      </span>
-                    ),
-                  )}
-                </span>
-              </p>
-            )}
             {/* 동형이독의 다른 읽기로 맞힌 경우 (2026-09-14). 정답으로 치되 이 카드가
                 묻는 읽기를 알려준다 — 위 루비가 내가 안 쓴 글자라 이 줄이 없으면
                 「정답인데 왜 다른 글자가 뜨지」 가 된다 */}
@@ -217,6 +199,14 @@ export function ReadingCard({
           onSubmit={onSubmit}
           resetKey={idiom.idiomId + ':' + (dualAsk?.given.length ?? 0)}
           locked={!!fb}
+          /* 오답이면 입력창 안의 글자색을 정답과 대조한 결과로 덮어 보여준다.
+             채점(isCorrectReading)과 같은 정규화(toHiragana)를 거쳐야 표기 차이가
+             거짓 오답처럼 보이지 않는다 */
+          diff={
+            fb && !fb.correct && fb.answer.trim() !== ''
+              ? diffAnswer(toHiragana(fb.expected.trim()), toHiragana(fb.answer.trim()))
+              : undefined
+          }
         />
         {/* 모를 때 넘기는 길 (2026-09-14). 없으면 아무 글자나 쳐서 오답을 만들어야 했고,
             그 입력이 오답 유형 분포까지 오염시켰다. 자리는 피드백 뒤의 버튼 줄과 같다 */}

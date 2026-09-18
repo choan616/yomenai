@@ -280,7 +280,13 @@ button.tag {
 .answer-row.input {
   grid-template-columns: 1fr auto;
 }
+/* input 을 감싸는 자리 — 대조 오버레이(.kana-input-diff)를 그 위에 겹쳐 붙이는 기준점 */
+.kana-input-shell {
+  position: relative;
+  min-width: 0;
+}
 .kana-input {
+  width: 100%;
   min-width: 0;
   height: var(--tap);
   padding: 0 16px;
@@ -302,6 +308,32 @@ button.tag {
    HTML readonly/disabled 는 iOS 에서 blur 를 일으키므로 안 쓴다 — 클래스로만 흐린다 */
 .kana-input.locked {
   opacity: 0.5;
+}
+/* 오답 대조 중엔 원래 글자를 지우고(투명) 위 오버레이만 보이게 한다.
+   대조색이 잘 보여야 하는 자리라 위 .locked 의 흐림도 여기선 되돌린다 (2026-09-18).
+   `.kana-input-shell` 로 한 겹 더 좁힌 이유 — 이 입력은 카드가 오답일 때
+   `.card.feedback` 아래 있는데, 설정의 "피드백 보내기" 화면도 `.feedback` 을 쓴다
+   (`.feedback input[type='text']`, 이름만 같은 남의 화면). 그 규칙이 특정도로 이겨
+   색을 되돌려 놓는다 — 클래스 하나를 더 얹어야 이긴다 */
+.kana-input-shell .kana-input.has-diff {
+  color: transparent;
+  caret-color: transparent;
+}
+.kana-input.locked.has-diff {
+  opacity: 1;
+}
+/* input 과 정확히 같은 자리·정렬·글꼴로 겹쳐, 입력창 "안"의 글자가 색만 바뀐 것처럼 보인다 */
+.kana-input-diff {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 16px;
+  font-size: 22px;
+  font-family: var(--font-ja);
+  color: var(--text);
+  pointer-events: none;
 }
 
 .btn,
@@ -379,26 +411,8 @@ button.tag {
   flex-wrap: wrap;
 }
 
-/* 내가 쓴 답 대조 — 정답(위 루비)과 자리별로 달라 틀린 글자만 보여준다 (2026-09-18).
+/* 내가 쓴 답 대조에서 정답과 다른 글자 (입력창 오버레이, .kana-input-diff 참조, 2026-09-18).
    색만으로 구분하지 않는다(PLAN §7) — 굵기·밑줄을 같이 쓴다 */
-.answer-diff {
-  text-align: center;
-  margin: 8px 0 0;
-  display: flex;
-  gap: 8px;
-  justify-content: center;
-  align-items: baseline;
-  flex-wrap: wrap;
-}
-.answer-diff-label {
-  font-size: 13px;
-  color: var(--text-faint);
-}
-.answer-diff-text {
-  font-family: var(--font-ja);
-  font-size: 22px;
-  color: var(--text-dim);
-}
 .diff-wrong {
   color: var(--ng);
   font-weight: 600;
