@@ -153,9 +153,11 @@ describe('verdictByEvent', () => {
   })
 
   it('지금 분류기가 연탁이 아니라고 하면 그대로 돌려준다 — 月額 げつがく ← げつかく', () => {
+    // 2026-09-18 — 「분류 안 됨」이던 것이 「청탁 미구분」이라는 이름을 받았다.
+    // 이 테스트의 논지는 **연탁이 아니라는 것**이고 그건 그대로다
     const stale = ev('6', 'RENDAKU', { expected: 'げつがく', answer: 'げつかく' })
     expect(verdictByEvent([stale], ctx, headwordOf).get(stale.id))
-      .toEqual({ type: null, voicing: null })
+      .toEqual({ type: 'RENDAKU', voicing: 'unmarked' })
   })
 })
 
@@ -202,16 +204,19 @@ describe('mistakeOfIdiom', () => {
 describe('지난 RENDAKU 이벤트를 지금 분류기로 다시 읽는다', () => {
   const stale = () => ev('6', 'RENDAKU', { expected: 'げつがく', answer: 'げつかく' })
 
-  it('배지가 더는 연탁이 아니다 — 대표 오답에서 빠진다', () => {
+  it('배지가 더는 연탁이 아니다 — 청탁 미구분으로 뜬다', () => {
     const e = stale()
-    expect(mistakeOfIdiom([e], verdictByEvent([e], ctx, headwordOf)).size).toBe(0)
+    expect(mistakeOfIdiom([e], verdictByEvent([e], ctx, headwordOf)).get('6')?.voicing)
+      .toBe('unmarked')
   })
 
-  it('절 색인에서도 빠진다', () => {
+  it('연탁 절 색인에서는 빠지고 청탁 절로 간다', () => {
     const e = stale()
     const verdictOf = verdictByEvent([e], ctx, headwordOf)
-    const match = (x: ReviewEvent) => effectiveMistake(x, verdictOf)?.type === 'RENDAKU'
-    expect(ruleRecord([e], match, nameOf).count).toBe(0)
+    const inSection = (want: string) => (x: ReviewEvent) =>
+      effectiveMistake(x, verdictOf)?.voicing === want
+    expect(ruleRecord([e], inSection('rendaku'), nameOf).count).toBe(0)
+    expect(ruleRecord([e], inSection('unmarked'), nameOf).count).toBe(1)
   })
 
   it('진짜 연탁은 그대로 남는다 — 三日月 みかづき ← みかつき', () => {
@@ -241,8 +246,8 @@ describe('reclassifier — 리포트와 규칙 화면이 같은 함수를 쓴다
     expect(again(stale)).toEqual(verdictByEvent([stale], ctx, headwordOf).get(stale.id))
   })
 
-  it('月額 은 어느 유형도 아니게 된다 — 리포트에서도 빠진다', () => {
-    expect(again(stale).type).toBeNull()
+  it('月額 은 연탁이 아니라 청탁 미구분이 된다 — 리포트도 같은 이름으로 센다', () => {
+    expect(again(stale).voicing).toBe('unmarked')
   })
 
   it('RENDAKU 가 아닌 유형은 저장값을 그대로 돌려준다', () => {
@@ -268,9 +273,9 @@ describe('voicingCounts — 탁음 바구니를 갈래로 센다', () => {
     expect(voicingCounts(es, again)).toEqual({ rendaku: 1, handaku: 2, renjo: 0, unmarked: 0 })
   })
 
-  it('다시 매겨 연탁이 아니게 된 것은 안 센다 — 리포트 분포에서도 빠진다', () => {
+  it('연탁이 아니게 된 것은 연탁 칸에서 빠지고 제 칸으로 간다', () => {
     const stale = ev('6', 'RENDAKU', { expected: 'げつがく', answer: 'げつかく' })
-    expect(voicingCounts([stale], again)).toEqual({ rendaku: 0, handaku: 0, renjo: 0, unmarked: 0 })
+    expect(voicingCounts([stale], again)).toEqual({ rendaku: 0, handaku: 0, renjo: 0, unmarked: 1 })
   })
 
   it('탁음이 아닌 유형은 안 센다', () => {

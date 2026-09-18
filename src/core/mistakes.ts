@@ -132,15 +132,19 @@ function fromStrings(
   /** 정답 쪽 분해. 탁음 차이가 *실제 변형*인지 가리는 데 쓴다 */
   expSegments: Segment[] | null,
 ): MistakeVerdict {
+  /** 뒤 검사가 다 비면 그때 쓸 「청탁 미구분」 후보 (위 `StringVoicing` 주석) */
+  let deferred = false
   if (unvoiceAll(expected) === unvoiceAll(answer)) {
     const voicing = stringVoicing(expected, answer, expSegments)
-    if (voicing !== null) return verdict('RENDAKU', voicing)
+    if (voicing === 'defer') deferred = true
+    else if (voicing !== null) return verdict('RENDAKU', voicing)
   }
   if (sokuonVariants(expected).includes(answer) || sokuonVariants(answer).includes(expected)) {
     return verdict('SOKUON')
   }
   if (stripLongVowels(expected) === stripLongVowels(answer)) return verdict('CHOON')
-  return verdict(koInterference(headword, answer, ctx) ? 'KO_INTERFERENCE' : null)
+  if (koInterference(headword, answer, ctx)) return verdict('KO_INTERFERENCE')
+  return deferred ? verdict('RENDAKU', 'unmarked') : verdict(null)
 }
 
 const HANDAKU_ROW = 'ぱぴぷぺぽ'
@@ -205,16 +209,28 @@ function unmarkedVoicing(s: Segment | null): boolean {
  * 연성(ん + 모음 → な행)은 여기 안 온다 — の 와 お 는 청탁 짝이 아니라 `unvoiceAll` 이
  * 같아지지 않는다. 분해 경로에서만 잡힌다.
  */
+/**
+ * 문자열 경로의 탁음 판정 결과.
+ *
+ * `'defer'` 는 「청탁 미구분이긴 한데 **뒤 검사에 양보한다**」는 뜻이다 (2026-09-18).
+ * 규칙을 놓친 방향은 지금까지 `null` 로 떨어져 촉음·장음·한국음 간섭 검사를 거쳤다.
+ * 여기서 바로 판정을 내면 그 셋에서 오답을 뺏어오게 된다 — 愛護 あいご ← あいこ 는
+ * 「한국음 간섭」이 틀린 이름이 아니라서 뺏으면 안 된다. **아무 데도 안 걸린 것만** 받는다.
+ */
+type StringVoicing = VoicingKind | 'defer' | null
+
 function stringVoicing(
   expected: string,
   answer: string,
   expSegments: Segment[] | null,
-): VoicingKind | null {
+): StringVoicing {
   for (let i = 0; i < Math.min(expected.length, answer.length); i++) {
     if (expected[i] === answer[i]) continue
     // 규칙을 *놓친* 방향일 때만 정답 쪽 근거를 따진다 (위 주석)
     const missed = unvoiceAll(expected[i]) !== expected[i] && unvoiceAll(answer[i]) === answer[i]
-    if (missed && !voicedAt(expSegments, i)) return null
+    if (missed && !voicedAt(expSegments, i)) {
+      return unmarkedVoicing(segmentAt(expSegments, i)) ? 'defer' : null
+    }
     if (unmarkedVoicing(segmentAt(expSegments, i))) return 'unmarked'
     const pair = expected[i] + answer[i]
     const handaku = [...pair].some((c) => HANDAKU_ROW.includes(c))

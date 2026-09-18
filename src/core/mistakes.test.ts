@@ -206,15 +206,17 @@ describe('explainMistake — 탁음 갈래를 가른다', () => {
  * かく 가 없다)를 청음으로 쓴 답까지 연탁으로 보냈다. 규칙 배지가 엉뚱한 절을 가리킨다.
  */
 describe('정답에 변형이 안 걸렸으면 연탁이 아니다', () => {
+  // 2026-09-18 — 이 자리들이 「분류 안 됨」에서 「청탁 미구분」으로 이름을 받았다.
+  // 이 절의 논지는 **연탁이 아니라는 것**이고 그건 그대로다
   it('원형이 이미 탁음인 자리 — 月額 げつがく ← げつかく', () => {
     // 額의 음독은 ガク 하나뿐이다. 연탁이 일어날 청음 원형이 없다
     expect(explainMistake({ headword: '月額', expected: 'げつがく', answer: 'げつかく' }, ctx))
-      .toEqual({ type: null, voicing: null })
+      .toEqual({ type: 'RENDAKU', voicing: 'unmarked' })
   })
 
   it('같은 한자를 쓰는 다른 숙어도 — 金額 きんがく ← きんかく', () => {
     expect(explainMistake({ headword: '金額', expected: 'きんがく', answer: 'きんかく' }, ctx))
-      .toEqual({ type: null, voicing: null })
+      .toEqual({ type: 'RENDAKU', voicing: 'unmarked' })
   })
 
   it('진짜 연탁은 답이 분해 안 돼도 그대로 잡는다 — 近所 きんじょ ← きんちょ', () => {
@@ -275,5 +277,42 @@ describe('청탁 미구분 — 음독이고 변형이 없는 자리', () => {
       .toEqual({ type: 'RENDAKU', voicing: 'rendaku' })
     expect(explainMistake({ headword: '心配', expected: 'しんぱい', answer: 'しんはい' }, ctx))
       .toEqual({ type: 'RENDAKU', voicing: 'handaku' })
+  })
+})
+
+/**
+ * 청탁 미구분은 **뒤 검사에 양보한다** (2026-09-18, 3단계).
+ *
+ * 규칙을 놓친 방향(정답이 탁음, 답이 청음)은 지금까지 `null` 로 떨어져 촉음·장음·한국음
+ * 간섭 검사를 거쳤다. 거기서 바로 판정을 내면 그 셋에서 오답을 뺏어온다 —
+ * 愛護 あいご ← あいこ 는 「한국음 간섭」이 **틀린 이름이 아니라서** 뺏으면 안 된다.
+ * **아무 데도 안 걸린 것만** 받는다 (`StringVoicing` 의 `'defer'`).
+ */
+describe('청탁 미구분은 다른 검사에서 뺏어오지 않는다', () => {
+  it('아무 데도 안 걸리면 받는다 — 月額 げつがく ← げつかく', () => {
+    expect(explainMistake({ headword: '月額', expected: 'げつがく', answer: 'げつかく' }, ctx))
+      .toEqual({ type: 'RENDAKU', voicing: 'unmarked' })
+  })
+
+  it('촉음이 먼저 걸리면 촉음이다 — 발달 はったつ ← はつたつ', () => {
+    expect(explainMistake({ headword: '発達', expected: 'はったつ', answer: 'はつたつ' }, ctx).type)
+      .toBe('SOKUON')
+  })
+
+  it('장음이 먼저 걸리면 장음이다 — 数字 すうじ ← すじ', () => {
+    expect(explainMistake({ headword: '数字', expected: 'すうじ', answer: 'すじ' }, ctx).type)
+      .toBe('CHOON')
+  })
+
+  it('한국음 간섭이 먼저 걸리면 간섭이다 — 認識 にんしき ← にんしょく', () => {
+    expect(explainMistake({ headword: '認識', expected: 'にんしき', answer: 'にんしょく' }, ctx).type)
+      .toBe('KO_INTERFERENCE')
+  })
+
+  it('훈독 자리의 청탁은 여전히 미분류다 — 한국음은 훈독과 무관하다', () => {
+    // 右 의 훈독 みぎ 는 변형이 걸린 게 아니라 원형이다. 그래도 한국음(우)과는 무관하므로
+    // 「청탁 미구분」이 아니다 — 이 이름은 음독 자리에만 붙는다
+    expect(explainMistake({ headword: '右手', expected: 'みぎて', answer: 'みきて' }, ctx))
+      .toEqual({ type: null, voicing: null })
   })
 })
