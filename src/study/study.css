@@ -379,6 +379,34 @@ button.tag {
   flex-wrap: wrap;
 }
 
+/* 내가 쓴 답 대조 — 정답(위 루비)과 자리별로 달라 틀린 글자만 보여준다 (2026-09-18).
+   색만으로 구분하지 않는다(PLAN §7) — 굵기·밑줄을 같이 쓴다 */
+.answer-diff {
+  text-align: center;
+  margin: 8px 0 0;
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  align-items: baseline;
+  flex-wrap: wrap;
+}
+.answer-diff-label {
+  font-size: 13px;
+  color: var(--text-faint);
+}
+.answer-diff-text {
+  font-family: var(--font-ja);
+  font-size: 22px;
+  color: var(--text-dim);
+}
+.diff-wrong {
+  color: var(--ng);
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+}
+
 /* Tatoeba 무번역 예문 — 확인 단계 참고용 (Phase 6). 번역이 없어 조용히 곁들이기만 한다 */
 .example-sentence {
   text-align: center;
