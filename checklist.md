@@ -70,6 +70,12 @@
    종성→꼬리 대응표를 코퍼스에서 귀납해 절 서술 여섯 줄을 테스트로 고정했다
 3. **갈래가 답의 모양을 따라가던 것** — 寸法 すんぽう ← すんぼう 가 연탁으로 갔다.
    갈래는 정답 쪽 규칙이 정한다. 307건이 연탁→반탁으로 옮겼고 유형은 안 움직였다
+4. **오답 피드백 잠금 중 입력창에 글자가 찍히던 버그 수정** (`69c616b`) — `readonly`/
+   `disabled` 대신(iOS 포커스 유지 때문) `onBeforeInput` 으로 값 변경 자체를 막았다
+5. **오답 카드에 내가 쓴 답 대조** (`348f028`) — 정답과 LCS 로 대조해 틀린 글자만
+   빨간 밑줄로 표시(`src/core/answerDiff.ts`). 자리별 비교가 아니라 LCS 라, 촉음 하나가
+   빠지거나 늘어도 그 뒤 전부가 오답으로 안 밀린다. 근거는 context-notes 같은 날 절
+   **검증: `answerDiff.test.ts` 6 · `npm test` 517 · `playwright` 29 스펙 · tsc/oxlint 클린**
 
 **주차장** — 커스텀 키패드(`inputMode="none"`)는 IME 후보 바가 실제로 방해된다는 피드백이 오면.
 `justify-content: safe center` 앞에 `center` 폴백 한 줄 (`.card-body`·`.summary-screen`) —
