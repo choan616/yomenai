@@ -5,7 +5,9 @@ import {
   effectiveMistake,
   dominantVoicing,
   frequentIdiomsByMistake,
+  frequentIdiomsUnnamed,
   mistakeOfIdiom,
+  passedCount,
   reclassifier,
   ruleRecord,
   verdictByEvent,
@@ -335,5 +337,48 @@ describe('voicingCounts — 탁음 바구니를 갈래로 센다', () => {
     expect(dominantVoicing({ rendaku: 2, handaku: 2, renjo: 0, unmarked: 0 })).toBe('rendaku')
     expect(dominantVoicing({ rendaku: 0, handaku: 0, renjo: 0, unmarked: 0 })).toBeNull()
     expect(dominantVoicing({ rendaku: 0, handaku: 0, renjo: 0, unmarked: 3 })).toBe('unmarked')
+  })
+})
+
+/**
+ * 이름이 안 붙은 오답도 다시 볼 수 있어야 한다 (2026-09-18, 사용자 결정).
+ *
+ * 실사용 오답의 18%가 여기였다. 「기타」로만 보이던 몫에 「다른 읽기」라는 표시 이름을 주고,
+ * 그 숙어들을 모아 다시 보는 길을 연다. **저장값은 그대로 `null` 이다.**
+ */
+describe('frequentIdiomsUnnamed — 이름이 안 붙은 오답의 숙어', () => {
+  it('유형이 없는 읽기 오답만 모은다', () => {
+    const es: LearningEvent[] = [ev('1', 'RENDAKU'), ev('3', null), ev('3', null), ev('4', null)]
+    expect(frequentIdiomsUnnamed(es, new Map(), nameOf)).toEqual([
+      { id: '3', headword: '学校', reading: 'がっこう', wrong: 2 },
+      { id: '4', headword: '認識', reading: 'にんしき', wrong: 1 },
+    ])
+  })
+
+  it('빈 답(넘김)은 빼고 넘김 수로 따로 센다', () => {
+    const es: LearningEvent[] = [ev('3', null, { answer: '' }), ev('4', null)]
+    expect(frequentIdiomsUnnamed(es, new Map(), nameOf).map((r) => r.id)).toEqual(['4'])
+    expect(passedCount(es)).toBe(1)
+  })
+
+  it('정답·뜻 카드·지워진 이벤트는 안 든다', () => {
+    const es: LearningEvent[] = [
+      ev('3', null, { correct: true }),
+      ev('3', null, { cardType: 'meaning' }),
+      ev('3', null, { deletedAt: 1 }),
+    ]
+    expect(frequentIdiomsUnnamed(es, new Map(), nameOf)).toEqual([])
+    expect(passedCount(es)).toBe(0)
+  })
+
+  it('다시 매겨 유형이 생긴 이벤트는 빠진다 — 분포와 같은 판정을 쓴다', () => {
+    // 저장은 RENDAKU 인데 다시 매기면 다른 유형이 된다(月額). 이름이 **있으므로** 여기 안 든다
+    const es = [ev('6', 'RENDAKU', { expected: 'げつがく', answer: 'げつかく' })]
+    const verdictOf = verdictByEvent(es, ctx, headwordOf)
+    expect(frequentIdiomsUnnamed(es, verdictOf, nameOf)).toEqual([])
+  })
+
+  it('이름을 모르는 숙어는 빠진다', () => {
+    expect(frequentIdiomsUnnamed([ev('9', null)], new Map(), nameOf)).toEqual([])
   })
 })

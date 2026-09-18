@@ -250,3 +250,50 @@ export function dominantVoicing(counts: Record<VoicingKind, number>): VoicingKin
   }
   return best
 }
+
+/**
+ * **이름이 안 붙은** 오답의 숙어들 (2026-09-18, 리포트 「다른 읽기」 다시보기).
+ *
+ * `frequentIdiomsByMistake` 의 짝이다. 저건 유형이 정해진 오답을 거르고, 이건 유형이 없는
+ * 오답을 모은다 — 저장값도 `null` 이고 다시 매겨도 `null` 인 것들이다. 그래서 입력이 다르다.
+ * 저쪽은 `classifiedMistakes` 를 받지만 여기는 **거르지 않은 이벤트 전량**을 받아야 한다
+ * (유형이 붙은 것만 걸러 오면 찾을 대상이 애초에 없다).
+ *
+ * **빈 답은 뺀다.** 「모르겠어요」로 넘긴 기록이라 다시 볼 「내가 쓴 답」이 없고, 분포에서도
+ * 「넘김」으로 따로 센다.
+ */
+export function frequentIdiomsUnnamed(
+  events: readonly LearningEvent[],
+  verdictOf: ReadonlyMap<string, MistakeVerdict>,
+  nameOf: (idiomId: string) => { headword: string; reading: string } | undefined,
+): FrequentIdiom[] {
+  const byIdiom = new Map<string, number>()
+  for (const e of events) {
+    if (!isUnnamedWrong(e, verdictOf)) continue
+    byIdiom.set(e.idiomId, (byIdiom.get(e.idiomId) ?? 0) + 1)
+  }
+  const rows: FrequentIdiom[] = []
+  for (const [id, wrong] of byIdiom) {
+    const n = nameOf(id)
+    if (n) rows.push({ id, headword: n.headword, reading: n.reading, wrong })
+  }
+  rows.sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0))
+  return rows
+}
+
+/** 답을 썼는데 이름이 안 붙은 읽기 오답인가 */
+function isUnnamedWrong(e: LearningEvent, verdictOf: ReadonlyMap<string, MistakeVerdict>): boolean {
+  if (e.type !== 'review' || e.cardType !== 'reading' || e.deletedAt !== null) return false
+  if (e.correct || e.answer.trim() === '') return false
+  return effectiveMistake(e, verdictOf) === null
+}
+
+/** 「모르겠어요」로 넘긴 읽기 오답 수. 빈 답이라 분류기를 안 거친 몫이다 (2026-09-18) */
+export function passedCount(events: readonly LearningEvent[]): number {
+  let n = 0
+  for (const e of events) {
+    if (e.type !== 'review' || e.cardType !== 'reading' || e.deletedAt !== null) continue
+    if (!e.correct && e.answer.trim() === '') n++
+  }
+  return n
+}

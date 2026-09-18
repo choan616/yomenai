@@ -39,7 +39,10 @@ export type Flow =
    * `filter` 가 있으면 그 오답 유형(+탁음이면 갈래)만 다시본다 — 리포트의 분포 그래프
    * "N회 다시보기" 가 쓴다 (2026-09-18). 없으면 기존처럼 자주 틀린 것 전체를 섞어 낸다
    */
-  | { kind: 'browse'; filter?: { type: MistakeType; voicing: VoicingKind | null; label: string } }
+  | {
+      kind: 'browse'
+      filter?: { type: MistakeType | null; voicing: VoicingKind | null; label: string }
+    }
   | { kind: 'focus'; pairId: string }
 
 export default function App() {

@@ -10,6 +10,7 @@ import { replay } from '../core/replay.ts'
 import {
   classifiedMistakes,
   frequentIdiomsByMistake,
+  frequentIdiomsUnnamed,
   mistakeOfIdiom,
   verdictByEvent,
   type IdiomMistake,
@@ -53,8 +54,11 @@ export function Browse({
   filter,
 }: {
   onExit: () => void
-  /** 있으면 이 오답 유형(+탁음이면 갈래)만 걸러 다시본다 (2026-09-18, 리포트 분포 그래프) */
-  filter?: { type: MistakeType; voicing: VoicingKind | null; label: string }
+  /**
+   * 있으면 이 오답 유형(+탁음이면 갈래)만 걸러 다시본다 (2026-09-18, 리포트 분포 그래프).
+   * `type` 이 `null` 이면 **이름이 안 붙은 오답**(「다른 읽기」)을 모은다
+   */
+  filter?: { type: MistakeType | null; voicing: VoicingKind | null; label: string }
 }) {
   useViewportLock()
   const [items, setItems] = useState<BrowseItem[] | null>(null)
@@ -104,7 +108,9 @@ export function Browse({
         // 들어올 때 한 번만 뽑는다 — 넘기는 도중에 목록이 바뀌면 안 된다
         const rows = pickBrowse(
           filter
-            ? frequentIdiomsByMistake(wrong, verdictOf, filter.type, filter.voicing, nameOf)
+            ? filter.type === null
+              ? frequentIdiomsUnnamed(events, verdictOf, nameOf)
+              : frequentIdiomsByMistake(wrong, verdictOf, filter.type, filter.voicing, nameOf)
             : frequentIdioms(
                 replay(events, { pairsOf: (id) => byId.get(id)?.pairIds ?? [] }),
                 nameOf,

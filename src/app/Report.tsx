@@ -14,6 +14,7 @@ import type { VoicingKind } from '../core/mistakes.ts'
 import {
   classifiedMistakes,
   dominantVoicing,
+  passedCount,
   reclassifier,
   voicingCounts,
 } from '../core/ruleRecord.ts'
@@ -25,7 +26,14 @@ import { loadBaseIdioms, loadKanji, loadPairs } from '../dict/load.ts'
 import { mistakeContextFromKanji } from '../dict/mistakeContext.ts'
 import { loadPairIndex } from '../dict/pairIndex.ts'
 import { BAND_NOTE } from '../lib/bands.ts'
-import { MISTAKE_LABEL, mistakeHint, mistakeLabel, VOICING_LABEL } from '../study/mistakeLabels.ts'
+import {
+  MISTAKE_LABEL,
+  mistakeHint,
+  mistakeLabel,
+  PASSED_LABEL,
+  UNNAMED_LABEL,
+  VOICING_LABEL,
+} from '../study/mistakeLabels.ts'
 import { Mixed } from './RuleBody.tsx'
 import { ruleForMistake } from './rules.ts'
 import { RULE_OF_MISTAKE, type RuleId } from './rules.ts'
@@ -39,8 +47,13 @@ interface Loaded {
    * 분포는 이걸로 나눠 보여주고, 처방이 뜨는 문턱은 묶은 채로 둔다 — 축이 다르다.
    */
   voicing: Record<VoicingKind, number>
-  /** 오답 분포의 행들 (탁음은 갈래별로 펴서). 많은 순이라 `rows[0]` 이 1등 오답이다 */
+  /**
+   * 오답 분포의 행들 (탁음은 갈래별로 펴서, 이름 없는 오답은 「다른 읽기」로).
+   * 많은 순이라 `rows[0]` 이 1등 오답이다
+   */
   rows: MistakeRow[]
+  /** 「모르겠어요」로 넘긴 오답. 이름이 아니라 **답이 없는** 것이라 분포 맨 아래에 따로 둔다 */
+  passed: number
 }
 
 export function Report({
@@ -53,7 +66,7 @@ export function Report({
   /** 자주 틀린 숙어를 채점 없이 넘겨 보는 화면으로 (2026-09-12) */
   onBrowse: () => void
   /** 오답 유형 분포에서 가장 많은 유형만 걸러 다시보기로 (2026-09-18) */
-  onBrowseMistake: (type: MistakeType, voicing: VoicingKind | null, label: string) => void
+  onBrowseMistake: (type: MistakeType | null, voicing: VoicingKind | null, label: string) => void
   /** 처방의 음독을 그 자리에서 집중 세션으로 (Phase 10) */
   onFocus: (pairId: string) => void
   /** 규칙 처방에서 그 절로 (2026-09-17). 세션이 없는 자리라 화면을 옮겨도 잃을 게 없다 */
@@ -90,11 +103,14 @@ export function Report({
         })
         const level = buildLevel(events, (id) => byId.get(id)?.band)
         const voicing = voicingCounts(classifiedMistakes(events), again)
+        // 미분류 중 답이 있는 몫만 「다른 읽기」다. 넘김(빈 답)은 이름 이전에 답이 없다
+        const passed = passedCount(events)
         setData({
           report,
           level,
           voicing,
-          rows: mistakeRows(report.mistakes, voicing),
+          passed,
+          rows: mistakeRows(report.mistakes, voicing, Math.max(0, report.unclassified - passed)),
           prescriptions: prescribe({
             report,
             level,
@@ -156,18 +172,18 @@ function ReportBody({
 }: {
   data: Loaded
   onBrowse: () => void
-  onBrowseMistake: (type: MistakeType, voicing: VoicingKind | null, label: string) => void
+  onBrowseMistake: (type: MistakeType | null, voicing: VoicingKind | null, label: string) => void
   onFocus: (pairId: string) => void
   onRule: (id: RuleId | null) => void
 }) {
-  const { report, level, prescriptions, voicing, rows } = data
+  const { report, level, prescriptions, voicing, rows, passed } = data
   // 정답률은 *실제* 오답으로 센다. 분류된 오답만 쓰면 미분류분이 정답으로 둔갑한다
   const accuracy =
     report.totalReviews > 0
       ? Math.round(((report.totalReviews - report.totalWrong) / report.totalReviews) * 100)
       : 100
-  // 「기타」 막대도 같은 자로 잰다 — 빼고 재면 미분류가 제일 많아도 막대가 꽉 찬다
-  const maxCount = Math.max(1, report.unclassified, ...rows.map((m) => m.count))
+  // 「넘김」 막대도 같은 자로 잰다 — 빼고 재면 넘김이 제일 많아도 막대가 꽉 찬다
+  const maxCount = Math.max(1, passed, ...rows.map((m) => m.count))
   /** 1등 오답 — rows 는 count 내림차순이라 맨 앞이다. 분류된 오답이 없으면 없다 */
   const top = rows[0] as MistakeRow | undefined
   const topVoicing = dominantVoicing(voicing)
@@ -206,7 +222,7 @@ function ReportBody({
 
       <section>
         <p className="section-title">오답 유형 분포</p>
-        {rows.length === 0 && report.unclassified === 0 ? (
+        {rows.length === 0 && passed === 0 ? (
           <p className="empty">오답이 없어요.</p>
         ) : (
           <div className="bars">
@@ -223,21 +239,19 @@ function ReportBody({
                 <span className="bar-num">{m.count}</span>
               </div>
             ))}
-            {/* 유형을 못 붙인 오답도 분포 안에 「기타」로 담는다 (사용자 지시 2026-09-18).
-                아래 딸린 각주로 빼 두면 같은 것을 두 군데서 읽어야 한다. **등수와 무관하게
-                맨 아래** — 1등(`rows[0]`)을 밀어내면 다시보기 버튼이 가리킬 유형이 없어진다 */}
-            {report.unclassified > 0 && (
+            {/* 넘김은 **등수와 무관하게 맨 아래** (2026-09-18). 이름이 없는 게 아니라 답이
+                없는 것이라 다시 볼 것도 없다 — 정렬에 끼우면 다시보기가 못 가리킬 행이 1등이 된다 */}
+            {passed > 0 && (
               <div className="bar-row" style={{ '--i': rows.length } as React.CSSProperties}>
-                {/* 이름은 「기타」 한 단어다 — 라벨 칸이 5.5em 이라 설명을 붙이면 두 줄로 접힌다 */}
-                <span>기타</span>
+                <span>{PASSED_LABEL}</span>
                 <span className="bar-track">
                   <span
                     className="bar-fill"
-                    style={{ width: `${(report.unclassified / maxCount) * 100}%` }}
+                    style={{ width: `${(passed / maxCount) * 100}%` }}
                     aria-hidden="true"
                   />
                 </span>
-                <span className="bar-num">{report.unclassified}</span>
+                <span className="bar-num">{passed}</span>
               </div>
             )}
           </div>
@@ -518,16 +532,23 @@ interface MistakeRow {
   key: string
   label: string
   count: number
-  /** 다시보기 필터(`frequentIdiomsByMistake`)에 그대로 넘길 값 */
-  type: MistakeType
+  /** 다시보기 필터에 그대로 넘길 값. `null` 은 이름이 안 붙은 오답(「다른 읽기」)이다 */
+  type: MistakeType | null
   voicing: VoicingKind | null
 }
 
 function mistakeRows(
   mistakes: readonly MistakeSlice[],
   voicing: Record<VoicingKind, number>,
+  /** 답은 썼는데 6종 어디에도 안 맞은 오답 수 (2026-09-18) */
+  unnamed: number,
 ): MistakeRow[] {
   const out: MistakeRow[] = []
+  // 이름이 없을 뿐 **다시 볼 수 있는** 오답이라 다른 행들과 같이 정렬에 든다.
+  // 1등이 되면 「오답 유형별 다시보기」가 이걸 가리킨다 — 그 단어들을 모아 보는 게 맞는 처방이다
+  if (unnamed > 0) {
+    out.push({ key: 'UNNAMED', label: UNNAMED_LABEL, count: unnamed, type: null, voicing: null })
+  }
   for (const m of mistakes) {
     if (m.type !== 'RENDAKU') {
       out.push({ key: m.type, label: MISTAKE_LABEL[m.type], count: m.count, type: m.type, voicing: null })

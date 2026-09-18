@@ -66,6 +66,19 @@ export const VOICING_LABEL: Record<VoicingKind, string> = {
   unmarked: '청탁 미구분',
 }
 
+/**
+ * 유형이 안 붙은 오답의 이름 (2026-09-18, 사용자 결정).
+ *
+ * 6종은 「답이 그 한자의 실재 읽기이거나, 정답과 음운 한 축만 다르다」를 전제로 이름을 붙인다.
+ * 그 전제가 깨지는 답(隔絶 ← かんぜつ, 木炭 ← きざい)이 실사용 오답의 18%였는데 이름이 없어
+ * 「기타」로만 보였다. **저장은 계속 `null` 이다** — 스키마 불변 조건(CLAUDE.md)을 안 건드리고
+ * 읽을 때만 이름을 준다. 진단적으로 이건 음운 규칙 오답이 아니라 「그 단어를 아직 모른다」다.
+ */
+export const UNNAMED_LABEL = '다른 읽기'
+
+/** 「모르겠어요」로 넘긴 오답. 답이 없어 분류기를 아예 안 거친다 */
+export const PASSED_LABEL = '넘김'
+
 /** 화면에 띄울 오답 이름. 갈래를 알면 그쪽이 이긴다 */
 export function mistakeLabel(type: MistakeType, voicing: VoicingKind | null = null): string {
   return type === 'RENDAKU' && voicing !== null ? VOICING_LABEL[voicing] : MISTAKE_LABEL[type]
