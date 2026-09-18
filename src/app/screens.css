@@ -147,6 +147,12 @@
   opacity: 0.7;
 }
 /* sev-high 는 기본값(불투명 --ng) 그대로라 별도 규칙이 없다 */
+/* 넘김은 오답이 아니라 답이 없는 것이라 오답 계통(--ng) 밖에 둔다 (2026-09-18, 사용자
+   지적) — severity 클래스가 없으면 기본값이 불투명 --ng 라 아무 것도 안 틀렸는데
+   제일 진하게 보였다 */
+.bar-fill.passed {
+  background: var(--text-faint);
+}
 .bar-row .bar-num {
   text-align: right;
   font-variant-numeric: tabular-nums;

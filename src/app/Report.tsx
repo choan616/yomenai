@@ -240,13 +240,15 @@ function ReportBody({
               </div>
             ))}
             {/* 넘김은 **등수와 무관하게 맨 아래** (2026-09-18). 이름이 없는 게 아니라 답이
-                없는 것이라 다시 볼 것도 없다 — 정렬에 끼우면 다시보기가 못 가리킬 행이 1등이 된다 */}
+                없는 것이라 다시 볼 것도 없다 — 정렬에 끼우면 다시보기가 못 가리킬 행이 1등이 된다.
+                색도 오답 계통(--ng)이 아니라 무채로 — severity 클래스가 없으면 기본값(불투명
+                --ng)이 돼 아무 것도 안 틀렸는데 제일 진하게 보이는 문제가 있었다(사용자 지적) */}
             {passed > 0 && (
               <div className="bar-row" style={{ '--i': rows.length } as React.CSSProperties}>
                 <span>{PASSED_LABEL}</span>
                 <span className="bar-track">
                   <span
-                    className="bar-fill"
+                    className="bar-fill passed"
                     style={{ width: `${(passed / maxCount) * 100}%` }}
                     aria-hidden="true"
                   />
