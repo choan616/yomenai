@@ -1,4 +1,4 @@
-// 진단 리포트 화면 — 수준, 다음에 볼 것, 다시보기 진입, 오답 유형 분포, 한국음 간섭, 취약 음독. 이 앱의 얼굴이다 (PLAN §7)
+// 진단 리포트 화면 — 수준, 다음에 볼 것, 다시보기 진입, 오답 유형 분포, 1등 오답, 취약 음독. 이 앱의 얼굴이다 (PLAN §7)
 import { useEffect, useState } from 'react'
 import {
   buildLevel,
@@ -10,15 +10,24 @@ import {
 } from '../core/level.ts'
 import { prescribe, type Prescription } from '../core/prescription.ts'
 import { replay } from '../core/replay.ts'
-import type { VoicingKind } from '../core/mistakes.ts'
+import type { MistakeContext, VoicingKind } from '../core/mistakes.ts'
 import {
   classifiedMistakes,
   dominantVoicing,
+  frequentIdiomsByMistake,
   reclassifier,
+  verdictByEvent,
   voicingCounts,
 } from '../core/ruleRecord.ts'
-import type { MistakeType } from '../core/types.ts'
-import { BROWSE_N, buildReport, type MistakeSlice, type Report as ReportData } from '../core/report.ts'
+import type { MistakeType, ReviewEvent } from '../core/types.ts'
+import {
+  BROWSE_N,
+  buildReport,
+  TOP_N,
+  type MistakeSlice,
+  type NamedIdiom,
+  type Report as ReportData,
+} from '../core/report.ts'
 import { LOCAL_USER_ID, listEvents } from '../db/events.ts'
 import { db } from '../db/schema.ts'
 import { loadBaseIdioms, loadKanji, loadPairs } from '../dict/load.ts'
@@ -39,6 +48,10 @@ interface Loaded {
    * 분포는 이걸로 나눠 보여주고, 처방이 뜨는 문턱은 묶은 채로 둔다 — 축이 다르다.
    */
   voicing: Record<VoicingKind, number>
+  /** 오답 분포의 행들 (탁음은 갈래별로 펴서). 많은 순이라 `rows[0]` 이 1등 오답이다 */
+  rows: MistakeRow[]
+  /** 그 1등 오답으로 틀린 숙어 — 많이 틀린 순 상위 `TOP_N` (2026-09-18) */
+  topIdioms: NamedIdiom[]
 }
 
 export function Report({
@@ -75,22 +88,29 @@ export function Report({
         ])
         if (!alive) return
         const byId = new Map(pool.map((p) => [p.idiomId, p]))
+        const nameOf = (id: string) => {
+          const it = byId.get(id)
+          return it ? { headword: it.headword, reading: it.reading } : undefined
+        }
         // 저장된 유형을 그대로 세면 규칙 화면에서 빠진 오답이 여기서는 남는다 (2026-09-17).
         // 규칙 화면·다시보기와 **같은 함수**로 다시 매긴다
-        const again = reclassifier(mistakeContextFromKanji(kanji), (id) => byId.get(id)?.headword)
+        const ctx = mistakeContextFromKanji(kanji)
+        const again = reclassifier(ctx, (id) => byId.get(id)?.headword)
         const state = replay(events, {
           pairsOf: (id) => byId.get(id)?.pairIds ?? [],
           mistakeOf: (e) => again(e).type,
         })
-        const report = buildReport(state, pairs, (id) => {
-          const it = byId.get(id)
-          return it ? { headword: it.headword, reading: it.reading } : undefined
-        })
+        const report = buildReport(state, pairs, nameOf)
         const level = buildLevel(events, (id) => byId.get(id)?.band)
+        const wrong = classifiedMistakes(events)
+        const voicing = voicingCounts(wrong, again)
+        const rows = mistakeRows(report.mistakes, voicing)
         setData({
           report,
           level,
-          voicing: voicingCounts(classifiedMistakes(events), again),
+          voicing,
+          rows,
+          topIdioms: topIdiomsOf(rows[0], wrong, ctx, (id) => byId.get(id)?.headword, nameOf),
           prescriptions: prescribe({
             report,
             level,
@@ -156,14 +176,15 @@ function ReportBody({
   onFocus: (pairId: string) => void
   onRule: (id: RuleId | null) => void
 }) {
-  const { report, level, prescriptions, voicing } = data
+  const { report, level, prescriptions, voicing, rows, topIdioms } = data
   // 정답률은 *실제* 오답으로 센다. 분류된 오답만 쓰면 미분류분이 정답으로 둔갑한다
   const accuracy =
     report.totalReviews > 0
       ? Math.round(((report.totalReviews - report.totalWrong) / report.totalReviews) * 100)
       : 100
-  const rows = mistakeRows(report.mistakes, voicing)
   const maxCount = Math.max(1, ...rows.map((m) => m.count))
+  /** 1등 오답 — rows 는 count 내림차순이라 맨 앞이다. 분류된 오답이 없으면 없다 */
+  const top = rows[0] as MistakeRow | undefined
   const topVoicing = dominantVoicing(voicing)
   /** 탁음 바구니에 갈래가 둘 이상 섞여 있나 — 처방의 숫자가 묶인 값임을 밝혀야 한다 */
   const voicingMixed = Object.values(voicing).filter((n) => n > 0).length > 1
@@ -215,32 +236,21 @@ function ReportBody({
             {report.totalWrong === 0 ? '오답이 없어요.' : '유형이 붙은 오답이 없어요.'}
           </p>
         ) : (
-          <>
-            <div className="bars">
-              {rows.map((m, i) => (
-                <div className="bar-row" key={m.key} style={{ '--i': i } as React.CSSProperties}>
-                  <span>{m.label}</span>
-                  <span className="bar-track">
-                    <span
-                      className="bar-fill"
-                      style={{ width: `${(m.count / maxCount) * 100}%` }}
-                      aria-hidden="true"
-                    />
-                  </span>
-                  <span className="bar-num">{m.count}</span>
-                </div>
-              ))}
-            </div>
-            {/* 그래프에서 제일 많은 막대를 바로 다시볼 수 있게 (사용자 요청 2026-09-18).
-                rows 는 이미 count 내림차순이라 rows[0] 이 그 막대다 */}
-            <button
-              type="button"
-              className="btn rx-run"
-              onClick={() => onBrowseMistake(rows[0].type, rows[0].voicing, rows[0].label)}
-            >
-              {rows[0].label} {rows[0].count}회 다시보기 <span className="chev">›</span>
-            </button>
-          </>
+          <div className="bars">
+            {rows.map((m, i) => (
+              <div className="bar-row" key={m.key} style={{ '--i': i } as React.CSSProperties}>
+                <span>{m.label}</span>
+                <span className="bar-track">
+                  <span
+                    className="bar-fill"
+                    style={{ width: `${(m.count / maxCount) * 100}%` }}
+                    aria-hidden="true"
+                  />
+                </span>
+                <span className="bar-num">{m.count}</span>
+              </div>
+            ))}
+          </div>
         )}
         {report.unclassified > 0 && (
           <p className="unclassified">
@@ -250,29 +260,41 @@ function ReportBody({
         )}
       </section>
 
-      <section className="ko-callout">
-        <p className="section-title">한국음 간섭</p>
-        <p className="ko-big">
-          <b>{report.koInterferenceCount}</b>
-          <span className="dim"> 회 — 한국 한자음에 이끌린 오답</span>
-        </p>
-        {report.koInterferenceIdioms.length === 0 ? (
-          <p className="dim">해당 숙어가 아직 없어요.</p>
-        ) : (
-          <ul className="rows">
-            {report.koInterferenceIdioms.map((it, i) => (
-              <li key={it.id} style={{ '--i': i } as React.CSSProperties}>
-                <span className="r-main" lang="ja">
-                  {it.headword}
-                </span>
-                <span className="r-sub r-ja" lang="ja">
-                  {it.reading}
-                </span>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
+      {/* 1등 오답 (사용자 요청 2026-09-18) — 「한국음 간섭」으로 고정돼 있던 칸이다.
+          유형은 사람마다 다른데 한 유형만 크게 세고 있었다. 지금 제일 많은 유형을 같은 골격에
+          싣고, 그 유형만 모아 보는 진입로를 맨 위에 둔다 */}
+      {top !== undefined && (
+        <section className="top-mistake">
+          <p className="section-title">{top.label}</p>
+          <button
+            type="button"
+            className="btn rx-run"
+            onClick={() => onBrowseMistake(top.type, top.voicing, top.label)}
+          >
+            모아서 다시보기 <span className="chev">›</span>
+          </button>
+          <p className="top-count">
+            <b>{top.count}</b>
+            <span className="dim"> 회 — 지금 가장 많이 내는 오답이에요</span>
+          </p>
+          {topIdioms.length === 0 ? (
+            <p className="dim">해당 숙어가 아직 없어요.</p>
+          ) : (
+            <ul className="rows">
+              {topIdioms.map((it, i) => (
+                <li key={it.id} style={{ '--i': i } as React.CSSProperties}>
+                  <span className="r-main" lang="ja">
+                    {it.headword}
+                  </span>
+                  <span className="r-sub r-ja" lang="ja">
+                    {it.reading}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+      )}
 
       <section>
         <p className="section-title">취약 음독</p>
@@ -549,4 +571,25 @@ function mistakeRows(
     }
   }
   return out.sort((a, b) => b.count - a.count)
+}
+
+/**
+ * 1등 오답으로 틀린 숙어 (2026-09-18).
+ *
+ * 다시보기 필터(`frequentIdiomsByMistake`)와 **같은 함수·같은 갈래 판정**으로 모은다 —
+ * 목록에 보인 숙어와 버튼이 여는 카드가 어긋나면 안 된다. 다만 여기는 8개만 싣는 표본이라
+ * 자른 뒤에도 값이 있도록 많이 틀린 순으로 정렬한다 (`ruleRecord` 와 같은 관례).
+ */
+function topIdiomsOf(
+  top: MistakeRow | undefined,
+  wrong: readonly ReviewEvent[],
+  ctx: MistakeContext,
+  headwordOf: (idiomId: string) => string | undefined,
+  nameOf: (idiomId: string) => { headword: string; reading: string } | undefined,
+): NamedIdiom[] {
+  if (top === undefined) return []
+  const verdictOf = verdictByEvent(wrong, ctx, headwordOf)
+  return frequentIdiomsByMistake(wrong, verdictOf, top.type, top.voicing, nameOf)
+    .sort((a, b) => b.wrong - a.wrong || (a.id < b.id ? -1 : 1))
+    .slice(0, TOP_N)
 }

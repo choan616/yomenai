@@ -66,4 +66,17 @@ test('리포트 분포가 반탁과 연탁을 따로 센다', async ({ page }) =
   await expect(rows.filter({ hasText: '반탁' })).toHaveCount(1)
   await expect(rows.filter({ hasText: '반탁' }).locator('.bar-num')).toHaveText('2')
   await expect(rows.filter({ hasText: '연탁' }).locator('.bar-num')).toHaveText('1')
+
+  // 1등 오답 칸 — 「한국음 간섭」으로 고정돼 있던 자리를 지금 제일 많은 유형이 쓴다 (2026-09-18)
+  const top = page.locator('.top-mistake')
+  await expect(top.locator('.section-title')).toHaveText('반탁')
+  await expect(top.locator('.top-count b')).toHaveText('2')
+  await expect(top.locator('.rows')).toContainText('心配')
+
+  // 그 칸 맨 위 버튼은 그 유형만 걸러 다시보기로 간다
+  await top.getByRole('button', { name: /모아서 다시보기/ }).click()
+  await expect(page.locator('.browse-slide').filter({ hasText: '心配' })).toHaveCount(1, {
+    timeout: 20_000,
+  })
+  await expect(page.locator('.browse-slide').filter({ hasText: '三日月' })).toHaveCount(0)
 })

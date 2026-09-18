@@ -1,4 +1,4 @@
-// 진단 리포트 파생 검증 — 오답 유형 분포, 취약 음독, 한국음 간섭 집계
+// 진단 리포트 파생 검증 — 오답 유형 분포, 취약 음독, 실제 오답/분류 오답 구분
 import { describe, expect, it } from 'vitest'
 import type { OnyomiPair } from '../dict/load.ts'
 import { newCard } from './scheduler.ts'
@@ -71,14 +71,6 @@ describe('buildReport', () => {
     expect(r.weakOnyomi[0].rate).toBeCloseTo(0.8)
   })
 
-  it('한국음 간섭 숙어를 이름과 함께 모은다', () => {
-    expect(r.koInterferenceCount).toBe(3)
-    expect(r.koInterferenceIdioms).toEqual([
-      { id: '1', headword: '認識', reading: 'にんしき' },
-      { id: '2', headword: '知識', reading: 'ちしき' },
-    ])
-  })
-
   it('데이터가 없으면 빈 리포트', () => {
     const empty = buildReport(
       { cards: new Map(), meaningKnown: new Map(), onyomi: new Map(), applied: 0 },
@@ -87,7 +79,7 @@ describe('buildReport', () => {
     )
     expect(empty).toMatchObject({
       totalReviews: 0, totalWrong: 0, totalMistakes: 0, unclassified: 0,
-      mistakes: [], weakOnyomi: [], koInterferenceCount: 0,
+      mistakes: [], weakOnyomi: [],
     })
   })
 })

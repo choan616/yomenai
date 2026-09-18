@@ -67,7 +67,12 @@ test('진입 진단 → 세션 → 리포트 전체 흐름을 완주한다', asy
   await expect(page.getByText('다음에 볼 것')).toBeVisible()
   await expect(page.locator('.rx-list > li').first()).toBeVisible()
   await expect(page.getByText('오답 유형 분포')).toBeVisible()
-  await expect(page.locator('.ko-callout')).toBeVisible()
+  // 1등 오답 칸은 유형이 붙은 오답이 있을 때만 붙는다 (2026-09-18). 'zzz' 오답은
+  // 분류기가 못 잡기도 해서 분포 막대 유무로 갈린다
+  if ((await page.locator('.report .bars .bar-row').count()) > 0) {
+    await expect(page.locator('.top-mistake')).toBeVisible()
+    await expect(page.locator('.top-mistake .btn.rx-run')).toBeVisible()
+  }
   await expect(page.getByText('취약 음독')).toBeVisible()
 
   // ── 홈 탭: 진단을 마쳤으니 진입점이 사라진다 (리포트는 탭 루트라 「‹」 가 없다) ──

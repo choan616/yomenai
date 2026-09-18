@@ -16,8 +16,6 @@ function report(over: Partial<Report> = {}): Report {
     unclassified: 0,
     mistakes: [],
     weakOnyomi: [],
-    koInterferenceCount: 0,
-    koInterferenceIdioms: [],
     frequent: [],
     ...over,
   }

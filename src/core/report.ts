@@ -1,4 +1,4 @@
-// 진단 리포트의 파생 로직 — 오답 유형 분포, 취약 음독, 한국음 간섭 패턴 (PLAN §7 "이 앱의 얼굴")
+// 진단 리포트의 파생 로직 — 오답 유형 분포, 취약 음독, 다시보기 후보 (PLAN §7 "이 앱의 얼굴")
 import type { OnyomiPair } from '../dict/load.ts'
 import { pickWeighted } from './pick.ts'
 import { mistakeTotals, replay, type ReplayState } from './replay.ts'
@@ -8,7 +8,7 @@ import type { MistakeType } from './types.ts'
 
 /** 취약 음독으로 올리는 최소 노출 수 */
 export const WEAK_MIN_SEEN = 3
-/** 리포트에 싣는 취약 음독·간섭 숙어 상한 */
+/** 리포트에 싣는 취약 음독 상한 */
 export const TOP_N = 8
 /** 다시보기에 싣는 숙어 상한. 읽는 목록이라 출제 목록보다 길게 둔다 (12 → 30, 사용자 요청) */
 export const BROWSE_N = 30
@@ -69,8 +69,6 @@ export interface Report {
   /** count 가 0 이 아닌 유형만, 많은 순 */
   mistakes: MistakeSlice[]
   weakOnyomi: WeakOnyomi[]
-  koInterferenceCount: number
-  koInterferenceIdioms: NamedIdiom[]
   /** 다시보기 후보 전량. 화면에 몇 장 낼지는 `pickBrowse` 가 정한다 */
   frequent: FrequentIdiom[]
 }
@@ -89,17 +87,11 @@ export function buildReport(
 
   let totalReviews = 0
   let totalWrong = 0
-  const koIdioms: NamedIdiom[] = []
   for (const c of state.cards.values()) {
     if (c.cardType !== 'reading') continue
     totalReviews += c.card.reps
     totalWrong += c.wrong
-    if ((c.mistakes.KO_INTERFERENCE ?? 0) > 0) {
-      const n = nameOf(c.idiomId)
-      if (n) koIdioms.push({ id: c.idiomId, headword: n.headword, reading: n.reading })
-    }
   }
-  koIdioms.sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0))
 
   const weakOnyomi: WeakOnyomi[] = [...state.onyomi.values()]
     .filter((s) => s.seen >= WEAK_MIN_SEEN && s.wrong > 0)
@@ -125,8 +117,6 @@ export function buildReport(
     unclassified: Math.max(0, totalWrong - totalMistakes),
     mistakes,
     weakOnyomi,
-    koInterferenceCount: totals.KO_INTERFERENCE ?? 0,
-    koInterferenceIdioms: koIdioms.slice(0, TOP_N),
     frequent: frequentIdioms(state, nameOf),
   }
 }

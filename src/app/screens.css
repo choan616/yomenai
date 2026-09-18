@@ -286,25 +286,30 @@
 .report .screen-body {
   gap: 28px;
 }
-.ko-callout {
+/* 1등 오답 — 「한국음 간섭」 고정 칸이 있던 자리다 (2026-09-18) */
+.top-mistake {
   border: 1px solid var(--border);
   border-left: 3px solid var(--text-dim);
   border-radius: var(--radius);
   padding: 16px;
   background: var(--surface);
 }
-.ko-callout .section-title {
+.top-mistake .section-title {
   margin-top: 0;
 }
-.ko-big {
+/* 진입로는 이 칸 맨 위 — 숫자보다 먼저 손이 닿는다 (사용자 요청 2026-09-18) */
+.top-mistake .btn.rx-run {
+  margin: 0 0 14px;
+}
+.top-count {
   font-size: calc(15px * var(--ui-scale));
   margin: 0 0 12px;
 }
-.ko-big b {
+.top-count b {
   font-size: calc(32px * var(--ui-scale));
   font-variant-numeric: tabular-nums;
 }
-.ko-callout .rows {
+.top-mistake .rows {
   background: var(--bg);
 }
 
@@ -371,7 +376,7 @@
   border-bottom: 1px solid var(--border);
 }
 .report .report-lead,
-.report .ko-big {
+.report .top-count {
   font-variant-numeric: tabular-nums;
 }
 
