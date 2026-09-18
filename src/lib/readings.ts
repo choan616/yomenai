@@ -218,6 +218,45 @@ export function unvoiceAll(s: string): string {
 }
 
 /**
+ * 한 글자가 나올 수 있는 **청음들**. 되돌리기는 함수가 아니라 관계다 (2026-09-18).
+ *
+ * `UNVOICE` 는 글자 하나에 청음 하나를 준다 — 표를 뒤집어 만드는데 `ち: ['ぢ','じ']` 가
+ * `し: 'じ'` 를 덮어써서 **`じ` 는 `ち`, `ず` 는 `つ` 로만 돌아간다.** 四つ仮名 가 합쳐진
+ * 자리라 한 글자에 청음이 둘인데(じ ← し·ち) 표가 하나만 들고 있는 것이다.
+ * 그 탓에 人心 じんしん ← しんしん 이 「탁점만 다른 답」으로 안 보였다 (실측 8건).
+ */
+const PLAINS_OF: Record<string, string[]> = (() => {
+  const out: Record<string, string[]> = {}
+  const add = (voiced: string, plain: string) => {
+    ;(out[voiced] ??= []).push(plain)
+  }
+  for (const [plain, v] of Object.entries(RENDAKU)) {
+    for (const voiced of Array.isArray(v) ? v : [v]) add(voiced, plain)
+  }
+  for (const [plain, voiced] of Object.entries(HANDAKU)) add(voiced, plain)
+  return out
+})()
+
+/**
+ * 두 읽기가 **자리마다 청탁만 다른가**. 탁음 오답 판정의 관문이다 (2026-09-18).
+ *
+ * `unvoiceAll(a) === unvoiceAll(b)` 를 대신한다. 그쪽은 글자마다 청음을 하나로 정해
+ * 비교하는데, 청음이 둘인 글자(じ·ず)에서 **한쪽 짝을 영영 못 만난다.** 여기서는 두 글자의
+ * 청음 후보가 하나라도 겹치면 같은 자리로 본다 — 예전 판정을 전부 포함하고 じ↔し·ず↔す 만
+ * 더 받는다 (づ↔ず 처럼 둘 다 탁음인 경우도 그대로 통과한다).
+ */
+export function sameExceptVoicing(a: string, b: string): boolean {
+  if (a.length !== b.length) return false
+  for (let i = 0; i < a.length; i++) {
+    if (a[i] === b[i]) continue
+    const pa = PLAINS_OF[a[i]] ?? [a[i]]
+    const pb = PLAINS_OF[b[i]] ?? [b[i]]
+    if (!pa.some((p) => pb.includes(p))) return false
+  }
+  return true
+}
+
+/**
  * 장음 표기를 걷어낸다 (ー, o·u단 뒤의 う, e·i단 뒤의 い).
  * 長音 오답(とくちょう → とくちょ) 판정에서 두 문자열을 같은 자리에 놓는 용도다.
  */

@@ -9,6 +9,7 @@ import {
   type MistakeContext,
 } from './mistakes.ts'
 import { KANJI_FIXTURE } from './mistakes.fixture.ts'
+import { sameExceptVoicing } from '../lib/readings.ts'
 import type { MistakeType } from './types.ts'
 
 function contextFor(kanji: typeof KANJI_FIXTURE): MistakeContext {
@@ -339,5 +340,37 @@ describe('갈래는 답이 아니라 정답 쪽 규칙이 정한다', () => {
   it('연탁 자리는 어느 쪽으로 틀려도 연탁이다 — 三日月', () => {
     expect(explainMistake({ headword: '三日月', expected: 'みかづき', answer: 'みかつき' }, ctx).voicing)
       .toBe('rendaku')
+  })
+})
+
+/**
+ * じ·ず 는 청음이 둘이다 (2026-09-18, 실사용 기록에서 드러남).
+ *
+ * 되돌리기 표(`UNVOICE`)는 글자 하나에 청음 하나를 준다. 四つ仮名 가 합쳐진 자리에서
+ * `ち: ['ぢ','じ']` 가 `し: 'じ'` 를 덮어써 **`じ` 는 `ち` 로만, `ず` 는 `つ` 로만** 돌아갔고,
+ * 그 탓에 탁음 관문(`sameExceptVoicing`)이 し↔じ·す↔ず 오답을 아예 못 봤다.
+ * 실사용 미분류 185건 중 7건이 여기였다.
+ */
+describe('し↔じ · す↔ず 도 청탁 차이로 본다', () => {
+  it('人心 じんしん ← しんしん — 탁점을 놓친 자리', () => {
+    expect(explainMistake({ headword: '人心', expected: 'じんしん', answer: 'しんしん' }, ctx))
+      .toEqual({ type: 'RENDAKU', voicing: 'unmarked' })
+  })
+
+  it('寸法 すんぽう ← ずんぽう — 없는 자리에 탁점을 붙였다', () => {
+    expect(explainMistake({ headword: '寸法', expected: 'すんぽう', answer: 'ずんぽう' }, ctx))
+      .toEqual({ type: 'RENDAKU', voicing: 'unmarked' })
+  })
+
+  it('관문은 예전 판정을 전부 포함한다 — づ↔ず 처럼 둘 다 탁음인 짝도 통과', () => {
+    // `unvoiceAll` 동치이던 짝은 하나도 안 빠져야 한다. 새로 받는 건 じ↔し·ず↔す 뿐이다
+    expect(sameExceptVoicing('みかづき', 'みかずき')).toBe(true)
+    expect(sameExceptVoicing('はっぴょう', 'はっびょう')).toBe(true)
+    expect(sameExceptVoicing('じんしん', 'しんしん')).toBe(true)
+    expect(sameExceptVoicing('すんぽう', 'ずんぽう')).toBe(true)
+    // 청탁이 아닌 차이는 여전히 거른다
+    expect(sameExceptVoicing('めがしら', 'めばしら')).toBe(false)
+    expect(sameExceptVoicing('あくむ', 'あくみ')).toBe(false)
+    expect(sameExceptVoicing('こはん', 'こんはん')).toBe(false)
   })
 })

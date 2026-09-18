@@ -2,6 +2,7 @@
 import { decompose, type KanjiReadings, type Segment } from '../lib/onyomi.ts'
 import {
   normalizeKanjidicReading,
+  sameExceptVoicing,
   sokuonVariants,
   stripLongVowels,
   toHiragana,
@@ -134,7 +135,7 @@ function fromStrings(
 ): MistakeVerdict {
   /** 뒤 검사가 다 비면 그때 쓸 「청탁 미구분」 후보 (위 `StringVoicing` 주석) */
   let deferred = false
-  if (unvoiceAll(expected) === unvoiceAll(answer)) {
+  if (sameExceptVoicing(expected, answer)) {
     const voicing = stringVoicing(expected, answer, expSegments)
     if (voicing === 'defer') deferred = true
     else if (voicing !== null) return verdict('RENDAKU', voicing)
@@ -210,7 +211,7 @@ function voicingOfExpected(e: Segment): VoicingKind | null {
 }
 
 /**
- * 분해가 안 되는 답의 탁음 갈래. `unvoiceAll` 이 같다는 건 자리 수가 같다는 뜻이라
+ * 분해가 안 되는 답의 탁음 갈래. `sameExceptVoicing` 이 참이면 자리 수가 같으므로
  * 처음 어긋난 자리만 본다. は행 ↔ ぱ행이면 반탁, 아니면 연탁이다.
  *
  * **가리는 건 「규칙을 놓친 방향」뿐이다.** 정답이 탁음이고 답이 청음이면, 정답 쪽 조각에
