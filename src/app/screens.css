@@ -138,10 +138,26 @@
 .bar-fill.ok {
   background: var(--ok);
 }
+/* 오답 유형 분포 막대의 짙기 3단 (2026-09-18) — 오답 중 이 유형이 차지하는 비율로 가른다.
+   새 색상은 안 쓴다. --ng 하나의 옅음(안심)~짙음(주의)만 오간다 (PLAN §7) */
+.bar-fill.sev-low {
+  opacity: 0.4;
+}
+.bar-fill.sev-mid {
+  opacity: 0.7;
+}
+/* sev-high 는 기본값(불투명 --ng) 그대로라 별도 규칙이 없다 */
 .bar-row .bar-num {
   text-align: right;
   font-variant-numeric: tabular-nums;
   color: var(--text-dim);
+}
+/* 분포 막대 짙기 3단의 기준 — 밴드 사다리의 .ladder-caption 과 같은 자리, 같은 무게 */
+.mistake-severity-caption {
+  margin: 10px 0 0;
+  font-size: calc(0.72rem * var(--ui-scale));
+  line-height: 1.6;
+  color: var(--text-faint);
 }
 
 /* ── 목록 ── */

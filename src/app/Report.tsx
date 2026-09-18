@@ -8,7 +8,7 @@ import {
   type BandRow,
   type LevelProfile,
 } from '../core/level.ts'
-import { prescribe, type Prescription } from '../core/prescription.ts'
+import { DOMINANT_SHARE, prescribe, type Prescription } from '../core/prescription.ts'
 import { replay } from '../core/replay.ts'
 import type { VoicingKind } from '../core/mistakes.ts'
 import {
@@ -231,7 +231,7 @@ function ReportBody({
                 <span>{m.label}</span>
                 <span className="bar-track">
                   <span
-                    className="bar-fill"
+                    className={`bar-fill ${mistakeSeverity(m.count / report.totalWrong)}`}
                     style={{ width: `${(m.count / maxCount) * 100}%` }}
                     aria-hidden="true"
                   />
@@ -255,6 +255,15 @@ function ReportBody({
               </div>
             )}
           </div>
+        )}
+        {/* 막대 색 3단 (2026-09-18, 사용자 요청) — 오답의 몇 %를 차지하는 유형인지로 나눈다.
+            같은 --ng 계통 안에서 옅음(안심) → 진함(주의)만 바뀐다. 새 색상을 안 들인다(PLAN §7) */}
+        {rows.length > 0 && (
+          <p className="mistake-severity-caption">
+            옅음 · 오답의 {Math.round(MISTAKE_SHARE_MID * 100)}% 미만
+            <span className="dim"> · </span>
+            진함 · {Math.round(DOMINANT_SHARE * 100)}% 이상
+          </p>
         )}
       </section>
 
@@ -528,6 +537,23 @@ function ToolsSection({ onOnyomi, onRules }: { onOnyomi: () => void; onRules: ()
  * `voicingCounts` 가 따로 준다. 합계가 어긋나면(다시 매기기가 실패한 이벤트) 남는 만큼을
  * 「탁음」 한 칸으로 남겨 **숫자를 잃지 않는다.**
  */
+/**
+ * 분포 막대 색 3단 기준 (2026-09-18, 사용자 요청).
+ *
+ * "오답률이 미미하면 안심, 높으면 주의"를 색으로 준다. 퍼센티지는 `RxItem` 의
+ * "오답의 N%"·처방 문턱(`DOMINANT_SHARE`)과 같은 잣대 — `count / totalWrong`.
+ * **색상은 새로 안 들인다.** `--ng` 하나의 짙기만 3단으로 바꾼다(PLAN §7 "무채색
+ * 기반, 색은 오답에만"). 높은 쪽 문턱은 처방이 뜨는 문턱(`DOMINANT_SHARE`)과 같다 —
+ * "리포트가 진하게 보여주는 유형 = 처방이 짚는 유형" 이 같은 기준이어야 한다.
+ */
+const MISTAKE_SHARE_MID = DOMINANT_SHARE / 2
+
+function mistakeSeverity(share: number): 'sev-low' | 'sev-mid' | 'sev-high' {
+  if (share >= DOMINANT_SHARE) return 'sev-high'
+  if (share >= MISTAKE_SHARE_MID) return 'sev-mid'
+  return 'sev-low'
+}
+
 interface MistakeRow {
   key: string
   label: string
