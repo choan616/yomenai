@@ -7,7 +7,15 @@
 import { useEffect, useRef, useState } from 'react'
 import { frequentIdioms, pickBrowse } from '../core/report.ts'
 import { replay } from '../core/replay.ts'
-import { classifiedMistakes, mistakeOfIdiom, verdictByEvent, type IdiomMistake } from '../core/ruleRecord.ts'
+import {
+  classifiedMistakes,
+  frequentIdiomsByMistake,
+  mistakeOfIdiom,
+  verdictByEvent,
+  type IdiomMistake,
+} from '../core/ruleRecord.ts'
+import type { VoicingKind } from '../core/mistakes.ts'
+import type { MistakeType } from '../core/types.ts'
 import { LOCAL_USER_ID, listEvents } from '../db/events.ts'
 import { db } from '../db/schema.ts'
 import { loadBaseIdioms, loadExamples, loadKanji } from '../dict/load.ts'
@@ -40,7 +48,14 @@ function ruleOf(m: IdiomMistake | undefined): BrowseItem['rule'] {
   return section === undefined ? null : { section, label: mistakeLabel(m.type, m.voicing) }
 }
 
-export function Browse({ onExit }: { onExit: () => void }) {
+export function Browse({
+  onExit,
+  filter,
+}: {
+  onExit: () => void
+  /** 있으면 이 오답 유형(+탁음이면 갈래)만 걸러 다시본다 (2026-09-18, 리포트 분포 그래프) */
+  filter?: { type: MistakeType; voicing: VoicingKind | null; label: string }
+}) {
   useViewportLock()
   const [items, setItems] = useState<BrowseItem[] | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -75,18 +90,26 @@ export function Browse({ onExit }: { onExit: () => void }) {
         ])
         if (!alive) return
         const byId = new Map(pool.map((p) => [p.idiomId, p]))
-        const state = replay(events, { pairsOf: (id) => byId.get(id)?.pairIds ?? [] })
-        // 들어올 때 한 번만 뽑는다 — 넘기는 도중에 목록이 바뀌면 안 된다
-        const rows = pickBrowse(
-          frequentIdioms(state, (id) => {
-            const it = byId.get(id)
-            return it ? { headword: it.headword, reading: it.reading } : undefined
-          }),
-        )
-        // 배지에 실을 규칙 — 규칙 화면과 **같은 함수**로 갈래를 매긴다 (2026-09-17)
+        const nameOf = (id: string) => {
+          const it = byId.get(id)
+          return it ? { headword: it.headword, reading: it.reading } : undefined
+        }
+        // 배지에 실을 규칙 — 규칙 화면과 **같은 함수**로 갈래를 매긴다 (2026-09-17).
+        // `filter` 가 있으면 대상 숙어를 거르는 데도 같은 갈래 판정(verdictOf)을 쓴다 —
+        // 분포 그래프가 센 것과 다시보기 대상이 어긋나면 안 된다
         const ctx = mistakeContextFromKanji(kanji)
         const wrong = classifiedMistakes(events)
-        const worst = mistakeOfIdiom(wrong, verdictByEvent(wrong, ctx, (id) => byId.get(id)?.headword))
+        const verdictOf = verdictByEvent(wrong, ctx, (id) => byId.get(id)?.headword)
+        const worst = mistakeOfIdiom(wrong, verdictOf)
+        // 들어올 때 한 번만 뽑는다 — 넘기는 도중에 목록이 바뀌면 안 된다
+        const rows = pickBrowse(
+          filter
+            ? frequentIdiomsByMistake(wrong, verdictOf, filter.type, filter.voicing, nameOf)
+            : frequentIdioms(
+                replay(events, { pairsOf: (id) => byId.get(id)?.pairIds ?? [] }),
+                nameOf,
+              ),
+        )
         const lookup = ctx.lookup
         setItems(
           rows.map((r) => ({
@@ -104,7 +127,8 @@ export function Browse({ onExit }: { onExit: () => void }) {
     return () => {
       alive = false
     }
-  }, [])
+    // filter 는 이 화면이 열릴 때 한 번 정해지고 안 바뀐다(App.tsx 가 새 Flow 로만 갱신)
+  }, [filter])
 
   if (error !== null) {
     return <Centered message="불러오지 못했어요." detail={error} onExit={onExit} />
@@ -154,6 +178,7 @@ export function Browse({ onExit }: { onExit: () => void }) {
         {items.map((item, index) => (
           <BrowseSlide
             item={item}
+            filterLabel={filter?.label}
             exAt={index === at ? exIndex : 0}
             onNextEx={() => setExIndex((n) => (n + 1) % item.sentences.length)}
             ruleOpen={index === at && ruleOpen}
@@ -192,12 +217,15 @@ export function Browse({ onExit }: { onExit: () => void }) {
  */
 function BrowseSlide({
   item,
+  filterLabel,
   exAt,
   onNextEx,
   ruleOpen,
   onToggleRule,
 }: {
   item: BrowseItem
+  /** 유형별 다시보기면 그 유형 이름 — "다시보기" 태그 옆에 왜 이 목록인지 밝힌다 */
+  filterLabel?: string
   exAt: number
   onNextEx: () => void
   ruleOpen: boolean
@@ -209,7 +237,7 @@ function BrowseSlide({
     <div className="browse-slide">
       <div className="card">
         <div className="card-head">
-          <span className="tag">다시보기</span>
+          <span className="tag">다시보기{filterLabel ? ` · ${filterLabel}` : ''}</span>
           <span className="tag muted">{item.wrong}회 틀림</span>
           {/* 이 숙어를 왜 틀렸나 — 같은 줄에 규칙 이름으로 (사용자 요청 2026-09-17).
               누르면 그 절이 카드 안에서 펼쳐진다. 규칙 화면으로 나가면 넘기던 자리를 잃는다 */}

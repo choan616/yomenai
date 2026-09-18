@@ -13,7 +13,7 @@ import {
   type MistakeVerdict,
   type VoicingKind,
 } from './mistakes.ts'
-import type { NamedIdiom } from './report.ts'
+import type { FrequentIdiom, NamedIdiom } from './report.ts'
 import type { LearningEvent, MistakeType, ReviewEvent } from './types.ts'
 
 /** 한 절에 싣는 숙어 상한. 목록이 아니라 표본이라 짧게 둔다 */
@@ -209,6 +209,36 @@ export function voicingCounts(
     if (v.type === 'RENDAKU') out[v.voicing ?? 'rendaku']++
   }
   return out
+}
+
+/**
+ * 오답 유형(+탁음이면 갈래)이 정확히 일치하는 숙어만 모은다 (2026-09-18, 리포트
+ * "다시보기" 진입점).
+ *
+ * `ruleRecord` 와 갈래는 같지만 반환 형태가 다르다 — 저건 절 색인용으로 상위 N개만
+ * 자르고 정렬도 오답 많은 순으로 고정하는데, 여기는 다시보기(`pickBrowse`)로 넘겨
+ * 섞고 자를 몫이라 `frequentIdioms` 와 같은 규약(전량 반환, id 순 고정)을 따른다.
+ */
+export function frequentIdiomsByMistake(
+  events: readonly ReviewEvent[],
+  verdictOf: ReadonlyMap<string, MistakeVerdict>,
+  type: MistakeType,
+  voicing: VoicingKind | null,
+  nameOf: (idiomId: string) => { headword: string; reading: string } | undefined,
+): FrequentIdiom[] {
+  const byIdiom = new Map<string, number>()
+  for (const e of events) {
+    const v = effectiveMistake(e, verdictOf)
+    if (v === null || v.type !== type || v.voicing !== voicing) continue
+    byIdiom.set(e.idiomId, (byIdiom.get(e.idiomId) ?? 0) + 1)
+  }
+  const rows: FrequentIdiom[] = []
+  for (const [id, wrong] of byIdiom) {
+    const n = nameOf(id)
+    if (n) rows.push({ id, headword: n.headword, reading: n.reading, wrong })
+  }
+  rows.sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0))
+  return rows
 }
 
 /** 그 바구니에서 제일 많은 갈래. 동점이면 연탁 — 대표 절이다. 비어 있으면 null */

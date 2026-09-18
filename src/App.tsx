@@ -20,6 +20,8 @@ import type { RuleId } from './app/rules.ts'
 import { Study } from './study/Study.tsx'
 import { UpdateBanner } from './app/UpdateBanner.tsx'
 import { QUICK_SESSION_LIMIT } from './app/settings.ts'
+import type { VoicingKind } from './core/mistakes.ts'
+import type { MistakeType } from './core/types.ts'
 
 /** 하단 탭. 모든 화면이 이 넷 중 하나 아래에 있다 */
 export type Tab = 'home' | 'report' | 'search' | 'settings'
@@ -32,7 +34,12 @@ export type Sub = { kind: 'onyomi' } | { kind: 'rules'; focus: RuleId | null } |
  * 세션은 키보드가 올라오는 화면이라 하단에 탭이 깔리면 안 된다
  */
 export type Flow =
-  | { kind: 'study' | 'quick' | 'rematch' | 'browse' | 'diagnostic' }
+  | { kind: 'study' | 'quick' | 'rematch' | 'diagnostic' }
+  /**
+   * `filter` 가 있으면 그 오답 유형(+탁음이면 갈래)만 다시본다 — 리포트의 분포 그래프
+   * "N회 다시보기" 가 쓴다 (2026-09-18). 없으면 기존처럼 자주 틀린 것 전체를 섞어 낸다
+   */
+  | { kind: 'browse'; filter?: { type: MistakeType; voicing: VoicingKind | null; label: string } }
   | { kind: 'focus'; pairId: string }
 
 export default function App() {
@@ -87,7 +94,7 @@ function FlowScreen({
     case 'focus':
       return <Study kind="focus" focusPairId={flow.pairId} onExit={onExit} />
     case 'browse':
-      return <Browse onExit={onExit} />
+      return <Browse onExit={onExit} filter={flow.filter} />
     case 'diagnostic':
       // 진단이 끝나면 결과를 보는 자리로 — 리포트 탭이 그 자리다
       return (
@@ -118,6 +125,9 @@ function TabRoot({
       return (
         <Report
           onBrowse={() => onFlow({ kind: 'browse' })}
+          onBrowseMistake={(type, voicing, label) =>
+            onFlow({ kind: 'browse', filter: { type, voicing, label } })
+          }
           onFocus={(pairId) => onFlow({ kind: 'focus', pairId })}
           onRule={(focus) => onSub({ kind: 'rules', focus })}
           onOnyomi={() => onSub({ kind: 'onyomi' })}

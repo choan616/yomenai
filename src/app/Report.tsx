@@ -17,6 +17,7 @@ import {
   reclassifier,
   voicingCounts,
 } from '../core/ruleRecord.ts'
+import type { MistakeType } from '../core/types.ts'
 import { BROWSE_N, buildReport, type MistakeSlice, type Report as ReportData } from '../core/report.ts'
 import { LOCAL_USER_ID, listEvents } from '../db/events.ts'
 import { db } from '../db/schema.ts'
@@ -42,12 +43,15 @@ interface Loaded {
 
 export function Report({
   onBrowse,
+  onBrowseMistake,
   onFocus,
   onRule,
   onOnyomi,
 }: {
   /** 자주 틀린 숙어를 채점 없이 넘겨 보는 화면으로 (2026-09-12) */
   onBrowse: () => void
+  /** 오답 유형 분포에서 가장 많은 유형만 걸러 다시보기로 (2026-09-18) */
+  onBrowseMistake: (type: MistakeType, voicing: VoicingKind | null, label: string) => void
   /** 처방의 음독을 그 자리에서 집중 세션으로 (Phase 10) */
   onFocus: (pairId: string) => void
   /** 규칙 처방에서 그 절로 (2026-09-17). 세션이 없는 자리라 화면을 옮겨도 잃을 게 없다 */
@@ -129,6 +133,7 @@ export function Report({
           <ReportBody
             data={data}
             onBrowse={onBrowse}
+            onBrowseMistake={onBrowseMistake}
             onFocus={onFocus}
             onRule={onRule}
           />
@@ -141,11 +146,13 @@ export function Report({
 function ReportBody({
   data,
   onBrowse,
+  onBrowseMistake,
   onFocus,
   onRule,
 }: {
   data: Loaded
   onBrowse: () => void
+  onBrowseMistake: (type: MistakeType, voicing: VoicingKind | null, label: string) => void
   onFocus: (pairId: string) => void
   onRule: (id: RuleId | null) => void
 }) {
@@ -208,21 +215,32 @@ function ReportBody({
             {report.totalWrong === 0 ? '오답이 없어요.' : '유형이 붙은 오답이 없어요.'}
           </p>
         ) : (
-          <div className="bars">
-            {rows.map((m, i) => (
-              <div className="bar-row" key={m.key} style={{ '--i': i } as React.CSSProperties}>
-                <span>{m.label}</span>
-                <span className="bar-track">
-                  <span
-                    className="bar-fill"
-                    style={{ width: `${(m.count / maxCount) * 100}%` }}
-                    aria-hidden="true"
-                  />
-                </span>
-                <span className="bar-num">{m.count}</span>
-              </div>
-            ))}
-          </div>
+          <>
+            <div className="bars">
+              {rows.map((m, i) => (
+                <div className="bar-row" key={m.key} style={{ '--i': i } as React.CSSProperties}>
+                  <span>{m.label}</span>
+                  <span className="bar-track">
+                    <span
+                      className="bar-fill"
+                      style={{ width: `${(m.count / maxCount) * 100}%` }}
+                      aria-hidden="true"
+                    />
+                  </span>
+                  <span className="bar-num">{m.count}</span>
+                </div>
+              ))}
+            </div>
+            {/* 그래프에서 제일 많은 막대를 바로 다시볼 수 있게 (사용자 요청 2026-09-18).
+                rows 는 이미 count 내림차순이라 rows[0] 이 그 막대다 */}
+            <button
+              type="button"
+              className="btn rx-run"
+              onClick={() => onBrowseMistake(rows[0].type, rows[0].voicing, rows[0].label)}
+            >
+              {rows[0].label} {rows[0].count}회 다시보기 <span className="chev">›</span>
+            </button>
+          </>
         )}
         {report.unclassified > 0 && (
           <p className="unclassified">
@@ -498,23 +516,37 @@ function ToolsSection({ onOnyomi, onRules }: { onOnyomi: () => void; onRules: ()
  * `voicingCounts` 가 따로 준다. 합계가 어긋나면(다시 매기기가 실패한 이벤트) 남는 만큼을
  * 「탁음」 한 칸으로 남겨 **숫자를 잃지 않는다.**
  */
+interface MistakeRow {
+  key: string
+  label: string
+  count: number
+  /** 다시보기 필터(`frequentIdiomsByMistake`)에 그대로 넘길 값 */
+  type: MistakeType
+  voicing: VoicingKind | null
+}
+
 function mistakeRows(
   mistakes: readonly MistakeSlice[],
   voicing: Record<VoicingKind, number>,
-): { key: string; label: string; count: number }[] {
-  const out: { key: string; label: string; count: number }[] = []
+): MistakeRow[] {
+  const out: MistakeRow[] = []
   for (const m of mistakes) {
     if (m.type !== 'RENDAKU') {
-      out.push({ key: m.type, label: MISTAKE_LABEL[m.type], count: m.count })
+      out.push({ key: m.type, label: MISTAKE_LABEL[m.type], count: m.count, type: m.type, voicing: null })
       continue
     }
     const split = (Object.entries(voicing) as [VoicingKind, number][])
       .filter(([, n]) => n > 0)
       .sort((a, b) => b[1] - a[1])
     const counted = split.reduce((sum, [, n]) => sum + n, 0)
-    for (const [kind, n] of split) out.push({ key: kind, label: VOICING_LABEL[kind], count: n })
+    for (const [kind, n] of split) {
+      out.push({ key: kind, label: VOICING_LABEL[kind], count: n, type: 'RENDAKU', voicing: kind })
+    }
+    // 합계가 어긋난 나머지(위 mistakeRows 주석 참조) — 특정 갈래로 못 좁혀 `rendaku` 로 둔다
     const rest = m.count - counted
-    if (rest > 0) out.push({ key: 'RENDAKU', label: MISTAKE_LABEL.RENDAKU, count: rest })
+    if (rest > 0) {
+      out.push({ key: 'RENDAKU', label: MISTAKE_LABEL.RENDAKU, count: rest, type: 'RENDAKU', voicing: 'rendaku' })
+    }
   }
   return out.sort((a, b) => b.count - a.count)
 }

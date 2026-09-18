@@ -4,6 +4,7 @@ import {
   classifiedMistakes,
   effectiveMistake,
   dominantVoicing,
+  frequentIdiomsByMistake,
   mistakeOfIdiom,
   reclassifier,
   ruleRecord,
@@ -265,6 +266,47 @@ describe('reclassifier — 리포트와 규칙 화면이 같은 함수를 쓴다
  * 리포트가 「연탁 5회」 한 칸만 보여줘서, 반탁만 틀린 사람도 「연탁」이라는 이름을 받고
  * 있었다 — 탁음 오답의 26%가 반탁이다. **표시 축과 판정 축은 다르다.**
  */
+/**
+ * 리포트 분포 그래프 "N회 다시보기" 가 쓰는 필터 (2026-09-18).
+ * `ruleRecord` 와 잣대는 같지만(오답 유형+탁음 갈래) 반환이 `pickBrowse` 로 넘기는
+ * 전량 목록이라는 점이 다르다.
+ */
+describe('frequentIdiomsByMistake — 오답 유형(+갈래)이 정확히 일치하는 숙어만', () => {
+  it('탁음이 아닌 유형은 voicing 없이 그 유형만 모은다', () => {
+    const es = [ev('3', 'SOKUON'), ev('3', 'SOKUON'), ev('1', 'RENDAKU')]
+    const rows = frequentIdiomsByMistake(es, new Map(), 'SOKUON', null, nameOf)
+    expect(rows).toEqual([{ id: '3', headword: '学校', reading: 'がっこう', wrong: 2 }])
+  })
+
+  it('연탁과 반탁을 갈래로 갈라 낸다 — 같은 RENDAKU 라도 섞이지 않는다', () => {
+    const es = [ev('1', 'RENDAKU'), handaku('5'), handaku('5')]
+    const verdictOf = verdictByEvent(es, ctx, headwordOf)
+    expect(frequentIdiomsByMistake(es, verdictOf, 'RENDAKU', 'rendaku', nameOf)).toEqual([
+      { id: '1', headword: '三日月', reading: 'みかづき', wrong: 1 },
+    ])
+    expect(frequentIdiomsByMistake(es, verdictOf, 'RENDAKU', 'handaku', nameOf)).toEqual([
+      { id: '5', headword: '心配', reading: 'しんぱい', wrong: 2 },
+    ])
+  })
+
+  it('이름을 모르는 숙어는 목록에서 빠진다', () => {
+    const es = [ev('9', 'SOKUON'), ev('9', 'SOKUON')]
+    expect(frequentIdiomsByMistake(es, new Map(), 'SOKUON', null, nameOf)).toEqual([])
+  })
+
+  it('일치하는 게 없으면 빈 배열', () => {
+    expect(frequentIdiomsByMistake([ev('3', 'SOKUON')], new Map(), 'CHOON', null, nameOf)).toEqual([])
+  })
+
+  it('여러 숙어면 id 오름차순으로 고정한다 (섞기 전 입력 순서)', () => {
+    const es = [ev('3', 'SOKUON'), ev('1', 'SOKUON', { expected: 'たかみ', answer: 'たかい' })]
+    expect(frequentIdiomsByMistake(es, new Map(), 'SOKUON', null, nameOf).map((r) => r.id)).toEqual([
+      '1',
+      '3',
+    ])
+  })
+})
+
 describe('voicingCounts — 탁음 바구니를 갈래로 센다', () => {
   const again = reclassifier(ctx, headwordOf)
 
