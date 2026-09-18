@@ -12,7 +12,7 @@
 **절 헤더의 표시** — `✅` 는 그 절의 항목이 다 끝났다는 뜻, `⏳ 열린 항목 N` 은 N 개가
 남았다는 뜻이다. 아래 색인이 그 N 개를 한자리에 모은 것이다.
 
-**상태** — `main` 깨끗함, 전부 푸시됨. 단위 **512** · e2e **29** 통과. 상용 배포 확인됨.
+**상태** — `main` 깨끗함, 전부 푸시됨. 단위 **544** · e2e **30** 통과. 상용 배포 확인됨.
 사용자 본인이 유일한 사용자다 (테스터 1명 = 본인, iOS 실기기).
 
 **이 앱이 왜 있는지** — 사용자는 일본어 소설을 읽는 수준이고, 읽다 낯선 한자어를 만나면
@@ -139,6 +139,20 @@
     **검증: `npm test` 529 · tsc/oxlint 클린 · `playwright` 30 스펙 · IndexedDB 에
     50%/25%/15%(경계)/10% 비중으로 심어 실측(sev-high 1개 · sev-mid 2개(25%·15%
     경계 둘 다) · sev-low 1개로 정확히 갈림) · 스크린샷으로 짙기 그라데이션 확인**
+
+11. **예문이 다른 단어를 보여주던 것** (사용자 지적 「日照 예문에 日照り가 나온다」) —
+    예문 매칭이 문자열 포함이라 읽기를 검증하지 않았다. JMdict 대조로 재니 **416문장
+    (1.5%)**, 예문 셋이 전부 틀린 숙어가 **95개**였다(本人 ← 日本人, 家主 ← 国家主義).
+    빌드 시점에 **kuromoji(IPADIC)** 로 읽기를 검증하게 고쳤다 — 걸치는 형태소들의 읽기를
+    이어 붙여 표제어 읽기를 품는지로 본다(`readingHolds`). 경계 정렬을 요구하면 弁護士·
+    論文中 처럼 읽기가 보존되는 7,348문장이 같이 날아가서 기준을 읽기로 뒀다. 예외 셋 —
+    음운 변형(促音便 一/回 → いっかい) 무시, 형태소 하나와 표기가 통째로 맞으면 통과
+    (IPADIC 이 日本人 을 ニッポンジン 으로 주는 부류), 양쪽 끝이 다 형태소 중간이면 탈락
+    (万一|戦争 안의 一戦). 근거는 context-notes 같은 날 절
+    **검증: 같은 JMdict 감사 재실행 — 의심 문장 416 → 154(1.5% → 0.6%), 전부 의심인
+    숙어 95 → 36. 예문 보유 숙어 11,377 → 11,130, 문장 27,517 → 26,891.
+    `npm test` 529 → 544(`build-examples.test.ts` 5 → 20) · `playwright` 30 스펙 ·
+    tsc/oxlint/build 클린 · 日照 예문 사라짐, 本人 은 「彼本人がやってきた」로 바뀜**
 
 **주차장** — 커스텀 키패드(`inputMode="none"`)는 IME 후보 바가 실제로 방해된다는 피드백이 오면.
 `justify-content: safe center` 앞에 `center` 폴백 한 줄 (`.card-body`·`.summary-screen`) —
@@ -380,8 +394,9 @@
   → **판정: 무번역 예문만 채택 (사용자 확인)**. 아래 항목으로 구현
 - [x] 무번역 예문 표시 — `tools/build-examples.ts`(`npm run build:examples`, 원본
   `data/raw/tatoeba/` 미커밋) 가 표제어 매칭 문장을 60자 이하·짧은 순 최대 3개씩 골라
-  `data/dict/examples.json`. `build-runtime-dict.ts` 가 base/band4 에 실린 숙어로 걸러
-  `public/dict/examples.json`(534 KB gzip, 숙어 11,377개). `loadExamples()`(`src/dict/load.ts`)
+  `data/dict/examples.json`. **표기만 맞으면 日照 예문에 日照り가 실려서, kuromoji 로
+  읽기까지 검증한다** (2026-09-18, 「지금 여기」 11번). `build-runtime-dict.ts` 가 base/band4 에
+  실린 숙어로 걸러 `public/dict/examples.json`(숙어 10,984개). `loadExamples()`(`src/dict/load.ts`)
   는 세션 시작을 안 막고 **읽기 카드 피드백이 처음 뜰 때만** fetch — TTS 와 같은 확인 단계
   전용 위치. 산출물 없으면 조용히 빈 기능(에러 없음)
   **검증: `tools/build-examples.test.ts` 5 테스트(선별 순수함수) + `src/dict/examples.test.ts`
