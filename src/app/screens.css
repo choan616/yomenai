@@ -286,33 +286,6 @@
 .report .screen-body {
   gap: 28px;
 }
-/* 1등 오답 — 「한국음 간섭」 고정 칸이 있던 자리다 (2026-09-18) */
-.top-mistake {
-  border: 1px solid var(--border);
-  border-left: 3px solid var(--text-dim);
-  border-radius: var(--radius);
-  padding: 16px;
-  background: var(--surface);
-}
-.top-mistake .section-title {
-  margin-top: 0;
-}
-/* 진입로는 이 칸 맨 위 — 숫자보다 먼저 손이 닿는다 (사용자 요청 2026-09-18) */
-.top-mistake .btn.rx-run {
-  margin: 0 0 14px;
-}
-.top-count {
-  font-size: calc(15px * var(--ui-scale));
-  margin: 0 0 12px;
-}
-.top-count b {
-  font-size: calc(32px * var(--ui-scale));
-  font-variant-numeric: tabular-nums;
-}
-.top-mistake .rows {
-  background: var(--bg);
-}
-
 /* ── 진입 진단 ── study 와 같은 3분할 고정 골격을 쓴다 (study.css .study 참조).
    페이지가 스크롤하지 않아야 키보드가 떠도 진행률·숙어 위치가 안 흔들린다. */
 .diag {
@@ -375,18 +348,7 @@
   padding-bottom: 6px;
   border-bottom: 1px solid var(--border);
 }
-.report .report-lead,
-.report .top-count {
-  font-variant-numeric: tabular-nums;
-}
-
-/* 분류기가 놓친 몫 — 숨기지 않고 분포 아래에 적는다 */
-.unclassified {
-  margin: 12px 0 0;
-  font-size: calc(13px * var(--ui-scale));
-  color: var(--text-dim);
-}
-.unclassified b {
+.report .report-lead {
   font-variant-numeric: tabular-nums;
 }
 
@@ -538,8 +500,30 @@
   color: var(--text-dim);
   font-size: calc(13px * var(--ui-scale));
 }
-.browse-entry .btn-primary {
-  width: 100%;
+/* 진입로 둘을 한 줄에 양쪽으로 (사용자 지시 2026-09-18) — 무작위 / 1등 유형만.
+   성격이 같은 선택이라 무게도 같게 둔다. 하나뿐이면 그 하나가 줄을 다 쓴다 */
+.browse-pair {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: 10px;
+}
+.browse-pair .btn {
+  height: auto;
+  min-height: var(--tap);
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  line-height: 1.3;
+  text-align: center;
+}
+.browse-pair .btn .sub {
+  font-size: calc(12px * var(--ui-scale));
+  color: var(--text-faint);
+  font-variant-numeric: tabular-nums;
 }
 
 /* 카드 안의 예문 — .card-body 가 가운데 정렬이라 같이 맞춘다. 뜻은 뜻 카드의 .meaning 을 그대로 쓴다 */

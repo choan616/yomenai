@@ -10,24 +10,15 @@ import {
 } from '../core/level.ts'
 import { prescribe, type Prescription } from '../core/prescription.ts'
 import { replay } from '../core/replay.ts'
-import type { MistakeContext, VoicingKind } from '../core/mistakes.ts'
+import type { VoicingKind } from '../core/mistakes.ts'
 import {
   classifiedMistakes,
   dominantVoicing,
-  frequentIdiomsByMistake,
   reclassifier,
-  verdictByEvent,
   voicingCounts,
 } from '../core/ruleRecord.ts'
-import type { MistakeType, ReviewEvent } from '../core/types.ts'
-import {
-  BROWSE_N,
-  buildReport,
-  TOP_N,
-  type MistakeSlice,
-  type NamedIdiom,
-  type Report as ReportData,
-} from '../core/report.ts'
+import type { MistakeType } from '../core/types.ts'
+import { BROWSE_N, buildReport, type MistakeSlice, type Report as ReportData } from '../core/report.ts'
 import { LOCAL_USER_ID, listEvents } from '../db/events.ts'
 import { db } from '../db/schema.ts'
 import { loadBaseIdioms, loadKanji, loadPairs } from '../dict/load.ts'
@@ -50,8 +41,6 @@ interface Loaded {
   voicing: Record<VoicingKind, number>
   /** 오답 분포의 행들 (탁음은 갈래별로 펴서). 많은 순이라 `rows[0]` 이 1등 오답이다 */
   rows: MistakeRow[]
-  /** 그 1등 오답으로 틀린 숙어 — 많이 틀린 순 상위 `TOP_N` (2026-09-18) */
-  topIdioms: NamedIdiom[]
 }
 
 export function Report({
@@ -88,29 +77,24 @@ export function Report({
         ])
         if (!alive) return
         const byId = new Map(pool.map((p) => [p.idiomId, p]))
-        const nameOf = (id: string) => {
-          const it = byId.get(id)
-          return it ? { headword: it.headword, reading: it.reading } : undefined
-        }
         // 저장된 유형을 그대로 세면 규칙 화면에서 빠진 오답이 여기서는 남는다 (2026-09-17).
         // 규칙 화면·다시보기와 **같은 함수**로 다시 매긴다
-        const ctx = mistakeContextFromKanji(kanji)
-        const again = reclassifier(ctx, (id) => byId.get(id)?.headword)
+        const again = reclassifier(mistakeContextFromKanji(kanji), (id) => byId.get(id)?.headword)
         const state = replay(events, {
           pairsOf: (id) => byId.get(id)?.pairIds ?? [],
           mistakeOf: (e) => again(e).type,
         })
-        const report = buildReport(state, pairs, nameOf)
+        const report = buildReport(state, pairs, (id) => {
+          const it = byId.get(id)
+          return it ? { headword: it.headword, reading: it.reading } : undefined
+        })
         const level = buildLevel(events, (id) => byId.get(id)?.band)
-        const wrong = classifiedMistakes(events)
-        const voicing = voicingCounts(wrong, again)
-        const rows = mistakeRows(report.mistakes, voicing)
+        const voicing = voicingCounts(classifiedMistakes(events), again)
         setData({
           report,
           level,
           voicing,
-          rows,
-          topIdioms: topIdiomsOf(rows[0], wrong, ctx, (id) => byId.get(id)?.headword, nameOf),
+          rows: mistakeRows(report.mistakes, voicing),
           prescriptions: prescribe({
             report,
             level,
@@ -176,13 +160,14 @@ function ReportBody({
   onFocus: (pairId: string) => void
   onRule: (id: RuleId | null) => void
 }) {
-  const { report, level, prescriptions, voicing, rows, topIdioms } = data
+  const { report, level, prescriptions, voicing, rows } = data
   // 정답률은 *실제* 오답으로 센다. 분류된 오답만 쓰면 미분류분이 정답으로 둔갑한다
   const accuracy =
     report.totalReviews > 0
       ? Math.round(((report.totalReviews - report.totalWrong) / report.totalReviews) * 100)
       : 100
-  const maxCount = Math.max(1, ...rows.map((m) => m.count))
+  // 「기타」 막대도 같은 자로 잰다 — 빼고 재면 미분류가 제일 많아도 막대가 꽉 찬다
+  const maxCount = Math.max(1, report.unclassified, ...rows.map((m) => m.count))
   /** 1등 오답 — rows 는 count 내림차순이라 맨 앞이다. 분류된 오답이 없으면 없다 */
   const top = rows[0] as MistakeRow | undefined
   const topVoicing = dominantVoicing(voicing)
@@ -219,22 +204,10 @@ function ReportBody({
         )}
       </section>
 
-      {report.frequent.length > 0 && (
-        <section className="browse-entry">
-          <p className="section-title">다시보기</p>
-          <p className="browse-lead">자주 틀린 것들을 채점 없이 한 장씩 넘겨 봐요. 들어갈 때마다 섞여요.</p>
-          <button type="button" className="btn-primary" onClick={onBrowse}>
-            다시보기 {Math.min(report.frequent.length, BROWSE_N)}장 ›
-          </button>
-        </section>
-      )}
-
       <section>
         <p className="section-title">오답 유형 분포</p>
-        {report.mistakes.length === 0 ? (
-          <p className="empty">
-            {report.totalWrong === 0 ? '오답이 없어요.' : '유형이 붙은 오답이 없어요.'}
-          </p>
+        {rows.length === 0 && report.unclassified === 0 ? (
+          <p className="empty">오답이 없어요.</p>
         ) : (
           <div className="bars">
             {rows.map((m, i) => (
@@ -250,49 +223,52 @@ function ReportBody({
                 <span className="bar-num">{m.count}</span>
               </div>
             ))}
+            {/* 유형을 못 붙인 오답도 분포 안에 「기타」로 담는다 (사용자 지시 2026-09-18).
+                아래 딸린 각주로 빼 두면 같은 것을 두 군데서 읽어야 한다. **등수와 무관하게
+                맨 아래** — 1등(`rows[0]`)을 밀어내면 다시보기 버튼이 가리킬 유형이 없어진다 */}
+            {report.unclassified > 0 && (
+              <div className="bar-row" style={{ '--i': rows.length } as React.CSSProperties}>
+                {/* 이름은 「기타」 한 단어다 — 라벨 칸이 5.5em 이라 설명을 붙이면 두 줄로 접힌다 */}
+                <span>기타</span>
+                <span className="bar-track">
+                  <span
+                    className="bar-fill"
+                    style={{ width: `${(report.unclassified / maxCount) * 100}%` }}
+                    aria-hidden="true"
+                  />
+                </span>
+                <span className="bar-num">{report.unclassified}</span>
+              </div>
+            )}
           </div>
-        )}
-        {report.unclassified > 0 && (
-          <p className="unclassified">
-            유형을 못 붙인 오답 <b>{report.unclassified}</b>회
-            <span className="dim"> · 6종 어디에도 안 맞아 분포에서 빠졌어요</span>
-          </p>
         )}
       </section>
 
-      {/* 1등 오답 (사용자 요청 2026-09-18) — 「한국음 간섭」으로 고정돼 있던 칸이다.
-          유형은 사람마다 다른데 한 유형만 크게 세고 있었다. 지금 제일 많은 유형을 같은 골격에
-          싣고, 그 유형만 모아 보는 진입로를 맨 위에 둔다 */}
-      {top !== undefined && (
-        <section className="top-mistake">
-          <p className="section-title">{top.label}</p>
-          <button
-            type="button"
-            className="btn rx-run"
-            onClick={() => onBrowseMistake(top.type, top.voicing, top.label)}
-          >
-            모아서 다시보기 <span className="chev">›</span>
-          </button>
-          <p className="top-count">
-            <b>{top.count}</b>
-            <span className="dim"> 회 — 지금 가장 많이 내는 오답이에요</span>
-          </p>
-          {topIdioms.length === 0 ? (
-            <p className="dim">해당 숙어가 아직 없어요.</p>
-          ) : (
-            <ul className="rows">
-              {topIdioms.map((it, i) => (
-                <li key={it.id} style={{ '--i': i } as React.CSSProperties}>
-                  <span className="r-main" lang="ja">
-                    {it.headword}
-                  </span>
-                  <span className="r-sub r-ja" lang="ja">
-                    {it.reading}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          )}
+      {/* 다시보기 진입 (사용자 지시 2026-09-18) — 분포 바로 아래다. 「무작위」와 「1등 유형만」이
+          같은 성격의 선택이라 한 줄에 양쪽으로 둔다. 1등 유형 하나에 칸을 따로 내주던 자리를
+          이 버튼 하나로 줄였다 */}
+      {report.frequent.length > 0 && (
+        <section className="browse-entry">
+          <p className="section-title">다시보기</p>
+          <p className="browse-lead">채점 없이 한 장씩 넘겨 봐요. 들어갈 때마다 섞여요.</p>
+          <div className="browse-pair">
+            <button type="button" className="btn" onClick={onBrowse}>
+              무작위 다시보기
+              <span className="sub">{Math.min(report.frequent.length, BROWSE_N)}장</span>
+            </button>
+            {top !== undefined && (
+              <button
+                type="button"
+                className="btn"
+                onClick={() => onBrowseMistake(top.type, top.voicing, top.label)}
+              >
+                오답 유형별 다시보기
+                <span className="sub">
+                  {top.label} {top.count}회
+                </span>
+              </button>
+            )}
+          </div>
         </section>
       )}
 
@@ -571,25 +547,4 @@ function mistakeRows(
     }
   }
   return out.sort((a, b) => b.count - a.count)
-}
-
-/**
- * 1등 오답으로 틀린 숙어 (2026-09-18).
- *
- * 다시보기 필터(`frequentIdiomsByMistake`)와 **같은 함수·같은 갈래 판정**으로 모은다 —
- * 목록에 보인 숙어와 버튼이 여는 카드가 어긋나면 안 된다. 다만 여기는 8개만 싣는 표본이라
- * 자른 뒤에도 값이 있도록 많이 틀린 순으로 정렬한다 (`ruleRecord` 와 같은 관례).
- */
-function topIdiomsOf(
-  top: MistakeRow | undefined,
-  wrong: readonly ReviewEvent[],
-  ctx: MistakeContext,
-  headwordOf: (idiomId: string) => string | undefined,
-  nameOf: (idiomId: string) => { headword: string; reading: string } | undefined,
-): NamedIdiom[] {
-  if (top === undefined) return []
-  const verdictOf = verdictByEvent(wrong, ctx, headwordOf)
-  return frequentIdiomsByMistake(wrong, verdictOf, top.type, top.voicing, nameOf)
-    .sort((a, b) => b.wrong - a.wrong || (a.id < b.id ? -1 : 1))
-    .slice(0, TOP_N)
 }
