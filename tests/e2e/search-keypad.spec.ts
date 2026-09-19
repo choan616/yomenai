@@ -38,3 +38,24 @@ test('찾기 자판은 누른 뒤에 뜨고 닫기로 접힌다', async ({ page 
   // 접혀도 찾은 값은 남는다
   await expect(input).toHaveValue('き')
 })
+
+test('찾기 자판은 화면 아래에 고정된다 — 목록을 스크롤해도 따라 내려가지 않는다', async ({ page }) => {
+  await page.goto('/')
+  await expect(page.getByRole('button', { name: '세션 시작' })).toBeEnabled({ timeout: 20_000 })
+  await page.getByRole('button', { name: '찾기', exact: true }).click()
+  const input = page.locator('.search-input')
+  await input.click()
+  const keypad = page.locator('.keypad')
+  await expect(keypad).toBeVisible()
+
+  const vh = page.viewportSize()!.height
+  const before = (await keypad.boundingBox())!
+  expect(Math.round(before.y + before.height)).toBe(vh)
+
+  // 결과가 나오게 한 글자 치고 목록을 스크롤해도 자판은 그 자리다
+  await keypad.getByRole('button', { name: 'k', exact: true }).click()
+  await keypad.getByRole('button', { name: 'a', exact: true }).click()
+  await page.locator('.screen').evaluate((el) => el.scrollBy(0, 400))
+  const after = (await keypad.boundingBox())!
+  expect(Math.round(after.y)).toBe(Math.round(before.y))
+})

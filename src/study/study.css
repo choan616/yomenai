@@ -1153,3 +1153,20 @@ button.tag {
 .skip-btn:active {
   background: var(--surface-2);
 }
+
+/* 찾기처럼 본문이 스크롤하는 화면에서는 자판을 화면 아래에 고정한다 (2026-09-19 사용자 요청) —
+   시스템 키보드와 같은 자리다. 탭바를 덮는 것도 시스템 키보드와 같다 */
+.keypad.docked {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  max-width: 560px;
+  margin: 0 auto;
+  z-index: 5;
+  border-top: 1px solid var(--border);
+}
+/* 고정된 자판에 목록 끝이 가리지 않게 그만큼 비워 둔다 */
+.screen-body.with-keypad {
+  padding-bottom: 280px;
+}

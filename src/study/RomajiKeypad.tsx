@@ -18,12 +18,15 @@ export function RomajiKeypad({
   onBackspace,
   onSubmit,
   submitLabel = '확인',
+  docked,
 }: {
   onKey: (ch: string) => void
   onBackspace: () => void
   onSubmit: () => void
   /** 마지막 줄 큰 키. 채점 화면은 「확인」, 찾기 화면은 「닫기」 */
   submitLabel?: string
+  /** 화면 아래에 고정한다. 찾기처럼 본문이 스크롤하는 화면에서 시스템 키보드처럼 앉는다 */
+  docked?: boolean
 }) {
   /**
    * 지금 손가락이 얹힌 글자 키. 손가락이 키를 덮어 무엇을 눌렀는지 안 보이는 건 34px 키나
@@ -73,7 +76,7 @@ export function RomajiKeypad({
     ) : null
 
   return (
-    <div className="keypad" role="group" aria-label="로마자 자판">
+    <div className={`keypad${docked ? ' docked' : ''}`} role="group" aria-label="로마자 자판">
       {ROWS.map((row, i) => (
         <div className="keypad-row" key={i}>
           {/* 가운데 줄은 9키라 양끝에 반 칸씩 넣어 **키 폭을 모든 줄에서 같게** 만든다.

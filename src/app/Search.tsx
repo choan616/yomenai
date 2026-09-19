@@ -85,7 +85,7 @@ export function Search() {
         <h2>읽기로 찾기</h2>
       </div>
 
-      <div className="screen-body">
+      <div className={`screen-body${keypad && typing ? ' with-keypad' : ''}`}>
         <input
           className="search-input"
           type="text"
@@ -119,6 +119,7 @@ export function Search() {
               ref.current?.blur()
             }}
             submitLabel="닫기"
+            docked
           />
         )}
 
