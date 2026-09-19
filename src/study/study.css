@@ -1132,3 +1132,21 @@ button.tag {
 :root[data-theme='dark'] .key-pop {
   background: color-mix(in oklab, var(--bg), var(--text) 32%);
 }
+
+/* 카드 머리 오른쪽 끝의 SKIP (2026-09-19). 빠져나가는 길이라 눈에 먼저 들어오면 안 되지만,
+   찾을 때는 바로 보여야 한다 — 태그와 같은 높이·같은 알약 모양에 테두리만 준다 */
+.skip-btn {
+  margin-left: auto;
+  padding: 3px 12px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-dim);
+  font-family: inherit;
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  touch-action: manipulation;
+}
+.skip-btn:active {
+  background: var(--surface-2);
+}

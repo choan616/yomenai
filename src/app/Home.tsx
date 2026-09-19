@@ -94,7 +94,7 @@ export function Home({ onFlow }: { onFlow: (flow: Flow) => void }) {
           <p className="welcome-title">처음이시면 이것만</p>
           <ul>
             <li>
-              모르면 <b>「모르겠어요」</b>를 누르세요. 정답과 해설로 바로 가요.
+              모르면 카드 오른쪽 위 <b>SKIP</b> 을 누르세요. 정답과 해설로 바로 가요.
             </li>
             <li>
               다루는 난이도는 <b>N2 이상</b>이에요.

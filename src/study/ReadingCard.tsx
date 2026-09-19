@@ -75,6 +75,11 @@ export function ReadingCard({
                 읽기 둘 · {dualAsk.given.length + 1}/{dualAsk.total}
               </span>
             )}
+            {/* 모를 때 넘기는 길. 카드 머리로 올렸다 (2026-09-19 사용자 요청) — 아래에 두면
+                자판 위 한 줄을 차지하는데, 이건 매번 쓰는 동작이 아니라 빠져나가는 길이다 */}
+            <button type="button" className="skip-btn" onClick={onPass}>
+              SKIP
+            </button>
           </>
         )}
       </div>
@@ -208,17 +213,6 @@ export function ReadingCard({
               : undefined
           }
         />
-        {/* 모를 때 넘기는 길 (2026-09-14). 없으면 아무 글자나 쳐서 오답을 만들어야 했고,
-            그 입력이 오답 유형 분포까지 오염시켰다. 자리는 피드백 뒤의 버튼 줄과 같다 */}
-        {!fb && (
-          <div className="answer-row">
-            <span className="slot" aria-hidden="true" />
-            <button type="button" className="btn" onClick={onPass}>
-              모르겠어요
-            </button>
-            <span className="slot" aria-hidden="true" />
-          </div>
-        )}
         {fb &&
           (fb.correct ? (
             <div className="answer-row">

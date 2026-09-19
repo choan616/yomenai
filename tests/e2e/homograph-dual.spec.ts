@@ -187,7 +187,7 @@ test('한쪽만 쓰고 넘기면 그 읽기는 정답으로 남고 오답은 안
 
   await page.locator('.kana-input').fill('daigawari')
   await page.locator('.kana-input').press('Enter')
-  await page.getByRole('button', { name: '모르겠어요', exact: true }).click()
+  await page.getByRole('button', { name: 'SKIP', exact: true }).click()
 
   await expect(page.locator('.card.feedback.is-ok')).toBeVisible({ timeout: 5_000 })
   await expect(page.locator('.rule-hint')).toContainText('아직 안 배운 것')

@@ -56,7 +56,7 @@ async function advanceToReading(page: Page, budget = 12): Promise<void> {
   throw new Error('읽기 카드를 못 만났다')
 }
 
-test('모르겠어요로 넘기면 정답이 보이고, 기록에 오답 유형이 안 붙는다', async ({ page }) => {
+test('SKIP 으로 넘기면 정답이 보이고, 기록에 오답 유형이 안 붙는다', async ({ page }) => {
   await page.goto('/')
   await expect(page.getByRole('button', { name: '세션 시작' })).toBeVisible({ timeout: 20_000 })
 
@@ -68,7 +68,7 @@ test('모르겠어요로 넘기면 정답이 보이고, 기록에 오답 유형�
   await expect(page.locator('.kana-input')).toHaveAttribute('placeholder', /히라가나/)
 
   const before = (await readingEvents(page)).length
-  await page.getByRole('button', { name: '모르겠어요', exact: true }).click()
+  await page.getByRole('button', { name: 'SKIP', exact: true }).click()
 
   // 넘기면 바로 정답 화면이다 — 읽기가 한자 위에 얹혀 나온다
   await expect(page.locator('.headword.has-ruby')).toBeVisible({ timeout: 10_000 })

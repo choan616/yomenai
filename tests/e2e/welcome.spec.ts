@@ -28,7 +28,7 @@ test('첫 안내는 한 번만 뜨고, 뜬 동안에도 시작 버튼에 닿는�
   await expect(welcome).toBeVisible({ timeout: 10_000 })
 
   // 테스터가 실제로 막혔던 둘이 적혀 있다. 나머지는 안내서로 보냈다
-  await expect(welcome).toContainText('모르겠어요')
+  await expect(welcome).toContainText('SKIP')
   await expect(welcome).toContainText('N2')
 
   // 가로막지 않는다 — 안내가 떠 있어도 첫 동작이 눌린다
