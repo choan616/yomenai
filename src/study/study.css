@@ -150,7 +150,9 @@
   display: flex;
   flex-direction: column;
   justify-content: safe center;
-  padding: 12px 0;
+  /* 키보드가 올라오면 이 패딩부터 내준다 — 글자를 줄이는 것보다 먼저다 (위 원칙).
+     미디어 쿼리는 iOS 에서 안 걸려서(레이아웃 뷰포트가 그대로다) 실제 가시 높이를 쓴다 */
+  padding: clamp(4px, calc(var(--vvh, 100vh) * 0.018), 12px) 0;
 }
 
 /* ── PC 조정 ── 모바일 우선 설계를 그대로 두고, 넓은 화면 + 마우스에서만 손본다.
@@ -208,7 +210,11 @@ button.tag {
   font-size: clamp(48px, 16vw, 88px);
   font-weight: 400;
   margin: 0;
-  line-height: 1.2;
+  /* 1.2 는 일본어 글리프에 모자라 **줄 상자 밖으로 삐져나온 만큼이 .card-body 의 overflow 에
+     잘렸다** — 60px 글자에 줄 상자 72px, 글리프가 필요로 한 건 79px. 1.35 로 올려 초과를
+     7px → 3px 로 줄였다. 폰트 고유 높이가 1.4em 쯤이라 0 으로는 안 떨어지고, 남은 3px 은
+     .card-body 패딩이 받아 낸다 (2026-09-19 사용자 보고) */
+  line-height: 1.35;
   word-break: keep-all;
   /* 큰 크기일수록 전각 자간이 더 벌어 보인다 — :lang(ja) 기본값보다 한 단계 더 좁힌다 */
   letter-spacing: -0.04em;
@@ -953,4 +959,13 @@ button.tag {
 }
 .md-rule-more-tail {
   font-size: 12px;
+}
+
+/* 한글 키보드로 친 답을 막았을 때의 안내 (2026-09-19). 입력 행 아래 한 줄 —
+   .card-bottom > * + * 가 간격을 준다 */
+.kbd-warning {
+  margin: 0;
+  text-align: center;
+  font-size: 13px;
+  color: var(--ng);
 }
