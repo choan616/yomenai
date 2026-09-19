@@ -8,6 +8,8 @@
 // 시스템 키보드를 안 띄우니 자동 완성 후보도, Safari 악세서리 바(44px)도, 지구본도 없다.
 // 변환은 그대로 wanakana 가 한다 — 이 자판은 로마자를 넣어 줄 뿐이다.
 import { useState } from 'react'
+import { loadSettings } from '../app/settings.ts'
+import { playKeyClick, vibrateKey } from './keyFeedback.ts'
 
 const ROWS = ['qwertyuiop', 'asdfghjkl', 'zxcvbnm'] as const
 
@@ -15,10 +17,13 @@ export function RomajiKeypad({
   onKey,
   onBackspace,
   onSubmit,
+  submitLabel = '확인',
 }: {
   onKey: (ch: string) => void
   onBackspace: () => void
   onSubmit: () => void
+  /** 마지막 줄 큰 키. 채점 화면은 「확인」, 찾기 화면은 「닫기」 */
+  submitLabel?: string
 }) {
   /**
    * 지금 손가락이 얹힌 글자 키. 손가락이 키를 덮어 무엇을 눌렀는지 안 보이는 건 34px 키나
@@ -27,6 +32,15 @@ export function RomajiKeypad({
    * 기본 동작을 막으면 `:active` 가 붙는 시점을 브라우저마다 믿기 어렵다
    */
   const [pressed, setPressed] = useState<string | null>(null)
+  /**
+   * 입력음·진동. 설정은 자판이 뜰 때 한 번 읽는다 — 자판이 떠 있는 동안 설정 화면에 갈 수 없다.
+   * 자판 안에 두는 이유는 쓰는 곳마다(채점·찾기) 같은 코드를 또 쓰지 않으려는 것이다
+   */
+  const [feedback] = useState(() => loadSettings().keyFeedback)
+  const tick = () => {
+    if (feedback === 'sound') playKeyClick()
+    else if (feedback === 'haptic') vibrateKey()
+  }
 
   /**
    * 버튼을 눌러도 입력창의 포커스를 뺏지 않는다. blur 되면 캐럿이 사라지고
@@ -43,6 +57,7 @@ export function RomajiKeypad({
     onPointerDown: (e: React.PointerEvent) => {
       hold(e)
       setPressed(ch)
+      tick()
       onKey(ch)
     },
     onPointerUp: () => setPressed(null),
@@ -87,6 +102,7 @@ export function RomajiKeypad({
               className="key key-wide"
               onPointerDown={(e) => {
                 hold(e)
+                tick()
                 onBackspace()
               }}
               aria-label="지우기"
@@ -102,10 +118,11 @@ export function RomajiKeypad({
           className="key key-submit"
           onPointerDown={(e) => {
             hold(e)
+            tick()
             onSubmit()
           }}
         >
-          확인
+          {submitLabel}
         </button>
       </div>
     </div>

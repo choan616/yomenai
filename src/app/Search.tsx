@@ -3,8 +3,10 @@
 // **이벤트도 FSRS 도 안 건드린다.** 답을 본 직후에 그 숙어를 바로 문제로 내면 정답이
 // 잡음으로 쌓여 리포트 정답률이 흔들린다 — 사용자 판단으로 「지금 풀어보기」·「찜하기」를
 // 기각했다 (context-notes 2026-09-16). 무게는 다시보기(`Browse`)와 같다.
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { toKana } from 'wanakana'
+import { RomajiKeypad } from '../study/RomajiKeypad.tsx'
+import { useCoarsePointer } from '../study/useCoarsePointer.ts'
 import { replay } from '../core/replay.ts'
 import { LOCAL_USER_ID, listEvents } from '../db/events.ts'
 import { db } from '../db/schema.ts'
@@ -72,6 +74,10 @@ export function Search() {
   )
 
   const typed = raw.trim() !== ''
+  /** 자판을 띄울지 — 입력창을 누른 뒤에만 뜬다 */
+  const [typing, setTyping] = useState(false)
+  const keypad = useCoarsePointer()
+  const ref = useRef<HTMLInputElement>(null)
 
   return (
     <section className="screen">
@@ -86,9 +92,12 @@ export function Search() {
           /* KanaInput 과 같은 처방 — 일본어 IME 후보 바를 막고 ASCII 키보드를 띄운다.
              그쪽은 채점 제출용이라 재사용하지 않는다. 변환도 bind 가 아니라 toKana 다 —
              입력마다 결과를 다시 그려야 해서 값이 React state 에 있어야 한다 (context-notes) */
+          ref={ref}
           lang="en"
           name="reading-search"
-          inputMode="url"
+          /* 자체 자판을 띄우는 기기에서는 시스템 키보드를 막는다 — 세션 화면과 같은 이유다
+             (iOS 가 마지막에 쓴 키보드를 기억해 한글 자판이 먼저 뜬다, 2026-09-19) */
+          inputMode={keypad ? 'none' : 'url'}
           autoCapitalize="none"
           autoComplete="off"
           autoCorrect="off"
@@ -97,7 +106,21 @@ export function Search() {
           aria-label="읽기 검색"
           value={raw}
           onChange={(e) => setRaw(toKana(e.target.value, { IMEMode: 'toHiragana' }))}
+          onFocus={() => setTyping(true)}
         />
+        {/* 자판은 **입력창을 눌렀을 때만** 뜬다. 찾기는 결과 목록이 주인공이라
+            자판이 늘 떠 있으면 화면을 절반 먹는다 (2026-09-19) */}
+        {keypad && typing && (
+          <RomajiKeypad
+            onKey={(ch) => setRaw((v) => toKana(v + ch, { IMEMode: 'toHiragana' }))}
+            onBackspace={() => setRaw((v) => [...v].slice(0, -1).join(''))}
+            onSubmit={() => {
+              setTyping(false)
+              ref.current?.blur()
+            }}
+            submitLabel="닫기"
+          />
+        )}
 
         {error !== null ? (
           <p className="empty">불러오지 못했어요: {error}</p>
