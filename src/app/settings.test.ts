@@ -9,11 +9,13 @@ describe('parseSettings', () => {
         sessionLimit: 25,
         ratio: { correction: 6, expansion: 4 },
         observeLevel: 'often',
+        keyFeedback: 'sound',
       }),
     ).toEqual({
       sessionLimit: 25,
       ratio: { correction: 6, expansion: 4 },
       observeLevel: 'often',
+      keyFeedback: 'sound',
     })
   })
 
@@ -46,5 +48,21 @@ describe('parseSettings', () => {
     const s = parseSettings(null)
     s.ratio.correction = 99
     expect(DEFAULT_SETTINGS.ratio.correction).toBe(7)
+  })
+})
+
+describe('parseSettings — 자판 입력 피드백', () => {
+  it('없으면 끔이 기본이다 — 소리도 진동도 기기 상황에 걸려 예측이 어렵다', () => {
+    expect(parseSettings({}).keyFeedback).toBe('off')
+  })
+
+  it('sound·haptic 만 받는다', () => {
+    expect(parseSettings({ keyFeedback: 'sound' }).keyFeedback).toBe('sound')
+    expect(parseSettings({ keyFeedback: 'haptic' }).keyFeedback).toBe('haptic')
+  })
+
+  it('모르는 값은 기본으로 되돌린다', () => {
+    expect(parseSettings({ keyFeedback: 'buzz' }).keyFeedback).toBe('off')
+    expect(parseSettings({ keyFeedback: 7 }).keyFeedback).toBe('off')
   })
 })

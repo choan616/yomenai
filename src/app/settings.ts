@@ -1,5 +1,7 @@
 // 세션 길이·모드 비율·관찰 문구 노출을 localStorage 에 보관한다. 사전 DB·IndexedDB 와 무관한 UI 환경설정
 export type ObserveLevel = 'off' | 'normal' | 'often'
+/** 자판 입력 피드백 (2026-09-19). 시스템 키보드를 안 쓰니 키 클릭음·햅틱을 앱이 낸다 */
+export type KeyFeedback = 'off' | 'sound' | 'haptic'
 
 export interface Settings {
   sessionLimit: number
@@ -7,6 +9,8 @@ export interface Settings {
   ratio: { correction: number; expansion: number }
   /** 루프 안 관찰 문구 노출 빈도 (Phase 9-C). normal 이 권장 기본값 */
   observeLevel: ObserveLevel
+  /** 기본은 끔 — 소리는 무음 스위치에, 진동은 기기 지원에 걸려 예측이 어렵다 */
+  keyFeedback: KeyFeedback
 }
 
 export const LIMIT_MIN = 5
@@ -16,6 +20,7 @@ export const DEFAULT_SETTINGS: Settings = {
   sessionLimit: 20,
   ratio: { correction: 7, expansion: 3 },
   observeLevel: 'normal',
+  keyFeedback: 'off',
 }
 
 /** observeLevel 별 게이트 — [최소 카드 간격, 세션당 상한] */
@@ -38,6 +43,7 @@ export function parseSettings(raw: unknown): Settings {
   const exp = Number(ratioRaw.expansion)
   const ratioOk = Number.isFinite(corr) && Number.isFinite(exp) && corr >= 0 && exp >= 0 && corr + exp > 0
   const lvl = r.observeLevel
+  const kf = r.keyFeedback
   return {
     sessionLimit: Number.isFinite(limit)
       ? Math.min(LIMIT_MAX, Math.max(LIMIT_MIN, Math.round(limit)))
@@ -46,6 +52,7 @@ export function parseSettings(raw: unknown): Settings {
       ? { correction: Math.round(corr), expansion: Math.round(exp) }
       : { ...DEFAULT_SETTINGS.ratio },
     observeLevel: lvl === 'off' || lvl === 'often' ? lvl : DEFAULT_SETTINGS.observeLevel,
+    keyFeedback: kf === 'sound' || kf === 'haptic' ? kf : DEFAULT_SETTINGS.keyFeedback,
   }
 }
 

@@ -16,6 +16,7 @@ import { getDeviceId } from '../db/device.ts'
 import { googleDrive } from '../sync/googleDrive.ts'
 import { resetLearning, syncNow, type SyncProgress } from '../sync/sync.ts'
 import { clearIntroduced } from '../study/introduced.ts'
+import { canVibrate } from '../study/keyFeedback.ts'
 import { getLastSyncAt, setLastSyncAt, setSignedIn, wasSignedIn } from '../sync/syncState.ts'
 import { clearDiagnosticDone } from './diagnostic-state.ts'
 import { clearWelcomeSeen } from './welcome.ts'
@@ -48,6 +49,13 @@ const OBSERVE_LEVELS: { label: string; value: SettingsData['observeLevel'] }[] =
   { label: '끔', value: 'off' },
   { label: '보통', value: 'normal' },
   { label: '자주', value: 'often' },
+]
+
+/** 자판 입력 피드백 (2026-09-19). 진동은 기기가 지원해야 고를 수 있다 */
+const KEY_FEEDBACKS: { label: string; value: SettingsData['keyFeedback'] }[] = [
+  { label: '없음', value: 'off' },
+  { label: '소리', value: 'sound' },
+  { label: '진동', value: 'haptic' },
 ]
 
 function formatSyncTime(at: number): string {
@@ -374,6 +382,29 @@ export function Settings({
             ))}
           </div>
           <span className="hint">세션 중 "지난번엔 틀렸는데 이번엔 맞혔어요" 같은 한 줄. 기본은 보통이에요.</span>
+        </div>
+
+        <div className="setting">
+          <label>자판 입력 피드백</label>
+          <div className="seg" role="group" aria-label="자판 입력 피드백">
+            {KEY_FEEDBACKS.map((o) => (
+              <button
+                key={o.value}
+                type="button"
+                aria-pressed={settings.keyFeedback === o.value}
+                disabled={o.value === 'haptic' && !canVibrate()}
+                onClick={() => update({ ...settings, keyFeedback: o.value })}
+              >
+                {o.label}
+              </button>
+            ))}
+          </div>
+          <span className="hint">
+            앱 자판(손가락 기기)에만 적용돼요.
+            {canVibrate()
+              ? ' 소리는 기기가 무음이면 안 들려요.'
+              : ' 이 기기는 진동을 못 써요 — iOS 는 웹에 진동 기능이 없어요. 소리도 기기가 무음이면 안 들려요.'}
+          </span>
         </div>
 
         <BackupSetting />

@@ -7,6 +7,8 @@ import type { DiffChar } from '../core/answerDiff.ts'
 import { hasHangul } from '../lib/hangul.ts'
 import { RomajiKeypad } from './RomajiKeypad.tsx'
 import { useCoarsePointer } from './useCoarsePointer.ts'
+import { playKeyClick, vibrateKey } from './keyFeedback.ts'
+import { loadSettings } from '../app/settings.ts'
 
 /**
  * 자판 버튼이 누른 글자를 입력창에 넣는다. 값을 직접 대입하지 않고 `execCommand` 로 넣는 이유는
@@ -57,6 +59,12 @@ export function KanaInput({ onSubmit, resetKey, locked, diff }: Props) {
   const keyboardWarning = warnedFor === resetKey
   /** 손가락 기기에서만 자체 자판을 쓴다. PC 는 물리 키보드가 있어 자판이 방해만 된다 */
   const keypad = useCoarsePointer()
+  /** 설정은 세션에 들어올 때 한 번 읽는다 — 세션 중에 설정 화면에 갈 수 없다 */
+  const [feedback] = useState(() => loadSettings().keyFeedback)
+  const tick = () => {
+    if (feedback === 'sound') playKeyClick()
+    else if (feedback === 'haptic') vibrateKey()
+  }
 
   /**
    * 빈/공백뿐인 값은 제출하지 않는다. 다음 문제로 넘어가면 입력창이 auto-focus 되는데,
@@ -179,13 +187,22 @@ export function KanaInput({ onSubmit, resetKey, locked, diff }: Props) {
         <RomajiKeypad
           onKey={(ch) => {
             const el = ref.current
-            if (el && !locked) typeInto(el, ch)
+            if (el && !locked) {
+              tick()
+              typeInto(el, ch)
+            }
           }}
           onBackspace={() => {
             const el = ref.current
-            if (el && !locked) deleteBack(el)
+            if (el && !locked) {
+              tick()
+              deleteBack(el)
+            }
           }}
-          onSubmit={submit}
+          onSubmit={() => {
+            tick()
+            submit()
+          }}
         />
       )}
     </>

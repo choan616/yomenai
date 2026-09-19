@@ -1051,13 +1051,16 @@ button.tag {
 .key-half {
   flex: 0.5 1 0;
 }
+/* 확인은 글자 키와 **같은 층**에 둔다. 흰 슬래브로 만들었더니 화면에서 제일 먼저 눈에
+   들어왔다 (사용자 지적 2026-09-19) — 색으로 세우지 않고 테두리와 글자 굵기로만 구분한다.
+   PLAN §7 "색은 오답에만" 과도 이쪽이 맞다 */
 .key-submit {
   flex: 1 1 0;
   height: 50px;
-  background: var(--text);
-  color: var(--bg);
-  font-size: 16px;
-  box-shadow: none;
+  border: 1px solid var(--text-faint);
+  color: var(--text);
+  font-size: 17px;
+  font-weight: 600;
 }
 
 /* 누른 글자를 키 위로 확대해 띄운다 (2026-09-19). 손가락이 34px 키를 덮어 무엇을 눌렀는지
@@ -1106,8 +1109,8 @@ button.tag {
   /* .key 보다 특이도가 높아야 한다 — 안 그러면 확인 키가 글자 키 배경을 뒤집어쓰고
      어두운 글자만 남아 안 보인다 (사용자 지적 2026-09-19) */
   :root:not([data-theme='light']) .key-submit {
-    background: var(--text);
-    color: var(--bg);
+    background: color-mix(in oklab, var(--bg), var(--text) 24%);
+    color: var(--text);
   }
   :root:not([data-theme='light']) .key-pop {
     background: color-mix(in oklab, var(--bg), var(--text) 32%);
@@ -1126,8 +1129,8 @@ button.tag {
   background: var(--border);
 }
 :root[data-theme='dark'] .key-submit {
-  background: var(--text);
-  color: var(--bg);
+  background: color-mix(in oklab, var(--bg), var(--text) 24%);
+  color: var(--text);
 }
 :root[data-theme='dark'] .key-pop {
   background: color-mix(in oklab, var(--bg), var(--text) 32%);
