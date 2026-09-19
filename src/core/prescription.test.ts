@@ -24,9 +24,9 @@ function report(over: Partial<Report> = {}): Report {
 function level(over: Partial<LevelProfile> = {}): LevelProfile {
   return {
     bands: [
-      { band: 1, seen: 40, correct: 38, rate: 0.95, status: 'solid' },
-      { band: 2, seen: 40, correct: 20, rate: 0.5, status: 'shaky' },
-      { band: 3, seen: 0, correct: 0, rate: 0, status: 'unseen' },
+      { band: 1, seen: 40, correct: 38, rate: 0.95, status: 'solid', met: 60, stable: 44 },
+      { band: 2, seen: 40, correct: 20, rate: 0.5, status: 'shaky', met: 50, stable: 12 },
+      { band: 3, seen: 0, correct: 0, rate: 0, status: 'unseen', met: 0, stable: 0 },
     ],
     solidThrough: 1,
     edge: 2,

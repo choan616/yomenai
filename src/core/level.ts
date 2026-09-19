@@ -1,7 +1,8 @@
-// 읽기 수준 — 밴드별 정답률과 "경계선". 리포트 최상단이 답해야 할 질문은 "내가 어디쯤인가"다 (PLAN §4/§7)
+// 읽기 수준 — 밴드별 "붙은 숙어"와 "경계선". 리포트 최상단이 답해야 할 질문은 "내가 어디쯤인가"다 (PLAN §4/§7)
+import { State } from 'ts-fsrs'
 import { DIAGNOSTIC_BANDS } from './diagnostic.ts'
 import type { Band } from '../lib/bands.ts'
-import { compareEvents, type LearningEvent } from './types.ts'
+import { cardKey, compareEvents, type CardState, type LearningEvent } from './types.ts'
 
 /** 밴드 하나에 판정을 내리는 데 필요한 최소 노출 수. 그 아래는 `thin`(표본 부족)이다 */
 export const LEVEL_MIN_SEEN = 5
@@ -24,6 +25,13 @@ export const LEVEL_SOLID_RATE = 0.8
  */
 export const LEVEL_WINDOW = 30
 
+/**
+ * 읽기 카드가 "붙었다"고 보는 FSRS 안정 간격. 뜻 카드의 `MEANING_STABLE_DAYS`(21)와
+ * 따로 두는 이유는 시뮬레이션이 14 를 골랐기 때문이다 (`npm run sim:level`, 2026-09-19 절) —
+ * 7일이면 아직 안 익힌 것까지 세고(오차 +16.5%p), 21일이면 익힌 것을 한참 빼먹는다(−15.9%p).
+ */
+export const READING_STABLE_DAYS = 14
+
 export type BandStatus = 'solid' | 'shaky' | 'thin' | 'unseen'
 
 export interface BandRow {
@@ -34,6 +42,14 @@ export interface BandRow {
   /** correct / seen. seen 이 0 이면 0 */
   rate: number
   status: BandStatus
+  /** 읽기 카드가 생긴 숙어 수 — "만난" 것 */
+  met: number
+  /**
+   * 그중 붙은 숙어 수. **이쪽이 수준이다** — 정답률은 순간 상태(흔들림)라 표본이 흔들면
+   * 같이 흔들리지만(실측: 300세션에 억울한 뒤집힘 37회), 붙은 개수는 안 흔들린다(0회).
+   * 카드 상태를 안 넘기면 0 이다
+   */
+  stable: number
 }
 
 export interface LevelProfile {
@@ -63,6 +79,8 @@ function statusOf(seen: number, correct: number): BandStatus {
 export function buildLevel(
   events: readonly LearningEvent[],
   bandOf: (idiomId: string) => Band | undefined,
+  /** 재생해 둔 카드 상태. 있으면 밴드별 "붙은 숙어"를 같이 센다 */
+  cards?: ReadonlyMap<string, CardState>,
 ): LevelProfile {
   // 밴드별로 시간순 채점 이력을 모은다. 뒤에서 `LEVEL_WINDOW` 개만 판정에 쓴다
   const history = new Map<Band, boolean[]>()
@@ -79,11 +97,32 @@ export function buildLevel(
 
   const bands = [...new Set<Band>([...DIAGNOSTIC_BANDS, ...history.keys()])].sort((a, b) => a - b)
 
+  // 밴드별 만난 숙어 / 붙은 숙어 — 정답률과 달리 창을 안 씌운다. 재고는 쌓인 것 전부다
+  const met = new Map<Band, number>()
+  const stable = new Map<Band, number>()
+  for (const [key, st] of cards ?? []) {
+    if (st.cardType !== 'reading' || key !== cardKey(st.idiomId, 'reading')) continue
+    const band = bandOf(st.idiomId)
+    if (band === undefined) continue
+    met.set(band, (met.get(band) ?? 0) + 1)
+    if (st.card.state === State.Review && st.card.stability >= READING_STABLE_DAYS) {
+      stable.set(band, (stable.get(band) ?? 0) + 1)
+    }
+  }
+
   const rows: BandRow[] = bands.map((band) => {
     const recent = (history.get(band) ?? []).slice(-LEVEL_WINDOW)
     const s = recent.length
     const c = recent.filter(Boolean).length
-    return { band, seen: s, correct: c, rate: s > 0 ? c / s : 0, status: statusOf(s, c) }
+    return {
+      band,
+      seen: s,
+      correct: c,
+      rate: s > 0 ? c / s : 0,
+      status: statusOf(s, c),
+      met: met.get(band) ?? 0,
+      stable: stable.get(band) ?? 0,
+    }
   })
 
   let solidThrough: Band | null = null

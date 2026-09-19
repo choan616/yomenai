@@ -5,6 +5,7 @@ import {
   LEVEL_MIN_SEEN,
   LEVEL_SOLID_RATE,
   LEVEL_WINDOW,
+  READING_STABLE_DAYS,
   type BandRow,
   type LevelProfile,
 } from '../core/level.ts'
@@ -101,7 +102,7 @@ export function Report({
           const it = byId.get(id)
           return it ? { headword: it.headword, reading: it.reading } : undefined
         })
-        const level = buildLevel(events, (id) => byId.get(id)?.band)
+        const level = buildLevel(events, (id) => byId.get(id)?.band, state.cards)
         const voicing = voicingCounts(classifiedMistakes(events), again)
         // 미분류 중 답이 있는 몫만 「잘못 읽기」다. 넘김(빈 답)은 이름 이전에 답이 없다
         const passed = passedCount(events)
@@ -363,9 +364,10 @@ function LevelSection({
       <p className="stat-line">
         읽기 {reviews}회 · 전체 정답률 {accuracy}%
       </p>
-      {/* 한 화면에 정답률이 두 개다 — 위는 누적 전체, 아래 막대는 밴드별 최근 창.
-          제목으로 무엇을 재는지 밝히고, 판정 기준은 표 끝에 캡션으로 붙인다 */}
-      <p className="ladder-title">밴드 정답률</p>
+      {/* 사다리 숫자는 정답률이 아니라 **붙은 숙어 개수**다 (2026-09-19). 정답률은 순간
+          상태라 표본이 흔들면 같이 뒤집히는데, 수준은 쌓인 것이라 그러면 안 된다.
+          정답률은 상태 줄(안정/흔들림)에 남겨 경계선을 긋는 데만 쓴다 */}
+      <p className="ladder-title">밴드별 붙은 숙어</p>
 
       <div className="ladder">
         {level.bands.map((b, i) => (
@@ -382,22 +384,23 @@ function LevelSection({
                 <span className="dim"> {BAND_NOTE[b.band]}</span>
               </span>
               <span className="bar-track">
-                {b.seen > 0 && (
+                {b.met > 0 && (
                   <span
                     className={`bar-fill${b.status === 'shaky' ? '' : ' ok'}`}
-                    style={{ width: `${Math.round(b.rate * 100)}%` }}
+                    style={{ width: `${Math.round((b.stable / b.met) * 100)}%` }}
                     aria-hidden="true"
                   />
                 )}
               </span>
-              <span className="bar-num">{b.seen > 0 ? `${Math.round(b.rate * 100)}%` : '—'}</span>
+              <span className="bar-num">{b.met > 0 ? `${b.stable}개` : '—'}</span>
             </div>
             <p className="band-note">
               {BAND_STATUS_LABEL[b.status]}
+              {b.met > 0 && <span className="dim"> · 만난 {b.met}개</span>}
               {b.seen > 0 && (
                 <span className="dim">
                   {' '}
-                  · {b.correct}/{b.seen}
+                  · 최근 {b.seen}회 {Math.round(b.rate * 100)}%
                 </span>
               )}
             </p>
@@ -405,8 +408,8 @@ function LevelSection({
         ))}
       </div>
       <p className="ladder-caption">
-        최근 {LEVEL_WINDOW}회 기준 · {Math.round(LEVEL_SOLID_RATE * 100)}% 이상 안정 ·
-        {Math.round(LEVEL_SOLID_RATE * 100)}% 미만 흔들림 · {LEVEL_MIN_SEEN}회 미만 표본 부족
+        붙음 = {READING_STABLE_DAYS}일 이상 안 잊는 상태 · 안정·흔들림은 최근 {LEVEL_WINDOW}회
+        정답률 {Math.round(LEVEL_SOLID_RATE * 100)}% 기준 · {LEVEL_MIN_SEEN}회 미만 표본 부족
       </p>
     </section>
   )

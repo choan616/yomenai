@@ -1,8 +1,10 @@
 // 읽기 수준 — 밴드별 판정과 경계선 위치 (Phase 10)
 import { describe, expect, it } from 'vitest'
-import { buildLevel, LEVEL_MIN_SEEN, LEVEL_WINDOW } from './level.ts'
+import { State } from 'ts-fsrs'
+import { buildLevel, LEVEL_MIN_SEEN, LEVEL_WINDOW, READING_STABLE_DAYS } from './level.ts'
+import { newCard } from './scheduler.ts'
 import type { Band } from '../lib/bands.ts'
-import type { LearningEvent } from './types.ts'
+import { cardKey, type CardState, type LearningEvent } from './types.ts'
 
 const band: Record<string, Band> = { b1: 1, b2: 2, b3: 3, b4: 4 }
 let n = 0
@@ -117,5 +119,74 @@ describe('밴드 판정은 최근 LEVEL_WINDOW 회만 본다 (2026-09-13)', () =
     const late = run('b1', LEVEL_WINDOW, 0) // at 이 크다
     const shuffled = [...late, ...early] // 일부러 거꾸로 넘긴다
     expect(buildLevel(shuffled, bandOf).bands.find((b) => b.band === 1)!.rate).toBe(1)
+  })
+})
+
+describe('buildLevel — 붙은 숙어 (재고)', () => {
+  const card = (stability: number, state: State) => ({
+    ...newCard(0),
+    state,
+    stability,
+    due: new Date(0),
+  })
+  const cardState = (idiomId: string, stability: number, state = State.Review): CardState => ({
+    idiomId,
+    cardType: 'reading' as const,
+    card: card(stability, state),
+    mistakes: {},
+    wrong: 0,
+    streak: 0,
+    lastAt: 1,
+  })
+  const cards = (...rows: CardState[]) =>
+    new Map(rows.map((r) => [cardKey(r.idiomId, r.cardType), r]))
+
+  it('카드 상태를 안 넘기면 0 이다 — 기존 호출부가 안 깨진다', () => {
+    const level = buildLevel(run('b1', 10, 0), bandOf)
+    expect(level.bands[0].met).toBe(0)
+    expect(level.bands[0].stable).toBe(0)
+  })
+
+  it('안정 문턱을 넘긴 읽기 카드만 센다', () => {
+    const level = buildLevel(
+      run('b1', 10, 0),
+      (id) => (id.startsWith('b1') ? 1 : undefined),
+      cards(
+        cardState('b1a', READING_STABLE_DAYS + 1),
+        cardState('b1b', READING_STABLE_DAYS - 1),
+        cardState('b1c', READING_STABLE_DAYS),
+      ),
+    )
+    expect(level.bands[0].met).toBe(3)
+    expect(level.bands[0].stable).toBe(2)
+  })
+
+  it('재학습 중인 카드는 간격이 길어도 안 센다 — 지금 틀리고 있는 것이다', () => {
+    const level = buildLevel(
+      [],
+      () => 1,
+      cards(cardState('x', READING_STABLE_DAYS + 30, State.Relearning)),
+    )
+    expect(level.bands[0].met).toBe(1)
+    expect(level.bands[0].stable).toBe(0)
+  })
+
+  it('뜻 카드는 안 센다 — 읽기 수준이다', () => {
+    const meaning: CardState = {
+      ...cardState('m', READING_STABLE_DAYS + 10),
+      cardType: 'meaning' as const,
+    }
+    const level = buildLevel([], () => 1, new Map([[cardKey('m', 'meaning'), meaning]]))
+    expect(level.bands[0].met).toBe(0)
+  })
+
+  it('정답률이 흔들려도 붙은 개수는 그대로다 — 이게 수준과 흔들림을 가르는 지점이다', () => {
+    const shaky = buildLevel(
+      run('b1', 5, 5),
+      (id) => (id.startsWith('b1') ? 1 : undefined),
+      cards(cardState('b1a', READING_STABLE_DAYS + 1), cardState('b1b', READING_STABLE_DAYS + 1)),
+    )
+    expect(shaky.bands[0].status).toBe('shaky')
+    expect(shaky.bands[0].stable).toBe(2)
   })
 })
