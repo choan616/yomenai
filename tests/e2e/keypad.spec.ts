@@ -43,13 +43,11 @@ test('로마자 자판으로 쳐서 가나가 들어가고 채점까지 간다',
   await key('a').click()
   await expect(input).toHaveValue('か')
 
-  // 장음 키
-  await key('ー').click()
-  await expect(input).toHaveValue('かー')
-
   // 지우기
   await keypad.getByRole('button', { name: '지우기' }).click()
-  await expect(input).toHaveValue('か')
+  await expect(input).toHaveValue('')
+  await key('k').click()
+  await key('a').click()
 
   // 촉음 — 자음을 겹치면 っ 가 된다 (로마자 입력의 기본)
   for (const ch of ['t', 't', 'a']) await key(ch).click()
@@ -58,4 +56,26 @@ test('로마자 자판으로 쳐서 가나가 들어가고 채점까지 간다',
   // 확인 키로 채점까지 간다
   await keypad.getByRole('button', { name: '확인' }).click()
   await expect(page.locator('.card.feedback')).toBeVisible()
+})
+
+test('누른 글자를 키 위로 확대해 보여준다', async ({ page }) => {
+  await page.goto('/')
+  await reachReadingCard(page)
+  const keypad = page.locator('.keypad')
+  const s = keypad.getByRole('button', { name: 's', exact: true })
+
+  // 누르기 전에는 없다
+  await expect(page.locator('.key-pop')).toHaveCount(0)
+
+  // 손가락을 얹은 동안만 뜬다
+  await s.dispatchEvent('pointerdown')
+  await expect(page.locator('.key-pop')).toHaveText('s')
+  await s.dispatchEvent('pointerup')
+  await expect(page.locator('.key-pop')).toHaveCount(0)
+})
+
+test('장음 키는 없다 — 밴드 0~3 읽기에 ー 가 한 건도 없다', async ({ page }) => {
+  await page.goto('/')
+  await reachReadingCard(page)
+  await expect(page.locator('.keypad').getByRole('button', { name: 'ー', exact: true })).toHaveCount(0)
 })

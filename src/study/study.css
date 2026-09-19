@@ -974,12 +974,17 @@ button.tag {
    시스템 키보드를 안 띄우니(inputMode="none") 자동 완성 후보도 Safari 악세서리 바(44px)도
    없고, iOS 가 기억한 한글 자판이 끼어들 자리도 없다. 높이는 iOS 키보드의 2/3 쯤이라
    한자에 돌아가는 세로 공간이 오히려 늘었다.
-   **물리 키보드가 있는 환경에서는 숨긴다** — PC 는 inputMode 와 무관하게 그냥 쳐서 넣는다 */
+   **물리 키보드가 있는 환경에서는 숨긴다** — PC 는 inputMode 와 무관하게 그냥 쳐서 넣는다.
+   색은 시스템 키보드의 구성을 따른다 (사용자 요청 2026-09-19) — 자판 바닥이 한 톤 가라앉고
+   키가 그 위로 떠 보이는 구조. 무채색 원칙은 그대로라 새 색상값을 안 만들고 기존 토큰만 쓴다 */
 .keypad {
   display: none;
   flex-direction: column;
-  gap: 6px;
-  padding-top: 6px;
+  gap: 7px;
+  margin: 8px -20px 0;
+  padding: 8px 6px calc(8px + env(safe-area-inset-bottom, 0px));
+  background: var(--surface-2);
+  border-top: 1px solid var(--border);
 }
 @media (hover: none) and (pointer: coarse) {
   .keypad {
@@ -992,37 +997,56 @@ button.tag {
   .answer-row.input {
     grid-template-columns: 1fr;
   }
+  /* 자판이 아래 여백을 맡는다 — 카드 하단이 두 번 띄우지 않게 */
+  .card-bottom {
+    padding-bottom: 0;
+  }
 }
 .keypad-row {
   display: flex;
-  gap: 5px;
+  gap: 6px;
   justify-content: center;
 }
 .key {
+  position: relative;
   flex: 1 1 0;
   min-width: 0;
-  height: 44px;
+  /* 44px(iOS 권장)와 48dp(안드로이드 권장) 사이. 어느 쪽에서도 작지 않다 */
+  height: 46px;
   padding: 0;
   border: 0;
-  border-radius: 6px;
-  background: var(--surface-2);
+  border-radius: 7px;
+  background: var(--surface);
   color: var(--text);
   font-family: inherit;
-  font-size: 18px;
+  font-size: 19px;
+  /* 시스템 키보드 키의 아래 그림자 한 줄 — 키가 바닥에서 떠 보인다 */
+  box-shadow: 0 1px 0 var(--border);
   /* 연타할 때 길게 누름·선택·확대가 끼어들지 않게 한다 */
   touch-action: manipulation;
   user-select: none;
 }
 .key:active {
-  background: var(--border);
+  background: var(--surface-2);
+  box-shadow: none;
 }
 .key[disabled] {
   opacity: 0.4;
 }
-/* 마지막 줄 양끝(장음·지우기)은 글자 키보다 조금 넓게 — 시스템 키보드의 shift·backspace 자리 */
+/* 기능 키는 시스템 키보드처럼 한 톤 가라앉힌다 (글자 키보다 뒤로) */
 .key-wide {
-  flex: 1.4 1 0;
+  flex: 1.5 1 0;
   font-size: 16px;
+  background: var(--border);
+  box-shadow: none;
+}
+/* 마지막 줄 왼쪽 빈자리 — 글자 키를 윗줄과 맞춘다 (시스템 키보드의 shift 자리) */
+.key-spacer {
+  flex: 1.5 1 0;
+}
+/* 가운데 줄 양끝 반 칸 — 9키 줄의 키 폭을 10키 줄과 같게 유지한다 */
+.key-half {
+  flex: 0.5 1 0;
 }
 .key-submit {
   flex: 1 1 0;
@@ -1030,4 +1054,67 @@ button.tag {
   background: var(--text);
   color: var(--bg);
   font-size: 16px;
+  box-shadow: none;
+}
+
+/* 누른 글자를 키 위로 확대해 띄운다 (2026-09-19). 손가락이 34px 키를 덮어 무엇을 눌렀는지
+   안 보이는 건 시스템 키보드와 같은 문제라, 같은 처방을 쓴다. 기능 키(⌫·확인)엔 안 붙인다 */
+.key-pop {
+  position: absolute;
+  left: 50%;
+  /* **키 바닥에서 시작해 위로 자란다** — 눌린 키를 덮으며 하나의 덩어리가 되어야
+     어느 키인지가 모양으로 읽힌다. 떠 있는 말풍선은 옆 키와 헷갈린다 (사용자 지적 2026-09-19) */
+  bottom: 0;
+  transform: translateX(-50%);
+  width: 172%;
+  height: calc(100% + 38px);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 4px;
+  border-radius: 9px;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 30px;
+  line-height: 1.1;
+  box-shadow: 0 2px 10px rgb(0 0 0 / 0.35);
+  pointer-events: none;
+  /* 윗줄 키는 덩어리가 입력창 위로 올라간다 — 가려도 되는 자리다 */
+  z-index: 3;
+}
+
+/* 다크에서는 키가 바닥보다 **밝아야** 시스템 키보드와 같은 층위가 된다 (iOS·Gboard 공통).
+   라이트에서는 흰 키가 회색 바닥 위에 뜨는데, 토큰 두 개(--surface, --surface-2)의 명도
+   관계가 다크에서 뒤집혀 있어 여기서만 다시 잡는다. 새 색상값은 안 만든다 */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .keypad {
+    background: var(--bg);
+  }
+  :root:not([data-theme='light']) .key {
+    background: var(--surface-2);
+  }
+  :root:not([data-theme='light']) .key-wide {
+    background: var(--surface);
+  }
+  :root:not([data-theme='light']) .key:active {
+    background: var(--border);
+  }
+  :root:not([data-theme='light']) .key-pop {
+    background: var(--surface-2);
+  }
+}
+:root[data-theme='dark'] .keypad {
+  background: var(--bg);
+}
+:root[data-theme='dark'] .key {
+  background: var(--surface-2);
+}
+:root[data-theme='dark'] .key-wide {
+  background: var(--surface);
+}
+:root[data-theme='dark'] .key:active {
+  background: var(--border);
+}
+:root[data-theme='dark'] .key-pop {
+  background: var(--surface-2);
 }

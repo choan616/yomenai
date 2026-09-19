@@ -6,6 +6,7 @@ import { bind, unbind } from 'wanakana'
 import type { DiffChar } from '../core/answerDiff.ts'
 import { hasHangul } from '../lib/hangul.ts'
 import { RomajiKeypad } from './RomajiKeypad.tsx'
+import { useCoarsePointer } from './useCoarsePointer.ts'
 
 /**
  * 자판 버튼이 누른 글자를 입력창에 넣는다. 값을 직접 대입하지 않고 `execCommand` 로 넣는 이유는
@@ -54,6 +55,8 @@ export function KanaInput({ onSubmit, resetKey, locked, diff }: Props) {
    */
   const [warnedFor, setWarnedFor] = useState<string | number | null>(null)
   const keyboardWarning = warnedFor === resetKey
+  /** 손가락 기기에서만 자체 자판을 쓴다. PC 는 물리 키보드가 있어 자판이 방해만 된다 */
+  const keypad = useCoarsePointer()
 
   /**
    * 빈/공백뿐인 값은 제출하지 않는다. 다음 문제로 넘어가면 입력창이 auto-focus 되는데,
@@ -117,11 +120,12 @@ export function KanaInput({ onSubmit, resetKey, locked, diff }: Props) {
                name 도 준다 — 이름 없는 필드는 브라우저가 내용을 넘겨짚는다 */
             lang="en"
             name="reading"
-            /* 시스템 키보드를 아예 안 띄운다 — 아래 RomajiKeypad 가 대신한다 (2026-09-19).
+            /* 자체 자판을 띄우는 기기에서만 시스템 키보드를 막는다 (2026-09-19).
                "url" 이었는데(ASCII 키보드로 IME 후보 바를 피하려고) iOS 가 마지막에 쓴 키보드를
                기억해 한글 자판이 먼저 뜨는 걸 막지 못했다. 웹엔 키보드 언어를 고르는 수단이 없다.
-               물리 키보드 입력은 "none" 이어도 그대로 들어온다 — PC 는 영향 없다 */
-            inputMode="none"
+               **둘을 한 조건으로 묶는 게 중요하다** — 자판은 숨겼는데 "none" 만 남으면
+               시스템 키보드도 자체 자판도 없어 아무것도 못 친다 */
+            inputMode={keypad ? 'none' : 'url'}
             autoCapitalize="none"
             autoComplete="off"
             autoCorrect="off"
@@ -156,28 +160,32 @@ export function KanaInput({ onSubmit, resetKey, locked, diff }: Props) {
             </div>
           )}
         </div>
-        <button type="button" className="btn-primary" disabled={locked} onClick={submit}>
-          확인
-        </button>
+        {/* 자체 자판에 확인 키가 있으니 그때는 이 버튼을 안 낸다 */}
+        {!keypad && (
+          <button type="button" className="btn-primary" disabled={locked} onClick={submit}>
+            확인
+          </button>
+        )}
       </div>
       {keyboardWarning && (
         <p className="kbd-warning" role="alert">
           한글이 섞였어요. 영문 키보드로 바꿔서 로마자로 입력해 주세요.
         </p>
       )}
-      {/* 물리 키보드가 있는 환경에서는 CSS 가 숨긴다 — 자리만 먹는다 */}
-      <RomajiKeypad
-        onKey={(ch) => {
-          const el = ref.current
-          if (el && !locked) typeInto(el, ch)
-        }}
-        onBackspace={() => {
-          const el = ref.current
-          if (el && !locked) deleteBack(el)
-        }}
-        onSubmit={submit}
-        disabled={locked}
-      />
+      {keypad && (
+        <RomajiKeypad
+          onKey={(ch) => {
+            const el = ref.current
+            if (el && !locked) typeInto(el, ch)
+          }}
+          onBackspace={() => {
+            const el = ref.current
+            if (el && !locked) deleteBack(el)
+          }}
+          onSubmit={submit}
+          disabled={locked}
+        />
+      )}
     </>
   )
 }
