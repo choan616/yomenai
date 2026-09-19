@@ -5,6 +5,27 @@ import { useEffect, useRef, useState } from 'react'
 import { bind, unbind } from 'wanakana'
 import type { DiffChar } from '../core/answerDiff.ts'
 import { hasHangul } from '../lib/hangul.ts'
+import { RomajiKeypad } from './RomajiKeypad.tsx'
+
+/**
+ * 자판 버튼이 누른 글자를 입력창에 넣는다. 값을 직접 대입하지 않고 `execCommand` 로 넣는 이유는
+ * **wanakana 가 input 이벤트로 변환하기 때문**이다 — 대입은 이벤트를 안 내서 로마자가 그대로 남는다.
+ * execCommand 는 네이티브 beforeinput/input 을 내고 캐럿 위치도 알아서 옮긴다.
+ * 실패하면(지원 안 하는 환경) 값 대입 + 합성 이벤트로 물러선다
+ */
+function typeInto(el: HTMLInputElement, text: string): void {
+  el.focus()
+  if (document.execCommand('insertText', false, text)) return
+  el.value += text
+  el.dispatchEvent(new InputEvent('input', { bubbles: true, inputType: 'insertText', data: text }))
+}
+
+function deleteBack(el: HTMLInputElement): void {
+  el.focus()
+  if (document.execCommand('delete')) return
+  el.value = el.value.slice(0, -1)
+  el.dispatchEvent(new InputEvent('input', { bubbles: true, inputType: 'deleteContentBackward' }))
+}
 
 interface Props {
   onSubmit: (value: string) => void
@@ -96,7 +117,11 @@ export function KanaInput({ onSubmit, resetKey, locked, diff }: Props) {
                name 도 준다 — 이름 없는 필드는 브라우저가 내용을 넘겨짚는다 */
             lang="en"
             name="reading"
-            inputMode="url"
+            /* 시스템 키보드를 아예 안 띄운다 — 아래 RomajiKeypad 가 대신한다 (2026-09-19).
+               "url" 이었는데(ASCII 키보드로 IME 후보 바를 피하려고) iOS 가 마지막에 쓴 키보드를
+               기억해 한글 자판이 먼저 뜨는 걸 막지 못했다. 웹엔 키보드 언어를 고르는 수단이 없다.
+               물리 키보드 입력은 "none" 이어도 그대로 들어온다 — PC 는 영향 없다 */
+            inputMode="none"
             autoCapitalize="none"
             autoComplete="off"
             autoCorrect="off"
@@ -140,6 +165,19 @@ export function KanaInput({ onSubmit, resetKey, locked, diff }: Props) {
           한글이 섞였어요. 영문 키보드로 바꿔서 로마자로 입력해 주세요.
         </p>
       )}
+      {/* 물리 키보드가 있는 환경에서는 CSS 가 숨긴다 — 자리만 먹는다 */}
+      <RomajiKeypad
+        onKey={(ch) => {
+          const el = ref.current
+          if (el && !locked) typeInto(el, ch)
+        }}
+        onBackspace={() => {
+          const el = ref.current
+          if (el && !locked) deleteBack(el)
+        }}
+        onSubmit={submit}
+        disabled={locked}
+      />
     </>
   )
 }

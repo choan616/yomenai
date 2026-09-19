@@ -969,3 +969,65 @@ button.tag {
   font-size: 13px;
   color: var(--ng);
 }
+
+/* ── 앱이 직접 그리는 로마자 자판 (2026-09-19) ──
+   시스템 키보드를 안 띄우니(inputMode="none") 자동 완성 후보도 Safari 악세서리 바(44px)도
+   없고, iOS 가 기억한 한글 자판이 끼어들 자리도 없다. 높이는 iOS 키보드의 2/3 쯤이라
+   한자에 돌아가는 세로 공간이 오히려 늘었다.
+   **물리 키보드가 있는 환경에서는 숨긴다** — PC 는 inputMode 와 무관하게 그냥 쳐서 넣는다 */
+.keypad {
+  display: none;
+  flex-direction: column;
+  gap: 6px;
+  padding-top: 6px;
+}
+@media (hover: none) and (pointer: coarse) {
+  .keypad {
+    display: flex;
+  }
+  /* 자판에 확인 키가 있으니 입력 옆 버튼은 자리만 먹는다 */
+  .answer-row.input > .btn-primary {
+    display: none;
+  }
+  .answer-row.input {
+    grid-template-columns: 1fr;
+  }
+}
+.keypad-row {
+  display: flex;
+  gap: 5px;
+  justify-content: center;
+}
+.key {
+  flex: 1 1 0;
+  min-width: 0;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: var(--surface-2);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 18px;
+  /* 연타할 때 길게 누름·선택·확대가 끼어들지 않게 한다 */
+  touch-action: manipulation;
+  user-select: none;
+}
+.key:active {
+  background: var(--border);
+}
+.key[disabled] {
+  opacity: 0.4;
+}
+/* 마지막 줄 양끝(장음·지우기)은 글자 키보다 조금 넓게 — 시스템 키보드의 shift·backspace 자리 */
+.key-wide {
+  flex: 1.4 1 0;
+  font-size: 16px;
+}
+.key-submit {
+  flex: 1 1 0;
+  height: 46px;
+  background: var(--text);
+  color: var(--bg);
+  font-size: 16px;
+}
