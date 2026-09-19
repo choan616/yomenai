@@ -172,7 +172,10 @@ export function KanaInput({ onSubmit, resetKey, locked, diff }: Props) {
           한글이 섞였어요. 영문 키보드로 바꿔서 로마자로 입력해 주세요.
         </p>
       )}
-      {keypad && (
+      {/* 피드백 중에는 접는다 (2026-09-19 실기기). 칠 수 없는 자판이 250px 을 먹어
+          오답 설명이 잘렸다. 카드 하단이 바닥에 붙어 있어 「다음」 버튼 자리는 그대로고,
+          그만큼이 본문으로 간다 */}
+      {keypad && !locked && (
         <RomajiKeypad
           onKey={(ch) => {
             const el = ref.current
@@ -183,7 +186,6 @@ export function KanaInput({ onSubmit, resetKey, locked, diff }: Props) {
             if (el && !locked) deleteBack(el)
           }}
           onSubmit={submit}
-          disabled={locked}
         />
       )}
     </>

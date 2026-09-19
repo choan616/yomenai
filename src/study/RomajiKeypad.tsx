@@ -15,12 +15,10 @@ export function RomajiKeypad({
   onKey,
   onBackspace,
   onSubmit,
-  disabled,
 }: {
   onKey: (ch: string) => void
   onBackspace: () => void
   onSubmit: () => void
-  disabled?: boolean
 }) {
   /**
    * 지금 손가락이 얹힌 글자 키. 손가락이 키를 덮어 무엇을 눌렀는지 안 보이는 건 34px 키나
@@ -36,11 +34,16 @@ export function RomajiKeypad({
    */
   const hold = (e: React.PointerEvent) => e.preventDefault()
 
-  /** 글자 키에만 붙는다 — 시스템 키보드도 지우기·확인 같은 기능 키는 확대하지 않는다 */
+  /**
+   * 글자 키. **누르는 순간 넣는다** — click 은 손을 뗄 때 와서 한 박자 늦게 느껴진다
+   * (사용자 실기기 지적 2026-09-19 "반응속도가 느리다"). 시스템 키보드도 눌림에 글자를 낸다.
+   * 확대 표시는 글자 키에만 붙인다 — 시스템 키보드도 지우기·확인 같은 기능 키는 확대하지 않는다
+   */
   const charKey = (ch: string) => ({
     onPointerDown: (e: React.PointerEvent) => {
       hold(e)
       setPressed(ch)
+      onKey(ch)
     },
     onPointerUp: () => setPressed(null),
     onPointerCancel: () => setPressed(null),
@@ -72,8 +75,6 @@ export function RomajiKeypad({
               className="key"
               key={ch}
               {...charKey(ch)}
-              onClick={() => onKey(ch)}
-              disabled={disabled}
             >
               {ch}
               {pop(ch)}
@@ -84,9 +85,10 @@ export function RomajiKeypad({
             <button
               type="button"
               className="key key-wide"
-              onPointerDown={hold}
-              onClick={onBackspace}
-              disabled={disabled}
+              onPointerDown={(e) => {
+                hold(e)
+                onBackspace()
+              }}
               aria-label="지우기"
             >
               ⌫
@@ -98,9 +100,10 @@ export function RomajiKeypad({
         <button
           type="button"
           className="key key-submit"
-          onPointerDown={hold}
-          onClick={onSubmit}
-          disabled={disabled}
+          onPointerDown={(e) => {
+            hold(e)
+            onSubmit()
+          }}
         >
           확인
         </button>

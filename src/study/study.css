@@ -612,7 +612,8 @@ button.tag {
 }
 .summary-stats dd {
   margin: 3px 0 0;
-  font-size: 21px;
+  /* 참고한 시스템 키보드는 키 대비 글자가 크다 — 같은 폭이어도 글자가 작으면 작아 보인다 */
+  font-size: 25px;
   font-variant-numeric: tabular-nums;
 }
 .summary-stats .dd-label {
@@ -980,9 +981,10 @@ button.tag {
 .keypad {
   display: none;
   flex-direction: column;
-  gap: 7px;
+  gap: 8px;
   margin: 8px -20px 0;
-  padding: 8px 6px calc(8px + env(safe-area-inset-bottom, 0px));
+  /* 좌우 여백을 최소로 — 그만큼이 키 폭이 된다 (사용자 실기기 지적 "키가 작다") */
+  padding: 8px 4px calc(8px + env(safe-area-inset-bottom, 0px));
   background: var(--surface-2);
   border-top: 1px solid var(--border);
 }
@@ -1004,22 +1006,23 @@ button.tag {
 }
 .keypad-row {
   display: flex;
-  gap: 6px;
+  gap: 5px;
   justify-content: center;
 }
 .key {
   position: relative;
   flex: 1 1 0;
   min-width: 0;
-  /* 44px(iOS 권장)와 48dp(안드로이드 권장) 사이. 어느 쪽에서도 작지 않다 */
-  height: 46px;
+  /* 시스템 키보드보다 **크게** 잡는다 — 세로는 자판이 짧아 남는다 (사용자 실기기 지적).
+     iPhone 8 기준 시스템 키가 42px 인데 여기는 54px 다 */
+  height: 52px;
   padding: 0;
   border: 0;
-  border-radius: 7px;
+  border-radius: 9px;
   background: var(--surface);
   color: var(--text);
   font-family: inherit;
-  font-size: 19px;
+  font-size: 21px;
   /* 시스템 키보드 키의 아래 그림자 한 줄 — 키가 바닥에서 떠 보인다 */
   box-shadow: 0 1px 0 var(--border);
   /* 연타할 때 길게 누름·선택·확대가 끼어들지 않게 한다 */
@@ -1050,7 +1053,7 @@ button.tag {
 }
 .key-submit {
   flex: 1 1 0;
-  height: 46px;
+  height: 50px;
   background: var(--text);
   color: var(--bg);
   font-size: 16px;
@@ -1088,33 +1091,44 @@ button.tag {
    관계가 다크에서 뒤집혀 있어 여기서만 다시 잡는다. 새 색상값은 안 만든다 */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) .keypad {
-    background: var(--bg);
+    background: color-mix(in oklab, var(--bg), var(--text) 7%);
   }
   :root:not([data-theme='light']) .key {
-    background: var(--surface-2);
+    /* 토큰 두 개로는 대비가 모자라 바닥에서 글자색 쪽으로 섞는다. 새 색상값은 아니다 */
+    background: color-mix(in oklab, var(--bg), var(--text) 24%);
   }
   :root:not([data-theme='light']) .key-wide {
-    background: var(--surface);
+    background: color-mix(in oklab, var(--bg), var(--text) 15%);
   }
   :root:not([data-theme='light']) .key:active {
     background: var(--border);
   }
+  /* .key 보다 특이도가 높아야 한다 — 안 그러면 확인 키가 글자 키 배경을 뒤집어쓰고
+     어두운 글자만 남아 안 보인다 (사용자 지적 2026-09-19) */
+  :root:not([data-theme='light']) .key-submit {
+    background: var(--text);
+    color: var(--bg);
+  }
   :root:not([data-theme='light']) .key-pop {
-    background: var(--surface-2);
+    background: color-mix(in oklab, var(--bg), var(--text) 32%);
   }
 }
 :root[data-theme='dark'] .keypad {
-  background: var(--bg);
+  background: color-mix(in oklab, var(--bg), var(--text) 7%);
 }
 :root[data-theme='dark'] .key {
-  background: var(--surface-2);
+  background: color-mix(in oklab, var(--bg), var(--text) 24%);
 }
 :root[data-theme='dark'] .key-wide {
-  background: var(--surface);
+  background: color-mix(in oklab, var(--bg), var(--text) 15%);
 }
 :root[data-theme='dark'] .key:active {
   background: var(--border);
 }
+:root[data-theme='dark'] .key-submit {
+  background: var(--text);
+  color: var(--bg);
+}
 :root[data-theme='dark'] .key-pop {
-  background: var(--surface-2);
+  background: color-mix(in oklab, var(--bg), var(--text) 32%);
 }
