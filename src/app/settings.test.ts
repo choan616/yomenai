@@ -10,14 +10,14 @@ describe('parseSettings', () => {
         ratio: { correction: 6, expansion: 4 },
         observeLevel: 'often',
         keyFeedback: 'sound',
-        keypadLayout: 'wide',
+        keypadLayout: 'compact',
       }),
     ).toEqual({
       sessionLimit: 25,
       ratio: { correction: 6, expansion: 4 },
       observeLevel: 'often',
       keyFeedback: 'sound',
-      keypadLayout: 'wide',
+      keypadLayout: 'compact',
     })
   })
 
@@ -74,9 +74,8 @@ describe('parseSettings — 자판 배열', () => {
     expect(parseSettings({}).keypadLayout).toBe('qwerty')
   })
 
-  it('compact·wide 만 받는다', () => {
+  it('compact 만 받는다', () => {
     expect(parseSettings({ keypadLayout: 'compact' }).keypadLayout).toBe('compact')
-    expect(parseSettings({ keypadLayout: 'wide' }).keypadLayout).toBe('wide')
     expect(parseSettings({ keypadLayout: 'dvorak' }).keypadLayout).toBe('qwerty')
   })
 })

@@ -3,7 +3,7 @@ export type ObserveLevel = 'off' | 'normal' | 'often'
 /** 자판 입력 피드백 (2026-09-19). 시스템 키보드를 안 쓰니 키 클릭음·햅틱을 앱이 낸다 */
 export type KeyFeedback = 'off' | 'sound' | 'haptic'
 /** 로마자 자판 배열 (2026-09-20). 근거는 keypadLayouts.ts */
-export type KeypadLayout = 'qwerty' | 'compact' | 'wide'
+export type KeypadLayout = 'qwerty' | 'compact'
 
 export interface Settings {
   sessionLimit: number
@@ -58,7 +58,7 @@ export function parseSettings(raw: unknown): Settings {
       : { ...DEFAULT_SETTINGS.ratio },
     observeLevel: lvl === 'off' || lvl === 'often' ? lvl : DEFAULT_SETTINGS.observeLevel,
     keyFeedback: kf === 'sound' || kf === 'haptic' ? kf : DEFAULT_SETTINGS.keyFeedback,
-    keypadLayout: kl === 'compact' || kl === 'wide' ? kl : DEFAULT_SETTINGS.keypadLayout,
+    keypadLayout: kl === 'compact' ? kl : DEFAULT_SETTINGS.keypadLayout,
   }
 }
 

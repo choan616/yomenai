@@ -4,11 +4,10 @@ import { expect, test, type Page } from '@playwright/test'
 
 // 배열을 소스에서 import 하지 않고 여기 적는다 — 소스가 바뀌면 이 테스트가 같이 바뀌어
 // 통과해 버리면 회귀를 못 잡는다
-type KeypadLayout = 'qwerty' | 'compact' | 'wide'
+type KeypadLayout = 'qwerty' | 'compact'
 const KEYPAD_ROWS: Record<KeypadLayout, string[]> = {
   qwerty: ['qwertyuiop', 'asdfghjkl', 'zxcvbnm'],
   compact: ['wertyuiop', 'asdfghjk', 'zcbnm'],
-  wide: ['wertyuio', 'pasdfgh', 'jkzcbnm'],
 }
 
 test.use({ hasTouch: true, isMobile: true, viewport: { width: 375, height: 667 } })
@@ -29,11 +28,11 @@ async function openSearchKeypad(page: Page): Promise<void> {
   await expect(page.locator('.keypad')).toBeVisible()
 }
 
-test('배열마다 키 폭이 달라지고, 간결·넓게는 안 쓰는 넷이 빠진다', async ({ page }) => {
+test('간결 배열은 안 쓰는 넷을 빼고 키가 넓어진다 — 줄 구성은 그대로다', async ({ page }) => {
   await page.goto('/')
   const widths: Record<string, number> = {}
 
-  for (const layout of ['qwerty', 'compact', 'wide'] as const) {
+  for (const layout of ['qwerty', 'compact'] as const) {
     await setLayout(page, layout)
     await openSearchKeypad(page)
     const keypad = page.locator('.keypad')
@@ -58,7 +57,6 @@ test('배열마다 키 폭이 달라지고, 간결·넓게는 안 쓰는 넷이 
   console.log('키 폭:', JSON.stringify(widths))
   // 키를 키우려고 만든 배열이다 — 실제로 커져야 한다
   expect(widths.compact).toBeGreaterThan(widths.qwerty)
-  expect(widths.wide).toBeGreaterThan(widths.compact)
 })
 
 test('간결 배열로도 읽기를 그대로 친다 — 뺀 글자가 필요 없다', async ({ page }) => {

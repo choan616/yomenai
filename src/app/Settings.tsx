@@ -52,7 +52,7 @@ const OBSERVE_LEVELS: { label: string; value: SettingsData['observeLevel'] }[] =
   { label: '자주', value: 'often' },
 ]
 
-const KEYPAD_LAYOUTS: KeypadLayout[] = ['qwerty', 'compact', 'wide']
+const KEYPAD_LAYOUTS: KeypadLayout[] = ['qwerty', 'compact']
 
 /** 자판 입력 피드백 (2026-09-19). 진동은 기기가 지원해야 고를 수 있다 */
 const KEY_FEEDBACKS: { label: string; value: SettingsData['keyFeedback'] }[] = [
@@ -402,8 +402,8 @@ export function Settings({
             ))}
           </div>
           <span className="hint">
-            일본어 읽기에 안 쓰이는 l·q·v·x 를 뺀 배열이에요 (읽기 10만여 개에서 0회).
-            「간결」은 자리를 그대로 두고 넷만 빼고, 「넓게」는 8키씩 나눠 키가 제일 커요.
+일본어 읽기에 안 쓰이는 l·q·v·x 를 빼면 남은 키가 13% 넓어져요 (읽기 10만여 개에서 0회).
+            순서는 그대로고 자리만 한 칸씩 당겨져요.
           </span>
         </div>
 
