@@ -10,8 +10,7 @@
 import { useState } from 'react'
 import { loadSettings } from '../app/settings.ts'
 import { playKeyClick, vibrateKey } from './keyFeedback.ts'
-
-const ROWS = ['qwertyuiop', 'asdfghjkl', 'zxcvbnm'] as const
+import { KEYPAD_ROWS } from './keypadLayouts.ts'
 
 export function RomajiKeypad({
   onKey,
@@ -39,7 +38,10 @@ export function RomajiKeypad({
    * 입력음·진동. 설정은 자판이 뜰 때 한 번 읽는다 — 자판이 떠 있는 동안 설정 화면에 갈 수 없다.
    * 자판 안에 두는 이유는 쓰는 곳마다(채점·찾기) 같은 코드를 또 쓰지 않으려는 것이다
    */
-  const [feedback] = useState(() => loadSettings().keyFeedback)
+  const [{ keyFeedback: feedback, keypadLayout }] = useState(() => loadSettings())
+  const rows = KEYPAD_ROWS[keypadLayout]
+  /** 마지막 줄만 오른쪽에 ⌫ 가 붙는다 — 배열마다 줄 수가 같아 인덱스로 가른다 */
+  const last = rows.length - 1
   const tick = () => {
     if (feedback === 'sound') playKeyClick()
     else if (feedback === 'haptic') vibrateKey()
@@ -77,16 +79,16 @@ export function RomajiKeypad({
 
   return (
     <div className={`keypad${docked ? ' docked' : ''}`} role="group" aria-label="로마자 자판">
-      {ROWS.map((row, i) => (
+      {rows.map((row, i) => (
         <div className="keypad-row" key={i}>
           {/* 가운데 줄은 9키라 양끝에 반 칸씩 넣어 **키 폭을 모든 줄에서 같게** 만든다.
               iOS 와 Gboard 가 공통으로 쓰는 배치라 어느 쪽에서도 어색하지 않다 */}
-          {i === 1 && <span className="key-half" aria-hidden="true" />}
-          {/* 마지막 줄은 오른쪽에만 ⌫ 가 붙는다. 왼쪽 빈자리는 자리만 잡아 글자 키가
-              윗줄과 어긋나지 않게 한다 — 시스템 키보드의 shift 자리다.
-              장음(ー) 키는 안 둔다: 밴드 0~3 읽기 16,959개 중 ー 를 쓰는 것이 0건이고
-              카타카나 읽기도 0건이다 (2026-09-19 사용자 지적, 실측) */}
-          {i === 2 && <span className="key-spacer" aria-hidden="true" />}
+          {/* 줄 길이가 10/9/7 인 QWERTY 에서만 자리를 맞춘다 — 간결·넓게 배열은 줄이 고르다.
+              장음(ー) 키는 어느 배열에도 없다: 읽기 102,377개 중 ー 를 쓰는 것이 0건이다 */}
+          {keypadLayout === 'qwerty' && i === 1 && <span className="key-half" aria-hidden="true" />}
+          {keypadLayout === 'qwerty' && i === last && (
+            <span className="key-spacer" aria-hidden="true" />
+          )}
           {[...row].map((ch) => (
             <button
               type="button"
@@ -98,8 +100,8 @@ export function RomajiKeypad({
               {pop(ch)}
             </button>
           ))}
-          {i === 1 && <span className="key-half" aria-hidden="true" />}
-          {i === 2 && (
+          {keypadLayout === 'qwerty' && i === 1 && <span className="key-half" aria-hidden="true" />}
+          {i === last && (
             <button
               type="button"
               className="key key-wide"

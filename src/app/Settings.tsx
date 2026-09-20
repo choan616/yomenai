@@ -17,6 +17,7 @@ import { googleDrive } from '../sync/googleDrive.ts'
 import { resetLearning, syncNow, type SyncProgress } from '../sync/sync.ts'
 import { clearIntroduced } from '../study/introduced.ts'
 import { canVibrate } from '../study/keyFeedback.ts'
+import { KEYPAD_LABEL, type KeypadLayout } from '../study/keypadLayouts.ts'
 import { getLastSyncAt, setLastSyncAt, setSignedIn, wasSignedIn } from '../sync/syncState.ts'
 import { clearDiagnosticDone } from './diagnostic-state.ts'
 import { clearWelcomeSeen } from './welcome.ts'
@@ -50,6 +51,8 @@ const OBSERVE_LEVELS: { label: string; value: SettingsData['observeLevel'] }[] =
   { label: '보통', value: 'normal' },
   { label: '자주', value: 'often' },
 ]
+
+const KEYPAD_LAYOUTS: KeypadLayout[] = ['qwerty', 'compact', 'wide']
 
 /** 자판 입력 피드백 (2026-09-19). 진동은 기기가 지원해야 고를 수 있다 */
 const KEY_FEEDBACKS: { label: string; value: SettingsData['keyFeedback'] }[] = [
@@ -382,6 +385,26 @@ export function Settings({
             ))}
           </div>
           <span className="hint">세션 중 "지난번엔 틀렸는데 이번엔 맞혔어요" 같은 한 줄. 기본은 보통이에요.</span>
+        </div>
+
+        <div className="setting">
+          <label>자판 배열</label>
+          <div className="seg" role="group" aria-label="자판 배열">
+            {KEYPAD_LAYOUTS.map((o) => (
+              <button
+                key={o}
+                type="button"
+                aria-pressed={settings.keypadLayout === o}
+                onClick={() => update({ ...settings, keypadLayout: o })}
+              >
+                {KEYPAD_LABEL[o]}
+              </button>
+            ))}
+          </div>
+          <span className="hint">
+            일본어 읽기에 안 쓰이는 l·q·v·x 를 뺀 배열이에요 (읽기 10만여 개에서 0회).
+            「간결」은 자리를 그대로 두고 넷만 빼고, 「넓게」는 8키씩 나눠 키가 제일 커요.
+          </span>
         </div>
 
         <div className="setting">

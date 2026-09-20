@@ -10,12 +10,14 @@ describe('parseSettings', () => {
         ratio: { correction: 6, expansion: 4 },
         observeLevel: 'often',
         keyFeedback: 'sound',
+        keypadLayout: 'wide',
       }),
     ).toEqual({
       sessionLimit: 25,
       ratio: { correction: 6, expansion: 4 },
       observeLevel: 'often',
       keyFeedback: 'sound',
+      keypadLayout: 'wide',
     })
   })
 
@@ -64,5 +66,17 @@ describe('parseSettings — 자판 입력 피드백', () => {
   it('모르는 값은 기본으로 되돌린다', () => {
     expect(parseSettings({ keyFeedback: 'buzz' }).keyFeedback).toBe('off')
     expect(parseSettings({ keyFeedback: 7 }).keyFeedback).toBe('off')
+  })
+})
+
+describe('parseSettings — 자판 배열', () => {
+  it('기본은 QWERTY — 손가락이 기억한 자리를 안 건드린다', () => {
+    expect(parseSettings({}).keypadLayout).toBe('qwerty')
+  })
+
+  it('compact·wide 만 받는다', () => {
+    expect(parseSettings({ keypadLayout: 'compact' }).keypadLayout).toBe('compact')
+    expect(parseSettings({ keypadLayout: 'wide' }).keypadLayout).toBe('wide')
+    expect(parseSettings({ keypadLayout: 'dvorak' }).keypadLayout).toBe('qwerty')
   })
 })
