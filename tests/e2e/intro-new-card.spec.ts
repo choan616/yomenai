@@ -182,7 +182,7 @@ test('모른다고 답해야 소개가 뜬다', async ({ page }) => {
   await expect(page.locator('.kana-input')).toHaveCount(0)
 })
 
-test('기록이 없으면 소개 없이 바로 문제부터 — 레벨 테스트 구간', async ({ page }) => {
+test('기록이 없으면 앱이 짐작해서 설명하지 않는다 — 레벨 테스트 구간', async ({ page }) => {
   await page.goto('/')
   await expect(page.getByRole('button', { name: '세션 시작' })).toBeVisible({ timeout: 20_000 })
   await resetState(page)
@@ -190,9 +190,11 @@ test('기록이 없으면 소개 없이 바로 문제부터 — 레벨 테스트
   await page.getByRole('button', { name: '세션 시작' }).click()
   await expect(page.locator('.card').first()).toBeVisible({ timeout: 10_000 })
 
-  // 확인 질문에 모른다고 답해도 설명이 안 뜬다 — 아직 이 사람을 모른다
-  const unknown = page.getByRole('button', { name: '몰랐다', exact: true })
-  if (await unknown.isVisible().catch(() => false)) await unknown.click()
+  // 앱이 짐작해서 설명하지는 않는다 — 기록이 없으면 이 사람이 뭘 아는지 모른다.
+  // **사용자가 직접 「몰랐다」고 말한 경우는 예외다** (2026-09-20) — 그건 짐작이 아니라
+  // 진술이라, 그 표현만 소개로 간다. 여기서는 「알고 있었다」로 답해 짐작 경로를 본다
+  const known = page.getByRole('button', { name: '알고 있었다', exact: true })
+  if (await known.isVisible().catch(() => false)) await known.click()
 
   await expect(page.locator('.intro-card')).toHaveCount(0)
   await expect(page.locator('.kana-input')).toBeVisible({ timeout: 10_000 })

@@ -175,6 +175,16 @@ export function useStudySession({
    * 카드가 넘어갈 때 풀린다
    */
   const [knewMeaning, setKnewMeaning] = useState(false)
+  /**
+   * 이번 세션에서 「뜻을 몰랐다」로 답한 숙어 (2026-09-20 사용자 보고 "몰랐다를 골랐는데
+   * 문제로 간다"). `planIntros` 는 빌드 시점에 소개를 고르는데, 상한(1/3)을 넘었거나
+   * 이미 푼 적 있는 숙어면 안 고른다. 그런데 **사용자가 직접 모른다고 말한 것은 그 어떤
+   * 추정보다 강한 신호**라, 계획을 뒤집고 소개로 돌린다 — 모른다고 답한 직후에 그 표현을
+   * 시험하는 건 「첫 만남을 시험이 아니라 소개로」(2026-09-13) 를 정면으로 깬다
+   */
+  const [unknownMeaning, setUnknownMeaning] = useState<ReadonlySet<string>>(new Set())
+  /** 소개로 돌린 숙어의 남은 카드는 이번 세션에서 건너뛴다 — planIntros 가 빌드 때 하는 일과 같다 */
+  const skipIds = useRef<Set<string>>(new Set())
   const [error, setError] = useState<string | null>(null)
   const [idx, setIdx] = useState(0)
   /** 지연 검수 질문을 아직 안 지난 카드인지 */
@@ -336,6 +346,18 @@ export function useStudySession({
     setSessionEvents((prev) => [...prev, e])
   }, [])
 
+  /** 건너뛸 숙어를 지나 다음 카드 자리를 찾는다 */
+  const nextIndexFrom = useCallback(
+    (i: number) => {
+      let j = i + 1
+      while (session && j < session.cards.length && skipIds.current.has(session.cards[j].idiomId)) {
+        j++
+      }
+      return j
+    },
+    [session],
+  )
+
   const advance = useCallback(
     (correct: boolean) => {
       performance.mark('yomenai:advance')
@@ -347,29 +369,31 @@ export function useStudySession({
       setDualGot([])
       setMeaningDone(null)
       setIdx((i) => {
-        const nextCard = session?.cards[i + 1]
-        setInClassReview(nextCard?.needsClassReview ?? false)
-        return i + 1
+        const j = nextIndexFrom(i)
+        setInClassReview(session?.cards[j]?.needsClassReview ?? false)
+        return j
       })
       shownAt.current = performance.now()
     },
-    [session],
+    [session, nextIndexFrom],
   )
 
   /** 소개를 보고 넘어간다 — 채점도 이벤트도 없다 */
   const seenIntro = useCallback(() => {
     if (!card) return
     markIntroduced(card.idiomId)
+    // 소개에서 읽기·뜻을 다 보여줬으니 같은 숙어를 이번 세션에서 또 묻지 않는다
+    skipIds.current.add(card.idiomId)
     setKnewMeaning(false)
     performance.mark('yomenai:advance')
     setTransitionSeq((n) => n + 1)
     setIdx((i) => {
-      const nextCard = session?.cards[i + 1]
-      setInClassReview(nextCard?.needsClassReview ?? false)
-      return i + 1
+      const j = nextIndexFrom(i)
+      setInClassReview(session?.cards[j]?.needsClassReview ?? false)
+      return j
     })
     shownAt.current = performance.now()
-  }, [card, session])
+  }, [card, session, nextIndexFrom])
 
   /**
    * 판정이 끝난 뒤 피드백을 세운다. 첫 제출과 이어 묻기가 같이 쓴다 —
@@ -527,6 +551,7 @@ export function useStudySession({
       performance.mark('yomenai:advance')
       setTransitionSeq((n) => n + 1)
       record(recordMeaningKnown({ idiomId: card.idiomId, known, ctx: answerCtx() }))
+      if (!known) setUnknownMeaning((prev) => new Set(prev).add(card.idiomId))
       setKnewMeaning(known)
       setInClassReview(false)
       shownAt.current = performance.now()
@@ -601,10 +626,22 @@ export function useStudySession({
     if (!session) return 'loading'
     if (idx >= session.cards.length) return 'done'
     if (inClassReview) return 'classReview'
-    if (card && !knewMeaning && introIds.has(card.idiomId)) return 'intro'
+    if (card && !knewMeaning && (introIds.has(card.idiomId) || unknownMeaning.has(card.idiomId)))
+      return 'intro'
     if (card?.cardType === 'reading') return feedback ? 'reading-feedback' : 'reading'
     return meaningDone !== null ? 'meaning-feedback' : 'meaning'
-  }, [error, session, idx, inClassReview, card, introIds, knewMeaning, feedback, meaningDone])
+  }, [
+    error,
+    session,
+    idx,
+    inClassReview,
+    card,
+    introIds,
+    unknownMeaning,
+    knewMeaning,
+    feedback,
+    meaningDone,
+  ])
 
   const state: StudyState = {
     status,

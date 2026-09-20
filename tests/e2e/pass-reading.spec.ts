@@ -39,8 +39,11 @@ async function readingEvents(page: Page): Promise<ReviewRow[]> {
 async function advanceToReading(page: Page, budget = 12): Promise<void> {
   const input = page.locator('.kana-input')
   for (let i = 0; i < budget; i++) {
-    const ask = page.getByRole('button', { name: '몰랐다', exact: true })
+    // 확인 질문엔 「알고 있었다」로 답한다 — 「몰랐다」는 이제 소개로 간다 (2026-09-20)
+    const ask = page.getByRole('button', { name: '알고 있었다', exact: true })
     if (await ask.isVisible().catch(() => false)) await ask.click()
+    const seen = page.getByRole('button', { name: '봤어요', exact: true })
+    if (await seen.isVisible().catch(() => false)) await seen.click()
     if (await input.isVisible().catch(() => false)) return
 
     const reveal = page.getByRole('button', { name: '뜻 보기', exact: true })
