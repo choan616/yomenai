@@ -66,6 +66,8 @@ test('진입 진단 → 세션 → 리포트 전체 흐름을 완주한다', asy
   // 사다리 숫자는 정답률이 아니라 붙은 숙어 개수다 (2026-09-19). 흔들림은 상태 줄로 내려갔다
   await expect(page.locator('.ladder-title')).toHaveText('밴드별 붙은 숙어')
   await expect(page.locator('.ladder-caption')).toContainText('붙음')
+  // 「만난」은 소개만 본 숙어까지 포함하는 말이라 「푼」으로 고쳤다 (2026-09-20)
+  await expect(page.locator('.ladder-caption')).toContainText('소개만 본 건 안 세요')
   await expect(page.locator('.ladder .bar-num').first()).toHaveText(/개$|^—$/)
   // 처방 — 진단 직후는 표본이 적어 "더 봐야 한다"가 뜬다
   await expect(page.getByText('다음에 볼 것')).toBeVisible()

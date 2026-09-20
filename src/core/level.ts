@@ -42,7 +42,11 @@ export interface BandRow {
   /** correct / seen. seen 이 0 이면 0 */
   rate: number
   status: BandStatus
-  /** 읽기 카드가 생긴 숙어 수 — "만난" 것 */
+  /**
+   * 읽기 문제로 **나온 적 있는** 숙어 수. 카드 상태는 채점 이벤트가 있어야 생기므로
+   * 소개 카드로만 본 숙어는 안 들어간다 (소개는 이벤트가 아니라 localStorage 다).
+   * 화면 라벨을 「만난」에서 「푼」으로 고친 이유가 이것이다 (2026-09-20 사용자 지적)
+   */
   met: number
   /**
    * 그중 붙은 숙어 수. **이쪽이 수준이다** — 정답률은 순간 상태(흔들림)라 표본이 흔들면
@@ -97,7 +101,7 @@ export function buildLevel(
 
   const bands = [...new Set<Band>([...DIAGNOSTIC_BANDS, ...history.keys()])].sort((a, b) => a - b)
 
-  // 밴드별 만난 숙어 / 붙은 숙어 — 정답률과 달리 창을 안 씌운다. 재고는 쌓인 것 전부다
+  // 밴드별 푼 숙어 / 붙은 숙어 — 정답률과 달리 창을 안 씌운다. 재고는 쌓인 것 전부다
   const met = new Map<Band, number>()
   const stable = new Map<Band, number>()
   for (const [key, st] of cards ?? []) {

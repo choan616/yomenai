@@ -50,12 +50,13 @@ test('찾기 자판은 화면 아래에 고정된다 — 목록을 스크롤해�
 
   const vh = page.viewportSize()!.height
   const before = (await keypad.boundingBox())!
-  expect(Math.round(before.y + before.height)).toBe(vh)
+  // 픽셀 정확 비교는 전체 실행에서 한 번 흔들렸다 — 바닥에 붙었는지만 보면 되므로 1px 여유를 준다
+  expect(Math.abs(before.y + before.height - vh)).toBeLessThanOrEqual(1)
 
   // 결과가 나오게 한 글자 치고 목록을 스크롤해도 자판은 그 자리다
   await keypad.getByRole('button', { name: 'k', exact: true }).click()
   await keypad.getByRole('button', { name: 'a', exact: true }).click()
   await page.locator('.screen').evaluate((el) => el.scrollBy(0, 400))
   const after = (await keypad.boundingBox())!
-  expect(Math.round(after.y)).toBe(Math.round(before.y))
+  expect(Math.abs(after.y - before.y)).toBeLessThanOrEqual(1)
 })

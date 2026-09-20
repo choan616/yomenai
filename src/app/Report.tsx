@@ -396,7 +396,7 @@ function LevelSection({
             </div>
             <p className="band-note">
               {BAND_STATUS_LABEL[b.status]}
-              {b.met > 0 && <span className="dim"> · 만난 {b.met}개</span>}
+              {b.met > 0 && <span className="dim"> · 푼 {b.met}개</span>}
               {b.seen > 0 && (
                 <span className="dim">
                   {' '}
@@ -408,8 +408,9 @@ function LevelSection({
         ))}
       </div>
       <p className="ladder-caption">
-        붙음 = {READING_STABLE_DAYS}일 이상 안 잊는 상태 · 안정·흔들림은 최근 {LEVEL_WINDOW}회
-        정답률 {Math.round(LEVEL_SOLID_RATE * 100)}% 기준 · {LEVEL_MIN_SEEN}회 미만 표본 부족
+        푼 숙어 = 읽기 문제로 나온 것 (소개만 본 건 안 세요) · 붙음 = {READING_STABLE_DAYS}일 이상
+        안 잊는 상태 · 안정·흔들림은 최근 {LEVEL_WINDOW}회 정답률 {Math.round(LEVEL_SOLID_RATE * 100)}%
+        기준 · {LEVEL_MIN_SEEN}회 미만 표본 부족
       </p>
     </section>
   )
