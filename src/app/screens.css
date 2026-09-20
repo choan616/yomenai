@@ -386,16 +386,29 @@
   margin-top: 18px;
 }
 .ladder-item + .ladder-item {
-  margin-top: 14px;
+  margin-top: 10px;
 }
 .ladder .bar-row {
   grid-template-columns: 9.5em 1fr 3.2em;
 }
+/* 사다리 막대는 오답 분포 막대보다 얇다 (2026-09-20 사용자 요청 "날렵하게") — 여기서 큰 숫자는
+   막대가 아니라 옆의 개수라, 막대는 길이만 읽히면 된다 */
+.ladder .bar-track {
+  height: 8px;
+  border-radius: 999px;
+}
+.ladder .bar-fill {
+  border-radius: 999px;
+}
+/* 판정은 왼쪽(밴드 이름 아래), 근거 수치는 오른쪽 (2026-09-20 사용자 요청) */
 .band-note {
-  margin: 3px 0 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 10px;
+  margin: 2px 0 0;
   font-size: calc(12px * var(--ui-scale));
   color: var(--text-faint);
-  text-align: right;
   font-variant-numeric: tabular-nums;
 }
 .band-shaky .band-note {

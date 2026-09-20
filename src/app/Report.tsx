@@ -394,13 +394,17 @@ function LevelSection({
               </span>
               <span className="bar-num">{b.met > 0 ? `${b.stable}개` : '—'}</span>
             </div>
+            {/* 왼쪽은 그 밴드가 지금 어떤 상태인가, 오른쪽은 그 판정의 근거가 된 수치다
+                (2026-09-20 사용자 요청) — 한 줄에 몰아 쓰면 어디까지가 판정이고 어디부터가
+                근거인지 안 갈린다 */}
             <p className="band-note">
-              {BAND_STATUS_LABEL[b.status]}
-              {b.met > 0 && <span className="dim"> · 출제된 표현 {b.met}개</span>}
+              <span>
+                {BAND_STATUS_LABEL[b.status]}
+                {b.met > 0 && <span className="dim"> · 출제된 표현 {b.met}개</span>}
+              </span>
               {b.seen > 0 && (
                 <span className="dim">
-                  {' '}
-                  · 최근 {b.seen}회 {Math.round(b.rate * 100)}%
+                  최근 {b.seen}회 {Math.round(b.rate * 100)}%
                 </span>
               )}
             </p>
