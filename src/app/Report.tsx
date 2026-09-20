@@ -367,7 +367,7 @@ function LevelSection({
       {/* 사다리 숫자는 정답률이 아니라 **붙은 숙어 개수**다 (2026-09-19). 정답률은 순간
           상태라 표본이 흔들면 같이 뒤집히는데, 수준은 쌓인 것이라 그러면 안 된다.
           정답률은 상태 줄(안정/흔들림)에 남겨 경계선을 긋는 데만 쓴다 */}
-      <p className="ladder-title">밴드별 붙은 숙어</p>
+      <p className="ladder-title">밴드별 숙지한 표현</p>
 
       <div className="ladder">
         {level.bands.map((b, i) => (
@@ -396,7 +396,7 @@ function LevelSection({
             </div>
             <p className="band-note">
               {BAND_STATUS_LABEL[b.status]}
-              {b.met > 0 && <span className="dim"> · 푼 {b.met}개</span>}
+              {b.met > 0 && <span className="dim"> · 출제된 표현 {b.met}개</span>}
               {b.seen > 0 && (
                 <span className="dim">
                   {' '}
@@ -408,9 +408,9 @@ function LevelSection({
         ))}
       </div>
       <p className="ladder-caption">
-        푼 숙어 = 읽기 문제로 나온 것 (소개만 본 건 안 세요) · 붙음 = {READING_STABLE_DAYS}일 이상
-        안 잊는 상태 · 안정·흔들림은 최근 {LEVEL_WINDOW}회 정답률 {Math.round(LEVEL_SOLID_RATE * 100)}%
-        기준 · {LEVEL_MIN_SEEN}회 미만 표본 부족
+        숙지 = {READING_STABLE_DAYS}일 이상 안 잊는 상태 · 출제된 표현에는 틀린 것·넘긴 것도
+        들어가요 (소개만 본 건 빼요) · 안정·흔들림은 최근 {LEVEL_WINDOW}회 정답률{' '}
+        {Math.round(LEVEL_SOLID_RATE * 100)}% 기준 · {LEVEL_MIN_SEEN}회 미만 표본 부족
       </p>
     </section>
   )
