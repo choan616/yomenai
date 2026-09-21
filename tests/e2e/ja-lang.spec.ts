@@ -57,7 +57,10 @@ async function scan(page: Page, where: string, found: string[], expectJa = true)
 
 async function seed(page: Page) {
   await page.goto('/')
-  await expect(page.getByRole('button', { name: '세션 시작' })).toBeVisible({ timeout: 20_000 })
+  // **버튼이 눌리게 될 때까지** 기다린다 — 보이기만 할 때는 앱이 아직 DB 를 안 만들었다.
+  // 그 사이에 테스트가 열면 **스토어 없는 빈 DB 가 만들어지고**, 그다음 transaction 이
+  // 던지면서 콜백 안이라 아무도 못 받는다 (WebKit 에서 2분 멈춤으로 드러났다, 2026-09-21)
+  await expect(page.getByRole('button', { name: '세션 시작' })).toBeEnabled({ timeout: 20_000 })
   await page.evaluate(() => {
     localStorage.setItem('yomenai:diagnosticDone', '1')
     localStorage.setItem('yomenai:welcomeSeen', '1')
@@ -67,6 +70,10 @@ async function seed(page: Page) {
       new Promise<void>((res, rej) => {
         const req = indexedDB.open('yomenai')
         req.onsuccess = () => {
+          if (!req.result.objectStoreNames.contains('events')) {
+            rej(new Error('events 스토어가 없다 — 앱이 DB 를 만들기 전에 열었다'))
+            return
+          }
           const tx = req.result.transaction('events', 'readwrite')
           const store = tx.objectStore('events')
           const rows: [string, string, string, string][] = [
