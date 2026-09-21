@@ -144,3 +144,47 @@ test('리포트도 계산 중에 도구 묶음이 안 움직인다', async ({ pa
     `도구 묶음이 ${loaded.tools - loading.tools}px 움직였다`,
   ).toBeLessThanOrEqual(4)
 })
+
+test('찾기도 다시 열면 검색창 아래가 바로 차 있다', async ({ page }) => {
+  await ready(page)
+
+  // **실사용 규모로 심는다.** 기록이 몇 건이면 재생이 순식간이라 캐시가 있든 없든
+  // 통과한다 — 대조군으로 확인했다. 사용자 실기기는 다시보기 대상만 388개다
+  await page.evaluate(async () => {
+    const res = await fetch('/dict/base.json')
+    const dict = (await res.json()) as { idioms: { id: string }[] }
+    const ids = dict.idioms.slice(0, 2000).map((i) => i.id)
+    await new Promise<void>((done) => {
+      const req = indexedDB.open('yomenai')
+      req.onsuccess = () => {
+        const tx = req.result.transaction('events', 'readwrite')
+        const store = tx.objectStore('events')
+        ids.forEach((idiomId, i) => {
+          store.put({
+            id: `0000${String(i).padStart(5, '0')}-seed`,
+            userId: 'local', deviceId: 'e2e', at: Date.now() - 86_400_000 - i,
+            idiomId, cardType: 'reading', mistakeType: 'RENDAKU', deletedAt: null,
+            type: 'review', grade: 1, answer: 'あ', expected: 'い', correct: false, elapsedMs: 1000,
+          })
+        })
+        tx.oncomplete = () => done()
+      }
+    })
+  })
+  await page.reload()
+
+  const open = () => page.getByRole('button', { name: '찾기', exact: true }).click()
+  await open()
+  await expect(page.locator('.search-scope')).toBeVisible({ timeout: 20_000 })
+
+  const cdp = await page.context().newCDPSession(page)
+  await cdp.send('Emulation.setCPUThrottlingRate', { rate: 6 })
+
+  for (let i = 0; i < 3; i++) {
+    await page.getByRole('button', { name: '홈', exact: true }).click()
+    await open()
+    // 돌아온 첫 렌더에 이미 차 있다 — 「불러오고 있어요」를 거치지 않는다
+    expect(await page.locator('.screen-body').innerText()).not.toContain('불러오고 있어요')
+    await expect(page.locator('.search-scope')).toBeVisible()
+  }
+})

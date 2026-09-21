@@ -11,6 +11,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { toKana } from 'wanakana'
 import { RomajiKeypad } from '../study/RomajiKeypad.tsx'
 import { useCoarsePointer } from '../study/useCoarsePointer.ts'
+import { dataVersion } from '../core/dataVersion.ts'
 import { replay } from '../core/replay.ts'
 import { recordStar } from '../core/session.ts'
 import { getDeviceId } from '../db/device.ts'
@@ -47,15 +48,27 @@ function koreanOf(headword: string, kanji: Map<string, KanjiInfo>): string {
   return [...headword].map((c) => kanji.get(c)?.kr[0] ?? '—').join('')
 }
 
+/**
+ * 마지막으로 만든 인덱스·집계 (2026-09-21). 탭을 옮기면 언마운트되는데, 다시 들어올 때마다
+ * `listEvents` → `replay` 를 처음부터 돌면 검색창 아래 글자가 한 박자 늦게 뜬다
+ * (사용자 지적). `Home`·`Report` 와 같은 관례다 — 담기/빼기도 이벤트라 버전이 올라
+ * 자동으로 버려진다.
+ */
+let cache: { version: number; loaded: Loaded; starred: Set<string> } | null = null
+
 export function Search() {
   const [raw, setRaw] = useState('')
-  const [loaded, setLoaded] = useState<Loaded | null>(null)
+  const [loaded, setLoaded] = useState<Loaded | null>(
+    () => (cache?.version === dataVersion() ? cache.loaded : null),
+  )
   const [error, setError] = useState<string | null>(null)
   /**
    * 담아 둔 숙어. 이벤트를 다시 재생하지 않고 화면에서 바로 갈아 끼운다 —
    * 로그는 append-only 라 한 건 덧붙인 결과가 곧 이 집합의 한 칸 변화다
    */
-  const [starred, setStarred] = useState<Set<string>>(new Set())
+  const [starred, setStarred] = useState<Set<string>>(
+    () => (cache?.version === dataVersion() ? cache.starred : new Set()),
+  )
 
   const toggleStar = (idiomId: string) => {
     const on = !starred.has(idiomId)
@@ -76,6 +89,7 @@ export function Search() {
   }
 
   useEffect(() => {
+    if (cache?.version === dataVersion()) return
     let alive = true
     ;(async () => {
       try {
@@ -93,10 +107,12 @@ export function Search() {
           if (c.cardType === 'reading' && c.wrong > 0) wrong.set(c.idiomId, c.wrong)
           started.add(c.idiomId)
         }
-        setLoaded({
+        const next: Loaded = {
           index, kanji, poolSize: pool.length, wrong, started,
           byId: new Map(pool.map((it) => [it.idiomId, it])),
-        })
+        }
+        cache = { version: dataVersion(), loaded: next, starred: state.starred }
+        setLoaded(next)
         setStarred(state.starred)
       } catch (e) {
         if (alive) setError(e instanceof Error ? e.message : String(e))
