@@ -277,7 +277,14 @@ export function useStudySession({
                   },
                 })
               : // seed 로 제시 순서를 매 세션 섞는다 — 순서를 예측해 모르는 한자를 찍는 걸 막는다 (2026-09-07)
-                buildSession(loaded, events, { now, limit: buildLimit, ratio, seed: now })
+                buildSession(loaded, events, {
+                  now,
+                  limit: buildLimit,
+                  // 담은 것 상한은 **여유분을 뺀 실제 문제 수**로 센다 (2026-09-21)
+                  questionLimit: limit,
+                  ratio,
+                  seed: now,
+                })
         // 처음 만나는 숙어는 시험 대신 소개로. 그 숙어의 나머지 카드는 이번 세션에서 걷는다.
         // 단, 기록이 얕으면 소개를 안 낸다 — 먼저 풀게 해서 이 사람을 알아야 한다
         const introduced = loadIntroduced()

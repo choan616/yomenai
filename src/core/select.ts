@@ -31,6 +31,12 @@ export interface SelectOptions {
   minBand?: Band
   maxBand?: Band
   /**
+   * 담은 것 상한(`STAR_MAX_SHARE`)을 셀 기준 장수. 호출부가 소개 여유분을 얹어
+   * `limit` 을 부풀려 부르므로(`useStudySession`), 그걸로 세면 상한이 같이 부푼다.
+   * 안 주면 `limit` 으로 센다
+   */
+  questionLimit?: number
+  /**
    * 주면 뽑은 카드의 *제시 순서*를 이 시드로 섞는다 (숙어 단위 — 읽기·뜻은 붙어 이동).
    * *어떤* 카드를 뽑을지는 안 바뀐다(진단 가치 유지). 실제 세션은 매번 다른 시드를 준다.
    * 안 주면 우선순위 순서 그대로 — 테스트·시뮬레이션의 결정론을 유지한다 (2026-09-07).
@@ -52,8 +58,12 @@ function rng(seed: number): () => number {
 /**
  * 숙어 단위로 섞는다 — 같은 숙어의 [읽기, 뜻] 카드는 붙어서 함께 이동하고 내부 순서는 유지.
  * 우선순위(due 먼저 등)는 흐트러지지만, 진단은 "어떤 카드"가 나오냐로 하지 순서로 안 한다.
+ *
+ * **담은 것만은 앞자리를 지킨다** (2026-09-21). 호출부가 소개 여유분을 얹어 더 만든 뒤
+ * `planIntros` 가 앞에서부터 세어 자르기 때문에, 섞어서 뒤로 밀리면 담은 카드가 통째로
+ * 잘려 나간다 — 「다음 세션에 나와요」가 거짓이 된다. 앞자리 안에서는 그대로 섞는다.
  */
-function shuffleByIdiom(items: SessionItem[], seed: number): SessionItem[] {
+function shuffleByIdiom(items: SessionItem[], seed: number, starred: Set<string>): SessionItem[] {
   const groups: SessionItem[][] = []
   const idx = new Map<string, number>()
   for (const it of items) {
@@ -66,14 +76,26 @@ function shuffleByIdiom(items: SessionItem[], seed: number): SessionItem[] {
     }
   }
   const rand = rng(seed)
-  for (let i = groups.length - 1; i > 0; i--) {
-    const j = Math.floor(rand() * (i + 1))
-    ;[groups[i], groups[j]] = [groups[j], groups[i]]
+  const shuffle = (g: SessionItem[][]): SessionItem[][] => {
+    for (let i = g.length - 1; i > 0; i--) {
+      const j = Math.floor(rand() * (i + 1))
+      ;[g[i], g[j]] = [g[j], g[i]]
+    }
+    return g
   }
-  return groups.flat()
+  const head = groups.filter((g) => starred.has(g[0].idiomId))
+  const rest = groups.filter((g) => !starred.has(g[0].idiomId))
+  return [...shuffle(head), ...shuffle(rest)].flat()
 }
 
 const DEFAULT_RATIO = { correction: 7, expansion: 3 }
+
+/**
+ * 담아 둔 표현이 한 세션에서 차지할 수 있는 최대 비율 (2026-09-21).
+ * 담은 것은 기한이 지난 카드보다도 먼저 내는데, 상한이 없으면 열 개를 담은 날 세션이
+ * 통째로 신규 도입이 되어 복습이 밀린다. 남은 것은 다음 세션으로 넘어간다.
+ */
+export const STAR_MAX_SHARE = 1 / 3
 
 /** 아직 한 번도 안 나온 음독의 가중치. 확실히 미숙한 것(오답률 1)보다는 낮게 둔다 */
 const UNSEEN_PAIR_WEIGHT = 0.5
@@ -119,16 +141,27 @@ export function selectSession(
 
   const due: Record<StudyMode, Slot[]> = { correction: [], expansion: [] }
   const fresh: Record<StudyMode, Slot[]> = { correction: [], expansion: [] }
+  /**
+   * 담아 둔 표현 중 **아직 카드가 없는 것** (2026-09-21). 모드를 안 가르고 한 줄로 모은다 —
+   * 사용자가 직접 지목한 것이라 7:3 배분의 대상이 아니다.
+   * 이미 카드가 있으면 여기 안 들어온다. 별이 하는 일은 신규 도입 우선권까지고,
+   * 한 번 나온 뒤로는 FSRS 가 이어받는다
+   */
+  const starred: Slot[] = []
 
   for (const c of candidates) {
     for (const cardType of activeCardTypes(c.mode)) {
       const st = state.cards.get(cardKey(c.idiomId, cardType))
       if (st === undefined) {
-        if (c.band < minBand || c.band > maxBand) continue
-        fresh[c.mode].push({
+        // 담은 것은 밴드 제한을 면제한다 — 안 그러면 밴드 0(3,976개)은 담아도 안 나온다
+        const star = state.starred.has(c.idiomId)
+        if (!star && (c.band < minBand || c.band > maxBand)) continue
+        const slot = {
           idiomId: c.idiomId, cardType, mode: c.mode, due: false,
           overdue: 0, band: c.band, weak: weakness(c.pairIds, state),
-        })
+        }
+        if (star) starred.push(slot)
+        else fresh[c.mode].push(slot)
       } else if (isDue(st.card, options.now)) {
         due[c.mode].push({
           idiomId: c.idiomId, cardType, mode: c.mode, due: true,
@@ -139,21 +172,40 @@ export function selectSession(
     }
   }
 
+  starred.sort(byIntroOrder)
+
+  const picked: SessionItem[] = []
+  // 담은 것을 **기한이 지난 카드보다도 먼저** 낸다 — 사용자가 직접 지목한 것은 며칠 밀린
+  // 복습보다 강한 신호다. 대신 정원의 1/3 로 묶어 복습이 통째로 밀리지 않게 한다.
+  // 한 장은 보장한다 — 짧은 세션에서 상한이 0 이 되면 「다음 세션에 나와요」가 거짓이 된다
+  const starQuota = Math.max(
+    1,
+    Math.floor((options.questionLimit ?? options.limit) * STAR_MAX_SHARE),
+  )
+  for (const slot of starred.slice(0, starQuota)) {
+    picked.push({ idiomId: slot.idiomId, cardType: slot.cardType, mode: slot.mode, due: slot.due })
+  }
+  // 상한을 넘은 것은 **평범한 신규로 되돌린다** — 담았다고 나올 기회가 줄면 안 된다.
+  // 밴드 면제는 여기서 끝난다: 밴드 밖이면 원래 나올 카드가 아니었으므로 다음 세션을 기다린다
+  for (const slot of starred.slice(starQuota)) {
+    if (slot.band >= minBand && slot.band <= maxBand) fresh[slot.mode].push(slot)
+  }
+
   for (const mode of ['correction', 'expansion'] as const) {
     due[mode].sort(byOverdue)
     fresh[mode].sort(byIntroOrder)
   }
 
+  // 남은 자리를 기존 규칙대로 채운다 — 정원은 **남은 수**로 다시 나눈다
+  const room = options.limit - picked.length
   const total = ratio.correction + ratio.expansion
   const quota: Record<StudyMode, number> = total === 0
-    ? { correction: options.limit, expansion: 0 }
+    ? { correction: room, expansion: 0 }
     : {
-        correction: Math.round((options.limit * ratio.correction) / total),
+        correction: Math.round((room * ratio.correction) / total),
         expansion: 0,
       }
-  quota.expansion = options.limit - quota.correction
-
-  const picked: SessionItem[] = []
+  quota.expansion = room - quota.correction
   const take = (mode: StudyMode, n: number): number => {
     let left = n
     for (const pool of [due[mode], fresh[mode]]) {
@@ -167,11 +219,13 @@ export function selectSession(
   }
 
   const filled = take('correction', quota.correction) + take('expansion', quota.expansion)
-  let rest = options.limit - filled
+  let rest = room - filled
   if (rest > 0) rest -= take('correction', rest)
   if (rest > 0) take('expansion', rest)
 
-  return options.seed === undefined ? picked : shuffleByIdiom(picked, options.seed)
+  return options.seed === undefined
+    ? picked
+    : shuffleByIdiom(picked, options.seed, state.starred)
 }
 
 /** 같은 숙어면 읽기 카드가 뜻 카드보다 먼저다 — 뜻 카드는 읽기를 보여주므로,

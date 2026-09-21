@@ -176,3 +176,50 @@ describe('replay — 오답 유형 다시 매기기', () => {
     expect(state.cards.get(cardKey('2', 'reading'))?.mistakes).toEqual({ SOKUON: 1 })
   })
 })
+
+describe('담아 둔 표현 — 마지막 이벤트가 이긴다 (2026-09-21)', () => {
+  const star = (
+    nextId: (at: number) => string,
+    at: number,
+    idiomId: string,
+    on: boolean,
+  ): LearningEvent => ({
+    id: nextId(at), userId: 'local', deviceId: 'dev-a', at, idiomId,
+    cardType: 'reading', mistakeType: null, deletedAt: null, type: 'star', on,
+  })
+
+  it('담기 → 빼기 → 다시 담기', () => {
+    const nextId = idFactory()
+    const events = [
+      star(nextId, T0, 'a', true),
+      star(nextId, T0 + DAY, 'a', false),
+      star(nextId, T0 + 2 * DAY, 'a', true),
+      star(nextId, T0, 'b', true),
+      star(nextId, T0 + DAY, 'b', false),
+    ]
+    const state = replay(events)
+    expect([...state.starred]).toEqual(['a'])
+  })
+
+  it('입력 순서를 뒤집어도 같다 — 기기별 파일을 합집합으로 받아도 흔들리지 않게', () => {
+    const nextId = idFactory()
+    const events = [
+      star(nextId, T0, 'a', true),
+      star(nextId, T0 + DAY, 'a', false),
+    ]
+    expect([...replay([...events].reverse()).starred]).toEqual([])
+  })
+
+  it('묘비는 세지 않는다', () => {
+    const nextId = idFactory()
+    const on = star(nextId, T0, 'a', true)
+    const off = { ...star(nextId, T0 + DAY, 'a', false), deletedAt: T0 + 2 * DAY }
+    expect([...replay([on, off]).starred]).toEqual(['a'])
+  })
+
+  it('채점 이벤트는 별을 안 건드린다 — 목록에서 빼는 건 select 의 몫이다', () => {
+    const nextId = idFactory()
+    const events = [star(nextId, T0, 'a', true), review(nextId, T0 + DAY, 'a', true)]
+    expect([...replay(events).starred]).toEqual(['a'])
+  })
+})

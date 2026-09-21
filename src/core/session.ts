@@ -20,6 +20,7 @@ import {
   type LearningEvent,
   type MeaningKnownEvent,
   type ReviewEvent,
+  type StarEvent,
 } from './types.ts'
 
 /**
@@ -198,7 +199,25 @@ export function recordMeaningKnown(input: {
   }
 }
 
-function base(idiomId: string, cardType: 'reading' | 'meaning', ctx: AnswerContext) {
+/**
+ * 찾기에서 담기·빼기 (2026-09-21). 채점이 아니라 **다음 세션의 신규 도입 우선권**이라
+ * `elapsedMs` 가 없는 컨텍스트를 받는다 — `base` 도 그 값을 안 쓴다.
+ */
+export function recordStar(input: {
+  idiomId: string
+  on: boolean
+  ctx: Omit<AnswerContext, 'elapsedMs'>
+}): StarEvent {
+  return {
+    ...base(input.idiomId, 'reading', input.ctx),
+    cardType: 'reading',
+    mistakeType: null,
+    type: 'star',
+    on: input.on,
+  }
+}
+
+function base(idiomId: string, cardType: 'reading' | 'meaning', ctx: Omit<AnswerContext, 'elapsedMs'>) {
   return {
     id: newEventId(ctx.at, ctx.rand),
     userId: ctx.userId,

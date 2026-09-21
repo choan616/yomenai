@@ -11,7 +11,7 @@ const T0 = Date.UTC(2026, 0, 1)
 const DAY = 86_400_000
 
 function emptyState(): ReplayState {
-  return { cards: new Map(), meaningKnown: new Map(), onyomi: new Map(), applied: 0 }
+  return { cards: new Map(), meaningKnown: new Map(), onyomi: new Map(), starred: new Set(), applied: 0 }
 }
 
 function put(state: ReplayState, idiomId: string, cardType: CardType, card: Card): void {
@@ -224,5 +224,92 @@ describe('selectSession — 구성 규칙', () => {
 
   it('후보가 모자라면 세션이 짧아질 뿐 예외가 없다', () => {
     expect(selectSession([], emptyState(), { now: T0, limit: 20 })).toEqual([])
+  })
+})
+
+describe('담아 둔 표현 — 신규 도입 우선권 (2026-09-21)', () => {
+  it('밴드 0 은 그냥은 안 나오지만 담으면 나온다', () => {
+    const state = emptyState()
+    const cands = [candidate('b0', 0, 'correction'), candidate('b1', 1, 'correction')]
+
+    const before = selectSession(cands, state, { now: T0, limit: 10 })
+    expect(before.map((c) => c.idiomId)).toEqual(['b1'])
+
+    state.starred.add('b0')
+    const after = selectSession(cands, state, { now: T0, limit: 10 })
+    expect(after.map((c) => c.idiomId)).toContain('b0')
+  })
+
+  it('기한이 지난 카드보다 먼저 나온다', () => {
+    const state = emptyState()
+    const overdue = { ...newCard(T0), due: new Date(T0 - 30 * DAY) }
+    put(state, 'old', 'reading', overdue)
+    state.starred.add('new')
+
+    const picked = selectSession(
+      [candidate('old', 1, 'correction'), candidate('new', 1, 'correction')],
+      state,
+      { now: T0, limit: 10 },
+    )
+    expect(picked[0].idiomId).toBe('new')
+    expect(picked.map((c) => c.idiomId)).toContain('old')
+  })
+
+  it('세션 정원의 1/3 까지만 — 나머지는 다음 세션으로 넘어간다', () => {
+    const state = emptyState()
+    const cands: SessionCandidate[] = []
+    for (let i = 0; i < 9; i++) {
+      const id = `s${i}`
+      cands.push(candidate(id, 1, 'correction'))
+      state.starred.add(id)
+    }
+    const picked = selectSession(cands, state, { now: T0, limit: 9 })
+    // 9 장 중 담은 것은 3 장까지. 나머지 6 장은 평범한 신규 도입으로 채워진다
+    expect(picked).toHaveLength(9)
+    expect(picked.slice(0, 3).every((c) => state.starred.has(c.idiomId))).toBe(true)
+  })
+
+  it('이미 카드가 있으면 별은 아무 일도 안 한다 — 기한이 안 지났으면 안 나온다', () => {
+    const state = emptyState()
+    put(state, 'known', 'reading', { ...newCard(T0), due: new Date(T0 + 30 * DAY) })
+    state.starred.add('known')
+
+    const picked = selectSession([candidate('known', 1, 'correction')], state, {
+      now: T0,
+      limit: 10,
+    })
+    expect(picked).toHaveLength(0)
+  })
+
+  it('상한을 넘은 것도 밴드 안이면 평범한 신규로 나온다 — 담았다고 기회가 줄지 않는다', () => {
+    const state = emptyState()
+    const cands: SessionCandidate[] = []
+    for (let i = 0; i < 5; i++) cands.push(candidate(`s${i}`, 1, 'correction'))
+    const plain = selectSession(cands, state, { now: T0, limit: 5 }).length
+
+    for (const c of cands) state.starred.add(c.idiomId)
+    expect(selectSession(cands, state, { now: T0, limit: 5 })).toHaveLength(plain)
+  })
+
+  it('섞어도 담은 것이 앞에 남는다 — 뒤로 밀리면 planIntros 의 자르기에 잘린다', () => {
+    const state = emptyState()
+    const cands: SessionCandidate[] = []
+    for (let i = 0; i < 12; i++) cands.push(candidate(`x${i}`, 1, 'correction'))
+    state.starred.add('x11')
+
+    // 시드를 바꿔 가며 섞어도 담은 것은 늘 첫 장이다
+    for (const seed of [1, 2, 3, 99, 12345]) {
+      const picked = selectSession(cands, state, { now: T0, limit: 12, seed })
+      expect(picked[0].idiomId, `seed ${seed}`).toBe('x11')
+    }
+  })
+
+  it('담은 게 없으면 결과가 이전과 같다', () => {
+    const state = emptyState()
+    const cands = [candidate('a', 1, 'correction'), candidate('b', 2, 'correction')]
+    expect(selectSession(cands, state, { now: T0, limit: 10 }).map((c) => c.idiomId)).toEqual([
+      'a',
+      'b',
+    ])
   })
 })

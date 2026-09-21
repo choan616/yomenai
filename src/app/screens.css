@@ -914,6 +914,47 @@
   color: var(--text);
 }
 
+/* ── 담아 두기 (2026-09-21) ──
+   색만으로 구분하지 않는다 (PLAN §7) — 담긴 줄은 별 모양 자체가 ☆ → ★ 로 바뀐다.
+   줄은 baseline 정렬이라 버튼만 가운데로 내린다 */
+.star-btn {
+  flex: 0 0 auto;
+  align-self: center;
+  /* 44px 손가락 자리를 확보하되 **줄 높이는 안 늘린다** — 세로 음수 여백으로 줄 밖
+     패딩(10px)까지 손가락 자리를 넓힌다. --tap(52px)이나 그냥 44px 을 주면 줄이
+     46px → 68px 이 되어 11줄을 한 눈에 훑는다는 이 화면의 목적이 깨진다 */
+  width: 44px;
+  height: 44px;
+  margin: -9px 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--text-dim);
+  font-size: calc(19px * var(--ui-scale));
+  line-height: 1;
+}
+.star-btn.on {
+  color: var(--text);
+}
+/* 이미 카드가 생긴 줄 — 버튼 자리에 이유를 적는다 */
+.star-slot {
+  flex: 0 0 auto;
+  align-self: center;
+  font-size: calc(12px * var(--ui-scale));
+  color: var(--text-faint);
+  white-space: nowrap;
+}
+.basket {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.basket-note {
+  margin: 0;
+  color: var(--text-faint);
+  font-size: calc(13px * var(--ui-scale));
+}
+
 /* ── 읽기 규칙 (2026-09-17) ──
    접힌 목록이 기본이다. 아홉 절이 다 펼쳐져 있으면 지도가 아니라 벽이 된다.
    .rows·.section-title·.tag 는 다른 화면 것을 그대로 쓴다 */

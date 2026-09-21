@@ -72,7 +72,26 @@ export interface MeaningKnownEvent extends EventBase {
   known: boolean
 }
 
-export type LearningEvent = ReviewEvent | MeaningKnownEvent
+/**
+ * 찾기에서 담아 둔 표현 (2026-09-21). **다음 세션의 신규 도입 우선권**이지 채점이 아니다.
+ *
+ * 담기·빼기를 이벤트 두 종류로 가르지 않고 `on` 하나로 접는다 — append-only 라 마지막
+ * 이벤트가 이긴다. 별도 스토어를 안 쓰는 이유는 **동기화·백업이 `events` 만 나르기**
+ * 때문이다 (`sync.ts`) — 스토어를 새로 두면 백업에서 조용히 빠진다.
+ *
+ * `cardType` 은 `'reading'` 으로 고정한다. 담는 대상은 숙어 전체지만 스키마 불변 조건이
+ * 전 이벤트에 `cardType` 을 요구하고, 담은 숙어가 처음 만나는 카드는 읽기다
+ * (`MeaningKnownEvent` 가 `'meaning'` 을 고정한 것과 같은 관례).
+ */
+export interface StarEvent extends EventBase {
+  type: 'star'
+  cardType: 'reading'
+  mistakeType: null
+  /** true = 담기, false = 빼기 */
+  on: boolean
+}
+
+export type LearningEvent = ReviewEvent | MeaningKnownEvent | StarEvent
 
 /** 이벤트 재생으로 파생되는 카드 1장의 상태. 저장하지 않고 언제든 재계산한다 */
 export interface CardState {

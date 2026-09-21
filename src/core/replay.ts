@@ -34,6 +34,12 @@ export interface ReplayState {
   meaningKnown: Map<string, boolean>
   /** pairId → 노출·오답 집계 */
   onyomi: Map<string, OnyomiStat>
+  /**
+   * 찾기에서 담아 둔 숙어 (2026-09-21). 마지막 `star` 이벤트가 이긴다 —
+   * 뺀 것은 여기 안 남는다. 이미 카드가 있는 숙어도 담겨 있을 수 있어서
+   * **「담겼다」와 「낼 차례다」는 다른 물음이다** — 후자는 `select.ts` 가 판단한다
+   */
+  starred: Set<string>
   /** 재생에 쓴 이벤트 수 (삭제분 제외) */
   applied: number
 }
@@ -48,6 +54,7 @@ export function replay(events: LearningEvent[], options: ReplayOptions = {}): Re
     cards: new Map(),
     meaningKnown: new Map(),
     onyomi: new Map(),
+    starred: new Set(),
     applied: 0,
   }
 
@@ -57,6 +64,11 @@ export function replay(events: LearningEvent[], options: ReplayOptions = {}): Re
     state.applied++
     if (e.type === 'meaningKnown') {
       state.meaningKnown.set(e.idiomId, e.known)
+      continue
+    }
+    if (e.type === 'star') {
+      if (e.on) state.starred.add(e.idiomId)
+      else state.starred.delete(e.idiomId)
       continue
     }
 
