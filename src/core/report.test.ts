@@ -4,7 +4,7 @@ import type { OnyomiPair } from '../dict/load.ts'
 import { newCard } from './scheduler.ts'
 import type { ReplayState } from './replay.ts'
 import type { CardState, MistakeType } from './types.ts'
-import { buildReport, frequentIdioms, pickBrowse, BROWSE_N } from './report.ts'
+import { buildReport, frequentIdioms, pickBrowse, pickBrowseMore, BROWSE_N } from './report.ts'
 
 function card(
   idiomId: string,
@@ -223,5 +223,35 @@ describe('pickBrowse — 오답 수 가중 무작위', () => {
 
   it('후보가 없으면 빈 배열', () => {
     expect(pickBrowse([], BROWSE_N, seeded(4))).toEqual([])
+  })
+
+  describe('pickBrowseMore — 한 벌 더 (2026-09-21)', () => {
+    const many = Array.from({ length: 50 }, (_, i) => row(String(i), 2))
+
+    it('이번 방문에서 안 낸 것부터 채운다', () => {
+      const shown = new Set(many.slice(0, 20).map((r) => r.id))
+      const next = pickBrowseMore(many, shown, 10, seeded(5))
+      expect(next.every((r) => !shown.has(r.id))).toBe(true)
+    })
+
+    it('안 낸 것이 모자라면 이미 낸 것에서 메워 수를 채운다', () => {
+      const shown = new Set(many.slice(0, 45).map((r) => r.id))
+      const next = pickBrowseMore(many, shown, 10, seeded(6))
+      expect(next).toHaveLength(10)
+      // 남은 5장이 앞에 오고 나머지는 이미 본 것에서 온다
+      expect(next.slice(0, 5).every((r) => !shown.has(r.id))).toBe(true)
+      expect(new Set(next.map((r) => r.id)).size).toBe(10)
+    })
+
+    it('다 본 뒤에도 한 벌을 채운다 — 같은 것들이 순서만 달라진다', () => {
+      const shown = new Set(many.map((r) => r.id))
+      const next = pickBrowseMore(many, shown, 10, seeded(7))
+      expect(next).toHaveLength(10)
+    })
+
+    it('후보 자체가 적으면 있는 만큼만', () => {
+      const few = [row('a', 1), row('b', 1)]
+      expect(pickBrowseMore(few, new Set(), BROWSE_N, seeded(8))).toHaveLength(2)
+    })
   })
 })

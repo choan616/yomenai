@@ -169,14 +169,33 @@ export function frequentIdioms(
  * 재대결이 같은 이유로 가중 무작위로 바뀌었다 (2026-09-11). 자주 틀린 것이 더 자주·앞쪽에
  * 나오되 조합과 순서가 매번 달라진다.
  */
-export function pickBrowse(
-  rows: FrequentIdiom[],
+export function pickBrowse<T extends FrequentIdiom>(
+  rows: T[],
   limit = BROWSE_N,
   rand: () => number = Math.random,
-): FrequentIdiom[] {
+): T[] {
   return pickWeighted(
     rows.map((row) => ({ item: row, weight: row.wrong })),
     limit,
     rand,
   )
+}
+
+/**
+ * 한 벌 더 뽑는다 — 다시보기 마지막 장의 「다른 N개」 (2026-09-21 사용자 요청).
+ *
+ * **이번 방문에서 안 낸 것부터 채운다.** 그냥 다시 뽑으면 가중 무작위라 자주 틀린 숙어가
+ * 또 앞자리를 차지해, 후보가 많은데도 같은 얼굴이 돈다. 안 낸 것이 모자라면 이미 낸 것에서
+ * 메워서 **수는 늘 채운다** — 「다른 30개」라고 해 놓고 7장만 주면 그게 더 이상하다.
+ */
+export function pickBrowseMore<T extends FrequentIdiom>(
+  rows: T[],
+  shown: ReadonlySet<string>,
+  limit = BROWSE_N,
+  rand: () => number = Math.random,
+): T[] {
+  const fresh = pickBrowse(rows.filter((r) => !shown.has(r.id)), limit, rand)
+  if (fresh.length >= limit) return fresh
+  const again = pickBrowse(rows.filter((r) => shown.has(r.id)), limit - fresh.length, rand)
+  return [...fresh, ...again]
 }

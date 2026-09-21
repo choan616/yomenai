@@ -5,7 +5,7 @@
 // 스냅을 브라우저가 하고, 이 파일은 스크롤 위치에서 지금 장을 읽어 머리말에 반영하는 것과
 // 버튼이 트랙을 스크롤하게 하는 것만 한다.
 import { useEffect, useRef, useState } from 'react'
-import { frequentIdioms, pickBrowse } from '../core/report.ts'
+import { frequentIdioms, pickBrowse, pickBrowseMore } from '../core/report.ts'
 import { replay } from '../core/replay.ts'
 import {
   classifiedMistakes,
@@ -61,7 +61,23 @@ export function Browse({
   filter?: { type: MistakeType | null; voicing: VoicingKind | null; label: string }
 }) {
   useViewportLock()
+  /**
+   * 후보 **전량**. 화면에 낼 한 벌은 여기서 뽑는다 — 「다른 N개」가 DB 를 다시 읽지 않게
+   * 들고 있는다 (2026-09-21). 들어올 때 한 번만 만든다
+   */
+  const [all, setAll] = useState<BrowseItem[] | null>(null)
   const [items, setItems] = useState<BrowseItem[] | null>(null)
+  /** 이번 방문에서 이미 낸 숙어. 한 벌 더 뽑을 때 안 본 것부터 채우는 기준이다 */
+  const [shown, setShown] = useState<ReadonlySet<string>>(new Set())
+  /**
+   * 몇 번째 한 벌인가. **트랙의 key 다** (2026-09-21).
+   *
+   * 스냅 컨테이너(`scroll-snap-type: x mandatory`)는 내용이 바뀌면 직전에 스냅돼 있던
+   * **요소**를 다시 찾아간다. 두 벌째가 이미 본 것으로 메워지면 그 요소가 새 목록 어딘가에
+   * 살아 있어서, 마지막 장에서 한 벌 더 부르면 12번째 장 같은 자리로 끌려갔다.
+   * 트랙째 새로 다는 쪽이 `scrollTo(0)` 로 밀어내는 것보다 확실하다
+   */
+  const [round, setRound] = useState(0)
   const [error, setError] = useState<string | null>(null)
   const [at, setAt] = useState(0)
   /** 캐러셀 트랙. 버튼은 여기를 스크롤하고, 손가락 넘김은 브라우저가 한다 */
@@ -105,8 +121,8 @@ export function Browse({
         const wrong = classifiedMistakes(events)
         const verdictOf = verdictByEvent(wrong, ctx, (id) => byId.get(id)?.headword)
         const worst = mistakeOfIdiom(wrong, verdictOf)
-        // 들어올 때 한 번만 뽑는다 — 넘기는 도중에 목록이 바뀌면 안 된다
-        const rows = pickBrowse(
+        // 후보는 전량을 만들어 두고 뽑기만 여기서 한다 — 넘기는 도중에 목록이 바뀌면 안 된다
+        const rows = (
           filter
             ? filter.type === null
               ? frequentIdiomsUnnamed(events, verdictOf, nameOf)
@@ -114,18 +130,20 @@ export function Browse({
             : frequentIdioms(
                 replay(events, { pairsOf: (id) => byId.get(id)?.pairIds ?? [] }),
                 nameOf,
-              ),
+              )
         )
         const lookup = ctx.lookup
-        setItems(
-          rows.map((r) => ({
-            ...r,
-            meaning: byId.get(r.id)?.koMeaning?.definition?.trim() ?? '',
-            sentences: examples.get(r.id) ?? [],
-            ruby: rubyOf(r.headword, r.reading, lookup),
-            rule: ruleOf(worst.get(r.id)),
-          })),
-        )
+        const enriched: BrowseItem[] = rows.map((r) => ({
+          ...r,
+          meaning: byId.get(r.id)?.koMeaning?.definition?.trim() ?? '',
+          sentences: examples.get(r.id) ?? [],
+          ruby: rubyOf(r.headword, r.reading, lookup),
+          rule: ruleOf(worst.get(r.id)),
+        }))
+        const first = pickBrowse(enriched)
+        setAll(enriched)
+        setItems(first)
+        setShown(new Set(first.map((it) => it.id)))
       } catch (e) {
         if (alive) setError(e instanceof Error ? e.message : String(e))
       }
@@ -139,7 +157,7 @@ export function Browse({
   if (error !== null) {
     return <Centered message="불러오지 못했어요." detail={error} onExit={onExit} />
   }
-  if (items === null) {
+  if (items === null || all === null) {
     return <div className="centered">불러오고 있어요…</div>
   }
   if (items.length === 0) {
@@ -150,6 +168,18 @@ export function Browse({
         onExit={onExit}
       />
     )
+  }
+
+  /** 후보가 화면에 낸 수보다 많나 — 「다른 N개」라고 말해도 되는지가 여기서 갈린다 */
+  const hasOthers = all.length > items.length
+
+  const reroll = () => {
+    const next = pickBrowseMore(all, shown)
+    setItems(next)
+    setShown((prev) => new Set([...prev, ...next.map((it) => it.id)]))
+    // 트랙을 새로 달아 첫 장에서 시작한다 (round 주석 참조)
+    setRound((n) => n + 1)
+    setAt(0)
   }
 
   const move = (d: -1 | 1) => {
@@ -173,6 +203,7 @@ export function Browse({
 
       <main
         className="study-main browse-track"
+        key={round}
         ref={track}
         onScroll={(e) => {
           // 한 장 폭으로 스냅되므로 반올림이 곧 지금 장이다. 값이 바뀔 때만 리렌더한다
@@ -194,20 +225,29 @@ export function Browse({
         ))}
       </main>
 
-      {/* 넘김 버튼은 트랙 밖에 한 벌만 둔다 — 카드를 따라 흘러가면 누르려던 자리가 움직인다 */}
+      {/* 넘김 버튼은 트랙 밖에 한 벌만 둔다 — 카드를 따라 흘러가면 누르려던 자리가 움직인다.
+          **자리는 늘 3슬롯**이다 (2026-09-21). 마지막 장에서만 나오는 「돌아가기」 때문에
+          이전·가운데 버튼이 넓어졌다 좁아지면 엄지가 노리던 자리가 흔들린다 */}
       <div className="card-bottom browse-nav">
-        <div className="answer-row choice">
+        <div className="answer-row">
           <button type="button" className="btn" disabled={at === 0} onClick={() => move(-1)}>
             ‹ 이전
           </button>
           {at === items.length - 1 ? (
-            <button type="button" className="btn-primary" onClick={onExit}>
-              돌아가기
+            <button type="button" className="btn-primary" onClick={reroll}>
+              {hasOthers ? `다른 ${items.length}개` : '한 바퀴 더'} ›
             </button>
           ) : (
             <button type="button" className="btn-primary" onClick={() => move(1)}>
               다음 ›
             </button>
+          )}
+          {at === items.length - 1 ? (
+            <button type="button" className="btn" onClick={onExit}>
+              돌아가기
+            </button>
+          ) : (
+            <span className="slot" aria-hidden="true" />
           )}
         </div>
       </div>
