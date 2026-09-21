@@ -149,6 +149,14 @@ export function Report({
       </div>
 
       <div className="screen-body">
+        {/* 도구 둘은 **기록이 없어도** 보인다 (2026-09-17). 규칙은 처방에서만 닿게 두면
+            읽기 30회를 채우기 전에는 아예 못 여는데, 규칙은 처음 틀린 날 가장 필요하다 */}
+        <ToolsSection onOnyomi={onOnyomi} onRules={() => onRule(null)} />
+
+        {/* 알림은 **도구 아래**, 곧 본문이 들어설 자리에 둔다 (2026-09-21 사용자 지적).
+            위에 두면 계산이 끝나 문구가 사라질 때 도구 묶음이 통째로 24px 올라간다 —
+            이미 보이던 것이 움직이는 게 덜컥거림의 정체다. 여기 두면 문구 자리를 본문이
+            그대로 이어받아, 보이던 것은 하나도 안 움직이고 아래로만 자란다 */}
         {error ? (
           <p className="empty">불러오지 못했어요: {error}</p>
         ) : !data ? (
@@ -160,10 +168,6 @@ export function Report({
             세션을 마치면 오답 패턴이 여기 쌓여요.
           </p>
         ) : null}
-
-        {/* 도구 둘은 **기록이 없어도** 보인다 (2026-09-17). 규칙은 처방에서만 닿게 두면
-            읽기 30회를 채우기 전에는 아예 못 여는데, 규칙은 처음 틀린 날 가장 필요하다 */}
-        <ToolsSection onOnyomi={onOnyomi} onRules={() => onRule(null)} />
 
         {data && data.report.totalReviews > 0 && (
           <ReportBody

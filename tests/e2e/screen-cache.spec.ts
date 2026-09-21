@@ -100,3 +100,47 @@ test('계산 중에도 제목과 주 버튼이 안 움직인다', async ({ page 
     loading.primary,
   )
 })
+
+test('리포트도 계산 중에 도구 묶음이 안 움직인다', async ({ page }) => {
+  await ready(page)
+
+  // 사전을 붙잡아 로딩 상태를 고정한다 (위와 같은 처방)
+  let release = (): void => {}
+  const held = new Promise<void>((res) => {
+    release = res
+  })
+  await page.route('**/dict/base.json', async (route) => {
+    await held
+    await route.continue()
+  })
+  await page.reload()
+  await page.getByRole('button', { name: '리포트', exact: true }).click()
+
+  const probe = () =>
+    page.evaluate(() => {
+      const tools = document.querySelector('.report .tools')
+      return {
+        loading: (document.querySelector('.screen-body')?.textContent ?? '').includes(
+          '불러오고 있어요',
+        ),
+        tools: tools ? Math.round(tools.getBoundingClientRect().top) : -1,
+      }
+    })
+
+  await page.waitForSelector('.report .tools', { timeout: 20_000 })
+  const loading = await probe()
+  expect(loading.loading, '로딩 상태를 잡아야 의미가 있다').toBe(true)
+
+  release()
+  await expect(page.locator('.screen-body')).not.toContainText('불러오고 있어요', {
+    timeout: 20_000,
+  })
+  const loaded = await probe()
+
+  // 4px 은 봐준다 — 위에 있는 건 제목줄뿐이라, 두 측정 사이에 폰트가 도착하면 행간이
+  // 그만큼 달라진다(실행마다 2~3px 흔들렸다). 잡으려는 건 알림이 사라지며 생기던 24px 이다
+  expect(
+    Math.abs(loaded.tools - loading.tools),
+    `도구 묶음이 ${loaded.tools - loading.tools}px 움직였다`,
+  ).toBeLessThanOrEqual(4)
+})
