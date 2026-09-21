@@ -12,6 +12,28 @@ import { loadSettings } from '../app/settings.ts'
 import { playKeyClick, vibrateKey } from './keyFeedback.ts'
 import { KEYPAD_ROWS } from './keypadLayouts.ts'
 
+/**
+ * 확인 키를 누른 뒤 따라오는 클릭 하나를 먹는다.
+ *
+ * 확인은 `pointerdown` 에서 처리하는데(반응속도), 그 순간 자판이 접히고 손가락이 있던
+ * 자리에 다른 버튼이 올라온다. **`pointerdown` 을 preventDefault 해도 `click` 은 그대로
+ * 온다** — 막히는 건 호환 마우스 이벤트뿐이다. 그래서 손을 떼는 순간 새로 온 버튼이 대신
+ * 눌렸다 (안드로이드 11 크롬 실기기 2026-09-21 — 채점 화면이 「다음」에 눌려 바로 사라졌다).
+ *
+ * React 는 루트 컨테이너에 듣고 있으니 document 캡처 단계에서 끊으면 앱까지 안 간다.
+ * 클릭이 아예 안 오는 경우(손가락을 끌어 나가 pointercancel)를 위해 창을 짧게 두고 걷는다.
+ */
+function swallowGhostClick(): void {
+  let timer = 0
+  const eat = (e: MouseEvent) => {
+    e.stopPropagation()
+    e.preventDefault()
+    clearTimeout(timer)
+  }
+  document.addEventListener('click', eat, { capture: true, once: true })
+  timer = window.setTimeout(() => document.removeEventListener('click', eat, true), 500)
+}
+
 export function RomajiKeypad({
   onKey,
   onBackspace,
@@ -124,6 +146,8 @@ export function RomajiKeypad({
           onPointerDown={(e) => {
             hold(e)
             tick()
+            // 자판이 사라지며 이 자리에 올라오는 버튼이 대신 눌리지 않게 (위 주석)
+            swallowGhostClick()
             onSubmit()
           }}
         >
