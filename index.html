@@ -4,6 +4,12 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <!-- 폰트를 먼저 받는다 (2026-09-21). 프리로드가 없으면 CSS 를 파싱하고 글자를 그린 뒤에야
+         @font-face 를 발견해서, 1.6Mbps 실측 기준 시작이 1.25초 늦고 그만큼 시스템 글꼴로
+         그려졌다가 다시 그려진다(font-display: swap) — 화면이 덜컥거리는 원인 하나.
+         **첫 화면이 쓰는 둘만** 올린다. 일본어 Regular 는 학습 카드에서 처음 쓰이는데,
+         여기 얹으면 지금 필요한 둘과 대역폭을 나눠 갖는다 (홈 제목 読めない 는 Bold 다) -->
+    <link rel="preload" href="/fonts/Pretendard-Regular.woff2" as="font" type="font/woff2" crossorigin />
     <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#141210" />
     <meta name="theme-color" media="(prefers-color-scheme: light)" content="#f7f5f1" />
     <!-- maximum-scale/user-scalable=no: iOS 가 입력 포커스 시 화면을 확대하는 걸 막는다.

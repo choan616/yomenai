@@ -74,9 +74,54 @@ npm run apply:korean-review -- --trust-llm   # korean-class.json 재생성 (분�
 npm run apply:korean-meaning -- --validate    # 층별 "손댄 비율" 미리보기
 npm run apply:korean-meaning                  # verdict → korean-class.json
 npm run build:runtime-dict                    # → public/dict
+npm run build:fonts                           # 새 뜻에 새 한글이 있으면 폰트도 다시
 ```
 
-그다음 `public/dict/` 변경분을 커밋·푸시하면 GitHub Actions 가 배포한다.
+`apply:korean-review -- --trust-llm` 은 **분류(korean-worklist*.tsv)를 건드렸을 때만** 필요하다.
+뜻만 검수했으면 빼도 된다 — 이 줄은 `korean-class.json` 을 원본에서 다시 만들며 모든
+`koMeaning.verified` 를 `false` 로 되돌린다. 바로 뒤 `apply:korean-meaning` 이 TSV 에서
+복원하지만, 중간에 멈추면 여태 검수한 게 날아간다. `--validate` 는 통계만 찍고 쓰기 전에
+빠지는 미리보기다.
+
+**`build:fonts` 를 빼먹지 않는다.** 한국어 폰트는 **사전이 실제로 쓰는 한글만** 담은
+서브셋이라(748KB → 96KB), 새 뜻에 없던 글자가 들어오면 그 글자만 시스템 폰트로 떨어져
+한 줄 안에서 글꼴이 갈린다. 자세한 건 아래 「폰트」 절.
+
+그다음 `public/dict/`(과 폰트가 바뀌었으면 `public/fonts/`) 변경분을 커밋·푸시하면
+GitHub Actions 가 배포한다.
+
+## 폰트
+
+```
+npm run build:fonts    # data/raw/fonts/ → public/fonts/
+```
+
+원본 셋(`NotoSansJP-Regular.otf`·`NotoSansJP-Bold.otf`·`Pretendard-Regular.woff2`)이
+`data/raw/fonts/` 에 있어야 한다.
+
+| 파일 | 크기 | 담는 것 |
+|---|---|---|
+| `NotoSansJP-subset` | 496KB | 숙어·읽기에 나오는 문자 + 가나 전 구간 |
+| `NotoSansJP-Bold-subset` | 508KB | 같은 문자 집합 (합성 볼드는 자형을 왜곡한다) |
+| `Pretendard-Regular` | 96KB | **사전의 뜻·한국 한자음 + 소스·안내서의 UI 문구** + 라틴/기호 |
+
+### 위험의 크기가 언어마다 다르다
+
+**일본어는 100% 커버가 빌드 실패 조건이다.** 한 글자라도 빠지면 그 한자가 한국 자형으로
+나가서 사용자가 틀린 글자 모양을 학습한다 (CLAUDE.md 「일본어 렌더링」).
+
+**한국어는 시스템 한글 폰트로 떨어질 뿐이다.** 그래서 서브셋을 공격적으로 잡았다.
+대신 **한글이 늘어나는 작업 뒤에는 다시 돌려야 한다** — 뜻 검수 반영, UI 문구 추가.
+소스(`src/**/*.{ts,tsx,css}`)·`public/guide.html`·`index.html` 은 빌드가 알아서 긁는다.
+
+### 프리로드는 한국어만
+
+`index.html` 이 `Pretendard` 만 `rel="preload"` 한다. 일본어 Bold(509KB)까지 얹었더니
+JS 번들과 대역폭을 나눠 가져 **FCP 가 1,500ms → 2,584ms 로 되레 나빠졌다**(1.6Mbps 실측).
+한국어만 남기니 1,892ms 에 한글 폰트가 1.3초에 끝난다 — 전에는 11.4초였다.
+
+일본어에는 `font-display: optional` 을 쓰지 않는다. 폰트가 늦으면 폴백으로 굳는데,
+그게 곧 한국 자형이다.
 
 ## 예문 — 이상한 이름 빼기
 
