@@ -7,7 +7,7 @@
 // 읽기가 맞아도 뜻이 안 맞는 자리가 남는다 — 和歌山 의 和歌, 協和銀行 의 協和 처럼 표제어가
 // 고유명사 이름 안에 파묻힌 경우다. 읽기는 보존되므로 읽기 검증으로는 못 거른다
 // (사용자 지적 2026-09-21).
-import { readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import { dirname, join } from 'node:path'
 import kuromoji from 'kuromoji'
@@ -106,6 +106,33 @@ export function buriedInProperNoun(
 }
 
 /**
+ * `propn-overrides.json` 에 적어 둔 이름 안에 표제어가 파묻혔나 (2026-09-21).
+ *
+ * `buriedInProperNoun` 은 형태소 분석이 고유명사로 잡아 준 것만 본다. IPADIC 은
+ * 協和銀行 을 協和(サ変接続) + 銀行(一般) 으로 갈라서 **고유명사 표시가 아예 안 붙는다** —
+ * 회사 이름인데 규칙의 사정권 밖이다.
+ *
+ * 접미사 목록(銀行·会社·新聞…)으로 잡는 안은 기각했다. 실측 32건 중 31건이 海運会社·
+ * 公共放送·英字新聞 같은 멀쩡한 복합어라 좋은 예문을 죽이는 거래가 된다 (context-notes).
+ * 가를 신호가 없으면 손으로 적는 쪽이 정직하다.
+ */
+export function insideKnownName(
+  sentence: string,
+  at: number,
+  headword: string,
+  names: readonly string[],
+): boolean {
+  const end = at + headword.length
+  for (const name of names) {
+    if (name === headword) continue
+    for (let i = sentence.indexOf(name); i >= 0; i = sentence.indexOf(name, i + 1)) {
+      if (i <= at && i + name.length >= end) return true
+    }
+  }
+  return false
+}
+
+/**
  * 후보 중 길이 상한을 통과하고 accept 가 받아들인 것만, 짧은(=쉬운) 순으로 최대 max 개 고른다.
  * accept 는 형태소 분석이 필요해 비싸므로 짧은 순으로 훑다가 max 개를 채우면 멈춘다. 순수 함수라 단위 테스트가 붙는다
  */
@@ -172,6 +199,12 @@ async function main() {
     }
   }
 
+  // 형태소 분석이 못 잡는 이름 목록. 없으면 빈 목록으로 돈다
+  const propnPath = join(DICT_DIR, 'propn-overrides.json')
+  const knownNames: string[] = existsSync(propnPath)
+    ? (JSON.parse(readFileSync(propnPath, 'utf8')) as { names: string[] }).names
+    : []
+
   const tokenizer = await buildTokenizer()
   const byId = new Map(pool.map((it) => [it.id, it]))
   let checked = 0
@@ -190,7 +223,10 @@ async function main() {
     for (let i = sentence.indexOf(it.headword); i >= 0; i = sentence.indexOf(it.headword, i + 1)) {
       // 이름 안에 파묻힌 자리는 그 자리만 버린다 — 같은 문장 다른 자리에 홀로 서 있을 수 있다
       // (勤労感謝の日 와 勤労の大切さ 가 한 문장에 같이 나온다)
-      if (buriedInProperNoun(morphemes, i, it.headword)) {
+      if (
+        buriedInProperNoun(morphemes, i, it.headword) ||
+        insideKnownName(sentence, i, it.headword, knownNames)
+      ) {
         sawPropn = true
         continue
       }
@@ -218,7 +254,8 @@ async function main() {
     _meta: {
       source: 'Tatoeba (tatoeba.org). CC BY, 문장 작성자별 저작권 — 개인 사용 단계라 출처만 기록',
       rule:
-        `표제어 문자열 매칭 + 형태소 분석(kuromoji/IPADIC)으로 읽기 검증 및 고유명사 매몰 제외, ` +
+        `표제어 문자열 매칭 + 형태소 분석(kuromoji/IPADIC)으로 읽기 검증 및 고유명사 매몰 제외 ` +
+        `(propn-overrides.json ${knownNames.length}건 포함), ` +
         `${MAX_LEN}자 이하 중 짧은 순 최대 ${MAX_PER_IDIOM}개`,
       generatedAt: new Date().toISOString(),
       idiomCount: pool.length,

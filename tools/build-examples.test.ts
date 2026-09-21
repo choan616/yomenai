@@ -1,6 +1,11 @@
 // pickExamples·readingHolds 단위 테스트 — 길이 상한 필터 + 짧은 순 정렬 + 중복 제거 + 읽기 검증
 import { describe, expect, it } from 'vitest'
-import { buriedInProperNoun, pickExamples, readingHolds } from './build-examples.ts'
+import {
+  buriedInProperNoun,
+  insideKnownName,
+  pickExamples,
+  readingHolds,
+} from './build-examples.ts'
 
 describe('pickExamples', () => {
   it('짧은 순으로 최대 max 개를 고른다', () => {
@@ -163,5 +168,34 @@ describe('buriedInProperNoun — 이름 안에 파묻힌 표기 (2026-09-21 사�
       { position: 2, surface: '産業省', propn: true },
     ]
     expect(buriedInProperNoun(m, 1, '済産')).toBe(false)
+  })
+})
+
+describe('insideKnownName — 형태소 분석이 못 잡는 이름 (2026-09-21)', () => {
+  const names = ['協和銀行']
+  const S = '１０年前に協和銀行と埼玉銀行は合併してあさひ銀行になった。'
+
+  it('協和銀行 안의 協和 는 뺀다 — IPADIC 은 協和+銀行 으로 갈라 고유명사 표시가 없다', () => {
+    expect(insideKnownName(S, S.indexOf('協和'), '協和', names)).toBe(true)
+  })
+
+  it('적어 둔 이름 안이면 表記 가 무엇이든 막는다 — 協和銀行 의 銀行 도 그 이름의 일부다', () => {
+    expect(insideKnownName(S, S.indexOf('銀行'), '銀行', names)).toBe(true)
+  })
+
+  it('목록에 없는 이름(あさひ銀行) 안의 같은 글자는 안 막는다', () => {
+    expect(insideKnownName(S, S.lastIndexOf('銀行'), '銀行', names)).toBe(false)
+  })
+
+  it('목록에 없는 이름은 통과시킨다 — 손으로 적은 것만 막는다', () => {
+    expect(insideKnownName('大手銀行の大半が導入している。', 0, '大手', names)).toBe(false)
+  })
+
+  it('이름과 표제어가 같으면 파묻힌 게 아니다', () => {
+    expect(insideKnownName('協和銀行に行く。', 0, '協和銀行', names)).toBe(false)
+  })
+
+  it('목록이 비면 아무것도 안 막는다', () => {
+    expect(insideKnownName(S, S.indexOf('協和'), '協和', [])).toBe(false)
   })
 })
