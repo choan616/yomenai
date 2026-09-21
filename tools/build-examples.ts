@@ -86,9 +86,13 @@ export function readingHolds(
  * 형태소와 표기가 **통째로 같으면 파묻힌 게 아니다** — 東京 처럼 표제어 자체가 고유명사인
  * 경우까지 막으면 그 숙어는 예문을 영영 못 갖는다.
  *
- * 대가 — アルプス山脈 의 山脈, 赤十字 의 十字 처럼 뜻이 살아 있는 것도 같이 빠진다.
- * 이 둘을 자동으로 가를 신호가 없다 (外務省·講談社 둘 다 固有名詞,組織 이다). 실측으로
- * 이런 「좋은 쪽」은 다른 예문을 갖고 있어 빈자리가 안 생긴다는 걸 확인하고 택했다.
+ * **이름 뒤쪽에서 끝나는 표기는 살린다** (2026-09-21 사용자 지적). 協和銀行 의 銀行 은
+ * 은행이 맞고 アルプス山脈 의 山脈 도 산맥이 맞다 — 이름이 「고유한 앞부분 + 종류를 가리키는
+ * 뒷부분」으로 짜이기 때문이다. 막아야 하는 건 앞부분(協和·和歌·太平)과 가운데(東京都庁 의
+ * 京都)다. 이름이 표기 뒤로 더 이어지면 그 표기는 이름의 일부지 그 단어가 아니다.
+ *
+ * 뒤쪽인데 뜻이 다른 예외(最高裁 의 高裁 = 고등법원 ≠ 대법원, 大西洋 의 西洋)는 자동으로
+ * 못 가른다. 그건 `propn-overrides.json` 에 손으로 적는다.
  */
 export function buriedInProperNoun(
   morphemes: Morpheme[],
@@ -101,30 +105,34 @@ export function buriedInProperNoun(
       m.propn === true &&
       m.surface !== headword &&
       m.position <= at &&
-      m.position + m.surface.length >= end,
+      // 이름이 표기 **뒤로 더 이어지면** 그 표기는 이름의 일부다. 딱 맞게 끝나면 종류 이름이라 살린다
+      m.position + m.surface.length > end,
   )
 }
 
 /**
- * `propn-overrides.json` 에 적어 둔 이름 안에 표제어가 파묻혔나 (2026-09-21).
+ * `propn-overrides.json` 이 이 이름 안의 이 표기를 막으라고 적어 뒀나 (2026-09-21).
  *
- * `buriedInProperNoun` 은 형태소 분석이 고유명사로 잡아 준 것만 본다. IPADIC 은
- * 協和銀行 을 協和(サ変接続) + 銀行(一般) 으로 갈라서 **고유명사 표시가 아예 안 붙는다** —
- * 회사 이름인데 규칙의 사정권 밖이다.
+ * **이름 전체가 아니라 막을 표기를 적는다** — 같은 이름 안에서도 갈린다. 協和銀行 의
+ * 協和 는 회사 이름이라 막고, 같은 자리의 銀行 은 은행이 맞아 살린다 (사용자 지적).
+ *
+ * 두 가지가 여기 모인다. 하나는 형태소 분석이 이름을 안 잡는 것 — IPADIC 은 協和銀行 을
+ * 協和(サ変接続) + 銀行(一般) 으로 갈라 **고유명사 표시가 아예 안 붙는다.** 다른 하나는
+ * 자동 규칙이 살려 주는 뒤쪽인데 뜻이 다른 것 — 最高裁 의 高裁, 大西洋 의 西洋.
  *
  * 접미사 목록(銀行·会社·新聞…)으로 잡는 안은 기각했다. 실측 32건 중 31건이 海運会社·
  * 公共放送·英字新聞 같은 멀쩡한 복합어라 좋은 예문을 죽이는 거래가 된다 (context-notes).
  * 가를 신호가 없으면 손으로 적는 쪽이 정직하다.
  */
-export function insideKnownName(
+export function blockedInName(
   sentence: string,
   at: number,
   headword: string,
-  names: readonly string[],
+  blocked: Readonly<Record<string, readonly string[]>>,
 ): boolean {
   const end = at + headword.length
-  for (const name of names) {
-    if (name === headword) continue
+  for (const [name, parts] of Object.entries(blocked)) {
+    if (!parts.includes(headword)) continue
     for (let i = sentence.indexOf(name); i >= 0; i = sentence.indexOf(name, i + 1)) {
       if (i <= at && i + name.length >= end) return true
     }
@@ -199,11 +207,11 @@ async function main() {
     }
   }
 
-  // 형태소 분석이 못 잡는 이름 목록. 없으면 빈 목록으로 돈다
+  // 손으로 적어 둔 제외 목록. 없으면 빈 목록으로 돈다
   const propnPath = join(DICT_DIR, 'propn-overrides.json')
-  const knownNames: string[] = existsSync(propnPath)
-    ? (JSON.parse(readFileSync(propnPath, 'utf8')) as { names: string[] }).names
-    : []
+  const blocked: Record<string, string[]> = existsSync(propnPath)
+    ? (JSON.parse(readFileSync(propnPath, 'utf8')) as { blocked: Record<string, string[]> }).blocked
+    : {}
 
   const tokenizer = await buildTokenizer()
   const byId = new Map(pool.map((it) => [it.id, it]))
@@ -225,7 +233,7 @@ async function main() {
       // (勤労感謝の日 와 勤労の大切さ 가 한 문장에 같이 나온다)
       if (
         buriedInProperNoun(morphemes, i, it.headword) ||
-        insideKnownName(sentence, i, it.headword, knownNames)
+        blockedInName(sentence, i, it.headword, blocked)
       ) {
         sawPropn = true
         continue
@@ -255,7 +263,7 @@ async function main() {
       source: 'Tatoeba (tatoeba.org). CC BY, 문장 작성자별 저작권 — 개인 사용 단계라 출처만 기록',
       rule:
         `표제어 문자열 매칭 + 형태소 분석(kuromoji/IPADIC)으로 읽기 검증 및 고유명사 매몰 제외 ` +
-        `(propn-overrides.json ${knownNames.length}건 포함), ` +
+        `(propn-overrides.json ${Object.keys(blocked).length}개 이름 포함), ` +
         `${MAX_LEN}자 이하 중 짧은 순 최대 ${MAX_PER_IDIOM}개`,
       generatedAt: new Date().toISOString(),
       idiomCount: pool.length,

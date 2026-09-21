@@ -2,7 +2,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   buriedInProperNoun,
-  insideKnownName,
+  blockedInName,
   pickExamples,
   readingHolds,
 } from './build-examples.ts'
@@ -149,12 +149,20 @@ describe('buriedInProperNoun — 이름 안에 파묻힌 표기 (2026-09-21 사�
     expect(buriedInProperNoun(propn('協和銀行'), 0, '協和')).toBe(true)
   })
 
-  it('最高裁 안의 高裁 — 표제어가 이름 가운데 있어도 잡는다', () => {
-    expect(buriedInProperNoun(propn('最高裁'), 1, '高裁')).toBe(true)
+  it('最高裁 안의 高裁 는 자동으로는 안 막힌다 — 뒤쪽이라 수동 목록의 몫이다', () => {
+    expect(buriedInProperNoun(propn('最高裁'), 1, '高裁')).toBe(false)
   })
 
   it('표제어 자체가 고유명사면 파묻힌 게 아니다 — 안 그러면 예문을 영영 못 갖는다', () => {
     expect(buriedInProperNoun(propn('東京'), 0, '東京')).toBe(false)
+  })
+
+  it('이름 뒤쪽에서 끝나는 표기는 살린다 — アルプス山脈 의 山脈 은 산맥이 맞다', () => {
+    expect(buriedInProperNoun(propn('アルプス山脈'), 4, '山脈')).toBe(false)
+  })
+
+  it('가운데 낀 것은 막는다 — 東京都庁 의 京都', () => {
+    expect(buriedInProperNoun(propn('東京都庁'), 1, '京都')).toBe(true)
   })
 
   it('보통명사 안에 든 것은 안 건드린다 — 읽기 검증의 몫이다', () => {
@@ -171,31 +179,27 @@ describe('buriedInProperNoun — 이름 안에 파묻힌 표기 (2026-09-21 사�
   })
 })
 
-describe('insideKnownName — 형태소 분석이 못 잡는 이름 (2026-09-21)', () => {
-  const names = ['協和銀行']
+describe('blockedInName — 손으로 적어 둔 제외 (2026-09-21)', () => {
+  const blocked = { 協和銀行: ['協和'], 最高裁: ['高裁'] }
   const S = '１０年前に協和銀行と埼玉銀行は合併してあさひ銀行になった。'
 
-  it('協和銀行 안의 協和 는 뺀다 — IPADIC 은 協和+銀行 으로 갈라 고유명사 표시가 없다', () => {
-    expect(insideKnownName(S, S.indexOf('協和'), '協和', names)).toBe(true)
+  it('協和銀行 안의 協和 는 막는다 — IPADIC 은 協和+銀行 으로 갈라 고유명사 표시가 없다', () => {
+    expect(blockedInName(S, S.indexOf('協和'), '協和', blocked)).toBe(true)
   })
 
-  it('적어 둔 이름 안이면 表記 가 무엇이든 막는다 — 協和銀行 의 銀行 도 그 이름의 일부다', () => {
-    expect(insideKnownName(S, S.indexOf('銀行'), '銀行', names)).toBe(true)
+  it('같은 자리의 銀行 은 살린다 — 회사 이름 안이어도 은행은 은행이다 (사용자 지적)', () => {
+    expect(blockedInName(S, S.indexOf('銀行'), '銀行', blocked)).toBe(false)
   })
 
-  it('목록에 없는 이름(あさひ銀行) 안의 같은 글자는 안 막는다', () => {
-    expect(insideKnownName(S, S.lastIndexOf('銀行'), '銀行', names)).toBe(false)
+  it('뒤쪽이라 자동으로는 풀리는 最高裁 의 高裁 를 여기서 막는다', () => {
+    expect(blockedInName('最高裁が人種分離教育を攻撃。', 1, '高裁', blocked)).toBe(true)
   })
 
-  it('목록에 없는 이름은 통과시킨다 — 손으로 적은 것만 막는다', () => {
-    expect(insideKnownName('大手銀行の大半が導入している。', 0, '大手', names)).toBe(false)
-  })
-
-  it('이름과 표제어가 같으면 파묻힌 게 아니다', () => {
-    expect(insideKnownName('協和銀行に行く。', 0, '協和銀行', names)).toBe(false)
+  it('그 이름이 문장에 없으면 안 막는다 — 高裁 단독은 그대로다', () => {
+    expect(blockedInName('高裁の判断を仰ぐ。', 0, '高裁', blocked)).toBe(false)
   })
 
   it('목록이 비면 아무것도 안 막는다', () => {
-    expect(insideKnownName(S, S.indexOf('協和'), '協和', [])).toBe(false)
+    expect(blockedInName(S, S.indexOf('協和'), '協和', {})).toBe(false)
   })
 })
