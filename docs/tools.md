@@ -25,7 +25,7 @@ import:jmdict          JMdict_e.gz → data/dict/idioms.json
 build:bands            nf 빈도 → 밴드 0~4 → data/dict/bands.json
 build:decomp-overrides JmdictFurigana 대조 → 熟字訓 거부 목록 (data/raw/JmdictFurigana.json 필요)
 build:onyomi           숙어 → (한자, 음독) 분해 → data/dict/onyomi-map.json
-build:examples         Tatoeba → 무번역 예문 (data/raw/tatoeba/ 필요)
+build:examples         Tatoeba → 무번역 예문 (data/raw/tatoeba/ 필요, 아래 「예문」 절)
 build:fonts            data/raw/fonts/ → public/fonts/ 서브셋 (Regular·Bold)
 build:runtime-dict     위 산출물 → public/dict/{base,band4,pairs,kanji,examples}.json
 ```
@@ -77,6 +77,60 @@ npm run build:runtime-dict                    # → public/dict
 ```
 
 그다음 `public/dict/` 변경분을 커밋·푸시하면 GitHub Actions 가 배포한다.
+
+## 예문 — 이상한 이름 빼기
+
+예문은 뜻을 잡으라고 두는 자리다. 표제어가 **고유명사 이름 안에 파묻힌** 예문은 그 자리에
+못 선다 — 和歌山 의 和歌, 協和銀行 의 協和 처럼 읽기는 맞지만 뜻이 다르다.
+배경은 `context-notes.md` 2026-09-21 절.
+
+`build:examples` 가 자동으로 거르는 규칙은 한 줄이다. **이름이 표기 뒤로 더 이어지면 뺀다.**
+
+| 자리 | 판정 | 예 |
+|---|---|---|
+| 이름 앞부분 | 뺀다 | `和歌`山 · `協和`銀行 · `太平`洋 |
+| 이름 가운데 | 뺀다 | 東`京都`庁 |
+| 이름 뒷부분 | **살린다** | アルプス`山脈` · 赤`十字` · 協和`銀行` |
+| 표제어 = 이름 전체 | 살린다 | `東京` |
+
+뒷부분을 살리는 건 이름이 「고유한 앞부분 + 종류를 가리키는 뒷부분」으로 짜이기 때문이다.
+協和銀行 의 銀行 은 은행이 맞다.
+
+### 손으로 적어야 하는 두 가지
+
+자동 규칙이 못 잡는 자리는 `data/dict/propn-overrides.json` 에 **이름과 막을 표기**를 적는다.
+문장이 아니라 이름을 적는 이유는, 타토에바가 갱신돼도 규칙이 살아남고 같은 이름에 걸린
+다른 표제어까지 같이 잡히기 때문이다.
+
+1. **형태소 분석이 이름을 안 잡는 것** — IPADIC 이 協和銀行 을 協和+銀行 으로 갈라
+   고유명사 표시가 아예 안 붙는다
+2. **뒷부분인데 뜻이 다른 것** — 最高裁 의 高裁 는 고등법원이고 大西洋 의 西洋 은 서양이 아니다
+
+```json
+{
+  "blocked": {
+    "協和銀行": ["協和"],
+    "最高裁": ["高裁"]
+  }
+}
+```
+
+이름 하나에 막을 표기가 여럿이면 배열에 나란히 적는다. 그 이름 안의 **적지 않은 표기는
+그대로 나온다** — 協和銀行 에 `協和` 만 적으면 `銀行` 예문은 살아 있다.
+
+### 고치고 다시 돌리기
+
+```
+npm run build:examples        # → data/dict/examples.json
+npm run build:runtime-dict    # → public/dict
+```
+
+로그의 `고유명사 매몰 N개` 로 몇 개가 걸렸는지 본다. 그다음 `public/dict/` 변경분과
+`propn-overrides.json` 을 같이 커밋·푸시하면 GitHub Actions 가 배포한다
+(`propn-overrides.json` 은 `data/dict/*` gitignore 의 `*-overrides.json` 예외라 커밋된다).
+
+**규칙을 넓혔으면 넓어진 쪽을 전수로 훑는다.** 뒷부분을 살리기로 바꿨을 때 東海道線 이
+海道 예문으로 새로 들어왔다 — 한 자리를 풀면 다른 이름으로 같은 문제가 생긴다.
 
 ## 분류(category) 파이프라인 — Phase 3, 보통 다시 안 돌림
 
