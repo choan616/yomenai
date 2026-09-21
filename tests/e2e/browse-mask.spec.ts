@@ -66,13 +66,23 @@ test('요미가나를 덮었다가 눌러서 벗긴다', async ({ page }) => {
   // 막대 길이가 다 같다 — 길이가 다르면 덮은 채로 읽기가 몇 자인지 드러난다 (2026-09-21).
   // **한 장이 아니라 30장 전부**를 본다. 읽기가 한 자인 것과 네 자인 것이 섞여 있어야
   // 이 검사가 뜻이 있다
-  const bars = await page
-    .locator('.browse-slide rt')
-    .evaluateAll((els) => els.map((el) => getComputedStyle(el, '::after').width))
-  expect(bars.length).toBeGreaterThan(30)
+  // **그려진 폭**을 잰다 — 배경은 제 상자 밖으로 못 나가므로 설정값이 아니라
+  // min(설정값, 상자 폭)이 실제 막대다 (2026-09-21 실기기에서 여기 걸렸다)
+  const painted = await page.locator('.browse-slide rt').evaluateAll((els) =>
+    els.map((el) => {
+      const box = el.getBoundingClientRect().width
+      const set = Number.parseFloat(getComputedStyle(el).backgroundSize.split(' ')[0])
+      return [String(Math.round(Math.min(set, box))), Math.round(box)] as [string, number]
+    }),
+  )
+  expect(painted.length).toBeGreaterThan(30)
+  const bars = painted.map(([w]) => w)
   expect(new Set(bars).size).toBe(1)
   // 막대가 실제로 그려져 있다 (0px 이면 위 검사가 헛돈다)
   expect(Number.parseFloat(bars[0])).toBeGreaterThan(4)
+  // **글자 상자는 제각각인데 막대만 같다** — 막대가 읽기 길이를 안 따라간다는 뜻이다.
+  // 이 줄이 없으면 글자 상자까지 다 같은 경우에도 위 검사가 통과한다
+  expect(new Set(painted.map(([, w]) => w)).size).toBeGreaterThan(1)
 
   // 벗겨도 카드가 안 움직인다 — 세로(한자가 내려앉음)와 가로(루비 열이 넓어짐) 둘 다 본다
   const boxes = () => slide.locator('ruby').evaluateAll((els) =>

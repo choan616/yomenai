@@ -614,23 +614,24 @@
    글자만 투명하게 만들어 rt 의 상자는 원래 폭 그대로 남긴다 — 그래야 벗겨도 루비 열이
    안 넓어지고 한자가 옆으로 안 밀린다.
 
-   막대는 그 상자 위에 **고정 폭**으로 그린다 (2026-09-21 사용자 지적). rt 에 직접 배경을
-   깔면 막대 길이가 곧 읽기 길이라, 두 자인지 네 자인지가 덮은 채로 드러난다.
-   2.2em 은 rt 기준(0.3em)이라 한자 폭의 0.66배다 — 한자보다 좁아 막대끼리 안 붙는다 */
+   막대는 그 상자 안에 **고정 폭**으로 그린다 (2026-09-21 사용자 지적). 배경을 rt 폭에
+   맞춰 깔면 막대 길이가 곧 읽기 길이라, 두 자인지 네 자인지가 덮은 채로 드러난다.
+   2.2em 은 rt 기준(0.3em)이라 한자 폭의 0.66배다 — 한자보다 좁아 막대끼리 안 붙는다.
+
+   **위치 지정을 안 쓴다** (2026-09-21 실기기 버그). `rt` 에 `position: relative` 를 걸고
+   `::after` 를 절대 배치했더니 iOS Safari 가 rt 의 position 을 무시했다 — 막대 넷이 카드
+   한가운데에 겹쳐 쌓여 카드 높이만 한 기둥이 됐다. 배경 한 겹을 `background-size` 로
+   자르면 기준 상자가 제 요소라 그 경로를 안 탄다 */
 .headword.has-ruby.masked rt {
   color: transparent;
-  position: relative;
-}
-.headword.has-ruby.masked rt::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 2.2em;
-  background: var(--border);
-  border-radius: 3px;
+  background-image: linear-gradient(var(--border), var(--border));
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 2.2em 100%;
+  /* 배경은 제 상자 밖으로 못 나간다 — 한 자짜리 읽기(お)에서 막대가 잘려 도로 짧아졌다.
+     상자에 최소 폭을 줘서 막대가 늘 제 폭을 갖게 한다. 2.2em 은 한자 폭의 0.66배라
+     **루비 열 폭(= 한자 폭)을 안 넘고**, 그래서 벗겨도 한자가 안 밀린다 */
+  min-width: 2.2em;
 }
 /* 벗기는 버튼 — 「다음 예문」과 같은 무게다. 카드 안에서 같은 격의 보조 동작이라 */
 .browse-reveal {
