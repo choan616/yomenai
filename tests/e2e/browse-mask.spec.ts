@@ -63,11 +63,30 @@ test('요미가나를 덮었다가 눌러서 벗긴다', async ({ page }) => {
   expect(await hidden(page, 0)).toBe(true)
   await expect(reveal).toBeVisible()
 
-  // 벗겨도 카드가 안 움직인다 — rt 를 숨기거나 빼면 한자가 내려앉는다
+  // 막대 길이가 다 같다 — 길이가 다르면 덮은 채로 읽기가 몇 자인지 드러난다 (2026-09-21).
+  // **한 장이 아니라 30장 전부**를 본다. 읽기가 한 자인 것과 네 자인 것이 섞여 있어야
+  // 이 검사가 뜻이 있다
+  const bars = await page
+    .locator('.browse-slide rt')
+    .evaluateAll((els) => els.map((el) => getComputedStyle(el, '::after').width))
+  expect(bars.length).toBeGreaterThan(30)
+  expect(new Set(bars).size).toBe(1)
+  // 막대가 실제로 그려져 있다 (0px 이면 위 검사가 헛돈다)
+  expect(Number.parseFloat(bars[0])).toBeGreaterThan(4)
+
+  // 벗겨도 카드가 안 움직인다 — 세로(한자가 내려앉음)와 가로(루비 열이 넓어짐) 둘 다 본다
+  const boxes = () => slide.locator('ruby').evaluateAll((els) =>
+    els.map((el) => {
+      const r = el.getBoundingClientRect()
+      return [Math.round(r.x), Math.round(r.y), Math.round(r.width), Math.round(r.height)]
+    }),
+  )
   const before = await slide.locator('.headword').boundingBox()
+  const rubyBefore = await boxes()
   await reveal.click()
   expect(await hidden(page, 0)).toBe(false)
   expect(await slide.locator('.headword').boundingBox()).toEqual(before)
+  expect(await boxes()).toEqual(rubyBefore)
   // 버튼은 자리를 지키며 반대말이 된다 — 치우면 한 줄이 빠져 한자가 내려앉는다
   await expect(slide.getByRole('button', { name: '다시 가리기' })).toBeVisible()
   await slide.getByRole('button', { name: '다시 가리기' }).click()

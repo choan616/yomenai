@@ -611,9 +611,24 @@
 /* 다음 예문 — 예문이 여럿일 때만 뜬다. 소리 듣기(.tts-btn)와 같은 무게로 (사용자 요청 2026-09-12) */
 /* 요미가나 가림막 (2026-09-21 사용자 요청) — 스크래치 카드처럼 덮었다가 눌러서 벗긴다.
    **자리를 그대로 두는 게 핵심이다.** rt 를 숨기거나 빼면 벗기는 순간 한자가 내려앉는다.
-   글자는 투명하게 두고 그 자리에 색을 깔아, 벗겨도 상자가 1px 도 안 움직인다 */
+   글자만 투명하게 만들어 rt 의 상자는 원래 폭 그대로 남긴다 — 그래야 벗겨도 루비 열이
+   안 넓어지고 한자가 옆으로 안 밀린다.
+
+   막대는 그 상자 위에 **고정 폭**으로 그린다 (2026-09-21 사용자 지적). rt 에 직접 배경을
+   깔면 막대 길이가 곧 읽기 길이라, 두 자인지 네 자인지가 덮은 채로 드러난다.
+   2.2em 은 rt 기준(0.3em)이라 한자 폭의 0.66배다 — 한자보다 좁아 막대끼리 안 붙는다 */
 .headword.has-ruby.masked rt {
   color: transparent;
+  position: relative;
+}
+.headword.has-ruby.masked rt::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 2.2em;
   background: var(--border);
   border-radius: 3px;
 }
