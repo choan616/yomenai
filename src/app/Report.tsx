@@ -1,6 +1,7 @@
 // 진단 리포트 화면 — 수준, 다음에 볼 것, 다시보기 진입, 오답 유형 분포, 1등 오답, 취약 음독. 이 앱의 얼굴이다 (PLAN §7)
 import { useEffect, useState } from 'react'
 import { dataVersion } from '../core/dataVersion.ts'
+import { onyomiSiblings } from '../core/contrast.ts'
 import {
   buildLevel,
   LEVEL_MIN_SEEN,
@@ -78,7 +79,7 @@ export function Report({
   /** 오답 유형 분포에서 가장 많은 유형만 걸러 다시보기로 (2026-09-18) */
   onBrowseMistake: (type: MistakeType | null, voicing: VoicingKind | null, label: string) => void
   /** 처방의 음독을 그 자리에서 집중 세션으로 (Phase 10) */
-  onFocus: (pairId: string) => void
+  onFocus: (pairIds: string[]) => void
   /** 규칙 처방에서 그 절로 (2026-09-17). 세션이 없는 자리라 화면을 옮겨도 잃을 게 없다 */
   onRule: (id: RuleId | null) => void
   /** 음독 맵으로 (2026-09-17). 홈 메뉴가 탭으로 내려가면서 이 탭 아래로 옮겨왔다 */
@@ -129,6 +130,9 @@ export function Report({
             report,
             level,
             unlocksOf: (pairId) => index.get(pairId)?.length ?? 0,
+            // 역인덱스의 키가 곧 **코퍼스에서 실제로 실현된 쌍**이라 사전을 더 안 읽는다
+            siblingsOf: (pairId) =>
+              onyomiSiblings(pairId, index.keys(), (id) => index.get(id)?.length ?? 0),
           }),
         }
         cache = { version: dataVersion(), data: next }
@@ -193,7 +197,7 @@ function ReportBody({
   data: Loaded
   onBrowse: () => void
   onBrowseMistake: (type: MistakeType | null, voicing: VoicingKind | null, label: string) => void
-  onFocus: (pairId: string) => void
+  onFocus: (pairIds: string[]) => void
   onRule: (id: RuleId | null) => void
 }) {
   const { report, level, prescriptions, voicing, rows, passed } = data
@@ -457,7 +461,7 @@ function RxItem({
   voicing: VoicingKind | null
   /** 그 바구니에 갈래가 둘 이상 섞였나 — 숫자가 묶인 값임을 밝힌다 */
   mixed: boolean
-  onFocus: (pairId: string) => void
+  onFocus: (pairIds: string[]) => void
   onRule: (id: RuleId | null) => void
 }) {
   switch (p.kind) {
@@ -498,7 +502,11 @@ function RxItem({
         </>
       )
     }
-    case 'ONYOMI':
+    case 'ONYOMI': {
+      // 형제 음독이 있으면 **집중을 대조로 갈아끼운다** (2026-09-21). 이 경우 한 음독만
+      // 반복해 푸는 것은 「人 은 じん」이라는 과잉일반화를 그 세션이 직접 가르치는 꼴이다
+      const siblings = p.contrast ?? []
+      const all = [p.pairId, ...siblings.map((s) => s.pairId)]
       return (
         <>
           <p className="rx-title">
@@ -508,15 +516,37 @@ function RxItem({
             </span>
             <span className="dim"> · {p.onKind === 'on' ? '음독' : '훈독'}</span>
           </p>
-          <p className="rx-why">
-            {p.seen}번 중 {p.wrong}번 틀렸어요. 이 음독을 쓰는 숙어가{' '}
-            <b>{p.unlocks}개</b>라 여기 하나가 그만큼 걸려 있어요.
-          </p>
-          <button type="button" className="btn rx-run" onClick={() => onFocus(p.pairId)}>
-            이 음독만 모아 풀기 <span className="chev">›</span>
+          {siblings.length > 0 ? (
+            <p className="rx-why">
+              {p.seen}번 중 {p.wrong}번 틀렸어요. 이 한자는 음독이 둘이에요 —{' '}
+              <span className="r-ja" lang="ja">
+                {p.base}
+              </span>
+              ({p.unlocks}개)
+              {siblings.map((s) => (
+                <span key={s.pairId}>
+                  {' · '}
+                  <span className="r-ja" lang="ja">
+                    {s.base}
+                  </span>
+                  ({s.idioms}개)
+                </span>
+              ))}
+              . 갈라서 나란히 내요.
+            </p>
+          ) : (
+            <p className="rx-why">
+              {p.seen}번 중 {p.wrong}번 틀렸어요. 이 음독을 쓰는 숙어가{' '}
+              <b>{p.unlocks}개</b>라 여기 하나가 그만큼 걸려 있어요.
+            </p>
+          )}
+          <button type="button" className="btn rx-run" onClick={() => onFocus(all)}>
+            {siblings.length > 0 ? '두 음독을 갈라 풀기' : '이 음독만 모아 풀기'}{' '}
+            <span className="chev">›</span>
           </button>
         </>
       )
+    }
     case 'BAND':
       return (
         <>

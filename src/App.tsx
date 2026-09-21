@@ -43,7 +43,11 @@ export type Flow =
       kind: 'browse'
       filter?: { type: MistakeType | null; voicing: VoicingKind | null; label: string }
     }
-  | { kind: 'focus'; pairId: string }
+  /**
+   * 음독 집중 세션. 쌍이 여럿이면 **대조**다 — 한 한자가 음독 둘을 쓸 때
+   * 처방이 그렇게 내민다 (2026-09-21)
+   */
+  | { kind: 'focus'; pairIds: string[] }
 
 export default function App() {
   return (
@@ -95,7 +99,7 @@ function FlowScreen({
     case 'rematch':
       return <Study kind="rematch" onExit={onExit} />
     case 'focus':
-      return <Study kind="focus" focusPairId={flow.pairId} onExit={onExit} />
+      return <Study kind="focus" focusPairIds={flow.pairIds} onExit={onExit} />
     case 'browse':
       return <Browse onExit={onExit} filter={flow.filter} />
     case 'diagnostic':
@@ -131,7 +135,7 @@ function TabRoot({
           onBrowseMistake={(type, voicing, label) =>
             onFlow({ kind: 'browse', filter: { type, voicing, label } })
           }
-          onFocus={(pairId) => onFlow({ kind: 'focus', pairId })}
+          onFocus={(pairIds) => onFlow({ kind: 'focus', pairIds })}
           onRule={(focus) => onSub({ kind: 'rules', focus })}
           onOnyomi={() => onSub({ kind: 'onyomi' })}
         />

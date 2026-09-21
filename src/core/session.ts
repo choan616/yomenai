@@ -312,16 +312,23 @@ export function rematchCount(pool: IdiomEntry[], events: LearningEvent[]): numbe
 }
 
 export interface FocusOptions {
-  /** 집중할 (한자, 음독) 쌍 */
-  pairId: string
+  /**
+   * 집중할 (한자, 음독) 쌍. 하나면 그 음독만 모으고, 여럿이면 **그것들을 갈라 내는
+   * 대조 세션**이 된다 — 한 한자가 음독 둘을 쓸 때가 그 경우다 (2026-09-21).
+   * 모으는 방식이 같아서 함수를 따로 만들지 않았다 (context-notes 같은 날).
+   */
+  pairIds: string[]
   now: number
   limit: number
   /**
-   * 그 숙어에서 이 쌍이 실제로 어떤 **표면형**으로 나타나는지 (`surfaceOfPair`).
+   * 그 숙어에서 이 쌍들 중 하나가 실제로 어떤 **표면형**으로 나타나는지 (`surfaceOfPair`).
    *
    * 주면 표면형이 갈리게 번갈아 낸다 — 発達 はっ 다음에 発言 はつ. 같은 유형만 연달아
    * 주면 "이 자리엔 항상 촉음"이라는 과잉일반화가 생겨 새 오답이 만들어진다.
    * 규칙의 *경계*는 대조로만 배운다 (context-notes 2026-09-07).
+   *
+   * 키를 쌍이 아니라 표면형으로 두는 이유가 여기 있다. 표면형이 쌍보다 잘게 갈리므로
+   * 人間 にん ↔ 人口 じん(쌍 사이)과 発達 はっ ↔ 発言 はつ(쌍 안)가 **한 장치로** 다 걸린다.
    */
   surfaceOf?: (idiomId: string) => string | null
 }
@@ -353,7 +360,8 @@ function interleaveBySurface<T>(items: T[], surfaceOf: (item: T) => string | nul
 }
 
 /**
- * 집중 세션 — 한 (한자, 음독) 쌍을 쓰는 숙어의 읽기 카드만 모은다 (Phase 10).
+ * 집중 세션 — 주어진 (한자, 음독) 쌍을 쓰는 숙어의 읽기 카드만 모은다 (Phase 10).
+ * 쌍을 여럿 주면 대조 세션이다 — 人 じん 과 にん 이 번갈아 나온다 (2026-09-21).
  *
  * 리포트의 처방을 그 자리에서 실행하는 통로다. 재대결과 마찬가지로 **기한을 무시하고**
  * `selectSession` 을 타지 않는다 — 이 세션의 전부가 "이 음독을 반복해서 만나는 것"이라
@@ -375,9 +383,10 @@ export function buildFocus(
   const byId = new Map(pool.map((p) => [p.idiomId, p]))
   const state = replay(events, { pairsOf: (id) => byId.get(id)?.pairIds ?? [] })
 
+  const targets = new Set(options.pairIds)
   const scored: { item: SessionItem; rank: number; wrong: number }[] = []
   for (const entry of pool) {
-    if (!entry.pairIds.includes(options.pairId)) continue
+    if (!entry.pairIds.some((id) => targets.has(id))) continue
     const card = state.cards.get(cardKey(entry.idiomId, 'reading'))
     const wrong = card?.wrong ?? 0
     const rank = wrong > 0 ? 0 : card === undefined ? 1 : 2

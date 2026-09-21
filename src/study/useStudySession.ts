@@ -17,7 +17,7 @@ import { observeReading, type Observation } from '../core/observe.ts'
 import { rubyOf, type RubySegment } from '../core/ruby.ts'
 import { foldHomographs, pairOf } from './homograph.ts'
 import { buildFocus, buildRematch } from '../core/session.ts'
-import { surfaceOfPair } from '../core/surface.ts'
+import { surfaceOfPairs } from '../core/surface.ts'
 import type { Confidence } from '../core/scheduler.ts'
 import type { LearningEvent, MistakeType } from '../core/types.ts'
 import { appendEvent } from '../db/events.ts'
@@ -142,15 +142,16 @@ export interface StudyActions {
 }
 
 /**
- * 정규 세션 / 예전에 틀린 것만 모은 재대결 / 한 음독만 모은 집중 세션.
- * `focus` 는 `focusPairId` 를 같이 받아야 한다 (리포트의 처방이 정한다, Phase 10).
+ * 정규 세션 / 예전에 틀린 것만 모은 재대결 / 음독을 모은 집중 세션.
+ * `focus` 는 `focusPairIds` 를 같이 받아야 한다 (리포트의 처방이 정한다, Phase 10).
+ * 쌍이 여럿이면 그것들을 갈라 내는 대조 세션이다 (2026-09-21).
  */
 export type SessionKind = 'normal' | 'rematch' | 'focus'
 
 export interface StudySessionOptions {
   kind?: SessionKind
-  /** `kind='focus'` 일 때 집중할 (한자, 음독) 쌍 */
-  focusPairId?: string
+  /** `kind='focus'` 일 때 집중할 (한자, 음독) 쌍. 여럿이면 대조 세션이다 */
+  focusPairIds?: string[]
   /**
    * 세션 길이를 설정값 대신 이 값으로. "3장만" 진입로가 쓴다 (Phase 11).
    * 설정을 안 건드리므로 다음 세션은 다시 원래 길이로 돌아온다.
@@ -160,7 +161,7 @@ export interface StudySessionOptions {
 
 export function useStudySession({
   kind = 'normal',
-  focusPairId,
+  focusPairIds,
   limit: limitOverride,
 }: StudySessionOptions = {}): [StudyState, StudyActions] {
   const [session, setSession] = useState<Session | null>(null)
@@ -236,6 +237,14 @@ export function useStudySession({
     return m
   }, [pool])
 
+  /**
+   * 세션을 다시 짜는 기준. 배열은 렌더마다 새 객체라 의존성에 그대로 못 넣는다 —
+   * 내용을 문자열로 접었다 도로 편다. 같은 쌍을 받으면 같은 배열이라 세션을 두 번
+   * 만들지 않는다 (2026-09-21). 쌍 식별자는 kanji:kind:base 라 구분자와 안 겹친다
+   */
+  const focusKey = focusPairIds?.join('|') ?? ''
+  const focusPairs = useMemo(() => (focusKey === '' ? [] : focusKey.split('|')), [focusKey])
+
   useEffect(() => {
     let alive = true
     ;(async () => {
@@ -265,15 +274,15 @@ export function useStudySession({
         const built =
           kind === 'rematch'
             ? buildRematch(loaded, events, { now, limit: buildLimit })
-            : kind === 'focus' && focusPairId !== undefined
+            : kind === 'focus' && focusPairs.length > 0
               ? buildFocus(loaded, events, {
-                  pairId: focusPairId,
+                  pairIds: focusPairs,
                   now,
                   limit: buildLimit,
                   // 대조 — 표면형이 갈리게 번갈아 낸다 (Phase 11). 分解 실패면 null 이라 정렬만 유지된다
                   surfaceOf: (id) => {
                     const it = loadedById.get(id)
-                    return it ? surfaceOfPair(it.headword, it.reading, focusPairId, lookup) : null
+                    return it ? surfaceOfPairs(it.headword, it.reading, focusPairs, lookup) : null
                   },
                 })
               : // seed 로 제시 순서를 매 세션 섞는다 — 순서를 예측해 모르는 한자를 찍는 걸 막는다 (2026-09-07)
@@ -321,7 +330,7 @@ export function useStudySession({
     return () => {
       alive = false
     }
-  }, [kind, focusPairId, limitOverride])
+  }, [kind, focusPairs, limitOverride])
 
   const card = session?.cards[idx]
   const idiom = card ? byId.get(card.idiomId) : undefined

@@ -77,6 +77,38 @@ describe('prescribe', () => {
     expect(out[0]).toMatchObject({ kind: 'ONYOMI', pairId: 'b', unlocks: 21, wrong: 3, seen: 6 })
   })
 
+  it('형제 음독이 있으면 처방에 싣는다 — 집중이 아니라 대조가 된다 (2026-09-21)', () => {
+    const out = prescribe({
+      report: report({ weakOnyomi: [weak('人:on:じん', '人', 5, 10)] }),
+      level: level({ edge: null }),
+      unlocksOf: () => 158,
+      siblingsOf: () => [{ pairId: '人:on:にん', base: 'にん', idioms: 75 }],
+    })
+    expect(out[0]).toMatchObject({
+      kind: 'ONYOMI',
+      contrast: [{ pairId: '人:on:にん', base: 'にん', idioms: 75 }],
+    })
+  })
+
+  it('형제가 없으면 contrast 를 안 붙인다 — 예전 처방 그대로다', () => {
+    const out = prescribe({
+      report: report({ weakOnyomi: [weak('発:on:はつ', '発', 5, 10)] }),
+      level: level({ edge: null }),
+      unlocksOf: () => 40,
+      siblingsOf: () => [],
+    })
+    expect(out[0]).not.toHaveProperty('contrast')
+  })
+
+  it('siblingsOf 를 안 줘도 돈다 — 사전을 안 든 호출자가 있다', () => {
+    const out = prescribe({
+      report: report({ weakOnyomi: [weak('発:on:はつ', '発', 5, 10)] }),
+      level: level({ edge: null }),
+      unlocksOf: () => 40,
+    })
+    expect(out[0]).not.toHaveProperty('contrast')
+  })
+
   it('경계 밴드는 마지막에 붙고, 3개를 넘지 않는다', () => {
     const out = prescribe({
       report: report({

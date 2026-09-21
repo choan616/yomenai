@@ -14,10 +14,27 @@ export function surfaceOfPair(
   targetPairId: string,
   lookup: (kanji: string) => KanjiReadings | undefined,
 ): string | null {
+  return surfaceOfPairs(headword, reading, [targetPairId], lookup)
+}
+
+/**
+ * 표적이 여럿일 때 — 대조 세션이 쓴다 (2026-09-21).
+ *
+ * 한 숙어에는 표적 중 **하나만** 들어 있는 것이 보통이라(人間 은 にん, 人口 는 じん)
+ * 먼저 만나는 자리를 쓴다. 이 값이 곧 번갈아 낼 그룹의 키가 되므로, 표면형을 그대로
+ * 돌려주면 쌍 사이 대조와 쌍 안 대조가 같은 키로 처리된다 (`FocusOptions.surfaceOf`).
+ */
+export function surfaceOfPairs(
+  headword: string,
+  reading: string,
+  targetPairIds: Iterable<string>,
+  lookup: (kanji: string) => KanjiReadings | undefined,
+): string | null {
+  const targets = new Set(targetPairIds)
   const d = decompose(headword, reading, lookup)
   if (!d.ok) return null
   for (const s of d.segments) {
-    if (makePairId(s.kanji, s.base, s.kind) === targetPairId) return s.surface
+    if (targets.has(makePairId(s.kanji, s.base, s.kind))) return s.surface
   }
   return null
 }

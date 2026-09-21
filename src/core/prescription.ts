@@ -1,5 +1,6 @@
 // 처방 — "다음에 뭘 보면 되나"를 파급력 순으로 고른다. 리포트가 진단에서 멈추지 않게 하는 부분이다 (PLAN §1)
 import type { Band } from '../lib/bands.ts'
+import type { SiblingOnyomi } from './contrast.ts'
 import type { LevelProfile } from './level.ts'
 import type { Report } from './report.ts'
 import type { MistakeType } from './types.ts'
@@ -32,6 +33,12 @@ export type Prescription =
       seen: number
       /** 그 음독을 쓰는 숙어 수 — "뚫으면 N개가 열린다"의 N */
       unlocks: number
+      /**
+       * 같은 한자의 다른 음독 (2026-09-21). 있으면 이 처방은 **집중이 아니라 대조**다 —
+       * 한 음독만 반복해 푸는 것이 이 경우엔 틀린 처방이라 갈아끼운다
+       * (context-notes 같은 날). 없으면 `undefined` 라 예전 처방 그대로다.
+       */
+      contrast?: SiblingOnyomi[]
     }
   | { kind: 'BAND'; band: Band; rate: number; seen: number }
 
@@ -40,6 +47,11 @@ export interface PrescriptionInput {
   level: LevelProfile
   /** 그 음독을 쓰는 숙어 수. `sessionSummary` 의 같은 이름 콜백과 같은 것이다 */
   unlocksOf: (pairId: string) => number
+  /**
+   * 같은 한자의 다른 음독 (`onyomiSiblings`). 안 주면 대조를 안 싣는다 —
+   * 사전을 안 든 호출자(시뮬레이션·테스트)가 있다
+   */
+  siblingsOf?: (pairId: string) => SiblingOnyomi[]
 }
 
 /**
@@ -53,7 +65,7 @@ export interface PrescriptionInput {
  * 다시 세운다. 파급력만으로 전수 정렬하면 흔한 음독이 오답률과 무관하게 늘 1등이 된다.
  */
 export function prescribe(input: PrescriptionInput): Prescription[] {
-  const { report, level, unlocksOf } = input
+  const { report, level, unlocksOf, siblingsOf } = input
 
   if (level.totalReadings < PRESCRIPTION_MIN_READINGS) {
     return [
@@ -85,6 +97,7 @@ export function prescribe(input: PrescriptionInput): Prescription[] {
     )
     .slice(0, ONYOMI_PICKS)
   for (const { w, unlocks } of byLeverage) {
+    const siblings = siblingsOf?.(w.pairId) ?? []
     out.push({
       kind: 'ONYOMI',
       pairId: w.pairId,
@@ -94,6 +107,7 @@ export function prescribe(input: PrescriptionInput): Prescription[] {
       wrong: w.wrong,
       seen: w.seen,
       unlocks,
+      ...(siblings.length > 0 ? { contrast: siblings } : {}),
     })
   }
 
