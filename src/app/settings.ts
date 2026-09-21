@@ -15,6 +15,11 @@ export interface Settings {
   /** 기본은 끔 — 소리는 무음 스위치에, 진동은 기기 지원에 걸려 예측이 어렵다 */
   keyFeedback: KeyFeedback
   keypadLayout: KeypadLayout
+  /**
+   * 다시보기에서 요미가나를 가려 두고 눌러서 확인한다 (2026-09-21 사용자 요청).
+   * 기본은 가림 — 읽기가 보이는 채로 넘기면 「아는 것 같은 느낌」만 남는다
+   */
+  browseMask: boolean
 }
 
 export const LIMIT_MIN = 5
@@ -26,6 +31,7 @@ export const DEFAULT_SETTINGS: Settings = {
   observeLevel: 'normal',
   keyFeedback: 'off',
   keypadLayout: 'qwerty',
+  browseMask: true,
 }
 
 /** observeLevel 별 게이트 — [최소 카드 간격, 세션당 상한] */
@@ -50,6 +56,7 @@ export function parseSettings(raw: unknown): Settings {
   const lvl = r.observeLevel
   const kf = r.keyFeedback
   const kl = r.keypadLayout
+  const bm = r.browseMask
   return {
     sessionLimit: Number.isFinite(limit)
       ? Math.min(LIMIT_MAX, Math.max(LIMIT_MIN, Math.round(limit)))
@@ -60,6 +67,8 @@ export function parseSettings(raw: unknown): Settings {
     observeLevel: lvl === 'off' || lvl === 'often' ? lvl : DEFAULT_SETTINGS.observeLevel,
     keyFeedback: kf === 'sound' || kf === 'haptic' ? kf : DEFAULT_SETTINGS.keyFeedback,
     keypadLayout: kl === 'compact' ? kl : DEFAULT_SETTINGS.keypadLayout,
+    // 저장된 적 없으면(undefined) 기본값이다 — false 만 명시적인 끔으로 받는다
+    browseMask: bm === false ? false : DEFAULT_SETTINGS.browseMask,
   }
 }
 

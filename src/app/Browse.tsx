@@ -25,6 +25,7 @@ import { rubyOf, type RubySegment } from '../core/ruby.ts'
 import { mistakeLabel } from '../study/mistakeLabels.ts'
 import { Mixed, RuleBody } from './RuleBody.tsx'
 import { ruleForMistake, ruleSection, type RuleSection } from './rules.ts'
+import { loadSettings } from './settings.ts'
 import { tts } from '../study/tts.ts'
 import { useViewportLock } from '../study/useViewportLock.ts'
 
@@ -89,12 +90,20 @@ export function Browse({
   const [exIndex, setExIndex] = useState(0)
   /** 지금 카드에서 규칙을 펼쳐 뒀는지. 예문 자리와 같은 이유로 카드를 떠나면 접는다 */
   const [ruleOpen, setRuleOpen] = useState(false)
+  /**
+   * 지금 카드의 요미가나를 벗겼는지 (2026-09-21). 예문·규칙과 같이 **카드를 떠나면 도로
+   * 가린다** — 다시 만났을 때 또 스스로 떠올려 보는 게 이 화면의 값이다
+   */
+  const [revealed, setRevealed] = useState(false)
+  /** 가림을 쓸지. 들어올 때 한 번 읽어 고정한다 — 넘기는 도중에 규칙이 바뀌면 안 된다 */
+  const [mask] = useState(() => loadSettings().browseMask)
   // 장이 바뀌면 렌더 중에 자리를 되돌린다. effect 로 하면 한 번 그린 뒤 다시 그리게 된다
   const [exCard, setExCard] = useState(0)
   if (exCard !== at) {
     setExCard(at)
     setExIndex(0)
     setRuleOpen(false)
+    setRevealed(false)
   }
 
   useEffect(() => {
@@ -218,6 +227,9 @@ export function Browse({
           <BrowseSlide
             item={item}
             filterLabel={filter?.label}
+            mask={mask}
+            masked={mask && !(index === at && revealed)}
+            onToggleMask={() => setRevealed((v) => !v)}
             exAt={index === at ? exIndex : 0}
             onNextEx={() => setExIndex((n) => (n + 1) % item.sentences.length)}
             ruleOpen={index === at && ruleOpen}
@@ -265,6 +277,9 @@ export function Browse({
 function BrowseSlide({
   item,
   filterLabel,
+  mask,
+  masked,
+  onToggleMask,
   exAt,
   onNextEx,
   ruleOpen,
@@ -273,6 +288,11 @@ function BrowseSlide({
   item: BrowseItem
   /** 유형별 다시보기면 그 유형 이름 — "다시보기" 태그 옆에 왜 이 목록인지 밝힌다 */
   filterLabel?: string
+  /** 가림 기능을 쓰는가 (설정). 버튼을 낼지가 여기서 갈린다 */
+  mask: boolean
+  /** 지금 덮여 있나 */
+  masked: boolean
+  onToggleMask: () => void
   exAt: number
   onNextEx: () => void
   ruleOpen: boolean
@@ -301,7 +321,7 @@ function BrowseSlide({
         </div>
         <div className="card-body">
           {/* 설명 카드는 한자 위에 읽기를 얹는다 (2026-09-14) */}
-          <p className="headword has-ruby" lang="ja">
+          <p className={`headword has-ruby${masked ? ' masked' : ''}`} lang="ja">
             {item.ruby.map((r, i) => (
               <ruby key={i}>
                 {r.text}
@@ -309,6 +329,19 @@ function BrowseSlide({
               </ruby>
             ))}
           </p>
+          {/* 벗긴 뒤에도 버튼을 **치우지 않는다** — 카드 본문이 세로 가운데 정렬이라
+              한 줄이 빠지면 한자가 19px 내려앉는다 (2026-09-21 실측). 도로 가리는 쪽이
+              자리를 지키면서 쓸모도 있다 */}
+          {mask && (
+            <button
+              type="button"
+              className="browse-reveal"
+              aria-pressed={!masked}
+              onClick={onToggleMask}
+            >
+              {masked ? '읽기 보기' : '다시 가리기'}
+            </button>
+          )}
           {item.meaning && <p className="meaning">{item.meaning}</p>}
           {tts.available && (
             <button type="button" className="tts-btn" onClick={() => tts.speak(item.reading)}>

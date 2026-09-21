@@ -54,6 +54,12 @@ const OBSERVE_LEVELS: { label: string; value: SettingsData['observeLevel'] }[] =
 
 const KEYPAD_LAYOUTS: KeypadLayout[] = ['qwerty', 'compact']
 
+/** 다시보기 요미가나 가리기 (2026-09-21 사용자 요청) */
+const BROWSE_MASKS: { label: string; value: boolean }[] = [
+  { label: '가림', value: true },
+  { label: '안 가림', value: false },
+]
+
 /** 자판 입력 피드백 (2026-09-19). 진동은 기기가 지원해야 고를 수 있다 */
 const KEY_FEEDBACKS: { label: string; value: SettingsData['keyFeedback'] }[] = [
   { label: '없음', value: 'off' },
@@ -385,6 +391,25 @@ export function Settings({
             ))}
           </div>
           <span className="hint">세션 중 "지난번엔 틀렸는데 이번엔 맞혔어요" 같은 한 줄. 기본은 보통이에요.</span>
+        </div>
+
+        <div className="setting">
+          <label>다시보기 요미가나</label>
+          <div className="seg" role="group" aria-label="다시보기 요미가나">
+            {BROWSE_MASKS.map((o) => (
+              <button
+                key={String(o.value)}
+                type="button"
+                aria-pressed={settings.browseMask === o.value}
+                onClick={() => update({ ...settings, browseMask: o.value })}
+              >
+                {o.label}
+              </button>
+            ))}
+          </div>
+          <span className="hint">
+            가리면 읽기를 덮어 두고 「읽기 보기」로 확인해요. 다음 장으로 넘어가면 다시 가려져요.
+          </span>
         </div>
 
         <div className="setting">

@@ -11,6 +11,7 @@ describe('parseSettings', () => {
         observeLevel: 'often',
         keyFeedback: 'sound',
         keypadLayout: 'compact',
+        browseMask: false,
       }),
     ).toEqual({
       sessionLimit: 25,
@@ -18,7 +19,14 @@ describe('parseSettings', () => {
       observeLevel: 'often',
       keyFeedback: 'sound',
       keypadLayout: 'compact',
+      browseMask: false,
     })
+  })
+
+  it('다시보기 가림은 기본이 켬이고, false 만 끔으로 받는다', () => {
+    expect(parseSettings({}).browseMask).toBe(true)
+    expect(parseSettings({ browseMask: 'nope' }).browseMask).toBe(true)
+    expect(parseSettings({ browseMask: false }).browseMask).toBe(false)
   })
 
   it('observeLevel 은 off/normal/often 만, 나머지는 normal', () => {

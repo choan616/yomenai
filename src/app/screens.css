@@ -609,6 +609,26 @@
   grid-template-columns: auto 1fr auto;
 }
 /* 다음 예문 — 예문이 여럿일 때만 뜬다. 소리 듣기(.tts-btn)와 같은 무게로 (사용자 요청 2026-09-12) */
+/* 요미가나 가림막 (2026-09-21 사용자 요청) — 스크래치 카드처럼 덮었다가 눌러서 벗긴다.
+   **자리를 그대로 두는 게 핵심이다.** rt 를 숨기거나 빼면 벗기는 순간 한자가 내려앉는다.
+   글자는 투명하게 두고 그 자리에 색을 깔아, 벗겨도 상자가 1px 도 안 움직인다 */
+.headword.has-ruby.masked rt {
+  color: transparent;
+  background: var(--border);
+  border-radius: 3px;
+}
+/* 벗기는 버튼 — 「다음 예문」과 같은 무게다. 카드 안에서 같은 격의 보조 동작이라 */
+.browse-reveal {
+  display: block;
+  margin: 8px auto 0;
+  padding: 4px 14px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface-2);
+  color: var(--text);
+  font-size: calc(13px * var(--ui-scale));
+}
+
 .browse-ex-more {
   display: block;
   margin: 8px auto 0;
