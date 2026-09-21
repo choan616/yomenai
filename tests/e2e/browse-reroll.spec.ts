@@ -4,6 +4,9 @@
 // 안 쌓이므로 **기록을 심는다** (`contrast-session.spec.ts` 와 같은 이유).
 import { expect, test } from '@playwright/test'
 
+// 한 손 조작 전제의 폭에서 본다 — 버튼 셋이 들어가는지는 넓은 화면에서 안 드러난다
+test.use({ hasTouch: true, isMobile: true, viewport: { width: 375, height: 667 } })
+
 /** 한 벌(30장)보다 넉넉히 많게 — 「다른 30개」가 진짜 다른 것들로 채워지는지 보려면 두 벌은 있어야 한다 */
 const SEED_COUNT = 70
 
@@ -53,6 +56,19 @@ test('마지막 장에서 다른 30개를 부르거나 돌아간다', async ({ p
   // 마지막 장으로. 거기서만 「다른 30개」와 「돌아가기」가 나온다
   await expect(nav.getByRole('button', { name: '다른 30개 ›' })).toHaveCount(0)
   await expect(nav.getByRole('button', { name: '돌아가기' })).toHaveCount(0)
+
+  /** 버튼 줄의 오른쪽 끝이 줄 자체의 오른쪽 끝과 맞나 — 빈 자리로 쏠려 있지 않은지 */
+  const gap = async () => {
+    const row = nav.locator('.answer-row')
+    const rowBox = (await row.boundingBox())!
+    const buttons = row.locator('button')
+    const lastBtn = (await buttons.nth((await buttons.count()) - 1).boundingBox())!
+    // 음수면 넘친 것이다 — 좁은 화면에서 버튼 셋이 안 들어가는 경우를 같이 잡는다
+    return Math.abs(Math.round(rowBox.x + rowBox.width - (lastBtn.x + lastBtn.width)))
+  }
+  // 마지막 장이 아닌 곳에서도 줄이 폭을 다 쓴다 (2026-09-21 사용자 지적)
+  expect(await gap()).toBeLessThanOrEqual(1)
+  const prevMid = await nav.getByRole('button', { name: '‹ 이전' }).boundingBox()
   await page.evaluate(() => {
     const el = document.querySelector('.browse-track')
     if (el === null) throw new Error('.browse-track 없음')
@@ -62,8 +78,10 @@ test('마지막 장에서 다른 30개를 부르거나 돌아간다', async ({ p
   await expect(nav.getByRole('button', { name: '다른 30개 ›' })).toBeVisible()
   await expect(nav.getByRole('button', { name: '돌아가기' })).toBeVisible()
 
-  // 자리는 3슬롯 고정이라 마지막 장에서도 이전·가운데 버튼이 안 움직인다
+  // 「돌아가기」가 늘어도 이전 버튼은 같은 자리·같은 폭이고, 줄은 여전히 폭을 다 쓴다
   const prevBox = await nav.getByRole('button', { name: '‹ 이전' }).boundingBox()
+  expect(prevBox).toEqual(prevMid)
+  expect(await gap()).toBeLessThanOrEqual(1)
 
   await nav.getByRole('button', { name: '다른 30개 ›' }).click()
   await expect(count).toContainText('1 / 30')

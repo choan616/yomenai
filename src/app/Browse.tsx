@@ -172,6 +172,8 @@ export function Browse({
 
   /** 후보가 화면에 낸 수보다 많나 — 「다른 N개」라고 말해도 되는지가 여기서 갈린다 */
   const hasOthers = all.length > items.length
+  /** 마지막 장에서만 「돌아가기」가 는다 */
+  const last = at === items.length - 1
 
   const reroll = () => {
     const next = pickBrowseMore(all, shown)
@@ -226,14 +228,15 @@ export function Browse({
       </main>
 
       {/* 넘김 버튼은 트랙 밖에 한 벌만 둔다 — 카드를 따라 흘러가면 누르려던 자리가 움직인다.
-          **자리는 늘 3슬롯**이다 (2026-09-21). 마지막 장에서만 나오는 「돌아가기」 때문에
-          이전·가운데 버튼이 넓어졌다 좁아지면 엄지가 노리던 자리가 흔들린다 */}
+          마지막 장에만 「돌아가기」가 는다. 빈 슬롯으로 자리를 잡아 두면 그 장 아닌 곳이
+          오른쪽으로 빈 채 남아 쏠려 보여서(2026-09-21 사용자 지적), 열을 글자 폭으로 두고
+          가운데가 남는 자리를 먹게 했다 — 이전 버튼은 어느 장에서도 같은 자리다 */}
       <div className="card-bottom browse-nav">
-        <div className="answer-row">
+        <div className={`answer-row${last ? ' last' : ''}`}>
           <button type="button" className="btn" disabled={at === 0} onClick={() => move(-1)}>
             ‹ 이전
           </button>
-          {at === items.length - 1 ? (
+          {last ? (
             <button type="button" className="btn-primary" onClick={reroll}>
               {hasOthers ? `다른 ${items.length}개` : '한 바퀴 더'} ›
             </button>
@@ -242,12 +245,10 @@ export function Browse({
               다음 ›
             </button>
           )}
-          {at === items.length - 1 ? (
+          {last && (
             <button type="button" className="btn" onClick={onExit}>
               돌아가기
             </button>
-          ) : (
-            <span className="slot" aria-hidden="true" />
           )}
         </div>
       </div>
