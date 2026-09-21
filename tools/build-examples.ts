@@ -4,6 +4,9 @@
 // 쓴다 — TTS 와 같은 자리다.
 // 표기만 맞으면 日照 예문에 日照り(ひでり)가 실린다. 그래서 형태소 분석으로 읽기까지 검증한다
 // (context-notes 2026-09-18 절).
+// 읽기가 맞아도 뜻이 안 맞는 자리가 남는다 — 和歌山 의 和歌, 協和銀行 의 協和 처럼 표제어가
+// 고유명사 이름 안에 파묻힌 경우다. 읽기는 보존되므로 읽기 검증으로는 못 거른다
+// (사용자 지적 2026-09-21).
 import { readFileSync, writeFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import { dirname, join } from 'node:path'
@@ -22,6 +25,8 @@ export interface Morpheme {
   position: number
   surface: string
   reading?: string
+  /** IPADIC 품사세분류1 이 固有名詞 인가 (아래 `buriedInProperNoun`) */
+  propn?: boolean
 }
 
 /** 促音便이 일어난 자리를 되짚을 때 っ 뒤에 올 수 있는 무성 자음 행 */
@@ -70,6 +75,34 @@ export function readingHolds(
     joined += m.reading
   }
   return canonicalReading(joined).includes(canonicalReading(reading))
+}
+
+/**
+ * 표제어가 **고유명사 하나 안에 통째로 파묻혔나** (2026-09-21 사용자 지적).
+ *
+ * 和歌山 의 和歌, 協和銀行 의 協和, 最高裁 의 高裁 — 읽기는 그대로라 `readingHolds` 를
+ * 통과하지만 그 자리의 뜻은 표제어의 뜻이 아니다. 이름 안에 글자가 우연히 들어간 것이다.
+ *
+ * 형태소와 표기가 **통째로 같으면 파묻힌 게 아니다** — 東京 처럼 표제어 자체가 고유명사인
+ * 경우까지 막으면 그 숙어는 예문을 영영 못 갖는다.
+ *
+ * 대가 — アルプス山脈 의 山脈, 赤十字 의 十字 처럼 뜻이 살아 있는 것도 같이 빠진다.
+ * 이 둘을 자동으로 가를 신호가 없다 (外務省·講談社 둘 다 固有名詞,組織 이다). 실측으로
+ * 이런 「좋은 쪽」은 다른 예문을 갖고 있어 빈자리가 안 생긴다는 걸 확인하고 택했다.
+ */
+export function buriedInProperNoun(
+  morphemes: Morpheme[],
+  at: number,
+  headword: string,
+): boolean {
+  const end = at + headword.length
+  return morphemes.some(
+    (m) =>
+      m.propn === true &&
+      m.surface !== headword &&
+      m.position <= at &&
+      m.position + m.surface.length >= end,
+  )
 }
 
 /**
@@ -143,6 +176,7 @@ async function main() {
   const byId = new Map(pool.map((it) => [it.id, it]))
   let checked = 0
   let rejected = 0
+  let propnRejected = 0
   /** 한 자리라도 표제어 읽기로 읽히면 받는다 — 같은 문장에 표기가 여러 번 나올 수 있다 */
   const verified = (sentence: string, it: IdiomRecord): boolean => {
     checked++
@@ -150,11 +184,20 @@ async function main() {
       position: t.word_position - 1,
       surface: t.surface_form,
       reading: t.reading,
+      propn: t.pos_detail_1 === '固有名詞',
     }))
+    let sawPropn = false
     for (let i = sentence.indexOf(it.headword); i >= 0; i = sentence.indexOf(it.headword, i + 1)) {
+      // 이름 안에 파묻힌 자리는 그 자리만 버린다 — 같은 문장 다른 자리에 홀로 서 있을 수 있다
+      // (勤労感謝の日 와 勤労の大切さ 가 한 문장에 같이 나온다)
+      if (buriedInProperNoun(morphemes, i, it.headword)) {
+        sawPropn = true
+        continue
+      }
       if (readingHolds(morphemes, i, it.headword, it.reading)) return true
     }
     rejected++
+    if (sawPropn) propnRejected++
     return false
   }
 
@@ -175,7 +218,7 @@ async function main() {
     _meta: {
       source: 'Tatoeba (tatoeba.org). CC BY, 문장 작성자별 저작권 — 개인 사용 단계라 출처만 기록',
       rule:
-        `표제어 문자열 매칭 + 형태소 분석(kuromoji/IPADIC)으로 읽기 검증, ` +
+        `표제어 문자열 매칭 + 형태소 분석(kuromoji/IPADIC)으로 읽기 검증 및 고유명사 매몰 제외, ` +
         `${MAX_LEN}자 이하 중 짧은 순 최대 ${MAX_PER_IDIOM}개`,
       generatedAt: new Date().toISOString(),
       idiomCount: pool.length,
@@ -190,7 +233,8 @@ async function main() {
       `(${((idiomsWithExamples / pool.length) * 100).toFixed(1)}%), 문장 ${totalSentences}개`,
   )
   console.log(
-    `  읽기 검증 ${checked}문장 검사, ${rejected}개 탈락 (${((rejected / checked) * 100).toFixed(1)}%)`,
+    `  읽기 검증 ${checked}문장 검사, ${rejected}개 탈락 (${((rejected / checked) * 100).toFixed(1)}%)` +
+      ` — 그중 고유명사 매몰 ${propnRejected}개`,
   )
 }
 

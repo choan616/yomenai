@@ -1,6 +1,6 @@
 // pickExamples·readingHolds 단위 테스트 — 길이 상한 필터 + 짧은 순 정렬 + 중복 제거 + 읽기 검증
 import { describe, expect, it } from 'vitest'
-import { pickExamples, readingHolds } from './build-examples.ts'
+import { buriedInProperNoun, pickExamples, readingHolds } from './build-examples.ts'
 
 describe('pickExamples', () => {
   it('짧은 순으로 최대 max 개를 고른다', () => {
@@ -129,5 +129,39 @@ describe('readingHolds — 읽기를 모르는 형태소', () => {
   it('표기가 통째로 맞으면 읽기를 몰라도 받는다 — 未知語여도 그 단어가 거기 있다 (拒食症)', () => {
     const ms = [{ position: 0, surface: '拒食症', reading: undefined }]
     expect(readingHolds(ms, 0, '拒食症', 'きょしょくしょう')).toBe(true)
+  })
+})
+
+describe('buriedInProperNoun — 이름 안에 파묻힌 표기 (2026-09-21 사용자 지적)', () => {
+  /** 고유명사 한 덩어리 */
+  const propn = (surface: string) => [{ position: 0, surface, propn: true }]
+
+  it('和歌山(지명) 안의 和歌 는 뺀다 — 읽기는 맞지만 뜻이 다르다', () => {
+    expect(buriedInProperNoun(propn('和歌山'), 0, '和歌')).toBe(true)
+  })
+
+  it('協和銀行 안의 協和 도 같다', () => {
+    expect(buriedInProperNoun(propn('協和銀行'), 0, '協和')).toBe(true)
+  })
+
+  it('最高裁 안의 高裁 — 표제어가 이름 가운데 있어도 잡는다', () => {
+    expect(buriedInProperNoun(propn('最高裁'), 1, '高裁')).toBe(true)
+  })
+
+  it('표제어 자체가 고유명사면 파묻힌 게 아니다 — 안 그러면 예문을 영영 못 갖는다', () => {
+    expect(buriedInProperNoun(propn('東京'), 0, '東京')).toBe(false)
+  })
+
+  it('보통명사 안에 든 것은 안 건드린다 — 읽기 검증의 몫이다', () => {
+    const m = [{ position: 0, surface: '弁護士', propn: false }]
+    expect(buriedInProperNoun(m, 0, '弁護')).toBe(false)
+  })
+
+  it('고유명사가 표제어 구간을 다 못 덮으면 아니다 — 経済/産業省 에 걸친 済産', () => {
+    const m = [
+      { position: 0, surface: '経済', propn: false },
+      { position: 2, surface: '産業省', propn: true },
+    ]
+    expect(buriedInProperNoun(m, 1, '済産')).toBe(false)
   })
 })
