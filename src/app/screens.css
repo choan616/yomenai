@@ -915,7 +915,7 @@
 }
 
 /* ── 담아 두기 (2026-09-21) ──
-   색만으로 구분하지 않는다 (PLAN §7) — 담긴 줄은 별 모양 자체가 ☆ → ★ 로 바뀐다.
+   색만으로 구분하지 않는다 (PLAN §7) — 담긴 줄은 기호 자체가 + → − 로 바뀐다.
    줄은 baseline 정렬이라 버튼만 가운데로 내린다 */
 .star-btn {
   flex: 0 0 auto;
@@ -930,7 +930,8 @@
   border: 0;
   background: none;
   color: var(--text-dim);
-  font-size: calc(19px * var(--ui-scale));
+  /* +/− 는 별보다 획이 가늘어 같은 크기로는 묻힌다 */
+  font-size: calc(22px * var(--ui-scale));
   line-height: 1;
 }
 .star-btn.on {

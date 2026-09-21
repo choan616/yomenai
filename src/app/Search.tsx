@@ -238,7 +238,10 @@ function Basket({
   )
 }
 
-/** 담기·빼기 한 버튼. 색만으로 구분하지 않는다 (PLAN §7) — 별 모양 자체가 바뀐다 */
+/**
+ * 담기·빼기 한 버튼 (2026-09-21 사용자 요청으로 ☆ → +).
+ * 색만으로 구분하지 않는다 (PLAN §7) — 기호 자체가 + 와 − 로 바뀐다.
+ */
 function StarButton({
   headword,
   on,
@@ -256,7 +259,7 @@ function StarButton({
       aria-label={`${headword} ${on ? '빼기' : '담기'}`}
       onClick={onToggle}
     >
-      {on ? '★' : '☆'}
+      {on ? '−' : '+'}
     </button>
   )
 }

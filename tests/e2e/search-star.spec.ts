@@ -40,11 +40,11 @@ test('담은 표현이 다음 세션에 나온다 — 밴드 0 이라 담지 않
   const row = page.locator('.rows > li').filter({ hasText: WORD }).first()
   await expect(row).toBeVisible()
 
-  // 담기 — 별 모양이 ☆ 에서 ★ 로 바뀐다 (색만으로 구분하지 않는다)
+  // 담기 — 기호가 + 에서 − 로 바뀐다 (색만으로 구분하지 않는다)
   const star = row.getByRole('button', { name: `${WORD} 담기` })
-  await expect(star).toHaveText('☆')
+  await expect(star).toHaveText('+')
   await star.click()
-  await expect(row.getByRole('button', { name: `${WORD} 빼기` })).toHaveText('★')
+  await expect(row.getByRole('button', { name: `${WORD} 빼기` })).toHaveText('−')
 
   // 검색어를 지우면 담아 둔 목록이 보인다
   await input.fill('')
