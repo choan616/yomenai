@@ -1,0 +1,41 @@
+﻿verdict	cat	fix	tier	flags	manual	headword	reading	glossEn	llm_ko	stdict_def	manual_reason	category	classSource	band	id
+o			5			仕草	しぐさ	gesture; movement; action; behavior	몸짓, 몸가짐	사시(巳時)의 첫 무렵.		3	llm	1	1305210
+o			3		Y(3)	山々	やまやま	(many) mountains; very much (wanting to do something one cannot); greatly; really	산들, 매우	‘산산하다’의 어근.		3	llm	1	1605580
+o			5			山手	やまて	place near the mountains; hilly section of a city (e.g. the Yamate area in Kōbe)	산 주변, 도시의 언덕진 지역	산과 물이라는 뜻으로, 경치를 이르는 말.		3	llm	1	1658020
+o			5			三度	さんど	three times; thrice; third (interval)	세 번, 세 번째	독서를 하는 세 가지 방법. 입으로 다른 말을 아니 하고 책을 읽는 구도(口到), 눈으로 다른 것을 보지 않고 책만 잘 보는 안도(眼到), 마음속에 깊이 새기는 심도(心到)를 이른다.		3	llm	1	1657970
+o			5			三枚	さんまい	three flat objects (sheets of paper, pieces of cloth, etc.); cutting a fish into two boneless fillets and a piece with the skeleton	세 장, (생선 등을) 세 조각으로 자르다	잡념을 떠나서 오직 하나의 대상에만 정신을 집중하는 경지. 이 경지에서 바른 지혜를 얻고 대상을 올바르게 파악하게 된다.		3	llm	1	1301680
+o			5			三種	さんしゅ	three kinds; three varieties	세 종류	존재의 실상에 대해 설명하는 세 가지의 교의(敎義). 법상종, 법성종, 파상종이다.		3	llm	1	1657950
+o			5			上期	かみき	first half of the (fiscal) year	상반기	흥분이나 부끄러움으로 얼굴이 붉어짐.		3	llm	1	1775000
+o			5			上機嫌	じょうきげん	good humour (humor); good mood	기분 좋음			3	default	1	1352860
+o			3		Y(3)	常連	じょうれん	regular customer; regular patron; regular visitor; frequenter	단골손님, 단골	서로 잇닿음. 또는 잇대어 붙임.		3	llm	1	1356200
+o			5			相手方	あいてかた	other party; opposite party; opposing team; one's opponent	상대방, 상대측			3	default	1	1401030
+o			3		Y(3)	桑原	くわばら	mulberry field	뽕나무 밭	음양설에서, 시대 변화의 큰 단위로 잡는 세 묶음의 육십갑자 가운데 첫째 육십갑자의 60년. 한 시대가 시작하는 단계로 본다.		3	llm	1	1762710
+o			3		Y(3)	上越	じょうえつ	area on Japan Sea side of Japan, including Niigata	옛 일본의 上州(죠슈)와 越後(에치고) 지역 이름.	음력 7월을 달리 이르는 말.		3	llm	1	1352660
+o			5			傷跡	きずあと	scar	상처자국, 흉터	‘상적하다’의 어근.		3	llm	1	1591230
+o			5			上着	うわぎ	coat; jacket; outerwear; top	겉옷, 겉옷류	보통 때 늘 입는 옷.		3	llm	1	1580340
+o			5			床下	ゆかした	under the floor	바닥 밑	위와 아래를 아울러 이르는 말.		3	llm	1	1349420
+o			5			卸売物価	おろしうりぶっか	wholesale price	도매 가격			3	default	1	1589550
+o			5			社説	しゃせつ	editorial; leading article; leader	사설	어떤 시설을 개인이 사사로이 설립함. 또는 그 시설.		3	llm	1	1322890
+o			5			色合	いろあい	colouring; coloring; shade (of colour); hue	색조, 색감			3	default	1	1357710
+o			5			生息地	せいそくち	habitat; home (e.g. of the tiger)	서식지			3	default	1	1940310
+o			5			西口	にしぐち	west entrance; west exit	서쪽 출구	외행성이 태양의 서쪽에 있어 황경(黃經)의 차이가 90도일 때. 또는 그 자리.		3	llm	1	1380950
+o			5			書記局	しょききょく	secretariat	서기국			3	default	1	1701850
+o			5			序列	じょれつ	rank; ranking order; hierarchy	순서, 서열			3	default	1	1345550
+o			3		Y(3)	書留	かきとめ	registered mail; registered post; registration (of mail); (putting on) record	등기, 기록	강물이나 냇물이 서쪽으로 흐름.		3	llm	1	1589960
+o			5			書物	しょもつ	book; volume	서적, 책	음력 11일, 12일과 26일, 27일의 썰물과 밀물.		3	llm	1	1344150
+o			5			石垣	いしがき	stone wall	돌담			3	default	1	1382540
+o			5			先々	さきざき	distant future; inevitable future; places one goes to	(~하는 곳) 마다, 먼 미래, 장래	‘선선하다’의 어근.		3	llm	1	1387230
+o			5			旋律	せんりつ	melody; tune	선율			3	default	1	1391730
+o			5			船出	ふなで	setting sail; putting out to sea; starting anew; embarking on something new	출항, 시작	과일, 푸성귀, 해산물 따위에서 그해의 맨 처음에 나는 것.		3	llm	1	1736050
+o			5			成行	なりゆき	course (of events); development; progress; outcome	경과, 전개, 결과	성품과 행실을 아울러 이르는 말.		3	llm	1	1599700
+o			5			世銀	せぎん	World Bank	세계은행	은을 파는 가게에서 세금으로 바치던 은.		3	llm	1	1888360
+o			3		Y(3)	少々	しょうしょう	a little; a bit; a small amount; a few	조금, 잠시	‘소소하다’의 어근.		3	llm	1	1594930
+o			3		Y(3)	疎開	そかい	evacuation (to the country); spreading out (troops); deployment; dispersal	피난, 분산	둘 사이에서 양편의 일이 진행되게 주선함.		3	llm	1	1396690
+o			5			小物	こもの	accessories; small articles; minor character; small fry	소품, 작은 물건	소찬(素饌)에 쓰는 나물붙이.		3	llm	1	1348730
+o			5			小柄	こがら	small build; small stature; petite; small pattern	작은 체구, 작은 무늬	적은 수의 병사.		3	llm	1	1348770
+o			5			素案	そあん	rough plan; draft	초안, 개요	‘소안하다’의 어근.		3	llm	1	1960210
+o			5			素敵	すてき	lovely; wonderful; charming; enchanting	멋짐, 훌륭함	대한 제국 때에, ‘피콜로’를 이르던 말.		3	llm	1	1397350
+o			5			疎通	そつう	(mutual) understanding; communication; passing without obstruction	소통, 원활한 교류	작은 통.		3	llm	1	1396750
+o			5			少数意見	しょうすういけん	minority opinion	소수 의견			3	default	1	1938420
+o			5			手頃	てごろ	handy; convenient; suitable; reasonable	적당함, 편리함, 알맞음	오경의 하나. 손이 싸늘하고 뻣뻣하여지는 증상이다. 수막염에서 볼 수 있다.		3	llm	1	1327660
+o			5			水道水	すいどうすい	tap water	수돗물			3	default	1	1960280

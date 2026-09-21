@@ -1,0 +1,41 @@
+﻿verdict	cat	fix	tier	flags	manual	headword	reading	glossEn	llm_ko	stdict_def	manual_reason	category	classSource	band	id
+o			5			邦楽	ほうがく	Japanese music (esp. traditional Japanese music)	일본 전통 음악			3	default	1	1518230
+o			5			配列	はいれつ	arranging; ordering; sequencing; lining up	배열, 순서			3	default	1	1473220
+o			5			背番号	せばんごう	number on the back of a player's uniform; uniform number; shirt number; squad number	등번호			3	default	1	1472850
+o			5			配信	はいしん	distribution (of information, news, etc.); broadcast; delivery; transmission	배포, 방송, 전송	믿음이나 의리를 저버림.		3	llm	1	1639050
+o			5			俳人	はいじん	haiku poet	하이쿠 시인			3	default	1	1471920
+o			5			白星	しろぼし	white circle; white star; victory mark; victory	흰 동그라미, 흰 별, 스모 경기에서 승리	나라의 근본을 이루는 일반 국민을 예스럽게 이르는 말.		3	llm	1	1841410
+o			5			背広	せびろ	business suit	정장	불보살의 몸 뒤로부터 내비치는 빛.		3	llm	1	1472740
+o			5			番付	ばんづけ	ranked list (entertainers, sumo wrestlers, millionaires, etc.); program (e.g. theatre)	순위 목록, 프로그램	예전에, 한 나라의 행정 구역 가운데 복속한 지방이나 지역을 이르던 말. 우리나라는 육진(六鎭), 중국 청나라는 몽골, 칭하이(靑海), 신장(新彊), 티베트 따위였다.		3	llm	1	1482400
+o			5			兵隊	へいたい	armed forces; military; troops; (common) soldier	병사, 군대			3	default	1	1506590
+o			5			保健婦	ほけんふ	(female) public health nurse	보건 간호사			3	default	1	1513430
+o			5			普段着	ふだんぎ	everyday clothes; ordinary clothes; casual wear; informal dress	평상복			3	default	1	1602740
+o			5			保育所	ほいくしょ	nursery school; day care center; day nursery	유치원, 보육원			3	default	1	1583990
+o			5			復元	ふくげん	restoration (to the original state or location); reconstruction; restitution	복원, 원상회복	웃어른에게 엎드려 공손히 원함.		3	llm	1	1500770
+o			5			福助	ふくすけ	large-headed dwarf statue, bringer of good luck	복을 가져오는 작은 조각상	변조되어 있는 반송파 가운데서 본디의 신호를 가려냄. 변조 방법에 따라 그 방법이 다양하다.		3	llm	1	1826440
+o			3		Y(3)	本省	ほんしょう	ministry proper; home office; head office; this ministry	본부, 본청	성(姓)을 고치기 이전에 본디 가졌던 성.		3	llm	1	1522670
+o			5			本屋	ほんや	bookstore; bookshop; publisher; main building	서점			3	default	1	1522240
+o			5			本腰	ほんごし	strenuous effort; earnestness; seriousness	본격적인 노력, 진지함			3	default	1	1522550
+o			5			本場	ほんば	home (of something); place famous for its ...; center (e.g. of manufacture); best place (for)	본고장, 중심지			3	default	1	1522690
+o			5			本数	ほんすう	number (of long, cylindrical things, movies, trains, home runs, etc.)	(긴 물건, 원통형 물건, 영화, 기차, 홈런 등의)갯수, 본수	고을의 수령을 이르던 말.		3	llm	1	1522770
+o			5			付加	ふか	addition; annexation; appendage	덧붙임, 부가	도끼의 자루.		3	llm	1	1496170
+o			5			婦女暴行	ふじょぼうこう	sexual assault (of a woman); rape	여성 폭행, 강간			3	default	1	2000350
+o			5			不思議	ふしぎ	wonderful; marvelous; strange; incredible	이상함, 신기함			3	default	1	1492570
+o			5			浮世絵	うきよえ	ukiyo-e; ukiyoe; Edo-period woodblock print	에도시대의 풍속화 양식 중 하나, 우키요에			3	default	1	1497520
+o			5			不妊	ふにん	infertility; sterility; barrenness	불임	임명이나 발령을 받아 근무할 곳으로 감.		3	llm	1	1602790
+o			5			不作	ふさく	poor crop; bad harvest; crop failure; low quality (e.g. of literary works)	흉작, 수확량 부족	나무를 찍거나 패는 연장의 하나. 쐐기 모양의 큰 쇠 날의 머리 부분에 구멍을 뚫어 단단한 나무 자루를 박아 만든다.		3	llm	1	1492500
+o			5			敷布団	しきぶとん	futon (laid on the floor); (Japanese) mattress; underquilt; sleeping mat	바닥에 까는 이불,요			3	default	1	1594170
+o			5			缶詰	かんづめ	canned food; tinned food; confining someone (e.g. so they can concentrate on work); being stuck in a confined space	통조림, (비유적으로) 갇힘			3	default	1	1214560
+o			5			付与	ふよ	grant; allowance; endowment; bestowal	부여, 지급	기원전 1세기 무렵에 부여족이 북만주 일대에 세운 나라. 농경 생활을 주로 했고, 중국으로부터 철기 문화를 받아들이고 은력을 사용하는 등 진보된 제도와 조직을 갖추었으나, 3세기 말에 선비족의 침입으로 크게 쇠퇴한 후, 그 영토가 대부분 고구려에 편입되었다.		3	llm	1	1496430
+o			5			付帯	ふたい	incidental; ancillary; accessory; secondary	부대함, 딸림	→ 화전.		3	llm	1	1496350
+o			5			不気味	ぶきみ	weird; eerie; ominous; creepy	섬뜩함, 기묘함			3	default	1	1491830
+o			5			仕立	したて	tailoring; sewing; cut; (special) preparation	재단, 바느질, 준비	사립짝을 달아서 만든 문.		3	llm	1	1305550
+o			5			事務当局	じむとうきょく	officials in charge	사무 당국			3	default	1	1314460
+o			5			事柄	ことがら	matter; thing; affair; circumstance	사안, 일	장교가 아닌 부사관과 병사를 통틀어 이르는 말. 때로는 부사관 아래의 병사만을 이르기도 한다.		3	llm	1	1314240
+o			3		Y(3)	四本	よんほん	four (long cylindrical things)	네 개	개인이 소유한 책.		3	llm	1	2005490
+o			5			砂浜	すなはま	sandy beach	모래사장	고려 시대에, 빈객의 연향을 맡아보던 관아. 공양왕 2년(1390)에 전객시를 고친 것이다.		3	llm	1	1291620
+o			5			四死球	ししきゅう	bases on balls and pitches striking the batsmen	(야구에서)볼넷이나 몸 맞는 공			3	default	1	1658120
+o			5			仕上	しあげ	finish; finishing; finishing touches	마무리, 완성	역사에 나타나 있는 바.		3	llm	1	1594040
+o			5			私書箱	ししょばこ	post office box	사서함			3	default	1	1311240
+o			5			仕入	しいれ	buying (of stock, materials, etc.); purchasing; stocking; laying in	매입, 구매			3	default	1	1305300
+o			5			史跡	しせき	historic landmark; historic site; historic remains	사적지	역사에 관한 것.		3	llm	1	1594290

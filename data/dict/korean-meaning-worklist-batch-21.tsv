@@ -1,0 +1,41 @@
+﻿verdict	cat	fix	tier	flags	manual	headword	reading	glossEn	llm_ko	stdict_def	manual_reason	category	classSource	band	id
+o			5			幕内	まくうち	makuuchi; top division (of professional sumo)	스모의 최고 등급, 그 등급의 스모 선수	여러 형제, 자매 중에서 맨 나중에 난 사람.		3	llm	1	1524810
+o			3		Y(3)	万里	ばんり	thousands of miles	아주 먼 곳, 만리	뱀장어과의 민물고기. 몸의 길이는 60cm 정도이고 가늘며, 누런색 또는 검은색이고 배는 은백색이다. 배지느러미가 없고 잔비늘이 피부에 묻혀 있어 보이지 않는다. 민물에서 살다가 바다에서 산란한다. 한국, 일본, 중국 등지에 분포한다.		3	llm	1	1526580
+o			5			漫才	まんざい	manzai; comic dialogue; two-person comedy act, usu. presented as a fast-paced dialogue, occ. presented as a skit	만담, 2인 코미디극	자동차, 배 따위에 물건을 가득 실음.		3	llm	1	1604310
+o			3		Y(3)	万歳	ばんざい	banzai; hurray; hurrah; hooray	만세, 환호	나이가 들어 늙어 가는 시기.		3	llm	1	1601350
+o			5			買付	かいつけ	buying (in large quantities); (wholesale) purchase; buying in; (one's) usual (store, supplier, etc.)	구매, 매입	손위 누이나 손아래 누이의 남편을 이르거나 부르는 말.		3	llm	1	1752890
+o			5			買手	かいて	buyer	구매자	종이나 유리 따위의 장으로 셀 수 있는 물건의 수효.		3	llm	1	1589700
+o			5			糸口	いとぐち	beginning; start; first step; clue	실마리, 시작, 단서	조선 시대에 둔, 형조의 으뜸 벼슬. 품계는 정이품이다.		3	llm	1	1311470
+o			5			面白	おもしろ	amusing; funny; interesting	재미있음, 흥미로움	머리에 아무 관도 쓰지 못하는 신세를 면한다는 뜻으로, 늙어서야 처음으로 변변치 못한 벼슬을 하게 됨을 이르는 말.		3	llm	1	1533570
+o			5			面持	おももち	expression; look; countenance; face	표정, 얼굴	위패에 쓴 죽은 사람의 이름을 가리는 오색 종이.		3	llm	1	1643660
+o			5			鳴声	なきごえ	cry (of an animal); call; chirp; song	동물의 울음소리, 울음소리	세상에 널리 퍼져 평판 높은 이름.		3	llm	1	1532860
+o			5			模索	もさく	groping (for); fumbling around (for); searching (for an answer, solution, etc.); trying to find	모색, 찾음	털의 색.		3	llm	1	1533660
+o			5			模擬	もぎ	imitation	모의, 흉내	짐승의 털가죽으로 안을 댄 옷.		3	llm	1	1533630
+o			5			模型	もけい	model; dummy; maquette	모형, 모형물	중국 한나라 초기의 학자(?~?). ≪시경≫을 전한 4가(家)의 하나로 ≪시경≫을 연구하여 ≪시고훈전(詩誥訓傳)≫을 지어 모장(毛萇)에게 주었는데, 이것이 ≪모시(毛詩)≫이며, 나머지 3가에 전해진 것은 유실되었기 때문에 그대로 오늘날의 ≪시경≫이 되었다.		3	llm	1	1533650
+o			5			木々	きぎ	(many) trees; every tree; all kinds of trees	나무들	여러 가지 면.		3	llm	1	1591090
+o			5			目白	めじろ	white-eye family of birds (Zosteropidae); Japanese white-eye (Zosterops japonicus)	동박새	조선 시대에, 관찰사의 밑에서 지방의 목(牧)을 다스리던 정삼품 외직 문관. 병권(兵權)도 함께 가졌다.		3	llm	1	1535610
+o			5			目先	めさき	before one's eyes; under one's nose; immediate (e.g. interests); present	눈앞, 당장, 가까운 미래	사람의 몸이나 옷에서, 귀의 아랫부분에서 양어깨까지 이르는 부분을 이루는 선.		3	llm	1	1535530
+o			5			木場	きば	lumberyard	목재 야적장	→ 목정.		3	llm	1	1534670
+o			5			目当	めあて	mark; guide; landmark; purpose	목표, 목적, 기준	오탄당의 하나로 단맛을 가지는 무색 고체. 짚, 대나무, 목재 따위에 들어 있는 자일란(xylan)의 가수 분해로 생긴다. 화학식은 C<sub style='font-size:11px;'>5</sub>H<sub style='font-size:11px;'>10</sub>O<sub style='font-size:11px;'>5</sub>.		3	llm	1	1535600
+o			5			墓参	はかまいり	visit to a grave	묘지 참배	파종 후 일 년 남짓 자란 어린 인삼.		3	llm	1	1584020
+o			5			舞踏	ぶとう	dance (esp. Western style); dancing	무용, 춤			3	default	1	1499180
+o			5			無理矢理	むりやり	forcibly; by force; against one's will	억지로, 억지로			3	default	1	1531030
+o			5			無重量	むじゅうりょう	weightlessness; zero gravity	무중량, 무중력			3	default	1	1672570
+o			5			無駄	むだ	futility; waste; uselessness; pointlessness	헛됨, 낭비	통일 신라 말기에, 고구려의 부흥을 표방하며 후고구려를 세운 궁예가 송악으로 천도한 뒤 국호를 마진(摩震)으로 바꾸면서 사용한 연호(904~905).		3	llm	1	1530510
+o			5			舞台裏	ぶたいうら	offstage; backstage; behind the scenes	무대 뒤			3	default	1	1499160
+o			5			聞書	ききがき	writing down what one hears; account of what one hears	듣고 적음, 구술 기록	글이나 기호 따위로 일정한 의사나 관념 또는 사상을 나타낸 것.		3	llm	1	1823410
+o			5			問屋	とんや	wholesale store; wholesale dealer; wholesaler	도매상			3	default	1	1584790
+o			5			門戸	もんこ	door	문, 문턱	뛰어난 문학 작품을 많이 써서 알려진 사람.		3	llm	1	1536180
+o			5			文教	ぶんきょう	education; culture	문교, 교육, 문화	글로써 서로 사귐.		3	llm	1	1622170
+o			5			文楽	ぶんらく	bunraku; Japanese puppet theatre (theater)	분라쿠(일본 전통 인형극)			3	default	1	1505240
+o			5			物事	ものごと	things; everything	물건과 일들, 모든 것			3	default	1	1502550
+o			5			物差	ものさし	ruler; measure; measuring stick; standard	자, 척도	가뭄이나 단수, 화재 따위로 물이 부족한 곳에 물을 공급하기 위하여 물탱크를 장치한 차.		3	llm	1	1502530
+o			5			無断	むだん	absence of permission; lack of permission; absence of (advance) notice; lack of notice	무단, 허가 없음	무력이나 억압을 써서 강제로 행함.		3	llm	1	1530600
+o			5			無残	むざん	cruel; merciless; atrocious; ruthless	무자비함, 잔혹함			3	default	1	1530010
+o			5			尾根	おね	(mountain) ridge	산등성이			3	default	1	1485800
+o			5			米人	べいじん	American (person)	미국 사람	아름다운 사람. 주로 얼굴이나 몸매 따위가 아름다운 여자를 이른다.		3	llm	1	1984050
+o			5			微震	びしん	slight earthquake	약한 지진	‘미진하다’의 어근.		3	llm	1	1486040
+o			5			半端	はんぱ	remnant; fragment; incomplete set; incompleteness	어중간함, 불완전함			3	default	1	1479640
+o			3		Y(3)	返上	へんじょう	return; giving back; giving up; relinquishing	반납, 포기, 반환	윗사람에게 거역함.		3	llm	1	1512230
+o			5			放課後	ほうかご	after school (at the end of the day)	방과 후			3	default	1	1516570
+o			3		Y(3)	放題	ほうだい	(doing) as one pleases; to one's heart's content; letting (something) go unchecked; leaving uncontrolled	제멋대로, 마음대로	약제를 적절하게 조합하여 섞는 일.		3	llm	1	1516770
