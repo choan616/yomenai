@@ -1,4 +1,5 @@
 // append-only 학습 이벤트 로그의 생성·기록·조회. 기존 이벤트는 절대 갱신하지 않는다
+import { bumpDataVersion } from '../core/dataVersion.ts'
 import { compareEvents, newEventId, type LearningEvent } from '../core/types.ts'
 import type { YomenaiDB } from './schema.ts'
 
@@ -11,6 +12,7 @@ export { newEventId }
 /** 이벤트 1건을 덧붙인다. 같은 id 가 이미 있으면 Dexie 가 거부한다 */
 export async function appendEvent(db: YomenaiDB, event: LearningEvent): Promise<void> {
   await db.events.add(event)
+  bumpDataVersion()
 }
 
 /** 활성(미삭제) 이벤트를 시간순으로 읽는다 */
@@ -72,6 +74,7 @@ export async function listDeviceEvents(
 export async function importEvents(db: YomenaiDB, events: LearningEvent[]): Promise<number> {
   if (events.length === 0) return 0
   await db.events.bulkPut(events)
+  bumpDataVersion()
   return events.length
 }
 
@@ -96,7 +99,10 @@ export async function importMissingEvents(
     ),
   )
   const missing = events.filter((e) => !known.has(e.id))
-  if (missing.length > 0) await db.events.bulkAdd(missing)
+  if (missing.length > 0) {
+    await db.events.bulkAdd(missing)
+    bumpDataVersion()
+  }
   return missing.length
 }
 

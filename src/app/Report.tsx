@@ -1,5 +1,6 @@
 // 진단 리포트 화면 — 수준, 다음에 볼 것, 다시보기 진입, 오답 유형 분포, 1등 오답, 취약 음독. 이 앱의 얼굴이다 (PLAN §7)
 import { useEffect, useState } from 'react'
+import { dataVersion } from '../core/dataVersion.ts'
 import {
   buildLevel,
   LEVEL_MIN_SEEN,
@@ -57,6 +58,14 @@ interface Loaded {
   passed: number
 }
 
+/**
+ * 마지막으로 만든 리포트 (2026-09-21). 이 화면은 replay + 오답 재분류 + `buildReport` +
+ * `buildLevel` + `prescribe` 를 한 번에 도는데, 탭을 옮기면 언마운트되어 들어올 때마다
+ * 처음부터 다시 돌았다. 그 사이 「불러오고 있어요」가 그려졌다 사라지며 화면이 튄다.
+ * `dataVersion` 이 같으면 기록도 설정도 그대로라 다시 돌 이유가 없다 (`Home` 과 같은 관례).
+ */
+let cache: { version: number; data: Loaded } | null = null
+
 export function Report({
   onBrowse,
   onBrowseMistake,
@@ -75,10 +84,14 @@ export function Report({
   /** 음독 맵으로 (2026-09-17). 홈 메뉴가 탭으로 내려가면서 이 탭 아래로 옮겨왔다 */
   onOnyomi: () => void
 }) {
-  const [data, setData] = useState<Loaded | null>(null)
+  // 초기화 함수에서 캐시를 꺼낸다 — effect 로 넣으면 「불러오고 있어요」가 한 번 그려진다
+  const [data, setData] = useState<Loaded | null>(
+    () => (cache?.version === dataVersion() ? cache.data : null),
+  )
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
+    if (cache?.version === dataVersion()) return
     let alive = true
     ;(async () => {
       try {
@@ -106,7 +119,7 @@ export function Report({
         const voicing = voicingCounts(classifiedMistakes(events), again)
         // 미분류 중 답이 있는 몫만 「잘못 읽기」다. 넘김(빈 답)은 이름 이전에 답이 없다
         const passed = passedCount(events)
-        setData({
+        const next: Loaded = {
           report,
           level,
           voicing,
@@ -117,7 +130,9 @@ export function Report({
             level,
             unlocksOf: (pairId) => index.get(pairId)?.length ?? 0,
           }),
-        })
+        }
+        cache = { version: dataVersion(), data: next }
+        setData(next)
       } catch (e) {
         if (alive) setError(e instanceof Error ? e.message : String(e))
       }

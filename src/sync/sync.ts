@@ -13,6 +13,7 @@
 //
 // 옛 이름(`reviews-*.json`, `reviews-archive.json`)은 읽어서 접고 지운다 — 일회성 이관이
 // 따로 없고 동기화 한 번이면 끝난다.
+import { bumpDataVersion } from '../core/dataVersion.ts'
 import { importMissingEvents, listAllEvents, listDeviceEvents, LOCAL_USER_ID } from '../db/events.ts'
 import type { YomenaiDB } from '../db/schema.ts'
 import type { LearningEvent } from '../core/types.ts'
@@ -178,6 +179,7 @@ export async function resetLearning(
 ): Promise<ResetResult> {
   const localCleared = await database.events.count()
   await database.events.clear()
+  bumpDataVersion()
 
   let driveDeleted = -1
   if (drive.isAuthenticated()) {

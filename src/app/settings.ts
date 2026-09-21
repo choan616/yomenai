@@ -1,4 +1,5 @@
 // 세션 길이·모드 비율·관찰 문구 노출을 localStorage 에 보관한다. 사전 DB·IndexedDB 와 무관한 UI 환경설정
+import { bumpDataVersion } from '../core/dataVersion.ts'
 export type ObserveLevel = 'off' | 'normal' | 'often'
 /** 자판 입력 피드백 (2026-09-19). 시스템 키보드를 안 쓰니 키 클릭음·햅틱을 앱이 낸다 */
 export type KeyFeedback = 'off' | 'sound' | 'haptic'
@@ -72,6 +73,8 @@ export function loadSettings(): Settings {
 }
 
 export function saveSettings(s: Settings): void {
+  // 홈 미리보기가 sessionLimit·ratio 로 달라진다 — 캐시를 버리게 버전을 올린다
+  bumpDataVersion()
   try {
     localStorage.setItem(KEY, JSON.stringify(s))
   } catch {
