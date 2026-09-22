@@ -46,12 +46,6 @@ const TEXT_SCALES: { label: string; value: TextScale }[] = [
   { label: '크게', value: 'lg' },
 ]
 
-const OBSERVE_LEVELS: { label: string; value: SettingsData['observeLevel'] }[] = [
-  { label: '끔', value: 'off' },
-  { label: '보통', value: 'normal' },
-  { label: '자주', value: 'often' },
-]
-
 const KEYPAD_LAYOUTS: KeypadLayout[] = ['qwerty', 'compact']
 
 /** 다시보기 요미가나 가리기 (2026-09-21 사용자 요청) */
@@ -177,24 +171,10 @@ export function Settings({
           </span>
         </div>
 
-        <h3 className="setting-group">세션 중</h3>
-        <p className="setting-group-note">카드를 푸는 동안</p>
-        <div className="setting">
-          <label>관찰 문구</label>
-          <div className="seg" role="group" aria-label="관찰 문구">
-            {OBSERVE_LEVELS.map((o) => (
-              <button
-                key={o.value}
-                type="button"
-                aria-pressed={settings.observeLevel === o.value}
-                onClick={() => update({ ...settings, observeLevel: o.value })}
-              >
-                {o.label}
-              </button>
-            ))}
-          </div>
-          <span className="hint">세션 중 "지난번엔 틀렸는데 이번엔 맞혔어요" 같은 한 줄. 기본은 보통이에요.</span>
-        </div>
+        {/* 관찰 문구를 빼고 나니 여기 남는 건 요미가나뿐인데, 그건 세션이 아니라
+            **다시보기 화면** 설정이다 — 「세션 중」이 처음부터 틀린 이름이었다 */}
+        <h3 className="setting-group">다시보기</h3>
+        <p className="setting-group-note">틀렸던 것을 훑을 때</p>
         <div className="setting">
           <label>다시보기 요미가나</label>
           <div className="seg" role="group" aria-label="다시보기 요미가나">

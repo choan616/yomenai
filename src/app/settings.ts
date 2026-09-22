@@ -1,6 +1,5 @@
-// 세션 길이·모드 비율·관찰 문구 노출을 localStorage 에 보관한다. 사전 DB·IndexedDB 와 무관한 UI 환경설정
+// 세션 길이·모드 비율 같은 UI 환경설정을 localStorage 에 보관한다. 사전 DB·IndexedDB 와 무관하다
 import { bumpDataVersion } from '../core/dataVersion.ts'
-export type ObserveLevel = 'off' | 'normal' | 'often'
 /** 자판 입력 피드백 (2026-09-19). 시스템 키보드를 안 쓰니 키 클릭음·햅틱을 앱이 낸다 */
 export type KeyFeedback = 'off' | 'sound' | 'haptic'
 /** 로마자 자판 배열 (2026-09-20). 근거는 keypadLayouts.ts */
@@ -10,8 +9,6 @@ export interface Settings {
   sessionLimit: number
   /** selectSession 의 ratio 옵션으로 그대로 전달된다 (PLAN §6 기본 7:3) */
   ratio: { correction: number; expansion: number }
-  /** 루프 안 관찰 문구 노출 빈도 (Phase 9-C). normal 이 권장 기본값 */
-  observeLevel: ObserveLevel
   /** 기본은 끔 — 소리는 무음 스위치에, 진동은 기기 지원에 걸려 예측이 어렵다 */
   keyFeedback: KeyFeedback
   keypadLayout: KeypadLayout
@@ -44,19 +41,21 @@ export const LIMIT_MAX = 40
 export const DEFAULT_SETTINGS: Settings = {
   sessionLimit: 20,
   ratio: { correction: 7, expansion: 3 },
-  observeLevel: 'normal',
   keyFeedback: 'off',
   keypadLayout: 'qwerty',
   browseMask: true,
   kunPercent: 0,
 }
 
-/** observeLevel 별 게이트 — [최소 카드 간격, 세션당 상한] */
-export const OBSERVE_GATE: Record<ObserveLevel, { gap: number; cap: number }> = {
-  off: { gap: Infinity, cap: 0 },
-  normal: { gap: 6, cap: 4 },
-  often: { gap: 3, cap: 8 },
-}
+/**
+ * 루프 안 관찰 문구의 노출 게이트 — 최소 카드 간격과 세션당 상한 (Phase 9-C).
+ *
+ * **설정에서 뺐다** (2026-09-22 사용자 판단 "보통으로 하고 설정에서는 뺀다.
+ * 사실 체감도 잘 안된다"). 끔/보통/자주 세 단계를 두고 있었는데 고를 값이 아니었다.
+ * 예전 「보통」의 값을 그대로 고정한다 — 기능은 남고 선택지만 없앤다.
+ * 저장된 옛 값(off·often)은 무시된다
+ */
+export const OBSERVE_GATE = { gap: 6, cap: 4 }
 
 const KEY = 'yomenai:settings'
 
@@ -70,7 +69,6 @@ export function parseSettings(raw: unknown): Settings {
   const corr = Number(ratioRaw.correction)
   const exp = Number(ratioRaw.expansion)
   const ratioOk = Number.isFinite(corr) && Number.isFinite(exp) && corr >= 0 && exp >= 0 && corr + exp > 0
-  const lvl = r.observeLevel
   const kf = r.keyFeedback
   const kl = r.keypadLayout
   const bm = r.browseMask
@@ -82,7 +80,6 @@ export function parseSettings(raw: unknown): Settings {
     ratio: ratioOk
       ? { correction: Math.round(corr), expansion: Math.round(exp) }
       : { ...DEFAULT_SETTINGS.ratio },
-    observeLevel: lvl === 'off' || lvl === 'often' ? lvl : DEFAULT_SETTINGS.observeLevel,
     keyFeedback: kf === 'sound' || kf === 'haptic' ? kf : DEFAULT_SETTINGS.keyFeedback,
     keypadLayout: kl === 'compact' ? kl : DEFAULT_SETTINGS.keypadLayout,
     // 저장된 적 없으면(undefined) 기본값이다 — false 만 명시적인 끔으로 받는다

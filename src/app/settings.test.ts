@@ -8,7 +8,6 @@ describe('parseSettings', () => {
       parseSettings({
         sessionLimit: 25,
         ratio: { correction: 6, expansion: 4 },
-        observeLevel: 'often',
         keyFeedback: 'sound',
         keypadLayout: 'compact',
         browseMask: false,
@@ -17,7 +16,6 @@ describe('parseSettings', () => {
     ).toEqual({
       sessionLimit: 25,
       ratio: { correction: 6, expansion: 4 },
-      observeLevel: 'often',
       keyFeedback: 'sound',
       keypadLayout: 'compact',
       browseMask: false,
@@ -29,13 +27,6 @@ describe('parseSettings', () => {
     expect(parseSettings({}).browseMask).toBe(true)
     expect(parseSettings({ browseMask: 'nope' }).browseMask).toBe(true)
     expect(parseSettings({ browseMask: false }).browseMask).toBe(false)
-  })
-
-  it('observeLevel 은 off/normal/often 만, 나머지는 normal', () => {
-    expect(parseSettings({ observeLevel: 'off' }).observeLevel).toBe('off')
-    expect(parseSettings({ observeLevel: 'often' }).observeLevel).toBe('often')
-    expect(parseSettings({ observeLevel: 'weird' }).observeLevel).toBe('normal')
-    expect(parseSettings({}).observeLevel).toBe('normal')
   })
 
   it('세션 길이를 5~40 으로 클램프하고 반올림한다', () => {

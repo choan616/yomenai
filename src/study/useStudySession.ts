@@ -31,7 +31,7 @@ import { LOCAL_USER_ID } from '../db/events.ts'
 import { listEvents } from '../db/events.ts'
 import { loadBaseIdioms, loadKanji, studyPool, type RuntimeIdiom } from '../dict/load.ts'
 import { mistakeContextFromKanji } from '../dict/mistakeContext.ts'
-import { loadSettings, OBSERVE_GATE, type ObserveLevel } from '../app/settings.ts'
+import { loadSettings, OBSERVE_GATE } from '../app/settings.ts'
 
 /** 읽기 답안을 낸 직후의 판정 결과. 이벤트는 아직 안 쓴다 — 자신감 버튼을 기다린다 */
 export interface ReadingFeedback {
@@ -231,8 +231,7 @@ export function useStudySession({
   )
   const shownAt = useRef(0)
   const ctxBase = useRef({ userId: LOCAL_USER_ID, deviceId: getDeviceId() })
-  // 관찰 문구 빈도 게이트 (Phase 9-C) — 세션 시작 시 설정을 한 번 읽어 고정한다
-  const observeLevel = useRef<ObserveLevel>('normal')
+  // 관찰 문구 빈도 게이트 (Phase 9-C). 설정에서 뺐고 값은 OBSERVE_GATE 로 고정이다
   const observeShown = useRef(0)
   const cardsSinceObserve = useRef(0)
 
@@ -274,7 +273,7 @@ export function useStudySession({
         if (!alive) return
         // 범위는 **풀에서** 가른다. 세션을 짜는 쪽(정규·재대결·집중)을 하나도 안 건드리고
         // 훈독을 넣고 뺄 수 있는 자리가 여기뿐이다
-        const { sessionLimit, ratio, observeLevel: lvl, kunPercent } = loadSettings()
+        const { sessionLimit, ratio, kunPercent } = loadSettings()
         const loaded = studyPool(all, kunPercent > 0)
         setPool(loaded)
         setPriorEvents(events)
@@ -282,7 +281,6 @@ export function useStudySession({
         mistakes.current = mistakeContextFromKanji(kanji)
         const rubyLookup = mistakes.current.lookup
         setRubyOfIdiom(() => (i: RuntimeIdiom) => rubyOf(i.headword, i.reading, rubyLookup))
-        observeLevel.current = lvl
         const now = Date.now()
         const limit = limitOverride ?? sessionLimit
         // 소개는 문제 수에 안 드니(planIntros) 그만큼 더 만들어 둔다. 소개 숙어 하나가
@@ -493,7 +491,7 @@ export function useStudySession({
       // 루프 안 관찰 — 정답일 때만, 빈도 게이트를 통과했을 때만
       let observe: Observation | null = null
       if (correct && session) {
-        const { gap, cap } = OBSERVE_GATE[observeLevel.current]
+        const { gap, cap } = OBSERVE_GATE
         if (cardsSinceObserve.current >= gap && observeShown.current < cap) {
           observe = observeReading({ pairIds: idiom.pairIds, before: session.state.onyomi, sessionEvents, pairsOf })
           if (observe) {
