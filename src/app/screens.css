@@ -473,21 +473,108 @@
 .ladder-item + .ladder-item {
   margin-top: 10px;
 }
-.ladder .bar-row {
-  /* 마지막 칸은 판정 배지 자리다. **고정 폭**이라야 줄마다 같은 선에 선다 —
-     `auto` 로 두면 행마다 그리드가 따로라 배지 폭을 타고 어긋난다.
-     5em(≈70px)은 가장 긴 「표본 부족」(63px)이 들어가는 폭이다 (2026-09-22 실측) */
-  grid-template-columns: 8.5em 1fr 4.5em;
-  gap: 5px;
+/* 제목과 총계가 한 줄에 마주 선다 — 총계가 요약 막대의 분모다 (2026-09-22) */
+.ladder-head {
+  margin-top: 14px;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
 }
-/* 사다리 막대는 오답 분포 막대보다 얇다 (2026-09-20 사용자 요청 "날렵하게") — 여기서 큰 숫자는
-   막대가 아니라 옆의 개수라, 막대는 길이만 읽히면 된다 */
-.ladder .bar-track {
+.ladder-total {
+  margin: 0;
+  flex: none;
+  font-size: calc(15px * var(--ui-scale));
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── 숙지 분포 요약 막대 (2026-09-22) ──
+   밴드마다 막대를 두고 `stable/met` 을 그리던 것을 **한 막대의 분할**로 바꿨다. 분모가
+   「숙지한 전체 개수」라 합이 늘 100% 다 — 새 표현을 만나도 막대가 안 짧아진다.
+   색은 흔들리는 밴드 세그먼트에만 (PLAN §7). 나머지는 --text 의 명도 단계다 */
+.mix {
+  margin-top: 12px;
+}
+.mix-bar {
+  display: flex;
+  /* 14px — 흔들림 테두리(안쪽 2px)를 둘러도 밴드 색이 가운데 10px 로 남는다 (2026-09-22 실측) */
+  height: 14px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: var(--surface-2);
+  /* 세그먼트 사이를 배경색 실선으로 가른다 — 명도 단계만으로는 인접한 둘이 안 갈린다 */
+  gap: 2px;
+}
+.mix-seg {
+  display: block;
+  height: 100%;
+  min-width: 3px;
+  background: var(--band-4);
+}
+/* 흔들리는 밴드는 **색을 뺏기지 않고** 朱 테두리를 두른다 (2026-09-22) — 세그먼트를
+   통째로 --ng 로 칠하면 그 칸이 어느 밴드인지 색으로 못 읽는다 */
+.mix-seg.band-shaky {
+  box-shadow: inset 0 0 0 2px var(--ng);
+}
+.mix-legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  /* 칸 사이는 gap 으로 띄운다 — 가운뎃점을 넣으면 flex 항목이라 양옆 공백이 잘려 붙는다 */
+  gap: 4px 12px;
+  margin: 8px 0 0;
+  font-size: calc(12px * var(--ui-scale));
+  color: var(--text-dim);
+  font-variant-numeric: tabular-nums;
+}
+.mix-key {
+  display: inline-flex;
+  align-items: center;
+}
+.mix-key.band-shaky {
+  color: var(--ng);
+}
+/* 범례 점이 세그먼트와 같은 색이라야 어느 칸인지 짚인다 */
+.mix-dot {
+  width: 8px;
   height: 8px;
+  margin-right: 5px;
   border-radius: 999px;
+  background: var(--band-4);
 }
-.ladder .bar-fill {
-  border-radius: 999px;
+.mix-key.band-shaky .mix-dot {
+  box-shadow: 0 0 0 2px var(--ng-bg);
+}
+
+/* 밴드 색은 한 자리에서만 고른다 — 세그먼트와 범례 점이 갈리면 범례가 거짓말을 한다 */
+.mix-seg[data-band='0'],
+.mix-dot[data-band='0'] {
+  background: var(--band-0);
+}
+.mix-seg[data-band='1'],
+.mix-dot[data-band='1'] {
+  background: var(--band-1);
+}
+.mix-seg[data-band='2'],
+.mix-dot[data-band='2'] {
+  background: var(--band-2);
+}
+.mix-seg[data-band='3'],
+.mix-dot[data-band='3'] {
+  background: var(--band-3);
+}
+.mix-seg[data-band='4'],
+.mix-dot[data-band='4'] {
+  background: var(--band-4);
+}
+
+/* 밴드 행에는 막대가 없다 (2026-09-22) — 이름과 판정 배지 둘뿐이다.
+   배지 칸은 **고정 폭**이라야 줄마다 같은 선에 선다. `auto` 로 두면 행마다 그리드가
+   따로라 배지 폭을 타고 어긋난다. 4.5em 은 가장 긴 「표본 부족」이 들어가는 폭이다 */
+.ladder .bar-row {
+  grid-template-columns: 1fr 4.5em;
+  gap: 5px;
 }
 /* 판정 배지 + 수치 한 줄 (2026-09-22 사용자 요청) */
 .band-note {
@@ -868,7 +955,7 @@
 /* 밴드 막대의 제목과 판정 기준 캡션 (2026-09-14).
    기준은 표 끝에 작게 — 읽기 전에 설명부터 들이밀면 표를 안 본다 */
 .level .ladder-title {
-  margin: 14px 0 8px;
+  margin: 0;
   font-size: calc(0.82rem * var(--ui-scale));
   letter-spacing: 0.04em;
   color: var(--text-dim);

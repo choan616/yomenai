@@ -70,6 +70,24 @@ test('진입 진단 → 세션 → 리포트 전체 흐름을 완주한다', asy
   await expect(page.locator('.ladder-caption')).toContainText('틀린 것·넘긴 것도')
   // 막대 오른쪽에는 텍스트가 없다. 판정은 알약 배지, 수치는 아래 한 줄이다 (2026-09-22)
   await expect(page.locator('.ladder .bar-num')).toHaveCount(0)
+  // 밴드 행에는 막대가 없다 (2026-09-22) — `stable/met` 은 새 표현을 만날수록 분모만 늘어
+  // 막대가 내려간다. 비율은 위 요약 막대가 한 번만 그린다
+  await expect(page.locator('.ladder .bar-track')).toHaveCount(0)
+  // 요약 막대 — 분모가 「숙지한 전체 개수」라 세그먼트 합이 늘 100% 다
+  const mix = page.locator('.mix-bar')
+  if ((await mix.count()) > 0) {
+    const sum = await mix.evaluate((el) => {
+      const bar = el.getBoundingClientRect().width
+      const segs = [...el.children].map((c) => c.getBoundingClientRect().width)
+      // 세그먼트 사이 2px 간격만큼 줄어든다 — 그 몫을 되돌려 합을 본다
+      return (segs.reduce((a, b) => a + b, 0) + Math.max(0, segs.length - 1) * 2) / bar
+    })
+    expect(Math.abs(sum - 1)).toBeLessThanOrEqual(0.02)
+    // 범례가 막대의 값을 글자로 준다 — 막대는 aria-hidden 이라 읽히는 건 이 줄이다
+    await expect(page.locator('.mix-legend')).toHaveText(/밴드 d+ d+%/)
+    // 총계가 요약 막대의 분모다
+    await expect(page.locator('.ladder-total')).toHaveText(/^d+개$/)
+  }
   const badge = page.locator('.ladder .band-badge').first()
   await expect(badge).toHaveText(/^(안정|흔들림|표본 부족|미학습)$/)
   expect(await badge.evaluate((el) => getComputedStyle(el).borderRadius)).toBe('999px')

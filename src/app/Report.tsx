@@ -389,6 +389,7 @@ function LevelSection({
   reviews: number
   accuracy: number
 }) {
+  const totalStable = level.bands.reduce((s, b) => s + b.stable, 0)
   return (
     <section className="level">
       <p className="section-title">지금 수준</p>
@@ -399,7 +400,12 @@ function LevelSection({
       {/* 사다리 숫자는 정답률이 아니라 **붙은 숙어 개수**다 (2026-09-19). 정답률은 순간
           상태라 표본이 흔들면 같이 뒤집히는데, 수준은 쌓인 것이라 그러면 안 된다.
           정답률은 상태 줄(안정/흔들림)에 남겨 경계선을 긋는 데만 쓴다 */}
-      <p className="ladder-title">밴드별 숙지한 표현</p>
+      <div className="ladder-head">
+        <p className="ladder-title">밴드별 숙지한 표현</p>
+        <p className="ladder-total">{totalStable}개</p>
+      </div>
+
+      <StableMix bands={level.bands} total={totalStable} />
 
       <div className="ladder">
         {level.bands.map((b, i) => (
@@ -410,27 +416,19 @@ function LevelSection({
                 <span>경계선</span>
               </p>
             )}
-            {/* 막대 오른쪽에 숫자를 두지 않는다 (2026-09-22 사용자 요청) — 막대는 길이만
-                읽히면 되고, 수치는 아래 한 줄에 모은다 */}
+            {/* 밴드 행에는 막대가 없다 (2026-09-22) — 밴드마다 `stable/met` 을 그리면
+                새 표현을 만날수록 분모만 늘어 막대가 내려간다. 비율은 위 요약 막대가 한
+                번만 그리고, 여기는 이름·판정·수치만 남는다 (context-notes 같은 날 절) */}
             <div className={`bar-row band-${b.status}`} style={{ '--i': i } as React.CSSProperties}>
               <span>
                 밴드 {b.band}
                 <span className="dim"> {BAND_NOTE[b.band]}</span>
               </span>
-              <span className="bar-track">
-                {b.met > 0 && (
-                  <span
-                    className={`bar-fill${b.status === 'shaky' ? '' : ' ok'}`}
-                    style={{ width: `${Math.round((b.stable / b.met) * 100)}%` }}
-                    aria-hidden="true"
-                  />
-                )}
-              </span>
-              {/* 배지는 **막대 오른쪽 끝**이다 (2026-09-22). 밴드 이름 옆에 붙이면 자리가
+              {/* 배지는 **줄 오른쪽 끝**이다 (2026-09-22). 밴드 이름 옆에 붙이면 자리가
                   글자 길이를 타서 줄마다 어긋나고, 아래 수치와 이룰 오른쪽 선도 안 생긴다 */}
               <span className="band-badge">{BAND_STATUS_LABEL[b.status]}</span>
             </div>
-            {/* 수치는 막대 아래 오른쪽 정렬 (2026-09-22 사용자 요청). 배지와 같은 선에 서서
+            {/* 수치는 배지 아래 오른쪽 정렬 (2026-09-22 사용자 요청). 배지와 같은 선에 서서
                 오른쪽이 「상태·수치」 한 칸으로 읽힌다 */}
             <p className={`band-note band-${b.status}`}>
               {b.met > 0 && (
@@ -449,6 +447,53 @@ function LevelSection({
         {Math.round(LEVEL_SOLID_RATE * 100)}% 기준 · {LEVEL_MIN_SEEN}회 미만 표본 부족
       </p>
     </section>
+  )
+}
+
+/**
+ * 숙지한 표현이 어느 밴드에 쌓였나 — **한 막대의 분할** (2026-09-22, 사용자 제안).
+ *
+ * 밴드마다 막대를 주고 `stable / met` 을 그리던 자리다. 그 분모는 새 표현을 만날 때마다
+ * 늘어서, **숙지가 그대로여도 출제가 늘면 막대가 내려갔다** (사용자 지적). 실력이 오르는데
+ * 그래프가 내려가는 지표였다.
+ *
+ * 분모를 **내가 숙지한 전체 개수**로 바꾼다. 세그먼트 합이 늘 100%라 막대는 안 짧아지고,
+ * 늘어난 총량은 막대 위 `ladder-total` 이 맡는다 — 성장은 숫자가, 구성은 도형이 말한다.
+ *
+ * 밴드 전체 표현 수를 분모로 두는 안은 실측으로 기각했다 — 풀이 밴드당 1,485~85,418개라
+ * 숙지 40개면 막대가 1%다 (context-notes 같은 날 절에 기각안 넷을 남겼다).
+ *
+ * 밴드마다 색을 준다 (2026-09-22 사용자 지시). PLAN §7 의 "색은 오답에만" 에 대한 예외라
+ * 오답의 朱 근처는 안 쓰고, 범례가 밴드 이름과 %를 글자로 같이 준다 — 색만으로 구분하지
+ * 않는다는 쪽은 지킨다. 흔들리는 밴드는 세그먼트에 朱 테두리가 둘린다.
+ */
+function StableMix({ bands, total }: { bands: readonly BandRow[]; total: number }) {
+  // 숙지가 0이면 그릴 도형이 없다. 빈 막대는 "아직 없다"를 말해 주지 않는다
+  if (total === 0) return null
+  const parts = bands.filter((b) => b.stable > 0)
+  return (
+    <div className="mix">
+      <div className="mix-bar" aria-hidden="true">
+        {parts.map((b) => (
+          <span
+            key={b.band}
+            className={`mix-seg band-${b.status}`}
+            data-band={b.band}
+            style={{ width: `${(b.stable / total) * 100}%` } as React.CSSProperties}
+          />
+        ))}
+      </div>
+      {/* 범례가 막대의 값을 **글자로** 준다 — 막대는 aria-hidden 이라 읽어 주는 건 이 줄이다.
+          개수는 아래 밴드 행에 이미 있으므로 여기선 비율만 말한다 */}
+      <p className="mix-legend">
+        {parts.map((b) => (
+          <span key={b.band} className={`mix-key band-${b.status}`}>
+            <span className="mix-dot" aria-hidden="true" data-band={b.band} />
+            밴드 {b.band} {Math.round((b.stable / total) * 100)}%
+          </span>
+        ))}
+      </p>
+    </div>
   )
 }
 
