@@ -118,10 +118,18 @@ export async function syncNow(
   const mineBefore = (await listDeviceEvents(database, LOCAL_USER_ID, deviceId)).length
   let downloaded = 0
   let backupBefore = 0
+  /**
+   * 백업에 이미 들어 있는 이벤트 id. 전송 파일에 무엇을 담을지 가르는 데 쓴다 —
+   * 아래 「전송 파일은 백업에 없는 것만」 주석 참조
+   */
+  const inBackup = new Set<string>()
   for (const [i, file] of toRead.entries()) {
     onProgress?.({ phase: 'download', done: 1 + i, total, file: { index: i + 1, count: toRead.length } })
     const events = parseEvents(await drive.downloadFile(file.id), file.name)
-    if (isBackup(file.name)) backupBefore = Math.max(backupBefore, events.length)
+    if (isBackup(file.name)) {
+      backupBefore = Math.max(backupBefore, events.length)
+      for (const e of events) inBackup.add(e.id)
+    }
     // 덮어쓰지 않고 없는 것만 받는다 — 같은 id 면 내용도 같다는 게 append-only 의 전제라
     // 덮어써서 얻는 게 없고, 로컬에서 생긴 변화(묘비)를 되돌릴 위험만 있다
     downloaded += await importMissingEvents(database, events)
@@ -131,7 +139,21 @@ export async function syncNow(
   const restored = mine.length - mineBefore
 
   onProgress?.({ phase: 'upload', done: 1 + toRead.length, total })
-  await drive.uploadOrReplace(myTransport, JSON.stringify(mine))
+  /**
+   * 전송 파일은 **백업에 아직 없는 것만** 담는다 (2026-09-22).
+   *
+   * 이 파일이 있는 이유는 하나다 — 아래 백업 쓰기가 실패해도 이번에 생긴 기록이
+   * 안 사라지게 하는 것. 그러니 보험이 필요한 건 **백업에 없는 이벤트뿐**이고,
+   * 방금 그 백업을 받아 파싱했으니 무엇이 들어 있는지 이미 안다.
+   *
+   * 예전엔 이 기기의 이벤트를 통째로 올렸다. 기기가 사실상 하나면 `mine ≈ all` 이라
+   * **같은 데이터를 한 동기화에 두 번 올리고 있었다** (5,054건 = 약 1.35MB ×2).
+   *
+   * 올릴 게 없으면 아예 안 쓴다. 백업에 다 들어 있다는 뜻이라, 백업 쓰기가 실패해도
+   * 잃을 것이 없다. 백업이 없는 첫 동기화면 `inBackup` 이 비어 통째로 올라간다.
+   */
+  const pending = mine.filter((e) => !inBackup.has(e.id))
+  if (pending.length > 0) await drive.uploadOrReplace(myTransport, JSON.stringify(pending))
 
   // 백업 = 이 기기가 아는 전부. 줄어들면 쓰지 않는다
   onProgress?.({ phase: 'backup', done: 2 + toRead.length, total })

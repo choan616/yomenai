@@ -287,3 +287,75 @@ describe('resetLearning', () => {
     expect(await listEvents(db, LOCAL_USER_ID)).toHaveLength(0)
   })
 })
+
+/**
+ * 전송 파일은 백업 쓰기가 실패했을 때의 보험이다. 그러니 담을 것은 **백업에 없는 것뿐**이고,
+ * 그게 이 절이 지키는 성질이다 (2026-09-22). 통째로 올리던 때는 기기가 하나일 때
+ * `mine ≈ all` 이라 같은 데이터를 한 동기화에 두 번 올렸다.
+ */
+describe('전송 파일은 백업에 없는 것만 담는다', () => {
+  it('백업에 이미 있는 것은 빼고 올린다', async () => {
+    const cloud = new Map<string, string>([
+      [BACKUP_FILE_NAME, JSON.stringify([ev('a1', 'dev-a', T0), ev('a2', 'dev-a', T0 + 1)])],
+    ])
+    const db = freshDb()
+    for (const e of [ev('a1', 'dev-a', T0), ev('a2', 'dev-a', T0 + 1), ev('a3', 'dev-a', T0 + 2)]) {
+      await appendEvent(db, e)
+    }
+    class KeepTransport extends FakeDrive {
+      sent: string[] = []
+      override async uploadOrReplace(name: string, content: string): Promise<void> {
+        if (name.startsWith('sync-')) this.sent = (JSON.parse(content) as { id: string }[]).map((e) => e.id)
+        return super.uploadOrReplace(name, content)
+      }
+    }
+    const drive = new KeepTransport(cloud)
+    await syncNow(db, 'dev-a', drive)
+    expect(drive.sent).toEqual(['a3'])
+    // 백업은 여전히 전부를 담는다 — 줄어든 건 전송 파일뿐이다
+    expect(backupOf(cloud).map((e) => e.id).sort()).toEqual(['a1', 'a2', 'a3'])
+  })
+
+  it('올릴 게 없으면 전송 파일을 아예 안 쓴다', async () => {
+    const cloud = new Map<string, string>([
+      [BACKUP_FILE_NAME, JSON.stringify([ev('a1', 'dev-a', T0)])],
+    ])
+    const db = freshDb()
+    await appendEvent(db, ev('a1', 'dev-a', T0))
+    class Watch extends FakeDrive {
+      wroteTransport = false
+      override async uploadOrReplace(name: string, content: string): Promise<void> {
+        if (name.startsWith('sync-')) this.wroteTransport = true
+        return super.uploadOrReplace(name, content)
+      }
+    }
+    const drive = new Watch(cloud)
+    await syncNow(db, 'dev-a', drive)
+    expect(drive.wroteTransport).toBe(false)
+    expect([...cloud.keys()]).toEqual([BACKUP_FILE_NAME])
+  })
+
+  /** 보험이 실제로 드는지 — 줄여 놓고 이게 깨지면 기록이 사라진다 */
+  it('백업 쓰기가 실패해도 새 이벤트가 전송 파일에 남아 다음에 복구된다', async () => {
+    const cloud = new Map<string, string>([
+      [BACKUP_FILE_NAME, JSON.stringify([ev('a1', 'dev-a', T0)])],
+    ])
+    const db = freshDb()
+    await appendEvent(db, ev('a1', 'dev-a', T0))
+    await appendEvent(db, ev('a2', 'dev-a', T0 + 1))
+    class BrokenBackup extends FakeDrive {
+      override async uploadOrReplace(name: string, content: string): Promise<void> {
+        if (name === BACKUP_FILE_NAME) throw new Error('업로드 실패')
+        return super.uploadOrReplace(name, content)
+      }
+    }
+    await expect(syncNow(db, 'dev-a', new BrokenBackup(cloud))).rejects.toThrow('업로드 실패')
+    // 새 이벤트가 전송 파일에 남았다
+    expect(JSON.parse(cloud.get('sync-dev-a.json')!).map((e: { id: string }) => e.id)).toEqual(['a2'])
+
+    // 다른(빈) 기기가 이어받아도 둘 다 살아난다
+    const other = freshDb()
+    await syncNow(other, 'dev-b', new FakeDrive(cloud))
+    expect(backupOf(cloud).map((e) => e.id).sort()).toEqual(['a1', 'a2'])
+  })
+})
