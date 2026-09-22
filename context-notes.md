@@ -7855,3 +7855,53 @@ T6  6/51 → 0/45   남은 5,929건 기대 불량  326~1386 → 0~466건
   따로 본다
 - `uploadOrReplace` 가 올릴 때마다 `listSyncFiles()` 를 다시 부른다 — 왕복 두 번이 공짜로
   더 나간다. `DriveClient` 서명이 바뀌어 이번 범위에서 뺐다
+
+## 2026-09-22 — 업데이트 배너가 반만 작동하고 있었다
+
+사용자가 「버전 체크하는 기능이 제대로 작동하는지 확인하라」고 해서 실제로 돌려 봤다.
+**검사가 하나도 없던 자리다** — `vite.config.ts` 의 `devOptions: { enabled: false }` 라
+dev 서버에는 서비스워커가 안 붙고, e2e 는 `npm run dev` 를 쓴다. 볼 방법이 없었다.
+
+### 증상
+
+프로덕션 빌드를 preview 로 띄우고 v1 → v2 로 갈아 보니.
+
+| | 배너 | 「지금 적용」 후 새 버전 |
+|---|---|---|
+| 처음 깐 탭 그대로 | O | **X** |
+| 한 번 새로고침한 뒤 | O | O |
+
+배너는 뜨고 새 서비스워커도 **활성화까지 된다**(`controllerchange` 1회, `waiting` 비워짐).
+그런데 **페이지를 새로고침하지 않아 화면은 옛 버전 그대로**다 — 눌러도 아무 일도 안
+일어난 것처럼 보이고 배너도 안 사라진다.
+
+### 원인
+
+`vite-plugin-pwa` 의 프롬프트 모드는 새로고침을 workbox `controlling` 이벤트에 건다.
+
+```js
+wb?.addEventListener('controlling', (event) => {
+  if (event.isUpdate) { ... window.location.reload() }
+})
+```
+
+workbox 는 `isUpdate` 를 **등록 시점에 컨트롤러가 있었는가**로 정한다. 앱을 처음 깐 탭은
+등록 시점에 컨트롤러가 없어서 그 뒤 무슨 일이 있어도 `isUpdate` 가 거짓이다.
+
+재방문(평소)은 멀쩡하다. 깨지는 건 **처음 깐 탭을 켜 둔 채 업데이트를 받는 경우**다.
+이 테스터에게 드문 일이 아니다 — 하루에 다섯 번 배포한 날이 있었다.
+
+### 고친 것
+
+「지금 적용」이 **직접** `controllerchange` 에 새로고침을 건다 (`UpdateBanner.tsx`).
+평소 경로에서는 workbox 도 새로고침하지만 둘 다 같은 `controllerchange` 한 번에서 도는
+것이라 이동은 한 번이다. 기각한 대안 — `onNeedReload` 콜백. 그것도 같은 `isUpdate` 가드
+**안쪽**에서 불리므로 아무 도움이 안 된다.
+
+### 검사를 도구로 남겼다
+
+`npm run check:update` (`tools/check-update-banner.mjs`). build → preview → v2 빌드 →
+`registration.update()` → 배너 → 「지금 적용」까지 실제로 돌리고, **두 경우를 다 본다.**
+`npm run e2e` 에는 못 넣는다 — dev 에 서비스워커가 없다.
+
+고친 것을 되돌려 돌리면 「첫 설치한 탭 그대로 · X」로 **실패하는 것을 확인**하고 넣었다.

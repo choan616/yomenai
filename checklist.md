@@ -2037,3 +2037,16 @@ RENDAKU 7(安心 あんしん/あんじん, 境界 きょうかい/きょうが�
 - [x] **검증 실행** — `npm test` 652 · tsc·oxlint·build 클린
 - [ ] **gzip 압축** — 남은 2.7MB → 약 400KB. 읽기 호환 분기가 붙는다
 - [ ] **`uploadOrReplace` 의 중복 `listSyncFiles()`** — 동기화당 왕복 2회. `DriveClient` 서명 변경
+
+---
+
+## 업데이트 배너 검증 (2026-09-22, 사용자 지시 "버전 체크가 제대로 되는지 확인하라")
+
+- [x] **실측** — 배너는 뜨는데 **처음 깐 탭에서는 「지금 적용」이 화면을 안 바꿨다**.
+      새 SW 는 활성화되는데 새로고침이 안 걸린다. 근거는 `context-notes.md` 같은 날
+- [x] **고침** — 「지금 적용」이 직접 `controllerchange` 에 새로고침을 건다.
+      workbox 의 `isUpdate` 가 등록 시점 컨트롤러 유무로 정해지는 게 원인이다
+- [x] **검사 도구** — `npm run check:update`. build → preview → v2 → 배너 → 적용까지 실제로 돈다
+  - `npm run e2e` 에는 못 넣는다: dev 서버에 서비스워커가 안 붙는다(`devOptions.enabled: false`)
+  - 고친 것을 되돌리면 **실패하는 것을 확인**하고 넣었다
+- [x] **검증 실행** — `check:update` 두 경우 다 통과 · `npm test` 652 · tsc·oxlint 클린

@@ -20,7 +20,28 @@ export function UpdateBanner() {
       onNeedRefresh() {
         if (!alive) return
         // setState 에 함수를 넣으면 갱신 함수로 오해받는다. 한 번 더 감싼다
-        setApply(() => () => void updateSW(true))
+        setApply(() => () => {
+          /**
+           * **새로고침을 직접 건다.** vite-plugin-pwa 는 workbox 의 `controlling` 에서
+           * `event.isUpdate` 일 때만 새로고침하는데, workbox 는 `isUpdate` 를
+           * **등록 시점에 컨트롤러가 있었는가**로 정한다. 그래서 **앱을 처음 깐 탭을
+           * 켜 둔 채** 업데이트를 받으면 새 서비스워커는 활성화되는데 화면은 옛 버전
+           * 그대로다 — 눌러도 아무 일도 안 일어난 것처럼 보인다.
+           *
+           * 실측 (2026-09-22, `npm run check:update`):
+           *   첫 설치한 탭 그대로 → 배너 O · 적용 후 새로고침 **X**
+           *   한 번 새로고침한 뒤 → 배너 O · 적용 후 새로고침 O
+           *
+           * 컨트롤러가 이미 있던 평소 경로에서는 workbox 도 새로고침하지만, 둘 다 같은
+           * `controllerchange` 한 번에서 도는 것이라 이동은 한 번이다.
+           */
+          navigator.serviceWorker?.addEventListener(
+            'controllerchange',
+            () => window.location.reload(),
+            { once: true },
+          )
+          void updateSW(true)
+        })
       },
       onRegisteredSW(_url, registration) {
         if (!registration) return
