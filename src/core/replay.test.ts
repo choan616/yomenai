@@ -223,3 +223,42 @@ describe('담아 둔 표현 — 마지막 이벤트가 이긴다 (2026-09-21)', 
     expect([...replay(events).starred]).toEqual(['a'])
   })
 })
+
+/**
+ * 앞으로 이벤트 타입을 더할 때의 보험 (2026-09-22).
+ *
+ * 로그는 append-only 라 기기 하나가 새 타입을 쓰기 시작하면, **아직 옛 빌드를 캐시한**
+ * 다른 기기가 동기화로 그걸 받는다. 가드가 없으면 그 이벤트가 채점 경로로 떨어져
+ * `applyGrade` 가 `FSRSValidationError` 로 던지고 — 홈·세션·리포트가 모두 재생을 부르므로
+ * 화면 전체가 멈춘다. 실제로 그렇게 터지는 걸 확인하고 이 검사를 붙였다.
+ */
+describe('replay — 모르는 이벤트 타입', () => {
+  /** 이 빌드가 모르는 미래의 타입. 일부러 타입 시스템 밖에서 만든다 */
+  const unknownEvent = (at: number, idiomId: string): LearningEvent =>
+    ({
+      id: newEventId(at, () => 0.5), userId: 'local', deviceId: 'dev-future', at,
+      idiomId, cardType: 'meaning', mistakeType: null, deletedAt: null,
+      type: 'someFutureType',
+    }) as unknown as LearningEvent
+
+  it('던지지 않는다', () => {
+    expect(() => replay([unknownEvent(T0, '9')])).not.toThrow()
+  })
+
+  it('카드를 만들지 않는다 — 채점으로 오해하면 안 된다', () => {
+    const s = replay([unknownEvent(T0, '9')])
+    expect(s.cards.size).toBe(0)
+  })
+
+  it('섞여 있어도 나머지 재생 결과가 그대로다', () => {
+    const base = sampleEvents()
+    const mixed = [...base, unknownEvent(T0 + 6 * DAY, '1')]
+    const a = replay(base)
+    const b = replay(mixed)
+    expect(b.cards.size).toBe(a.cards.size)
+    for (const [k, v] of a.cards) {
+      expect(b.cards.get(k)?.wrong).toBe(v.wrong)
+      expect(b.cards.get(k)?.card.due.getTime()).toBe(v.card.due.getTime())
+    }
+  })
+})

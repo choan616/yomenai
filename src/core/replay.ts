@@ -71,6 +71,16 @@ export function replay(events: LearningEvent[], options: ReplayOptions = {}): Re
       else state.starred.delete(e.idiomId)
       continue
     }
+    /**
+     * **모르는 타입은 건너뛴다.** 이 줄이 없으면 아래 채점 경로로 떨어져
+     * `applyGrade` 가 `FSRSValidationError: Invalid rating:[undefined]` 로 던지고,
+     * 홈·세션·리포트가 모두 재생을 부르므로 화면 전체가 멈춘다 (2026-09-22 실측).
+     *
+     * 기기 하나가 새 이벤트 타입을 쓰기 시작하면 **아직 옛 빌드를 캐시한 다른 기기**가
+     * 동기화로 그걸 받는다. 로그는 append-only 라 지울 수도 없다. 그래서 새 타입을
+     * 붙이기 **전에** 이 가드가 배포돼 있어야 한다 — 앞으로의 모든 타입에도 남는 보험이다.
+     */
+    if ((e as LearningEvent).type !== 'review') continue
 
     const key = cardKey(e.idiomId, e.cardType)
     const prev = state.cards.get(key)
