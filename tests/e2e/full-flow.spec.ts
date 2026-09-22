@@ -75,9 +75,21 @@ test('진입 진단 → 세션 → 리포트 전체 흐름을 완주한다', asy
   expect(await badge.evaluate((el) => getComputedStyle(el).borderRadius)).toBe('999px')
   const nums = page.locator('.ladder .band-note .dim').first()
   if ((await nums.count()) > 0) {
-    await expect(nums).toHaveText(/출제된 표현 \d+개 \/ 숙지한 표현 \d+개/)
-    // 기본 글자에서는 한 줄이다 — 줄이 접히면 이 칸이 다시 복잡해진다 (2026-09-22 실측 261/286px)
+    await expect(nums).toHaveText(/출제 \d+개 \/ 숙지 \d+개/)
+    // 기본 글자에서는 한 줄이다 — 줄이 접히면 이 칸이 다시 복잡해진다 (2026-09-22)
     expect(await nums.evaluate((el) => el.getClientRects().length)).toBe(1)
+    // 배지와 수치가 **같은 오른쪽 선**에 선다 (2026-09-22 사용자 요청). 배지를 밴드 이름
+    // 옆에 두면 그 선이 안 생긴다 — 그게 막대 오른쪽 끝을 고른 이유다
+    const item = page
+      .locator('.ladder .ladder-item')
+      .filter({ has: page.locator('.band-note .dim') })
+      .first()
+    const gap = await item.evaluate((el) => {
+      const badge = el.querySelector('.band-badge')!.getBoundingClientRect()
+      const note = el.querySelector('.band-note .dim')!.getBoundingClientRect()
+      return Math.round(badge.right - note.right)
+    })
+    expect(Math.abs(gap)).toBeLessThanOrEqual(1)
   }
   // 처방 — 진단 직후는 표본이 적어 "더 봐야 한다"가 뜬다
   await expect(page.getByText('다음에 볼 것')).toBeVisible()

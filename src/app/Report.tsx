@@ -417,15 +417,17 @@ function LevelSection({
                   />
                 )}
               </span>
-            </div>
-            {/* 판정은 알약 배지, 그 뒤가 수치다 (2026-09-22 사용자 요청). 배지로 떼어 두면
-                「흔들림 · 출제된 표현 40개」처럼 판정과 근거가 한 덩어리로 붙어 읽히지 않는다 */}
-            <p className={`band-note band-${b.status}`}>
+              {/* 배지는 **막대 오른쪽 끝**이다 (2026-09-22). 밴드 이름 옆에 붙이면 자리가
+                  글자 길이를 타서 줄마다 어긋나고, 아래 수치와 이룰 오른쪽 선도 안 생긴다 */}
               <span className="band-badge">{BAND_STATUS_LABEL[b.status]}</span>
+            </div>
+            {/* 수치는 막대 아래 오른쪽 정렬 (2026-09-22 사용자 요청). 배지와 같은 선에 서서
+                오른쪽이 「상태·수치」 한 칸으로 읽힌다 */}
+            <p className={`band-note band-${b.status}`}>
               {b.met > 0 && (
                 <span className="dim">
-                  출제된 표현 {b.met}개 / 숙지한 표현 {b.stable}개
-                  {b.seen > 0 && ` (최근 ${b.seen}회 ${Math.round(b.rate * 100)}%)`}
+                  출제 {b.met}개 / 숙지 {b.stable}개
+                  {b.seen > 0 && ` / ${Math.round(b.rate * 100)}% (최근 ${b.seen}회)`}
                 </span>
               )}
             </p>
