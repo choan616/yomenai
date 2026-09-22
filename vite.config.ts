@@ -46,7 +46,18 @@ export default defineConfig(({ command, isPreview }) => ({
           'dict/examples.json',
         ],
         globIgnores: ['**/dict/band4.json'],
-        maximumFileSizeToCacheInBytes: 6 * 1024 * 1024, // base.json 이 ~5.5MB
+        /**
+         * 프리캐시에 넣을 파일 하나의 상한. **넘으면 빌드가 실패한다** —
+         * vite-plugin-pwa 가 PLUGIN_ERROR 를 던진다 (실측 2026-09-22). 조용히 빠지진 않으니
+         * 위험한 값은 아니지만, 닿는 순간 배포가 막힌다.
+         *
+         * base.json 은 필드를 더할 때마다 큰다 — readingKind 를 넣으며 5.42 → 5.63MB 가
+         * 됐고 옛 상한 6MB 까지 0.37MB 밖에 안 남았었다. 12MB 로 여유를 둔다.
+         * 밴드 4(20MB)는 이 값과 무관하게 globIgnores 가 이미 뺀다.
+         *
+         * 매 빌드의 여유는 `tools/check-precache.mjs` 가 찍는다 (그 파일의 CAP 과 같이 고친다)
+         */
+        maximumFileSizeToCacheInBytes: 12 * 1024 * 1024,
         navigateFallback: 'index.html',
         // guide.html 은 앱이 아니라 독립 문서다. 이게 없으면 SW 가 설치된 기기에서
         // 안내서 주소로 들어가도 앱 셸(index.html)이 대신 뜬다

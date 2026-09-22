@@ -2050,3 +2050,14 @@ RENDAKU 7(安心 あんしん/あんじん, 境界 きょうかい/きょうが�
   - `npm run e2e` 에는 못 넣는다: dev 서버에 서비스워커가 안 붙는다(`devOptions.enabled: false`)
   - 고친 것을 되돌리면 **실패하는 것을 확인**하고 넣었다
 - [x] **검증 실행** — `check:update` 두 경우 다 통과 · `npm test` 652 · tsc·oxlint 클린
+
+---
+
+## 프리캐시 상한 (2026-09-22)
+
+- [x] **상한 6MB → 12MB** — `base.json` 5.63MB, 여유 0.37 → 6.37MB
+- [x] **위험 판단 정정** — 「조용히 빠지고 빌드는 성공」이 틀렸다. 넘으면 `vite build` 가
+      `PLUGIN_ERROR` 로 죽는다(실측 종료코드 1). 실제 위험은 배포가 막히는 것이었다
+- [x] **`npm run build` 끝에 `tools/check-precache.mjs`** — 크기가 아닌 이유로 목록에서
+      빠지는 경우를 막는다. `globPatterns` 에서 한 줄을 빼면 **vite 는 통과하고 체커가 깬다**(실측)
+- [x] **검증 실행** — 두 실패 경로를 다 재현해 확인 · `npm test` 652 · tsc·oxlint·build 클린
