@@ -84,7 +84,7 @@ o			2	latin		旧交	きゅうこう	old friendship	추억을 공유하며 따뜻
 o			2	latin		渋柿	しぶがき	astringent persimmon	떫은 감	맛이 떫은 감.		2	default	3	1335560
 o			2	kanji		全米	ぜんべい	all of the United States; the whole of the USA; all of North and South America; the entire Americas	미국 전체	조의 열매를 찧은 쌀.		3	llm	0	1396190
 o			2	kanji		町長	ちょうちょう	town mayor	일본의 행정구역인 정(町)의 우두머리(長);	예전에, 물건을 만드는 것을 업으로 하던 사람.		3	llm	0	1428790
-o			2	kanji		公庫	こうこ	finance corporation	공공의 창고	각 관아에서 쓰는 기구를 넣어 두던 창고.		3	llm	1	1273650
+x		정부가 전액 출자해 세운 정책 금융 기관	2	kanji		公庫	こうこ	finance corporation	공공의 창고	각 관아에서 쓰는 기구를 넣어 두던 창고.		3	llm	1	1273650
 o			2	kanji		都営	とえい	(under) metropolitan government management	일본의 행정구역인 도(都)에서 운영함.	새로 부임하는 감사가 감영에 이르던 일.		3	llm	1	1700920
 o			2	kanji		省令	しょうれい	ministerial ordinance	일본의 행정부의 장인 성(省)의 법률로 정하여 지시하는 명령	영묘(靈妙)한 성정(性情).		3	llm	1	1351150
 o			2	kanji		英和	えいわ	English-Japanese; English-Japanese dictionary	영일(英和); 영어-일본어	일정한 의미를 갖고 움직이는 대상을 촬영하여 영사기로 영사막에 재현하는 종합 예술.		3	llm	1	1174720
