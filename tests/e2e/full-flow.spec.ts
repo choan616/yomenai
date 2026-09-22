@@ -68,7 +68,17 @@ test('진입 진단 → 세션 → 리포트 전체 흐름을 완주한다', asy
   await expect(page.locator('.ladder-caption')).toContainText('숙지')
   // 이름이 포함 범위를 말해야 한다 — 틀린 것·넘긴 것이 들어가고 소개만 본 건 빠진다 (2026-09-20)
   await expect(page.locator('.ladder-caption')).toContainText('틀린 것·넘긴 것도')
-  await expect(page.locator('.ladder .bar-num').first()).toHaveText(/개$|^—$/)
+  // 막대 오른쪽에는 텍스트가 없다. 판정은 알약 배지, 수치는 아래 한 줄이다 (2026-09-22)
+  await expect(page.locator('.ladder .bar-num')).toHaveCount(0)
+  const badge = page.locator('.ladder .band-badge').first()
+  await expect(badge).toHaveText(/^(안정|흔들림|표본 부족|미학습)$/)
+  expect(await badge.evaluate((el) => getComputedStyle(el).borderRadius)).toBe('999px')
+  const nums = page.locator('.ladder .band-note .dim').first()
+  if ((await nums.count()) > 0) {
+    await expect(nums).toHaveText(/출제된 표현 \d+개 \/ 숙지한 표현 \d+개/)
+    // 기본 글자에서는 한 줄이다 — 줄이 접히면 이 칸이 다시 복잡해진다 (2026-09-22 실측 261/286px)
+    expect(await nums.evaluate((el) => el.getClientRects().length)).toBe(1)
+  }
   // 처방 — 진단 직후는 표본이 적어 "더 봐야 한다"가 뜬다
   await expect(page.getByText('다음에 볼 것')).toBeVisible()
   await expect(page.locator('.rx-list > li').first()).toBeVisible()

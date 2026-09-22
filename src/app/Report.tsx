@@ -401,6 +401,8 @@ function LevelSection({
                 <span>경계선</span>
               </p>
             )}
+            {/* 막대 오른쪽에 숫자를 두지 않는다 (2026-09-22 사용자 요청) — 막대는 길이만
+                읽히면 되고, 수치는 아래 한 줄에 모은다 */}
             <div className={`bar-row band-${b.status}`} style={{ '--i': i } as React.CSSProperties}>
               <span>
                 밴드 {b.band}
@@ -415,19 +417,15 @@ function LevelSection({
                   />
                 )}
               </span>
-              <span className="bar-num">{b.met > 0 ? `${b.stable}개` : '—'}</span>
             </div>
-            {/* 왼쪽은 그 밴드가 지금 어떤 상태인가, 오른쪽은 그 판정의 근거가 된 수치다
-                (2026-09-20 사용자 요청) — 한 줄에 몰아 쓰면 어디까지가 판정이고 어디부터가
-                근거인지 안 갈린다 */}
-            <p className="band-note">
-              <span>
-                {BAND_STATUS_LABEL[b.status]}
-                {b.met > 0 && <span className="dim"> · 출제된 표현 {b.met}개</span>}
-              </span>
-              {b.seen > 0 && (
+            {/* 판정은 알약 배지, 그 뒤가 수치다 (2026-09-22 사용자 요청). 배지로 떼어 두면
+                「흔들림 · 출제된 표현 40개」처럼 판정과 근거가 한 덩어리로 붙어 읽히지 않는다 */}
+            <p className={`band-note band-${b.status}`}>
+              <span className="band-badge">{BAND_STATUS_LABEL[b.status]}</span>
+              {b.met > 0 && (
                 <span className="dim">
-                  최근 {b.seen}회 {Math.round(b.rate * 100)}%
+                  출제된 표현 {b.met}개 / 숙지한 표현 {b.stable}개
+                  {b.seen > 0 && ` (최근 ${b.seen}회 ${Math.round(b.rate * 100)}%)`}
                 </span>
               )}
             </p>

@@ -389,7 +389,7 @@
   margin-top: 10px;
 }
 .ladder .bar-row {
-  grid-template-columns: 9.5em 1fr 3.2em;
+  grid-template-columns: 9.5em 1fr;
 }
 /* 사다리 막대는 오답 분포 막대보다 얇다 (2026-09-20 사용자 요청 "날렵하게") — 여기서 큰 숫자는
    막대가 아니라 옆의 개수라, 막대는 길이만 읽히면 된다 */
@@ -400,18 +400,31 @@
 .ladder .bar-fill {
   border-radius: 999px;
 }
-/* 판정은 왼쪽(밴드 이름 아래), 근거 수치는 오른쪽 (2026-09-20 사용자 요청) */
+/* 판정 배지 + 수치 한 줄 (2026-09-22 사용자 요청) */
 .band-note {
   display: flex;
-  justify-content: space-between;
   align-items: baseline;
-  gap: 10px;
-  margin: 2px 0 0;
+  /* 375px 기본 글자에서는 한 줄에 들어간다(수치 261px / 가용 286px). 「크게」(×1.1)나
+     세 자리 수에서만 넘치는데, 그때 눌러 찌그러뜨리는 대신 배지 아래로 접는다 */
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 3px 0 0;
   font-size: calc(12px * var(--ui-scale));
   color: var(--text-faint);
   font-variant-numeric: tabular-nums;
 }
-.band-shaky .band-note {
+/* 알약 배지 — 카드의 `.tag` 와 같은 모양이다. 판정이 수치와 한 덩어리로 붙어 읽히지
+   않게 떼어 두는 게 목적이라, 색은 흔들릴 때만 준다 (안정에 색을 주면 상태가 둘 다
+   이벤트가 되어 경계선이 안 보인다 — `--ok` 가 무채인 것과 같은 이유) */
+.band-badge {
+  flex: none;
+  border-radius: 999px;
+  padding: 2px 9px;
+  background: var(--surface-2);
+  color: var(--text-dim);
+}
+.band-shaky .band-badge {
+  background: var(--ng-bg);
   color: var(--ng);
 }
 /* 경계선 — 안정 구간과 흔들리는 구간 사이에 실제로 선을 긋는다. 이 화면의 핵심 도형 */
