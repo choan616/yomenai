@@ -15,8 +15,33 @@ interface RawIdiom {
   classSource: ClassSource | null
   koMeaning: KoMeaning | null
   pairIds: string[]
+  readingKind: ReadingKind
   /** 같은 표기의 다른 읽기 (동형이독). 겹치는 표기가 없으면 필드 자체가 없다 */
   altReadings?: string[]
+}
+
+/**
+ * 숙어를 읽는 법의 갈래. 빌드가 구성 쌍에서 정한다 (`tools/build-runtime-dict.ts`).
+ * `kun` 은 음독 쌍이 하나도 없는 숙어다 — 浜辺(はまべ)·荒木(あらき).
+ */
+export type ReadingKind = 'on' | 'mix' | 'kun'
+
+/**
+ * 학습 트랙. 훈독 숙어는 **한국 한자음으로 유추할 근거가 없고** 음독 맵·형제 대조·
+ * 「음독을 잘못 골랐다」 오답 분류가 전부 안 붙는다. 그래서 기본 세션에서 빼고 따로 연다
+ * (2026-09-22 사용자 요청 "훈독만 카테고리로 따로 빼서 학습").
+ *
+ * 혼독(重箱·湯桶読み)은 음독 트랙에 남긴다 — 음독 쌍이 있으니 위 장치가 그대로 걸리고,
+ * 오히려 읽기가 갈리는 자리라 핵심에 가깝다.
+ */
+export type StudyTrack = 'on' | 'kun'
+
+/** 그 트랙에서 출제하는 숙어만 남긴다 */
+export function inTrack<T extends { readingKind: ReadingKind }>(
+  idioms: readonly T[],
+  track: StudyTrack,
+): T[] {
+  return idioms.filter((i) => (track === 'kun' ? i.readingKind === 'kun' : i.readingKind !== 'kun'))
 }
 
 export interface KoMeaning {
@@ -41,6 +66,7 @@ export interface RuntimeIdiom extends IdiomEntry {
   pos: string[]
   common: boolean
   koMeaning: KoMeaning | null
+  readingKind: ReadingKind
 }
 
 export interface OnyomiPair {
@@ -71,6 +97,7 @@ export function normalizeIdiom(r: RawIdiom): RuntimeIdiom {
     pos: r.pos,
     common: r.common,
     koMeaning: r.koMeaning,
+    readingKind: r.readingKind,
     altReadings: r.altReadings,
   }
 }

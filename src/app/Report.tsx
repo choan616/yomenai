@@ -116,7 +116,16 @@ export function Report({
           const it = byId.get(id)
           return it ? { headword: it.headword, reading: it.reading } : undefined
         })
-        const level = buildLevel(events, (id) => byId.get(id)?.band, state.cards)
+        // 훈독 세션 기록은 음독 사다리에서 뺀다. `bandOf` 가 undefined 를 주면
+        // `buildLevel` 이 그 이벤트도 카드도 건너뛴다 — level.ts 는 안 건드린다
+        const level = buildLevel(
+          events,
+          (id) => {
+            const it = byId.get(id)
+            return it && it.readingKind !== 'kun' ? it.band : undefined
+          },
+          state.cards,
+        )
         const voicing = voicingCounts(classifiedMistakes(events), again)
         // 미분류 중 답이 있는 몫만 「잘못 읽기」다. 넘김(빈 답)은 이름 이전에 답이 없다
         const passed = passedCount(events)

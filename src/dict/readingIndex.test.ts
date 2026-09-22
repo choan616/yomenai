@@ -9,6 +9,7 @@ const mk = (id: string, headword: string, reading: string, alt?: string[]): Runt
   category: 2,
   classSource: 'default',
   pairIds: [],
+  readingKind: 'on',
   headword,
   reading,
   altReadings: alt,

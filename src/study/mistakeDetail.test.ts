@@ -19,6 +19,7 @@ const kanji = new Map<string, KanjiInfo>([
 function idiom(id: string, headword: string, reading: string, pairIds: string[]): RuntimeIdiom {
   return {
     idiomId: id, band: 1, category: 1, classSource: 'default', pairIds,
+    readingKind: 'on',
     headword, reading, pos: ['n'], common: true, koMeaning: null,
   }
 }

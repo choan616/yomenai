@@ -12,7 +12,7 @@ import { BAND_LABEL, type Band } from '../lib/bands.ts'
 import { getDeviceId } from '../db/device.ts'
 import { LOCAL_USER_ID, appendEvent, listEvents } from '../db/events.ts'
 import { db } from '../db/schema.ts'
-import { loadBaseIdioms, loadKanji, type RuntimeIdiom } from '../dict/load.ts'
+import { inTrack, loadBaseIdioms, loadKanji, type RuntimeIdiom } from '../dict/load.ts'
 import { mistakeContextFromKanji } from '../dict/mistakeContext.ts'
 import type { MistakeContext } from '../core/mistakes.ts'
 import { KanaInput } from '../study/KanaInput.tsx'
@@ -43,8 +43,11 @@ export function Diagnostic({ onDone, onExit }: { onDone: () => void; onExit: () 
     let alive = true
     ;(async () => {
       try {
-        const [pool, kanji] = await Promise.all([loadBaseIdioms(), loadKanji()])
+        const [all, kanji] = await Promise.all([loadBaseIdioms(), loadKanji()])
         if (!alive) return
+        // 진단은 **음독 수준**을 잰다. 훈독 숙어는 한국 한자음으로 유추할 근거가 없어
+        // 여기 섞이면 시작 지점이 실제보다 낮게 잡힌다 (2026-09-22)
+        const pool = inTrack(all, 'on')
         const byId = new Map(pool.map((p) => [p.idiomId, p]))
         bandOf.current = (id) => byId.get(id)?.band
         mistakes.current = mistakeContextFromKanji(kanji)

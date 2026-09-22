@@ -27,7 +27,7 @@ import { getDeviceId } from '../db/device.ts'
 import { db } from '../db/schema.ts'
 import { LOCAL_USER_ID } from '../db/events.ts'
 import { listEvents } from '../db/events.ts'
-import { loadBaseIdioms, loadKanji, type RuntimeIdiom } from '../dict/load.ts'
+import { inTrack, loadBaseIdioms, loadKanji, type RuntimeIdiom, type StudyTrack } from '../dict/load.ts'
 import { mistakeContextFromKanji } from '../dict/mistakeContext.ts'
 import { loadSettings, OBSERVE_GATE, type ObserveLevel } from '../app/settings.ts'
 
@@ -150,6 +150,11 @@ export type SessionKind = 'normal' | 'rematch' | 'focus'
 
 export interface StudySessionOptions {
   kind?: SessionKind
+  /**
+   * 출제 범위. 기본 `on` 은 훈독만 읽는 숙어를 뺀다 — 그쪽은 `kun` 트랙이 따로 낸다.
+   * `kind` 와 직교한다: 훈독 트랙 안에서도 재대결이 그대로 된다
+   */
+  track?: StudyTrack
   /** `kind='focus'` 일 때 집중할 (한자, 음독) 쌍. 여럿이면 대조 세션이다 */
   focusPairIds?: string[]
   /**
@@ -161,6 +166,7 @@ export interface StudySessionOptions {
 
 export function useStudySession({
   kind = 'normal',
+  track = 'on',
   focusPairIds,
   limit: limitOverride,
 }: StudySessionOptions = {}): [StudyState, StudyActions] {
@@ -249,12 +255,15 @@ export function useStudySession({
     let alive = true
     ;(async () => {
       try {
-        const [loaded, kanji, events] = await Promise.all([
+        const [all, kanji, events] = await Promise.all([
           loadBaseIdioms(),
           loadKanji(),
           listEvents(db(), LOCAL_USER_ID),
         ])
         if (!alive) return
+        // 트랙은 **풀에서** 가른다. 세션을 짜는 쪽(정규·재대결·집중)을 하나도 안 건드리고
+        // 훈독을 나눌 수 있는 자리가 여기뿐이다
+        const loaded = inTrack(all, track)
         setPool(loaded)
         setPriorEvents(events)
         mistakes.current = mistakeContextFromKanji(kanji)
@@ -330,7 +339,7 @@ export function useStudySession({
     return () => {
       alive = false
     }
-  }, [kind, focusPairs, limitOverride])
+  }, [kind, track, focusPairs, limitOverride])
 
   const card = session?.cards[idx]
   const idiom = card ? byId.get(card.idiomId) : undefined

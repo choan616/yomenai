@@ -56,6 +56,12 @@ interface RuntimeIdiom {
   /** 구성 (한자, 음독) 쌍 id. 재생·미숙 음독 가중이 쓴다 */
   pairIds: string[]
   /**
+   * 읽는 법의 갈래. 음독 쌍이 하나도 없으면 `kun` — 浜辺(はまべ)·荒木(あらき) 처럼
+   * 한국 한자음으로 유추할 근거가 없는 숙어다. 섞이면 `mix`(重箱·湯桶読み).
+   * 학습 트랙을 가르는 데 쓴다 (2026-09-22 사용자 요청 "훈독만 카테고리로 따로")
+   */
+  readingKind: 'on' | 'mix' | 'kun'
+  /**
    * 같은 표기의 *다른* 읽기 (동형이독). 겹치는 표기가 없으면 아예 안 싣는다.
    * 읽기 채점이 이걸 정답으로 받는다 — 아래 「같은 표기 정리」 주석 참조
    */
@@ -74,6 +80,13 @@ const pairsRaw = read<{ pairs: Record<string, { kanji: string; base: string; kin
 ).pairs
 const koClass = read<{ byId: Record<string, KoClass> }>('korean-class.json').byId
 const kanji = read<{ kanji: Record<string, KanjiRow> }>('kanji.json').kanji
+
+/** 구성 쌍의 음독 비율로 갈래를 정한다. 쌍이 비는 일은 없다 — segs 없는 숙어는 위에서 걸린다 */
+function readingKindOf(segs: Seg[]): 'on' | 'mix' | 'kun' {
+  const on = segs.filter(([, , , kind]) => kind === 'on').length
+  if (on === 0) return 'kun'
+  return on === segs.length ? 'on' : 'mix'
+}
 
 const base: RuntimeIdiom[] = []
 const band4: RuntimeIdiom[] = []
@@ -97,6 +110,7 @@ for (const it of idioms) {
     classSource: ko?.classSource ?? null,
     koMeaning: ko?.koMeaning ?? null,
     pairIds: segs.map(([k, , b, kind]) => pairId(k, b, kind)),
+    readingKind: readingKindOf(segs),
   }
   ;(band <= 3 ? base : band4).push(rec)
   for (const ch of it.headword) if (kanji[ch]) usedKanji.add(ch)

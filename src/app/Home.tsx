@@ -7,7 +7,7 @@ import { buildSession, rematchCount } from '../core/session.ts'
 import { browseCount } from '../core/report.ts'
 import { LOCAL_USER_ID, listEvents } from '../db/events.ts'
 import { db } from '../db/schema.ts'
-import { loadBaseIdioms } from '../dict/load.ts'
+import { inTrack, loadBaseIdioms } from '../dict/load.ts'
 import { buildLevel } from '../core/level.ts'
 import {
   isDiagnosticDone,
@@ -31,6 +31,11 @@ interface Preview {
   rematch: number
   /** 한 번이라도 틀린 읽기 카드 수 — 다시보기 대상. 재대결보다 넓다 */
   browse: number
+  /**
+   * 훈독 세션에 낼 카드 수. 0 이면 줄째로 안 뜬다 — 다 붙였으면 자리를 비운다 (2026-09-22).
+   * 음독 세션과 **따로 센다**: 같은 기록을 보지만 후보 풀이 겹치지 않는다
+   */
+  kun: number
 }
 
 /**
@@ -60,23 +65,29 @@ export function Home({ onFlow }: { onFlow: (flow: Flow) => void }) {
     let alive = true
     ;(async () => {
       try {
-        const [pool, events] = await Promise.all([
+        const [all, events] = await Promise.all([
           loadBaseIdioms(),
           listEvents(db(), LOCAL_USER_ID),
         ])
         if (!alive) return
+        // 기본 진입로는 전부 음독 트랙이다. 훈독은 아래 kun 한 줄이 따로 센다
+        const pool = inTrack(all, 'on')
         const { sessionLimit, ratio } = loadSettings()
-        const session = buildSession(pool, events, { now: Date.now(), limit: sessionLimit, ratio })
+        const now = Date.now()
+        const session = buildSession(pool, events, { now, limit: sessionLimit, ratio })
+        const kunSession = buildSession(inTrack(all, 'kun'), events, { now, limit: sessionLimit, ratio })
         const next: Preview = {
           ready: session.cards.length,
           fresh: session.cards.filter((c) => !c.due).length,
           rematch: rematchCount(pool, events),
           browse: browseCount(pool, events),
+          kun: kunSession.cards.length,
         }
         cache = { version: dataVersion(), preview: next }
         setPreview(next)
 
         // 동기화로 받아온 기록만 있고 이 기기의 플래그는 비어 있을 수 있다 (플래그는 안 옮겨온다)
+        // 음독 풀로만 만든다 — 훈독 기록은 undefined 가 되어 수준 판정에서 빠진다 (Report 와 같다)
         const bandOf = new Map(pool.map((p) => [p.idiomId, p.band]))
         const level = buildLevel(events, (id) => bandOf.get(id))
         if (!shouldOfferDiagnostic(isDiagnosticDone(), level)) {
@@ -242,6 +253,30 @@ export function Home({ onFlow }: { onFlow: (flow: Flow) => void }) {
                 )}
               </div>
             </div>
+          )}
+
+          {/* 훈독 숙어 — 浜辺(はまべ)·荒木(あらき) 처럼 음독 쌍이 없어 한국 한자음으로
+              유추할 근거가 없는 숙어다. 기본 세션에서 빼고 여기로 모았다 (2026-09-22).
+              **주 동작 아래 한 줄**로 둔다: 매일 할 것이 아니라 따로 여는 갈래다.
+
+              위 둘과 같이 **자리를 먼저 잡는다.** `.home` 은 세로 중앙 정렬이라 맨 아래에
+              붙는 것이라도 뒤늦게 생기면 제목까지 그 절반만큼 밀린다 —
+              실제로 screen-cache 검사가 42px 움직임을 잡았다 (2026-09-22) */}
+          {preview === null && (
+            <button type="button" className="btn rematch kun-track" aria-hidden="true" tabIndex={-1}>
+              <span className="wg-head">
+                훈독 숙어 <span className="wg-badge">0</span>
+              </span>
+              <span className="wg-note">음독으로 못 읽는 것</span>
+            </button>
+          )}
+          {preview && preview.kun > 0 && (
+            <button type="button" className="btn rematch kun-track" onClick={() => onFlow({ kind: 'kun' })}>
+              <span className="wg-head">
+                훈독 숙어 <span className="wg-badge">{preview.kun}</span>
+              </span>
+              <span className="wg-note">음독으로 못 읽는 것</span>
+            </button>
           )}
         </>
       )}

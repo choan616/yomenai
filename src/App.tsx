@@ -36,6 +36,11 @@ export type Sub = { kind: 'onyomi' } | { kind: 'rules'; focus: RuleId | null } |
 export type Flow =
   | { kind: 'study' | 'quick' | 'rematch' | 'diagnostic' }
   /**
+   * 훈독 숙어 세션. 浜辺(はまべ)·荒木(あらき) 처럼 음독 쌍이 없는 숙어만 낸다 —
+   * 기본 세션에서 빼고 여기로 모았다 (2026-09-22). 근거는 `load.ts` 의 `StudyTrack`
+   */
+  | { kind: 'kun' }
+  /**
    * `filter` 가 있으면 그 오답 유형(+탁음이면 갈래)만 다시본다 — 리포트의 분포 그래프
    * "N회 다시보기" 가 쓴다 (2026-09-18). 없으면 기존처럼 자주 틀린 것 전체를 섞어 낸다
    */
@@ -98,6 +103,8 @@ function FlowScreen({
       return <Study limit={QUICK_SESSION_LIMIT} onExit={onExit} />
     case 'rematch':
       return <Study kind="rematch" onExit={onExit} />
+    case 'kun':
+      return <Study track="kun" onExit={onExit} />
     case 'focus':
       return <Study kind="focus" focusPairIds={flow.pairIds} onExit={onExit} />
     case 'browse':
