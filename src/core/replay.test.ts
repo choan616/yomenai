@@ -263,27 +263,55 @@ describe('replay — 모르는 이벤트 타입', () => {
   })
 })
 
-describe('replay — 뜻 신고', () => {
-  const flag = (at: number, idiomId: string, on: boolean, definition: string): LearningEvent => ({
+describe('replay — 뜻 평가 (엄지)', () => {
+  const vote = (
+    at: number,
+    idiomId: string,
+    verdict: 'ok' | 'bad' | null,
+    definition: string,
+  ): LearningEvent => ({
     id: newEventId(at, () => 0.5), userId: 'local', deviceId: 'dev-a', at,
     idiomId, cardType: 'meaning', mistakeType: null, deletedAt: null,
-    type: 'flag', on, definition, headword: '公庫',
+    type: 'flag', verdict, definition, headword: '公庫',
   })
 
-  it('신고하면 표제어와 그때 본 뜻이 남는다', () => {
-    const s = replay([flag(T0, '1', true, '공공의 창고')])
-    expect(s.flagged.get('1')).toEqual({ headword: '公庫', definition: '공공의 창고' })
+  it('판정과 표제어와 그때 본 뜻이 남는다', () => {
+    const s = replay([vote(T0, '1', 'bad', '공공의 창고')])
+    expect(s.meaningVotes.get('1')).toEqual({
+      verdict: 'bad', headword: '公庫', definition: '공공의 창고',
+    })
   })
 
-  it('다시 누르면 취소된다 — 마지막 이벤트가 이긴다', () => {
-    const s = replay([flag(T0, '1', true, '공공의 창고'), flag(T0 + 1, '1', false, '공공의 창고')])
-    expect(s.flagged.has('1')).toBe(false)
+  it('엄지 위도 같은 자리에 남는다', () => {
+    expect(replay([vote(T0, '1', 'ok', '뜻')]).meaningVotes.get('1')?.verdict).toBe('ok')
   })
 
-  it('채점 상태를 안 건드린다 — 신고는 오답이 아니다', () => {
+  it('반대 엄지를 누르면 덮어쓴다 — 마지막 이벤트가 이긴다', () => {
+    const s = replay([vote(T0, '1', 'bad', '뜻'), vote(T0 + 1, '1', 'ok', '뜻')])
+    expect(s.meaningVotes.get('1')?.verdict).toBe('ok')
+  })
+
+  it('null 이면 취소된다', () => {
+    const s = replay([vote(T0, '1', 'ok', '뜻'), vote(T0 + 1, '1', null, '뜻')])
+    expect(s.meaningVotes.has('1')).toBe(false)
+  })
+
+  /** 첫 배포분(2026-09-22 오전)은 「이상해요」뿐이라 `on: boolean` 이었다 */
+  it('옛 모양(on: boolean)도 읽는다 — 로그는 append-only 라 지울 수 없다', () => {
+    const legacy = (at: number, on: boolean): LearningEvent =>
+      ({
+        id: newEventId(at, () => 0.5), userId: 'local', deviceId: 'dev-a', at,
+        idiomId: '1', cardType: 'meaning', mistakeType: null, deletedAt: null,
+        type: 'flag', on, definition: '옛 뜻', headword: '公庫',
+      }) as unknown as LearningEvent
+    expect(replay([legacy(T0, true)]).meaningVotes.get('1')?.verdict).toBe('bad')
+    expect(replay([legacy(T0, true), legacy(T0 + 1, false)]).meaningVotes.has('1')).toBe(false)
+  })
+
+  it('채점 상태를 안 건드린다 — 평가는 오답이 아니다', () => {
     const base = sampleEvents()
     const a = replay(base)
-    const b = replay([...base, flag(T0 + 6 * DAY, '1', true, '아무 뜻')])
+    const b = replay([...base, vote(T0 + 6 * DAY, '1', 'bad', '아무 뜻')])
     expect(b.cards.get(cardKey('1', 'reading'))?.wrong).toBe(
       a.cards.get(cardKey('1', 'reading'))?.wrong,
     )
@@ -291,9 +319,9 @@ describe('replay — 뜻 신고', () => {
   })
 
   it('입력 순서가 달라도 같은 결과다 — 재생 결정론', () => {
-    const evs = [flag(T0, '1', true, 'A'), flag(T0 + 1, '1', false, 'A'), flag(T0 + 2, '2', true, 'B')]
+    const evs = [vote(T0, '1', 'bad', 'A'), vote(T0 + 1, '1', null, 'A'), vote(T0 + 2, '2', 'ok', 'B')]
     const fwd = replay([...evs])
     const rev = replay([...evs].reverse())
-    expect([...rev.flagged.keys()]).toEqual([...fwd.flagged.keys()])
+    expect([...rev.meaningVotes.keys()]).toEqual([...fwd.meaningVotes.keys()])
   })
 })

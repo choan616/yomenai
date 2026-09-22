@@ -3,8 +3,10 @@ import { applyGrade, newCard } from './scheduler.ts'
 import {
   cardKey,
   compareEvents,
+  voteOf,
   type CardState,
   type LearningEvent,
+  type MeaningVerdict,
   type MistakeType,
   type OnyomiStat,
   type ReviewEvent,
@@ -41,11 +43,11 @@ export interface ReplayState {
    */
   starred: Set<string>
   /**
-   * 「이 뜻 이상해요」로 신고한 숙어 → 신고 당시 화면에 떠 있던 뜻 (2026-09-22).
+   * 엄지로 평가한 숙어 → 판정과 그때 화면에 떠 있던 뜻 (2026-09-22).
    * 마지막 `flag` 이벤트가 이긴다 — 취소한 것은 여기 안 남는다.
-   * 카드에 「신고함」을 띄우고, 피드백 화면이 이걸 모아 보낸다
+   * 카드에 눌린 엄지를 띄우고, 피드백 화면이 이걸 모아 보낸다
    */
-  flagged: Map<string, { headword: string; definition: string }>
+  meaningVotes: Map<string, { verdict: MeaningVerdict; headword: string; definition: string }>
   /** 재생에 쓴 이벤트 수 (삭제분 제외) */
   applied: number
 }
@@ -61,7 +63,7 @@ export function replay(events: LearningEvent[], options: ReplayOptions = {}): Re
     meaningKnown: new Map(),
     onyomi: new Map(),
     starred: new Set(),
-    flagged: new Map(),
+    meaningVotes: new Map(),
     applied: 0,
   }
 
@@ -79,8 +81,14 @@ export function replay(events: LearningEvent[], options: ReplayOptions = {}): Re
       continue
     }
     if (e.type === 'flag') {
-      if (e.on) state.flagged.set(e.idiomId, { headword: e.headword, definition: e.definition })
-      else state.flagged.delete(e.idiomId)
+      const verdict = voteOf(e)
+      if (verdict) {
+        state.meaningVotes.set(e.idiomId, {
+          verdict,
+          headword: e.headword,
+          definition: e.definition,
+        })
+      } else state.meaningVotes.delete(e.idiomId)
       continue
     }
     /**

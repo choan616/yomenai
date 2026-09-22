@@ -91,28 +91,37 @@ export interface StarEvent extends EventBase {
   on: boolean
 }
 
+/** 뜻 평가. `ok` = 맞다(엄지 위) · `bad` = 이상하다(엄지 아래) */
+export type MeaningVerdict = 'ok' | 'bad'
+
 /**
- * 「이 뜻 이상해요」 신고 (2026-09-22 사용자 요청).
+ * 뜻 평가 (2026-09-22 사용자 요청).
  *
- * 뜻은 사전 빌드(`data/dict`)에 있고 고치려면 재빌드가 필요하다. 그래서 앱이 하는 일은
- * **어느 표현의 어떤 뜻이 이상해 보였는지 남기는 것**까지고, 모인 신고는 피드백 화면이
- * 기존 전송 경로로 넘긴다 (`sendFeedback`) — 새 전송 수단을 만들지 않는다.
+ * 뜻은 사전 빌드(`data/dict`)에 있고 고치려면 재빌드가 필요하다. **앱은 `verified` 를
+ * 못 쓴다.** 그래서 앱이 하는 일은 어느 표현의 어떤 뜻을 어떻게 봤는지 남기는 것까지고,
+ * 모인 평가는 피드백 화면이 기존 전송 경로로 넘긴다 (`sendFeedback`) — 넘어온 것을 사람이
+ * 워크리스트에 찍으면 다음 빌드에서 진짜 `verified` 가 된다. 새 전송 수단은 안 만든다.
  *
- * **「맞다」는 안 받는다** (사용자 판단) — 매번 확인을 누르게 하면 불편하고, 이 버튼은
- * 검수가 끝나도 안 없앤다. 쓰는 동안 계속 열려 있는 창구다.
+ * 처음엔 「이상해요」 하나만 뒀는데(2026-09-22 오전), 글자 버튼이라 **눈에 안 들어온다**는
+ * 지적에 엄지 둘로 바꿨다. 아이콘이라 「맞다」를 같이 둬도 손이 덜 간다 — 매번 누를 의무는
+ * 없고, 안 누르면 예전과 똑같다. 검수가 끝나도 안 없앤다: 쓰는 동안 열려 있는 창구다.
  *
- * `StarEvent` 처럼 신고·취소를 `on` 하나로 접는다 — append-only 라 마지막 이벤트가 이긴다.
- * 상시 노출이라 오탭을 되돌릴 길이 있어야 한다.
+ * `StarEvent` 처럼 마지막 이벤트가 이긴다 — 같은 엄지를 다시 누르면 `verdict: null`(취소).
  *
  * `definition` 을 같이 남기는 이유 — 재빌드로 뜻이 바뀌면 **무엇을 보고 눌렀는지**
- * 알 수 없어진다. 신고는 그 시점의 화면에 대한 것이다.
+ * 알 수 없어진다. 평가는 그 시점의 화면에 대한 것이다.
  */
-export interface FlagEvent extends EventBase {
+export interface MeaningVoteEvent extends EventBase {
   type: 'flag'
   cardType: 'meaning'
   mistakeType: null
-  /** true = 신고, false = 취소 */
-  on: boolean
+  /** 'ok' 맞다 · 'bad' 이상하다 · null 취소 */
+  verdict: MeaningVerdict | null
+  /**
+   * 첫 배포분(2026-09-22 오전) 호환. 그때는 「이상해요」뿐이라 boolean 이었다 —
+   * `verdict` 가 없는 옛 이벤트는 `on: true` 를 `'bad'` 로 읽는다. 새로 쓰지는 않는다
+   */
+  on?: boolean
   /** 누를 때 화면에 떠 있던 뜻 */
   definition: string
   /**
@@ -122,7 +131,12 @@ export interface FlagEvent extends EventBase {
   headword: string
 }
 
-export type LearningEvent = ReviewEvent | MeaningKnownEvent | StarEvent | FlagEvent
+export type LearningEvent = ReviewEvent | MeaningKnownEvent | StarEvent | MeaningVoteEvent
+
+/** 옛 이벤트까지 한 눈금으로 읽는다 (`MeaningVoteEvent.on` 주석) */
+export function voteOf(e: MeaningVoteEvent): MeaningVerdict | null {
+  return e.verdict ?? (e.on ? 'bad' : null)
+}
 
 /** 이벤트 재생으로 파생되는 카드 1장의 상태. 저장하지 않고 언제든 재계산한다 */
 export interface CardState {

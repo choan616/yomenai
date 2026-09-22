@@ -1,6 +1,7 @@
 // 어휘 확장 카드 — 뜻 + 읽기 확인. 동형이의·일본 고유 그룹에서만 나온다 (PLAN §6)
 import { useState } from 'react'
 import type { RubySegment } from '../core/ruby.ts'
+import type { MeaningVerdict } from '../core/types.ts'
 import type { RuntimeIdiom } from '../dict/load.ts'
 import { tts } from './tts.ts'
 
@@ -12,13 +13,13 @@ interface Props {
   graded: boolean
   onGrade: (known: boolean) => void
   onNext: () => void
-  /** 이미 「이상해요」로 신고한 뜻인지 */
-  flagged: boolean
-  /** 「이 뜻 이상해요」 — 다시 누르면 취소. 카드는 안 넘어간다 */
-  onFlag: () => void
+  /** 이 뜻에 누른 엄지. 안 눌렀으면 null */
+  vote: MeaningVerdict | null
+  /** 엄지 — 누른 쪽을 다시 누르면 취소. 카드는 안 넘어간다 */
+  onVote: (verdict: MeaningVerdict) => void
 }
 
-export function MeaningCard({ idiom, ruby, graded, onGrade, onNext, flagged, onFlag }: Props) {
+export function MeaningCard({ idiom, ruby, graded, onGrade, onNext, vote, onVote }: Props) {
   const [revealed, setRevealed] = useState(false)
   const meaning = idiom.koMeaning?.definition?.trim()
 
@@ -26,7 +27,9 @@ export function MeaningCard({ idiom, ruby, graded, onGrade, onNext, flagged, onF
     <div className={`card ${graded ? 'feedback is-ng' : ''}`}>
       <div className="card-head">
         <span className="tag">뜻 · 밴드 {idiom.band}</span>
-        {idiom.koMeaning && !idiom.koMeaning.verified && (
+        {/* 「미검수」는 사전 빌드의 `verified` 다. 엄지 위를 누른 뒤에는 **내가 봤으니**
+            떼어 준다 — 다음 빌드에서 진짜 verified 가 될 때까지의 임시 표시다 */}
+        {idiom.koMeaning && !idiom.koMeaning.verified && vote !== 'ok' && (
           <span className="tag muted">미검수</span>
         )}
       </div>
@@ -65,18 +68,31 @@ export function MeaningCard({ idiom, ruby, graded, onGrade, onNext, flagged, onF
           <p className="meaning placeholder">뜻을 떠올려 볼까요?</p>
         )}
 
-        {/* 「이 뜻 이상해요」 (2026-09-22). **뜻이 드러난 뒤에만** — 가려진 것을 판단할 수 없다.
+        {/* 뜻 평가 (2026-09-22). **뜻이 드러난 뒤에만** — 가려진 것을 판단할 수 없다.
+            글자 버튼("이 뜻 이상해요")은 눈에 안 들어온다는 지적에 엄지 둘로 바꿨다.
             누르고 나서 하던 대로 답하면 된다: 카드를 넘기지 않는다.
             검수가 끝나도 안 없앤다 — 쓰는 동안 계속 열려 있는 창구다 (사용자 판단) */}
         {(revealed || graded) && meaning && (
-          <button
-            type="button"
-            className={`flag-btn${flagged ? ' on' : ''}`}
-            aria-pressed={flagged}
-            onClick={onFlag}
-          >
-            {flagged ? '신고함 · 취소' : '이 뜻 이상해요'}
-          </button>
+          <div className="vote-row" role="group" aria-label="이 뜻 평가">
+            <button
+              type="button"
+              className={`vote-btn ok${vote === 'ok' ? ' on' : ''}`}
+              aria-pressed={vote === 'ok'}
+              aria-label="뜻이 맞아요"
+              onClick={() => onVote('ok')}
+            >
+              <span aria-hidden="true">👍</span>
+            </button>
+            <button
+              type="button"
+              className={`vote-btn bad${vote === 'bad' ? ' on' : ''}`}
+              aria-pressed={vote === 'bad'}
+              aria-label="뜻이 이상해요"
+              onClick={() => onVote('bad')}
+            >
+              <span aria-hidden="true">👎</span>
+            </button>
+          </div>
         )}
       </div>
 

@@ -42,10 +42,10 @@ const EMPTY: Answers = {
   issues: '',
 }
 
-/** 「이 뜻 이상해요」로 신고해 둔 목록. 사전 없이 이벤트만으로 읽힌다 */
-export type FlagList = { headword: string; definition: string }[]
+/** 엄지로 평가해 둔 뜻. 사전 없이 이벤트만으로 읽힌다 */
+export type VoteList = { verdict: 'ok' | 'bad'; headword: string; definition: string }[]
 
-function compose(a: Answers, flags: FlagList): string {
+function compose(a: Answers, votes: VoteList): string {
   const lines = [
     `[얼마나 썼나] ${a.usage || '-'}`,
     `[가장 큰 오답 유형] ${a.topMistake || '-'}`,
@@ -55,11 +55,16 @@ function compose(a: Answers, flags: FlagList): string {
     `[계속 쓰고 싶은지] ${a.keep || '-'}`,
     `[이상했던 곳] ${a.issues || '-'}`,
   ]
-  // 신고해 둔 뜻은 답변 뒤에 붙인다. 없으면 절 자체가 안 붙는다 —
-  // 빈 절을 보내면 받는 쪽에서 「0건」과 「기능을 안 씀」이 구분이 안 된다
-  if (flags.length > 0) {
-    lines.push('', `[이상하다고 신고한 뜻 ${flags.length}건]`)
-    for (const f of flags) lines.push(`- ${f.headword} — ${f.definition}`)
+  // 평가해 둔 뜻은 답변 뒤에 붙인다. **판정별로 절을 가른다** — 받는 쪽에서 「맞다」는
+  // 워크리스트에 o 로 찍고 「이상하다」는 고칠 목록으로 가는, 서로 다른 일이다.
+  // 빈 절은 안 붙인다: 「0건」과 「기능을 안 씀」이 구분되지 않는다
+  for (const [label, list] of [
+    ['이상하다고 본 뜻', votes.filter((v) => v.verdict === 'bad')],
+    ['맞다고 본 뜻', votes.filter((v) => v.verdict === 'ok')],
+  ] as const) {
+    if (list.length === 0) continue
+    lines.push('', `[${label} ${list.length}건]`)
+    for (const v of list) lines.push(`- ${v.headword} — ${v.definition}`)
   }
   return lines.join('\n')
 }
@@ -70,16 +75,16 @@ export function Feedback({ onBack }: { onBack: () => void }) {
   const [hint, setHint] = useState<string | null>(null)
   const [state, setState] = useState<'writing' | 'sending' | 'sent'>('writing')
   const [copied, setCopied] = useState(false)
-  /** 신고해 둔 뜻 — 답변과 함께 나간다. 아래 미리보기에 그대로 보인다 */
-  const [flags, setFlags] = useState<FlagList>([])
+  /** 엄지로 평가해 둔 뜻 — 답변과 함께 나간다. 아래 미리보기에 그대로 보인다 */
+  const [votes, setVotes] = useState<VoteList>([])
 
   useEffect(() => {
     let alive = true
     void listEvents(db(), LOCAL_USER_ID).then((events) => {
       if (!alive) return
-      // 사전을 안 읽는다 — 오답 유형 집계도 신고 목록도 이벤트만으로 난다
+      // 사전을 안 읽는다 — 오답 유형 집계도 평가 목록도 이벤트만으로 난다
       const state = replay(events)
-      setFlags([...state.flagged.values()])
+      setVotes([...state.meaningVotes.values()])
       const totals = mistakeTotals(state)
       const top = ASKED.map((t) => [t, totals[t] ?? 0] as const)
         .filter(([, n]) => n > 0)
@@ -91,7 +96,7 @@ export function Feedback({ onBack }: { onBack: () => void }) {
     }
   }, [])
 
-  const body = compose(a, flags)
+  const body = compose(a, votes)
   const set = (k: keyof Answers) => (v: string) => setA((prev) => ({ ...prev, [k]: v }))
 
   const handleSend = () => {
@@ -119,7 +124,7 @@ export function Feedback({ onBack }: { onBack: () => void }) {
         <p className="fb-lead">
           이 앱이 도움이 되는지, 다른 사람에게도 맞을지를 보려고 여쭙습니다.
           <strong> 채점 기록은 보내지 않아요.</strong> 아래에 적으신 답과,
-          「이 뜻 이상해요」로 신고해 두신 것{flags.length > 0 && ` ${flags.length}건`}이 갑니다 —
+          뜻에 엄지로 남기신 평가{votes.length > 0 && ` ${votes.length}건`}이 갑니다 —
           무엇이 나가는지는 아래 미리보기에 그대로 보여요.
         </p>
 
