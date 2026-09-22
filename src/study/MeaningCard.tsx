@@ -68,30 +68,41 @@ export function MeaningCard({ idiom, ruby, graded, onGrade, onNext, vote, onVote
           <p className="meaning placeholder">뜻을 떠올려 볼까요?</p>
         )}
 
-        {/* 뜻 평가 (2026-09-22). **뜻이 드러난 뒤에만** — 가려진 것을 판단할 수 없다.
-            글자 버튼("이 뜻 이상해요")은 눈에 안 들어온다는 지적에 엄지 둘로 바꿨다.
-            누르고 나서 하던 대로 답하면 된다: 카드를 넘기지 않는다.
-            검수가 끝나도 안 없앤다 — 쓰는 동안 계속 열려 있는 창구다 (사용자 판단) */}
-        {(revealed || graded) && meaning && (
-          <div className="vote-row" role="group" aria-label="이 뜻 평가">
-            <button
-              type="button"
-              className={`vote-btn ok${vote === 'ok' ? ' on' : ''}`}
-              aria-pressed={vote === 'ok'}
-              aria-label="뜻이 맞아요"
-              onClick={() => onVote('ok')}
-            >
-              <span aria-hidden="true">👍</span>
-            </button>
-            <button
-              type="button"
-              className={`vote-btn bad${vote === 'bad' ? ' on' : ''}`}
-              aria-pressed={vote === 'bad'}
-              aria-label="뜻이 이상해요"
-              onClick={() => onVote('bad')}
-            >
-              <span aria-hidden="true">👎</span>
-            </button>
+        {/* 뜻 평가 (2026-09-22). 글자 버튼("이 뜻 이상해요")이 눈에 안 들어온다는 지적에
+            엄지 둘로 바꿨다. 누르고 나서 하던 대로 답하면 된다: 카드를 넘기지 않는다.
+            검수가 끝나도 안 없앤다 — 쓰는 동안 계속 열려 있는 창구다 (사용자 판단).
+
+            **뜻을 연 뒤 ~ 채점 전에만 뜬다.** 가려진 뜻은 판단할 수 없고, 「몰랐어요」를
+            누른 사람은 방금 그 뜻을 배운 참이라 옳고 그름을 가릴 처지가 아니다
+            (사용자 지적 2026-09-22 "표현의 뜻을 모르는데 해석을 평가하는 것도 이상하다").
+            「알았어요」 쪽에 붙이지 않은 이유는 그게 **누르는 즉시 다음 카드로 가기**
+            때문이다 (`useStudySession` 의 `submitMeaning`, PLAN §7) — 거기 세우면
+            아는 단어마다 한 번씩 더 누르게 된다 */}
+        {revealed && !graded && meaning && (
+          <div className="vote-block">
+            {/* 무엇에 대한 평가인지 묻는다 — 엄지만 두면 「이 단어가 좋은가」로도 읽힌다.
+                평가 대상은 **위에 뜬 한국어 한 줄**이지 숙어가 아니다 (사용자 지적) */}
+            <p className="vote-q">뜻을 잘 옮겼나요?</p>
+            <div className="vote-row" role="group" aria-label="해석 평가">
+              <button
+                type="button"
+                className={`vote-btn ok${vote === 'ok' ? ' on' : ''}`}
+                aria-pressed={vote === 'ok'}
+                aria-label="해석이 맞아요"
+                onClick={() => onVote('ok')}
+              >
+                <span aria-hidden="true">👍</span>
+              </button>
+              <button
+                type="button"
+                className={`vote-btn bad${vote === 'bad' ? ' on' : ''}`}
+                aria-pressed={vote === 'bad'}
+                aria-label="해석이 이상해요"
+                onClick={() => onVote('bad')}
+              >
+                <span aria-hidden="true">👎</span>
+              </button>
+            </div>
           </div>
         )}
       </div>

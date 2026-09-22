@@ -39,7 +39,7 @@ async function reachMeaningCard(page: Page): Promise<string | null> {
   for (let i = 0; i < 300; i++) {
     if (await page.getByText('세션 완료').isVisible().catch(() => false)) return null
     // 뜻을 연 상태여야 엄지가 뜬다
-    const thumb = page.getByRole('button', { name: '뜻이 이상해요' })
+    const thumb = page.getByRole('button', { name: '해석이 이상해요' })
     if (await thumb.isVisible().catch(() => false)) {
       return page.locator('.meaning').first().innerText()
     }
@@ -108,7 +108,7 @@ test('엄지 아래를 누르면 기록되고, 다시 누르면 취소된다', a
   const meaning = await reachMeaningCard(page)
   expect(meaning, '세션에서 뜻 카드를 못 만났다').not.toBeNull()
 
-  const bad = page.getByRole('button', { name: '뜻이 이상해요' })
+  const bad = page.getByRole('button', { name: '해석이 이상해요' })
   await expect(bad).toHaveAttribute('aria-pressed', 'false')
   await bad.click()
   await expect(bad).toHaveAttribute('aria-pressed', 'true')
@@ -133,8 +133,8 @@ test('반대 엄지를 누르면 덮어쓴다 — 둘이 동시에 눌리지 않
   await clickIfVisible(page, '알겠어요')
   expect(await reachMeaningCard(page)).not.toBeNull()
 
-  const ok = page.getByRole('button', { name: '뜻이 맞아요' })
-  const bad = page.getByRole('button', { name: '뜻이 이상해요' })
+  const ok = page.getByRole('button', { name: '해석이 맞아요' })
+  const bad = page.getByRole('button', { name: '해석이 이상해요' })
   await bad.click()
   await ok.click()
   await expect(ok).toHaveAttribute('aria-pressed', 'true')
@@ -151,7 +151,7 @@ test('엄지 위를 누르면 「미검수」 꼬리표가 걷힌다', async ({ 
   const tag = page.locator('.card-head .tag.muted', { hasText: '미검수' })
   // 미검수가 아닌 뜻이 걸릴 수도 있다 — 그때는 이 검사가 확인할 게 없다
   if (await tag.isVisible().catch(() => false)) {
-    await page.getByRole('button', { name: '뜻이 맞아요' }).click()
+    await page.getByRole('button', { name: '해석이 맞아요' }).click()
     await expect(tag).toHaveCount(0)
   }
 })
@@ -164,7 +164,7 @@ test('평가는 카드를 넘기지 않는다 — 누르고 하던 대로 답한
   const meaning = await reachMeaningCard(page)
   expect(meaning).not.toBeNull()
 
-  await page.getByRole('button', { name: '뜻이 이상해요' }).click()
+  await page.getByRole('button', { name: '해석이 이상해요' }).click()
   // 같은 뜻이 그대로 떠 있고, 채점 버튼도 그대로다
   expect(await page.locator('.meaning').first().innerText()).toBe(meaning)
   await expect(page.getByRole('button', { name: '알았어요' })).toBeVisible()
@@ -176,7 +176,7 @@ test('평가한 뜻이 피드백에 판정별로 실려 나간다', async ({ pag
   await clickIfVisible(page, '알겠어요')
 
   expect(await reachMeaningCard(page)).not.toBeNull()
-  await page.getByRole('button', { name: '뜻이 이상해요' }).click()
+  await page.getByRole('button', { name: '해석이 이상해요' }).click()
   const voted = (await voteEvents(page))[0]
 
   await page.goto('/')
@@ -191,4 +191,19 @@ test('평가한 뜻이 피드백에 판정별로 실려 나간다', async ({ pag
   await expect(preview).toContainText(voted.definition)
   // 안 누른 쪽 절은 아예 안 붙는다
   await expect(preview).not.toContainText('맞다고 본 뜻')
+})
+
+test('「몰랐어요」를 누르면 엄지가 사라진다 — 방금 배운 뜻은 평가할 처지가 아니다', async ({ page }) => {
+  await page.goto('/')
+  await resetState(page)
+  await clickIfVisible(page, '알겠어요')
+  expect(await reachMeaningCard(page)).not.toBeNull()
+
+  const bad = page.getByRole('button', { name: '해석이 이상해요' })
+  await expect(bad).toBeVisible()
+  await page.getByRole('button', { name: '몰랐어요', exact: true }).click()
+
+  // 해설 화면에는 뜻이 다시 뜨지만 엄지는 없다
+  await expect(page.locator('.meaning')).toBeVisible()
+  await expect(page.locator('.vote-row')).toHaveCount(0)
 })
