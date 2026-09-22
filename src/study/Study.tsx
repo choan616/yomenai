@@ -6,20 +6,16 @@ import { MeaningCard } from './MeaningCard.tsx'
 import { ReadingCard } from './ReadingCard.tsx'
 import { ChapterTitle, MidNote } from './SessionShape.tsx'
 import { SessionSummary } from './SessionSummary.tsx'
-import type { StudyTrack } from '../dict/load.ts'
 import { useStudySession, type SessionKind } from './useStudySession.ts'
 import { useViewportLock } from './useViewportLock.ts'
 
 export function Study({
   kind = 'normal',
-  track,
   focusPairIds,
   limit,
   onExit,
 }: {
   kind?: SessionKind
-  /** 출제 범위. 훈독 세션만 'kun' 을 준다 */
-  track?: StudyTrack
   /** `kind='focus'` 일 때 집중할 (한자, 음독) 쌍. 여럿이면 대조 세션이다 */
   focusPairIds?: string[]
   /** 세션 길이를 설정값 대신 이 값으로 ("3장만") */
@@ -27,7 +23,7 @@ export function Study({
   onExit: () => void
 }) {
   useViewportLock()
-  const [s, a] = useStudySession({ kind, track, focusPairIds, limit })
+  const [s, a] = useStudySession({ kind, focusPairIds, limit })
 
   // 카드 전환 실측. transitionSeq 는 advance 때만 오르고, useStudySession 이 그 직전에
   // 'yomenai:advance' 를 마킹한다. 단일 rAF 로 DOM 커밋·레이아웃 뒤 페인트 직전에 measure 한다.

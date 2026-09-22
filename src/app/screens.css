@@ -272,6 +272,23 @@
   min-width: 3em;
   text-align: center;
 }
+/* 레인지 — 훈독 비율 (2026-09-22). 값은 오른쪽에 고정폭으로 세운다 */
+.slider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.slider input[type='range'] {
+  flex: 1;
+  min-width: 0;
+  accent-color: var(--text-dim);
+}
+.slider .val {
+  font-variant-numeric: tabular-nums;
+  font-size: calc(18px * var(--ui-scale));
+  min-width: 3.2em;
+  text-align: right;
+}
 .seg {
   display: flex;
   gap: 6px;
@@ -889,27 +906,6 @@
 .wg-note {
   font-size: calc(12px * var(--ui-scale));
   color: var(--text-faint);
-}
-
-/* ── 훈독 숙어 진입로 (2026-09-22) ── */
-/* 「틀렸던 것」과 같은 두 줄 버튼이라 `.btn` 의 height 고정을 똑같이 풀어야 한다
-   (위 `.wrong-group-row .btn.rematch` 와 같은 이유). 다만 저쪽은 한 줄에 둘이라
-   flex: 1 이 필요했고, 이건 혼자라 max-width 320px 을 그대로 쓴다 */
-.btn.rematch.kun-track {
-  height: auto;
-  min-height: var(--tap);
-  padding: 10px 12px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 2px;
-}
-/* 배지는 무채다 — 이 숫자는 **틀린 개수가 아니라 낼 수 있는 개수**라
-   오답의 빨강(--ng)을 쓰면 안 한 일이 잘못으로 읽힌다 */
-.kun-track .wg-badge {
-  background: var(--surface-2);
-  color: var(--text-dim);
 }
 
 /* ── 첫 안내 (2026-09-14) ── */

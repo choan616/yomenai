@@ -20,6 +20,22 @@ export interface Settings {
    * 기본은 가림 — 읽기가 보이는 채로 넘기면 「아는 것 같은 느낌」만 남는다
    */
   browseMask: boolean
+/**
+   * 세션에서 훈독 숙어(浜辺 はまべ·荒木 あらき)가 차지할 몫. **0~100 퍼센트**
+   * (2026-09-22 사용자 요청 — 켜고 끄기가 아니라 레인지).
+   *
+   * 0 이면 안 낸다, 100 이면 훈독만 낸다. 기본은 0 이다 — 이 앱의 오답 분류·음독 맵·
+   * 형제 대조가 전부 음독 전제라 훈독에는 안 붙는다. 다만 연탁·촉음은 훈독에도 그대로
+   * 걸리므로(羽子板 は**ご**いた) 원하면 올릴 수 있게 둔다.
+   *
+   * **후보 풀에 섞는 방식으로는 이 비율이 안 나온다** — 훈독은 음독 쌍이 없어
+   * 미숙 음독 가중이 바닥이라 늘 줄 맨 뒤로 밀린다(풀 8.9% → 출제 1%, 200장 실측).
+   * 그래서 `selectSession` 이 **정원으로 떼어낸다** (`kunShare`).
+   *
+   * 0 보다 크면 코퍼스 범위 자체가 넓어진다 — 출제 풀·홈 미리보기·진입 진단·밴드 사다리가
+   * 모두 같은 범위를 본다. 「공부는 하는데 사다리에는 안 잡히는 것」을 만들지 않으려는 것이다
+   */
+  kunPercent: number
 }
 
 export const LIMIT_MIN = 5
@@ -32,6 +48,7 @@ export const DEFAULT_SETTINGS: Settings = {
   keyFeedback: 'off',
   keypadLayout: 'qwerty',
   browseMask: true,
+  kunPercent: 0,
 }
 
 /** observeLevel 별 게이트 — [최소 카드 간격, 세션당 상한] */
@@ -57,6 +74,7 @@ export function parseSettings(raw: unknown): Settings {
   const kf = r.keyFeedback
   const kl = r.keypadLayout
   const bm = r.browseMask
+  const kp = Number(r.kunPercent)
   return {
     sessionLimit: Number.isFinite(limit)
       ? Math.min(LIMIT_MAX, Math.max(LIMIT_MIN, Math.round(limit)))
@@ -69,6 +87,8 @@ export function parseSettings(raw: unknown): Settings {
     keypadLayout: kl === 'compact' ? kl : DEFAULT_SETTINGS.keypadLayout,
     // 저장된 적 없으면(undefined) 기본값이다 — false 만 명시적인 끔으로 받는다
     browseMask: bm === false ? false : DEFAULT_SETTINGS.browseMask,
+    // 0~100 으로 자르고 10 단위로 맞춘다 — 레인지의 눈금과 같게 (깨진 값은 0)
+    kunPercent: Number.isFinite(kp) ? Math.min(100, Math.max(0, Math.round(kp / 10) * 10)) : 0,
   }
 }
 
@@ -82,7 +102,7 @@ export function loadSettings(): Settings {
 }
 
 export function saveSettings(s: Settings): void {
-  // 홈 미리보기가 sessionLimit·ratio 로 달라진다 — 캐시를 버리게 버전을 올린다
+  // 홈 미리보기가 sessionLimit·ratio·kunPercent 로 달라진다 — 캐시를 버리게 버전을 올린다
   bumpDataVersion()
   try {
     localStorage.setItem(KEY, JSON.stringify(s))

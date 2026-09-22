@@ -27,7 +27,7 @@ import { getDeviceId } from '../db/device.ts'
 import { db } from '../db/schema.ts'
 import { LOCAL_USER_ID } from '../db/events.ts'
 import { listEvents } from '../db/events.ts'
-import { inTrack, loadBaseIdioms, loadKanji, type RuntimeIdiom, type StudyTrack } from '../dict/load.ts'
+import { loadBaseIdioms, loadKanji, studyPool, type RuntimeIdiom } from '../dict/load.ts'
 import { mistakeContextFromKanji } from '../dict/mistakeContext.ts'
 import { loadSettings, OBSERVE_GATE, type ObserveLevel } from '../app/settings.ts'
 
@@ -150,11 +150,6 @@ export type SessionKind = 'normal' | 'rematch' | 'focus'
 
 export interface StudySessionOptions {
   kind?: SessionKind
-  /**
-   * 출제 범위. 기본 `on` 은 훈독만 읽는 숙어를 뺀다 — 그쪽은 `kun` 트랙이 따로 낸다.
-   * `kind` 와 직교한다: 훈독 트랙 안에서도 재대결이 그대로 된다
-   */
-  track?: StudyTrack
   /** `kind='focus'` 일 때 집중할 (한자, 음독) 쌍. 여럿이면 대조 세션이다 */
   focusPairIds?: string[]
   /**
@@ -166,7 +161,6 @@ export interface StudySessionOptions {
 
 export function useStudySession({
   kind = 'normal',
-  track = 'on',
   focusPairIds,
   limit: limitOverride,
 }: StudySessionOptions = {}): [StudyState, StudyActions] {
@@ -261,15 +255,15 @@ export function useStudySession({
           listEvents(db(), LOCAL_USER_ID),
         ])
         if (!alive) return
-        // 트랙은 **풀에서** 가른다. 세션을 짜는 쪽(정규·재대결·집중)을 하나도 안 건드리고
-        // 훈독을 나눌 수 있는 자리가 여기뿐이다
-        const loaded = inTrack(all, track)
+        // 범위는 **풀에서** 가른다. 세션을 짜는 쪽(정규·재대결·집중)을 하나도 안 건드리고
+        // 훈독을 넣고 뺄 수 있는 자리가 여기뿐이다
+        const { sessionLimit, ratio, observeLevel: lvl, kunPercent } = loadSettings()
+        const loaded = studyPool(all, kunPercent > 0)
         setPool(loaded)
         setPriorEvents(events)
         mistakes.current = mistakeContextFromKanji(kanji)
         const rubyLookup = mistakes.current.lookup
         setRubyOfIdiom(() => (i: RuntimeIdiom) => rubyOf(i.headword, i.reading, rubyLookup))
-        const { sessionLimit, ratio, observeLevel: lvl } = loadSettings()
         observeLevel.current = lvl
         const now = Date.now()
         const limit = limitOverride ?? sessionLimit
@@ -301,6 +295,8 @@ export function useStudySession({
                   // 담은 것 상한은 **여유분을 뺀 실제 문제 수**로 센다 (2026-09-21)
                   questionLimit: limit,
                   ratio,
+                  // 훈독 몫. 풀에 섞는 것으로는 이 비율이 안 나온다 (select.ts 의 kunShare 주석)
+                  kunShare: kunPercent / 100,
                   seed: now,
                 })
         // 처음 만나는 숙어는 시험 대신 소개로. 그 숙어의 나머지 카드는 이번 세션에서 걷는다.
@@ -339,7 +335,7 @@ export function useStudySession({
     return () => {
       alive = false
     }
-  }, [kind, track, focusPairs, limitOverride])
+  }, [kind, focusPairs, limitOverride])
 
   const card = session?.cards[idx]
   const idiom = card ? byId.get(card.idiomId) : undefined

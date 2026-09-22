@@ -12,12 +12,13 @@ import { BAND_LABEL, type Band } from '../lib/bands.ts'
 import { getDeviceId } from '../db/device.ts'
 import { LOCAL_USER_ID, appendEvent, listEvents } from '../db/events.ts'
 import { db } from '../db/schema.ts'
-import { inTrack, loadBaseIdioms, loadKanji, type RuntimeIdiom } from '../dict/load.ts'
+import { loadBaseIdioms, loadKanji, studyPool, type RuntimeIdiom } from '../dict/load.ts'
 import { mistakeContextFromKanji } from '../dict/mistakeContext.ts'
 import type { MistakeContext } from '../core/mistakes.ts'
 import { KanaInput } from '../study/KanaInput.tsx'
 import { useViewportLock } from '../study/useViewportLock.ts'
 import { markDiagnosticDone } from './diagnostic-state.ts'
+import { loadSettings } from './settings.ts'
 
 // Phase 9-B: '뜻 알았나요?'(known) 단계 제거. 진단은 순수 읽기 검사가 되고,
 // 뜻 질문은 실제 세션의 지연 검수(needsClassReview)로 미룬다.
@@ -45,9 +46,9 @@ export function Diagnostic({ onDone, onExit }: { onDone: () => void; onExit: () 
       try {
         const [all, kanji] = await Promise.all([loadBaseIdioms(), loadKanji()])
         if (!alive) return
-        // 진단은 **음독 수준**을 잰다. 훈독 숙어는 한국 한자음으로 유추할 근거가 없어
-        // 여기 섞이면 시작 지점이 실제보다 낮게 잡힌다 (2026-09-22)
-        const pool = inTrack(all, 'on')
+        // 진단이 재는 범위는 **앞으로 출제될 범위와 같아야** 한다. 설정이 훈독을 빼 놨는데
+        // 진단만 섞으면 시작 지점이 실제보다 낮게 잡힌다 (2026-09-22)
+        const pool = studyPool(all, loadSettings().kunPercent > 0)
         const byId = new Map(pool.map((p) => [p.idiomId, p]))
         bandOf.current = (id) => byId.get(id)?.band
         mistakes.current = mistakeContextFromKanji(kanji)

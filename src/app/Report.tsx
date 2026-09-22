@@ -25,7 +25,8 @@ import type { MistakeType } from '../core/types.ts'
 import { BROWSE_N, buildReport, type MistakeSlice, type Report as ReportData } from '../core/report.ts'
 import { LOCAL_USER_ID, listEvents } from '../db/events.ts'
 import { db } from '../db/schema.ts'
-import { loadBaseIdioms, loadKanji, loadPairs } from '../dict/load.ts'
+import { loadBaseIdioms, loadKanji, loadPairs, studyPool } from '../dict/load.ts'
+import { loadSettings } from './settings.ts'
 import { mistakeContextFromKanji } from '../dict/mistakeContext.ts'
 import { loadPairIndex } from '../dict/pairIndex.ts'
 import { BAND_NOTE } from '../lib/bands.ts'
@@ -116,14 +117,13 @@ export function Report({
           const it = byId.get(id)
           return it ? { headword: it.headword, reading: it.reading } : undefined
         })
-        // 훈독 세션 기록은 음독 사다리에서 뺀다. `bandOf` 가 undefined 를 주면
-        // `buildLevel` 이 그 이벤트도 카드도 건너뛴다 — level.ts 는 안 건드린다
+        // 사다리는 **출제 범위와 같은 것**을 센다. 훈독을 빼 놓은 설정이면 예전에 푼
+        // 훈독 기록도 빠진다 — `bandOf` 가 undefined 를 주면 `buildLevel` 이 그 이벤트도
+        // 카드도 건너뛴다. level.ts 는 안 건드린다
+        const inPool = new Set(studyPool(pool, loadSettings().kunPercent > 0).map((p) => p.idiomId))
         const level = buildLevel(
           events,
-          (id) => {
-            const it = byId.get(id)
-            return it && it.readingKind !== 'kun' ? it.band : undefined
-          },
+          (id) => (inPool.has(id) ? byId.get(id)?.band : undefined),
           state.cards,
         )
         const voicing = voicingCounts(classifiedMistakes(events), again)

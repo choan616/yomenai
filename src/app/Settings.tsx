@@ -394,6 +394,29 @@ export function Settings({
         </div>
 
         <div className="setting">
+          <label htmlFor="kun-share">훈독 숙어 비율</label>
+          {/* 켜고 끄기가 아니라 레인지다 (사용자 요청 2026-09-22) — 0 이면 안 내고,
+              100 이면 훈독만 낸다. 실제 배분은 `selectSession` 의 정원이 맡는다 */}
+          <div className="slider">
+            <input
+              id="kun-share"
+              type="range"
+              min={0}
+              max={100}
+              step={10}
+              value={settings.kunPercent}
+              onChange={(e) => update({ ...settings, kunPercent: Number(e.target.value) })}
+            />
+            <span className="val">{settings.kunPercent}%</span>
+          </div>
+          <span className="hint">
+            浜辺(はまべ)·荒木(あらき) 처럼 음독이 없는 숙어예요. 한국 한자음으로 유추할 수
+            없어서 기본은 0% 예요. 올리면 그 몫만큼 세션에 섞여요 — 100% 면 훈독만 나와요.
+            0% 보다 크면 진단과 밴드 사다리도 같은 범위를 봐요.
+          </span>
+        </div>
+
+        <div className="setting">
           <label>다시보기 요미가나</label>
           <div className="seg" role="group" aria-label="다시보기 요미가나">
             {BROWSE_MASKS.map((o) => (

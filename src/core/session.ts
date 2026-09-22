@@ -37,6 +37,11 @@ export interface IdiomEntry {
   classSource: ClassSource
   /** 구성 (한자, 음독) 쌍 id */
   pairIds: string[]
+  /**
+   * 읽는 법의 갈래. 빌드가 구성 쌍에서 정한다 (`tools/build-runtime-dict.ts`).
+   * 안 주면 음독 취급 — 훈독을 모르는 호출부(테스트·시뮬레이션)는 예전과 똑같이 돈다
+   */
+  readingKind?: 'on' | 'mix' | 'kun'
 }
 
 export interface SessionCard extends SessionItem {
@@ -71,6 +76,7 @@ export function buildSession(
     idiomId: p.idiomId,
     band: p.band,
     pairIds: p.pairIds,
+    kun: p.readingKind === 'kun',
     mode: assignMode({
       category: p.category,
       meaningKnown: state.meaningKnown.get(p.idiomId),

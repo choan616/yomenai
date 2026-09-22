@@ -12,6 +12,7 @@ describe('parseSettings', () => {
         keyFeedback: 'sound',
         keypadLayout: 'compact',
         browseMask: false,
+        kunPercent: 30,
       }),
     ).toEqual({
       sessionLimit: 25,
@@ -20,6 +21,7 @@ describe('parseSettings', () => {
       keyFeedback: 'sound',
       keypadLayout: 'compact',
       browseMask: false,
+      kunPercent: 30,
     })
   })
 

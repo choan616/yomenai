@@ -27,21 +27,24 @@ interface RawIdiom {
 export type ReadingKind = 'on' | 'mix' | 'kun'
 
 /**
- * 학습 트랙. 훈독 숙어는 **한국 한자음으로 유추할 근거가 없고** 음독 맵·형제 대조·
- * 「음독을 잘못 골랐다」 오답 분류가 전부 안 붙는다. 그래서 기본 세션에서 빼고 따로 연다
- * (2026-09-22 사용자 요청 "훈독만 카테고리로 따로 빼서 학습").
+ * 출제 범위. 훈독 숙어는 **한국 한자음으로 유추할 근거가 없고** 음독 맵·형제 대조·
+ * 「음독을 잘못 골랐다」 오답 분류가 전부 안 붙어서 기본으로 뺀다.
+ * 설정의 `kunPercent` 가 0 보다 크면 들어온다 (2026-09-22).
  *
- * 혼독(重箱·湯桶読み)은 음독 트랙에 남긴다 — 음독 쌍이 있으니 위 장치가 그대로 걸리고,
+ * **몇 장 나올지는 여기서 안 정한다** — 그건 `selectSession` 의 `kunShare` 정원이 정한다.
+ * 이 함수는 후보에 들어가느냐만 가른다.
+ *
+ * 혼독(重箱·湯桶読み)은 **언제나 남긴다** — 음독 쌍이 있으니 위 장치가 그대로 걸리고,
  * 오히려 읽기가 갈리는 자리라 핵심에 가깝다.
+ *
+ * 풀을 만드는 모든 자리(세션·홈 미리보기·진입 진단·밴드 사다리)가 이 함수를 쓴다.
+ * 범위가 한 군데서만 정해져야 「공부는 했는데 사다리엔 없는 것」이 안 생긴다.
  */
-export type StudyTrack = 'on' | 'kun'
-
-/** 그 트랙에서 출제하는 숙어만 남긴다 */
-export function inTrack<T extends { readingKind: ReadingKind }>(
+export function studyPool<T extends { readingKind: ReadingKind }>(
   idioms: readonly T[],
-  track: StudyTrack,
+  includeKun: boolean,
 ): T[] {
-  return idioms.filter((i) => (track === 'kun' ? i.readingKind === 'kun' : i.readingKind !== 'kun'))
+  return includeKun ? [...idioms] : idioms.filter((i) => i.readingKind !== 'kun')
 }
 
 export interface KoMeaning {
