@@ -13,6 +13,7 @@ import { Report } from './app/Report.tsx'
 import { Settings } from './app/Settings.tsx'
 import { Browse } from './app/Browse.tsx'
 import { Search } from './app/Search.tsx'
+import { Backup } from './app/Backup.tsx'
 import { Feedback } from './app/Feedback.tsx'
 import { Rules } from './app/Rules.tsx'
 import { TabBar } from './app/TabBar.tsx'
@@ -27,7 +28,12 @@ import type { MistakeType } from './core/types.ts'
 export type Tab = 'home' | 'report' | 'search' | 'settings'
 
 /** 탭 안에서 한 겹 들어간 화면. 자기 탭 루트로 돌아간다 */
-export type Sub = { kind: 'onyomi' } | { kind: 'rules'; focus: RuleId | null } | { kind: 'feedback' }
+export type Sub =
+  | { kind: 'onyomi' }
+  | { kind: 'rules'; focus: RuleId | null }
+  | { kind: 'feedback' }
+  /** 백업·학습 기록 초기화. 설정에서 한 겹 들어간다 (2026-09-22) */
+  | { kind: 'backup' }
 
 /**
  * 탭바를 덮는 전체화면 흐름. 끝나면 열었던 탭으로 돌아온다.
@@ -143,7 +149,12 @@ function TabRoot({
     case 'search':
       return <Search />
     case 'settings':
-      return <Settings onFeedback={() => onSub({ kind: 'feedback' })} />
+      return (
+        <Settings
+          onFeedback={() => onSub({ kind: 'feedback' })}
+          onBackup={() => onSub({ kind: 'backup' })}
+        />
+      )
   }
 }
 
@@ -155,5 +166,7 @@ function SubScreen({ sub, onBack }: { sub: Sub; onBack: () => void }) {
       return <Rules onBack={onBack} focus={sub.focus} />
     case 'feedback':
       return <Feedback onBack={onBack} />
+    case 'backup':
+      return <Backup onBack={onBack} />
   }
 }

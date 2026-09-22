@@ -90,6 +90,8 @@ test('기록이 있으면 진단 진입점을 안 띄우고, 초기화하면 다
 
   // ── 학습 기록 초기화 — 기록이 비었으니 진단을 다시 받을 수 있어야 한다 ──
   await page.getByRole('button', { name: /설정/ }).click()
+  // 초기화는 설정에서 한 겹 들어간 「백업과 기록」에 있다 (2026-09-22)
+  await page.getByRole('button', { name: /백업과 기록/ }).click()
   await page.getByRole('button', { name: '초기화', exact: true }).click()
   await page.getByRole('button', { name: '정말 초기화', exact: true }).click()
   await expect(page.getByRole('button', { name: DIAG })).toBeVisible({ timeout: 20_000 })

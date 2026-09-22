@@ -226,6 +226,60 @@
 }
 
 /* ── 설정 ── */
+/* ── 설정 묶음 (2026-09-22) ── */
+/* 13개가 평평하게 늘어서 있던 것을 넷으로 묶었다. 제목은 묶음의 **시작**이라
+   위 여백만 더 주고 아래는 안 준다 — 딸린 항목들과 한 덩어리로 읽혀야 한다.
+   본문 자체가 flex gap 24px 이라 그 위에 얹는 값이다 */
+.setting-group {
+  margin: 12px 0 0;
+  padding-top: 24px;
+  border-top: 1px solid var(--border);
+  font-size: calc(13px * var(--ui-scale));
+  letter-spacing: 0.06em;
+  color: var(--text-dim);
+}
+/* 첫 묶음은 화면 맨 위라 선도 여백도 필요 없다 */
+.screen-body > .setting-group:first-child {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: 0;
+}
+/* 제목 바로 아래 한 줄. gap 을 음수 마진으로 당겨 제목에 붙인다 */
+.setting-group-note {
+  margin: -18px 0 0;
+  font-size: calc(12px * var(--ui-scale));
+  color: var(--text-faint);
+}
+/* 값을 고르는 것이 아니라 **다른 화면으로 가는 것**들. 선으로 갈라 둔다 —
+   지금까지 둘이 똑같이 생겨서 「안내서」도 설정처럼 보였다 */
+.setting-links {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  margin-top: 12px;
+  padding-top: 24px;
+  border-top: 1px solid var(--border);
+}
+/* 한 줄짜리 진입로. **기본 버튼 모양을 쓰면 안 된다** — `button` 리셋에 background 가
+   없어서 브라우저 기본 회색 통바로 그려졌고, 부차적인 것이 화면에서 제일 밝았다 */
+.setting-link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: var(--tap);
+  padding: 0 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  font-size: calc(15px * var(--ui-scale));
+  text-align: left;
+}
+.setting-link .chev {
+  color: var(--text-faint);
+  font-size: calc(18px * var(--ui-scale));
+}
+
 .setting {
   display: flex;
   flex-direction: column;
@@ -311,6 +365,20 @@
   border-color: var(--ng);
   color: var(--ng);
   font-weight: 600;
+}
+/* `.seg`·`.stepper` 에 안 싸인 맨 버튼 (백업 화면의 로그인·초기화). `button` 리셋에
+   background 가 없어 **브라우저 기본 회색 통바**로 그려지고 있었다 — 앱의 다른 무엇과도
+   안 닮았다. 직접 자식만 잡아 `.seg button` 과 같은 표면을 준다 (2026-09-22) */
+.setting > button {
+  min-height: var(--tap);
+  padding: 0 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  font-size: calc(15px * var(--ui-scale));
+}
+.setting > button:disabled {
+  opacity: 0.5;
 }
 .setting.disabled {
   opacity: 0.5;
