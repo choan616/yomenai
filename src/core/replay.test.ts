@@ -262,3 +262,38 @@ describe('replay — 모르는 이벤트 타입', () => {
     }
   })
 })
+
+describe('replay — 뜻 신고', () => {
+  const flag = (at: number, idiomId: string, on: boolean, definition: string): LearningEvent => ({
+    id: newEventId(at, () => 0.5), userId: 'local', deviceId: 'dev-a', at,
+    idiomId, cardType: 'meaning', mistakeType: null, deletedAt: null,
+    type: 'flag', on, definition, headword: '公庫',
+  })
+
+  it('신고하면 표제어와 그때 본 뜻이 남는다', () => {
+    const s = replay([flag(T0, '1', true, '공공의 창고')])
+    expect(s.flagged.get('1')).toEqual({ headword: '公庫', definition: '공공의 창고' })
+  })
+
+  it('다시 누르면 취소된다 — 마지막 이벤트가 이긴다', () => {
+    const s = replay([flag(T0, '1', true, '공공의 창고'), flag(T0 + 1, '1', false, '공공의 창고')])
+    expect(s.flagged.has('1')).toBe(false)
+  })
+
+  it('채점 상태를 안 건드린다 — 신고는 오답이 아니다', () => {
+    const base = sampleEvents()
+    const a = replay(base)
+    const b = replay([...base, flag(T0 + 6 * DAY, '1', true, '아무 뜻')])
+    expect(b.cards.get(cardKey('1', 'reading'))?.wrong).toBe(
+      a.cards.get(cardKey('1', 'reading'))?.wrong,
+    )
+    expect(b.cards.size).toBe(a.cards.size)
+  })
+
+  it('입력 순서가 달라도 같은 결과다 — 재생 결정론', () => {
+    const evs = [flag(T0, '1', true, 'A'), flag(T0 + 1, '1', false, 'A'), flag(T0 + 2, '2', true, 'B')]
+    const fwd = replay([...evs])
+    const rev = replay([...evs].reverse())
+    expect([...rev.flagged.keys()]).toEqual([...fwd.flagged.keys()])
+  })
+})

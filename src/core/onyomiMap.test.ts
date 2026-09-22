@@ -16,7 +16,7 @@ function state(onyomi: Record<string, { seen: number; wrong: number }>): ReplayS
     cards: new Map(),
     meaningKnown: new Map(),
     onyomi: new Map(Object.entries(onyomi).map(([k, v]) => [k, { pairId: k, ...v }])),
-    starred: new Set(),
+    starred: new Set(), flagged: new Map(),
     applied: 0,
   }
 }

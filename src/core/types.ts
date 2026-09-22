@@ -91,7 +91,38 @@ export interface StarEvent extends EventBase {
   on: boolean
 }
 
-export type LearningEvent = ReviewEvent | MeaningKnownEvent | StarEvent
+/**
+ * 「이 뜻 이상해요」 신고 (2026-09-22 사용자 요청).
+ *
+ * 뜻은 사전 빌드(`data/dict`)에 있고 고치려면 재빌드가 필요하다. 그래서 앱이 하는 일은
+ * **어느 표현의 어떤 뜻이 이상해 보였는지 남기는 것**까지고, 모인 신고는 피드백 화면이
+ * 기존 전송 경로로 넘긴다 (`sendFeedback`) — 새 전송 수단을 만들지 않는다.
+ *
+ * **「맞다」는 안 받는다** (사용자 판단) — 매번 확인을 누르게 하면 불편하고, 이 버튼은
+ * 검수가 끝나도 안 없앤다. 쓰는 동안 계속 열려 있는 창구다.
+ *
+ * `StarEvent` 처럼 신고·취소를 `on` 하나로 접는다 — append-only 라 마지막 이벤트가 이긴다.
+ * 상시 노출이라 오탭을 되돌릴 길이 있어야 한다.
+ *
+ * `definition` 을 같이 남기는 이유 — 재빌드로 뜻이 바뀌면 **무엇을 보고 눌렀는지**
+ * 알 수 없어진다. 신고는 그 시점의 화면에 대한 것이다.
+ */
+export interface FlagEvent extends EventBase {
+  type: 'flag'
+  cardType: 'meaning'
+  mistakeType: null
+  /** true = 신고, false = 취소 */
+  on: boolean
+  /** 누를 때 화면에 떠 있던 뜻 */
+  definition: string
+  /**
+   * 표제어. `idiomId` 로도 찾을 수 있지만, **피드백 화면이 사전을 안 읽는다** —
+   * 보낼 목록을 사람이 읽을 수 있게 하려고 이벤트가 스스로 설명하게 둔다
+   */
+  headword: string
+}
+
+export type LearningEvent = ReviewEvent | MeaningKnownEvent | StarEvent | FlagEvent
 
 /** 이벤트 재생으로 파생되는 카드 1장의 상태. 저장하지 않고 언제든 재계산한다 */
 export interface CardState {

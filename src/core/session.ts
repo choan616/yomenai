@@ -20,6 +20,7 @@ import {
   type LearningEvent,
   type MeaningKnownEvent,
   type ReviewEvent,
+  type FlagEvent,
   type StarEvent,
 } from './types.ts'
 
@@ -220,6 +221,29 @@ export function recordStar(input: {
     mistakeType: null,
     type: 'star',
     on: input.on,
+  }
+}
+
+/**
+ * 「이 뜻 이상해요」 신고·취소 (2026-09-22). 채점이 아니라 **사전 쪽에 남길 메모**라
+ * `recordStar` 와 같이 `elapsedMs` 없는 컨텍스트를 받는다.
+ */
+export function recordFlag(input: {
+  idiomId: string
+  on: boolean
+  /** 누를 때 화면에 떠 있던 뜻. 재빌드로 바뀌어도 무엇을 보고 눌렀는지 남는다 */
+  definition: string
+  headword: string
+  ctx: Omit<AnswerContext, 'elapsedMs'>
+}): FlagEvent {
+  return {
+    ...base(input.idiomId, 'meaning', input.ctx),
+    cardType: 'meaning',
+    mistakeType: null,
+    type: 'flag',
+    on: input.on,
+    definition: input.definition,
+    headword: input.headword,
   }
 }
 

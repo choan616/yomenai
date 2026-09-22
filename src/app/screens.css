@@ -908,6 +908,24 @@
   color: var(--text-faint);
 }
 
+/* ── 「이 뜻 이상해요」 (2026-09-22) ── */
+/* 주 동작이 아니다. 뜻 아래에 작게, 테두리 없이 둔다 — 늘 떠 있는 버튼이라
+   눈에 띄면 매 카드가 검수를 재촉하는 화면이 된다 */
+.flag-btn {
+  margin-top: 10px;
+  padding: 6px 10px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-faint);
+  font-size: calc(12px * var(--ui-scale));
+}
+/* 눌린 뒤에는 상태가 보여야 한다 — 같은 카드에서 또 누르지 않게 */
+.flag-btn.on {
+  background: var(--ng-bg);
+  color: var(--ng);
+}
+
 /* ── 첫 안내 (2026-09-14) ── */
 /* 모달이 아니다. 홈 위에 얹혀 첫 동작을 가리지 않고, 「알겠어요」 를 누르면 영영 사라진다 */
 .welcome {

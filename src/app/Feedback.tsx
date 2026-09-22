@@ -42,8 +42,11 @@ const EMPTY: Answers = {
   issues: '',
 }
 
-function compose(a: Answers): string {
-  return [
+/** 「이 뜻 이상해요」로 신고해 둔 목록. 사전 없이 이벤트만으로 읽힌다 */
+export type FlagList = { headword: string; definition: string }[]
+
+function compose(a: Answers, flags: FlagList): string {
+  const lines = [
     `[얼마나 썼나] ${a.usage || '-'}`,
     `[가장 큰 오답 유형] ${a.topMistake || '-'}`,
     `[밴드 사다리] ${a.ladder || '-'}`,
@@ -51,7 +54,14 @@ function compose(a: Answers): string {
     `[알아 두기 카드] ${a.intro || '-'}`,
     `[계속 쓰고 싶은지] ${a.keep || '-'}`,
     `[이상했던 곳] ${a.issues || '-'}`,
-  ].join('\n')
+  ]
+  // 신고해 둔 뜻은 답변 뒤에 붙인다. 없으면 절 자체가 안 붙는다 —
+  // 빈 절을 보내면 받는 쪽에서 「0건」과 「기능을 안 씀」이 구분이 안 된다
+  if (flags.length > 0) {
+    lines.push('', `[이상하다고 신고한 뜻 ${flags.length}건]`)
+    for (const f of flags) lines.push(`- ${f.headword} — ${f.definition}`)
+  }
+  return lines.join('\n')
 }
 
 export function Feedback({ onBack }: { onBack: () => void }) {
@@ -60,13 +70,17 @@ export function Feedback({ onBack }: { onBack: () => void }) {
   const [hint, setHint] = useState<string | null>(null)
   const [state, setState] = useState<'writing' | 'sending' | 'sent'>('writing')
   const [copied, setCopied] = useState(false)
+  /** 신고해 둔 뜻 — 답변과 함께 나간다. 아래 미리보기에 그대로 보인다 */
+  const [flags, setFlags] = useState<FlagList>([])
 
   useEffect(() => {
     let alive = true
     void listEvents(db(), LOCAL_USER_ID).then((events) => {
       if (!alive) return
-      // 사전을 안 읽는다 — 오답 유형 집계는 이벤트만으로 난다
-      const totals = mistakeTotals(replay(events))
+      // 사전을 안 읽는다 — 오답 유형 집계도 신고 목록도 이벤트만으로 난다
+      const state = replay(events)
+      setFlags([...state.flagged.values()])
+      const totals = mistakeTotals(state)
       const top = ASKED.map((t) => [t, totals[t] ?? 0] as const)
         .filter(([, n]) => n > 0)
         .sort((x, y) => y[1] - x[1])[0]
@@ -77,7 +91,7 @@ export function Feedback({ onBack }: { onBack: () => void }) {
     }
   }, [])
 
-  const body = compose(a)
+  const body = compose(a, flags)
   const set = (k: keyof Answers) => (v: string) => setA((prev) => ({ ...prev, [k]: v }))
 
   const handleSend = () => {
@@ -104,7 +118,9 @@ export function Feedback({ onBack }: { onBack: () => void }) {
       <div className="screen-body">
         <p className="fb-lead">
           이 앱이 도움이 되는지, 다른 사람에게도 맞을지를 보려고 여쭙습니다.
-          <strong> 학습 기록은 보내지 않아요.</strong> 아래에 적으신 답만 갑니다.
+          <strong> 채점 기록은 보내지 않아요.</strong> 아래에 적으신 답과,
+          「이 뜻 이상해요」로 신고해 두신 것{flags.length > 0 && ` ${flags.length}건`}이 갑니다 —
+          무엇이 나가는지는 아래 미리보기에 그대로 보여요.
         </p>
 
         {state === 'sent' ? (

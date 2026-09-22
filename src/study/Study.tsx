@@ -110,6 +110,8 @@ export function Study({
             graded={s.status === 'meaning-feedback'}
             onGrade={a.submitMeaning}
             onNext={() => a.next()}
+            flagged={s.flagged}
+            onFlag={a.toggleFlag}
           />
         )}
       </main>

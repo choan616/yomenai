@@ -35,7 +35,7 @@ function state(): ReplayState {
       ['識:on:しき', { pairId: '識:on:しき', seen: 4, wrong: 1 }],
       ['低:on:てい', { pairId: '低:on:てい', seen: 2, wrong: 2 }], // seen < 3 → 제외
     ]),
-    starred: new Set(),
+    starred: new Set(), flagged: new Map(),
     applied: 0,
   }
 }
@@ -74,7 +74,7 @@ describe('buildReport', () => {
 
   it('데이터가 없으면 빈 리포트', () => {
     const empty = buildReport(
-      { cards: new Map(), meaningKnown: new Map(), onyomi: new Map(), starred: new Set(), applied: 0 },
+      { cards: new Map(), meaningKnown: new Map(), onyomi: new Map(), starred: new Set(), flagged: new Map(), applied: 0 },
       pairs,
       () => undefined,
     )
@@ -92,7 +92,7 @@ describe('buildReport — 분류에 실패한 오답', () => {
       cards: new Map<string, CardState>([['1:reading', card('1', 4, { SOKUON: 1 }, 3)]]),
       meaningKnown: new Map(),
       onyomi: new Map(),
-      starred: new Set(),
+      starred: new Set(), flagged: new Map(),
       applied: 0,
     }
   }
@@ -122,7 +122,7 @@ describe('buildReport — 분류에 실패한 오답', () => {
       ]),
       meaningKnown: new Map(),
       onyomi: new Map(),
-      starred: new Set(),
+      starred: new Set(), flagged: new Map(),
       applied: 0,
     }
     const m = buildReport(withMeaning, pairs, () => undefined)

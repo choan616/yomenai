@@ -40,6 +40,12 @@ export interface ReplayState {
    * **「담겼다」와 「낼 차례다」는 다른 물음이다** — 후자는 `select.ts` 가 판단한다
    */
   starred: Set<string>
+  /**
+   * 「이 뜻 이상해요」로 신고한 숙어 → 신고 당시 화면에 떠 있던 뜻 (2026-09-22).
+   * 마지막 `flag` 이벤트가 이긴다 — 취소한 것은 여기 안 남는다.
+   * 카드에 「신고함」을 띄우고, 피드백 화면이 이걸 모아 보낸다
+   */
+  flagged: Map<string, { headword: string; definition: string }>
   /** 재생에 쓴 이벤트 수 (삭제분 제외) */
   applied: number
 }
@@ -55,6 +61,7 @@ export function replay(events: LearningEvent[], options: ReplayOptions = {}): Re
     meaningKnown: new Map(),
     onyomi: new Map(),
     starred: new Set(),
+    flagged: new Map(),
     applied: 0,
   }
 
@@ -71,6 +78,11 @@ export function replay(events: LearningEvent[], options: ReplayOptions = {}): Re
       else state.starred.delete(e.idiomId)
       continue
     }
+    if (e.type === 'flag') {
+      if (e.on) state.flagged.set(e.idiomId, { headword: e.headword, definition: e.definition })
+      else state.flagged.delete(e.idiomId)
+      continue
+    }
     /**
      * **모르는 타입은 건너뛴다.** 이 줄이 없으면 아래 채점 경로로 떨어져
      * `applyGrade` 가 `FSRSValidationError: Invalid rating:[undefined]` 로 던지고,
@@ -79,8 +91,11 @@ export function replay(events: LearningEvent[], options: ReplayOptions = {}): Re
      * 기기 하나가 새 이벤트 타입을 쓰기 시작하면 **아직 옛 빌드를 캐시한 다른 기기**가
      * 동기화로 그걸 받는다. 로그는 append-only 라 지울 수도 없다. 그래서 새 타입을
      * 붙이기 **전에** 이 가드가 배포돼 있어야 한다 — 앞으로의 모든 타입에도 남는 보험이다.
+     *
+     * 타입 수준에선 여기까지 오면 `ReviewEvent` 뿐이라 늘 참이다. **런타임은 다르다** —
+     * 이 빌드가 모르는 타입이 실제로 들어온다. 그래서 지우면 안 되는 줄이다
      */
-    if ((e as LearningEvent).type !== 'review') continue
+    if (e.type !== 'review') continue
 
     const key = cardKey(e.idiomId, e.cardType)
     const prev = state.cards.get(key)

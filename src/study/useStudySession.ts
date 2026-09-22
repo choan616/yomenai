@@ -4,6 +4,7 @@ import type { MistakeContext } from '../core/mistakes.ts'
 import {
   buildSession,
   isCorrectReading,
+  recordFlag,
   recordMeaningAnswer,
   recordMeaningKnown,
   recordReadingAnswer,
@@ -12,6 +13,7 @@ import {
   type SessionCard,
 } from '../core/session.ts'
 import { explainMistake, type VoicingKind } from '../core/mistakes.ts'
+import { replay } from '../core/replay.ts'
 import { onyomiEcho, type OnyomiEcho } from '../core/echo.ts'
 import { observeReading, type Observation } from '../core/observe.ts'
 import { rubyOf, type RubySegment } from '../core/ruby.ts'
@@ -122,6 +124,8 @@ export interface StudyState {
    * 제외 조건을 띄우는 데 쓴다
    */
   dualAsk?: { total: number; given: string[] }
+  /** 지금 카드의 뜻을 이미 「이상해요」로 신고했는지 */
+  flagged: boolean
   /** 카드 전환마다 1 증가. 화면이 전환 시간을 실측하는 트리거 (PLAN §7) */
   transitionSeq: number
 }
@@ -137,6 +141,8 @@ export interface StudyActions {
   answerClassReview: (known: boolean) => void
   /** 소개를 봤다 — 채점도 이벤트도 없이 다음으로 */
   seenIntro: () => void
+  /** 지금 카드의 뜻을 「이상해요」로 신고한다 (다시 누르면 취소) */
+  toggleFlag: () => void
   /** 피드백을 닫고 다음 카드로. 정답이면 자신감 보정을 함께 넘긴다 */
   next: (confidence?: Confidence) => void
 }
@@ -202,6 +208,14 @@ export function useStudySession({
   /** 세션 시작 시점의 로그. 종료 요약이 "이번에 처음 맞힌 음독"을 가리는 기준선이다 */
   const [priorEvents, setPriorEvents] = useState<LearningEvent[]>([])
   const [transitionSeq, setTransitionSeq] = useState(0)
+  /**
+   * 「이 뜻 이상해요」로 이미 신고한 숙어 → 그때 본 뜻 (2026-09-22).
+   * 로그에서 한 번 재생해 두고 이번 세션의 신고를 여기 얹는다 — 버튼이 「신고함」으로
+   * 바뀌어야 같은 카드에서 또 권하지 않는다
+   */
+  const [flagged, setFlagged] = useState<ReadonlyMap<string, { headword: string; definition: string }>>(
+    new Map(),
+  )
 
   const mistakes = useRef<MistakeContext | null>(null)
   /**
@@ -261,6 +275,7 @@ export function useStudySession({
         const loaded = studyPool(all, kunPercent > 0)
         setPool(loaded)
         setPriorEvents(events)
+        setFlagged(replay(events).flagged)
         mistakes.current = mistakeContextFromKanji(kanji)
         const rubyLookup = mistakes.current.lookup
         setRubyOfIdiom(() => (i: RuntimeIdiom) => rubyOf(i.headword, i.reading, rubyLookup))
@@ -398,6 +413,25 @@ export function useStudySession({
     },
     [session, nextIndexFrom],
   )
+
+  /**
+   * 「이 뜻 이상해요」. 채점이 아니라 사전 쪽에 남길 메모라 카드를 넘기지 않는다 —
+   * 누르고 나서 하던 대로 답하면 된다. 다시 누르면 취소다
+   */
+  const toggleFlag = useCallback(() => {
+    if (!card) return
+    const it = byId.get(card.idiomId)
+    const definition = it?.koMeaning?.definition ?? ''
+    const headword = it?.headword ?? ''
+    const on = !flagged.has(card.idiomId)
+    setFlagged((prev) => {
+      const next = new Map(prev)
+      if (on) next.set(card.idiomId, { headword, definition })
+      else next.delete(card.idiomId)
+      return next
+    })
+    record(recordFlag({ idiomId: card.idiomId, on, definition, headword, ctx: answerCtx() }))
+  }, [card, byId, flagged, record, answerCtx])
 
   /** 소개를 보고 넘어간다 — 채점도 이벤트도 없다 */
   const seenIntro = useCallback(() => {
@@ -683,6 +717,7 @@ export function useStudySession({
       rubyOfIdiom !== null
         ? rubyOfIdiom(idiom)
         : undefined,
+    flagged: card !== undefined && flagged.has(card.idiomId),
     events,
     pool: poolOut,
     dualAsk: dualPair
@@ -699,6 +734,7 @@ export function useStudySession({
       submitMeaning,
       answerClassReview,
       seenIntro,
+      toggleFlag,
       next,
     },
   ]

@@ -12,9 +12,13 @@ interface Props {
   graded: boolean
   onGrade: (known: boolean) => void
   onNext: () => void
+  /** 이미 「이상해요」로 신고한 뜻인지 */
+  flagged: boolean
+  /** 「이 뜻 이상해요」 — 다시 누르면 취소. 카드는 안 넘어간다 */
+  onFlag: () => void
 }
 
-export function MeaningCard({ idiom, ruby, graded, onGrade, onNext }: Props) {
+export function MeaningCard({ idiom, ruby, graded, onGrade, onNext, flagged, onFlag }: Props) {
   const [revealed, setRevealed] = useState(false)
   const meaning = idiom.koMeaning?.definition?.trim()
 
@@ -59,6 +63,20 @@ export function MeaningCard({ idiom, ruby, graded, onGrade, onNext }: Props) {
           <p className="meaning">{meaning || '뜻 미등록'}</p>
         ) : (
           <p className="meaning placeholder">뜻을 떠올려 볼까요?</p>
+        )}
+
+        {/* 「이 뜻 이상해요」 (2026-09-22). **뜻이 드러난 뒤에만** — 가려진 것을 판단할 수 없다.
+            누르고 나서 하던 대로 답하면 된다: 카드를 넘기지 않는다.
+            검수가 끝나도 안 없앤다 — 쓰는 동안 계속 열려 있는 창구다 (사용자 판단) */}
+        {(revealed || graded) && meaning && (
+          <button
+            type="button"
+            className={`flag-btn${flagged ? ' on' : ''}`}
+            aria-pressed={flagged}
+            onClick={onFlag}
+          >
+            {flagged ? '신고함 · 취소' : '이 뜻 이상해요'}
+          </button>
         )}
       </div>
 
