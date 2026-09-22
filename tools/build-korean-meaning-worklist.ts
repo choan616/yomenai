@@ -11,8 +11,11 @@
 //   o  맞다              → apply 가 verified:true
 //   x  틀리다            → fix 칸에 고친 한국어 정의. verified:true, source:manual
 //   ~  애매/어색          → verified 는 false 유지, fix 에 메모
-//   s  stdict_def 채택     → 그 정의로 교체, verified:true, source:stdict (수동 분류 노동 보존)
 //   ?  미기입
+//
+// `s`(stdict_def 채택)는 **폐기했다** (2026-09-22). stdict_def 열은 남기지만 **베껴 넣는
+// 칸이 아니라 대조용**이다 — 한국어 같은 모양 낱말의 정의가 일본어 쪽과 어떻게 어긋나는지
+// 보라고 두는 것이고, 어긋나는 것 자체가 동형이의의 신호다. 근거는 `apply-korean-meaning.ts` 머리말
 // cat  분류(1 동형동의 / 2 동형이의 / 3 일본고유)가 틀렸으면 고친 값. 비우면 그대로.
 import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'

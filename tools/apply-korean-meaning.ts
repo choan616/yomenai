@@ -2,9 +2,15 @@
 // apply:korean-review 로 korean-class.json 을 새로 만든 뒤 이걸 돌린다 (그 순서로 재현된다).
 //   o  검수 통과            → verified: true
 //   x  틀림 (fix 에 고친 정의) → definition 교체, source: manual, verified: true
-//   s  stdict_def 채택        → definition = stdict 정의, source: stdict, verified: true
 //   ~  애매 (fix 에 메모)     → 그대로 (verified false 유지)
 //   cat  분류 교정            → category 갱신
+//
+// **`s`(stdict 정의 채택)는 폐기했다** (2026-09-22 사용자 판단). 국어사전 정의는 한국어
+// 낱말의 정의라 쓰임의 배경이 통째로 딸려 온다 — 発達 「신체, 정서, 지능 따위가…」 는
+// 経済の発達·台風が発達する 를 정의에서 배제하고, 死語·水源地 는 한국 사전의 예시 꼬리
+// (「고대 라틴어 따위가 있다」·「선상지 말단의 용수대」)를 달고 온다. 집 스타일(평균 6자)
+// 과도 어긋난다(29.4자). 남아 있던 `s` 9건은 `~`로 받아 LLM 초벌로 되돌리고 미검수로
+// 돌린다 — 폐기한 규칙 아래 내린 판정이라 그대로 쓸 수 없다. 근거는 context-notes 같은 날
 import { existsSync, readFileSync, readdirSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { DICT_DIR } from './lib/dict.ts'
@@ -24,6 +30,7 @@ if (!existsSync(CLASS_PATH) || WORKLISTS.length === 0) {
 interface KoMeaning {
   definition: string
   glossEn?: string[]
+  /** `stdict` 는 폐기된 옛 값이다 (위 주석). 새로 붙지 않는다 */
   source: 'stdict' | 'llm' | 'manual'
   verified: boolean
 }
@@ -36,21 +43,6 @@ const cls = JSON.parse(readFileSync(CLASS_PATH, 'utf8')) as {
   _meta: Record<string, unknown>
   stats: Record<string, unknown>
   byId: Record<string, KoClass>
-}
-
-// stdict 정의 (s verdict 용)
-const stdictDef = new Map<string, string>()
-{
-  const p = join(DICT_DIR, 'korean-review.tsv')
-  if (existsSync(p)) {
-    const lines = readFileSync(p, 'utf8').split('\n')
-    const h = lines[0].split('\t')
-    const [di, ii] = [h.indexOf('ko_definition'), h.indexOf('id')]
-    for (const l of lines.slice(1)) {
-      const c = l.split('\t')
-      if (c[ii]) stdictDef.set(c[ii], (c[di] ?? '').replace(/\s+/g, ' '))
-    }
-  }
 }
 
 // 여러 파일을 합친다. 파일 순서(readdirSync = -flagged 먼저)대로, **먼저 본 실제 verdict 가 이긴다** —
@@ -88,6 +80,8 @@ for (const f of WORKLISTS) {
 console.log(`검수 파일 ${WORKLISTS.length}개, 행 ${merged.size}개 병합`)
 
 const tally = { o: 0, x: 0, s: 0, '~': 0, cat: 0, inlineEdit: 0, skip: 0, missing: 0 }
+/** 폐기한 `s` 가 아직 남아 있는 행 수. 0 이 되면 워크리스트에서 그 판정이 사라진 것이다 */
+let legacyS = 0
 const perTier: Record<string, { o: number; x: number; s: number; '~': number; edited: number }> = {}
 const norm = (s: string) => s.replace(/\s+/g, ' ').trim()
 // 구분자까지 맞춘 비교용. 이걸 안 쓰면 워크리스트에 남은 옛 "; " 표기가
@@ -127,6 +121,9 @@ for (const [id, { verdict, cat, fix, llmKo, tier }] of merged) {
       perTier[tier].edited++
     }
     km.verified = true
+  } else if (verdict === 's') {
+    // 폐기한 판정 (위 주석). 뜻은 LLM 초벌 그대로, verified 는 false 로 남겨 다시 검수하게 둔다
+    legacyS++
   } else if (verdict === 'x') {
     if (!inlineFix) {
       console.warn(`  ⚠ ${id} verdict x 인데 고친 뜻(fix/llm_ko)이 없다 — 건너뜀`)
@@ -137,20 +134,16 @@ for (const [id, { verdict, cat, fix, llmKo, tier }] of merged) {
     km.definition = normalizeDefinition(inlineFix)
     km.source = 'manual'
     km.verified = true
-  } else if (verdict === 's') {
-    const sd = stdictDef.get(id)
-    if (!sd) {
-      console.warn(`  ⚠ ${id} verdict s 인데 stdict 정의가 없다 — 건너뜀`)
-      tally.s--
-      perTier[tier].s--
-      continue
-    }
-    km.definition = normalizeDefinition(sd)
-    km.source = 'stdict'
-    km.verified = true
   }
-  // '~' 는 상태 변화 없음 (메모만)
+  // '~' 는 상태 변화 없음 (메모만). 폐기한 `s` 도 여기로 떨어져 LLM 초벌인 채 미검수로 남는다
   entry.koMeaning = km
+}
+
+if (legacyS > 0) {
+  console.warn(
+    `  ⚠ 폐기한 verdict 's' 가 ${legacyS}건 남아 있다 — 뜻은 LLM 초벌로 두고 미검수로 돌렸다.` +
+      ' 워크리스트에서 다시 판정하면 된다 (o/x/~)',
+  )
 }
 
 const verifiedTotal = Object.values(cls.byId).filter((e) => e.koMeaning?.verified).length
@@ -158,10 +151,13 @@ const verifiedTotal = Object.values(cls.byId).filter((e) => e.koMeaning?.verifie
 if (VALIDATE) {
   console.log('=== 층별 검수 결과 (--validate) ===')
   for (const [t, v] of Object.entries(perTier).sort()) {
-    const seen = v.o + v.x + v.s
-    const wrong = v.x + v.s + v.edited // 번역이 틀려서 손댄 것 (x·s·인라인 수정)
+    // `s` 는 폐기한 판정이라 **결론이 없는 행**이다. 모수에서도 불량에서도 뺀다 —
+    // 예전엔 불량으로 셌는데(2026-09-22 이전) 그게 T6 불량률을 11.8% 로 부풀렸다
+    const seen = v.o + v.x
+    const wrong = v.x + v.edited // 번역이 틀려서 손댄 것 (x·인라인 수정)
     console.log(
-      `  tier ${t}: o ${v.o}(수정 ${v.edited}) · x ${v.x} · s ${v.s} · ~ ${v['~']}` +
+      `  tier ${t}: o ${v.o}(수정 ${v.edited}) · x ${v.x} · ~ ${v['~']}` +
+        (v.s ? ` · 재판정 필요 ${v.s}` : '') +
         (seen ? `  → 손댄 비율 ${((wrong / seen) * 100).toFixed(1)}% (${wrong}/${seen})` : ''),
     )
   }

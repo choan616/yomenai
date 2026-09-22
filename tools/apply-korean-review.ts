@@ -33,7 +33,10 @@ const DRAFT_PATH = join(DICT_DIR, 'korean-llm-draft.tsv')
 const MEANING_PATH = join(DICT_DIR, 'korean-meaning.json')
 const TRUST_LLM = process.argv.includes('--trust-llm')
 
-// koMeaning 원본 — 있으면 JMdict 영어 gloss 번역(build:korean-meaning)을 쓴다. 없으면 stdict 정의로 폴백
+// koMeaning 원본 — JMdict 영어 gloss 번역(build:korean-meaning)만 쓴다.
+// **stdict 정의 폴백은 폐기했다** (2026-09-22 사용자 판단) — 국어사전 정의는 한국어 낱말의
+// 정의라 쓰임의 배경이 통째로 딸려 와서, 일본어 쪽 뜻을 좁히거나 엉뚱한 꼬리를 붙인다
+// (発達 → 「신체, 정서, 지능…」 이 経済の発達 을 배제한다). 근거는 context-notes 같은 날
 const meaningById: Record<string, { ko: string; glossEn: string[] }> = existsSync(MEANING_PATH)
   ? (JSON.parse(readFileSync(MEANING_PATH, 'utf8')).byId as Record<string, { ko: string; glossEn: string[] }>)
   : {}
@@ -99,7 +102,7 @@ const classById: Record<
   { category: 1 | 2 | 3; classSource: ClassSource; koMeaning: KoMeaning | null }
 > = {}
 let meaningLlm = 0
-let meaningStdict = 0
+let meaningNone = 0
 for (const [id, e] of Object.entries(byId)) {
   let category: 1 | 2 | 3
   let classSource: ClassSource
@@ -116,16 +119,15 @@ for (const [id, e] of Object.entries(byId)) {
   dist[category]++
   bySource[classSource]++
 
-  // koMeaning — 영어 gloss 번역 우선(카테고리 3 포함), 없으면 stdict 정의, 그것도 없으면 null
+  // koMeaning — 영어 gloss 번역뿐이다. 없으면 **null 로 둔다** — 국어사전 정의를 채워 넣느니
+  // 뜻이 없는 채로 두는 쪽이 낫다 (위 주석). 뜻 없는 행은 검수 목록에 그대로 남는다
   const llm = meaningById[id]
-  const top = e.matches.find((m) => m.originMatch) ?? e.matches[0] ?? null
   let koMeaning: KoMeaning | null = null
   if (llm && llm.ko) {
     koMeaning = { definition: normalizeDefinition(llm.ko), glossEn: llm.glossEn, source: 'llm', verified: false }
     meaningLlm++
-  } else if (category !== 3 && top) {
-    koMeaning = { definition: normalizeDefinition(top.definition), source: 'stdict', verified: false }
-    meaningStdict++
+  } else {
+    meaningNone++
   }
   classById[id] = { category, classSource, koMeaning }
 }
@@ -134,7 +136,7 @@ writeFileSync(
   join(DICT_DIR, 'korean-class.json'),
   JSON.stringify({
     _meta: {
-      source: '분류: stdict 대조 + 사람 검수 + Ollama 초벌 / koMeaning: JMdict 영어 gloss 번역(build:korean-meaning) 우선, stdict 폴백',
+      source: '분류: stdict 대조 + 사람 검수 + Ollama 초벌 / koMeaning: JMdict 영어 gloss 번역(build:korean-meaning) 전용 (stdict 정의 인용 폐기 2026-09-22)',
       categories: { '1': '동형동의(교정)', '2': '동형이의(확장)', '3': '일본 고유(확장)' },
       trustLlm: TRUST_LLM,
       note: 'koMeaning.verified 는 항상 false (apply:korean-meaning 이 검수분만 true 로). classSource=llm/default 는 미확정',
@@ -155,6 +157,6 @@ console.log(
   `  사람 ${bySource.manual}건 / 초벌 ${bySource.llm}건${TRUST_LLM ? '' : '(미반영, --trust-llm 필요)'} / 잠정 ${bySource.default}건${bad ? ` / 잘못된 verdict ${bad}건` : ''}`,
 )
 console.log(`  최종 분류 — 동형동의 ${dist[1]} / 동형이의 ${dist[2]} / 일본고유 ${dist[3]}`)
-console.log(`  koMeaning — 영어 gloss 번역 ${meaningLlm} / stdict 폴백 ${meaningStdict} / 없음 ${Object.keys(classById).length - meaningLlm - meaningStdict}`)
+console.log(`  koMeaning — 영어 gloss 번역 ${meaningLlm} / 뜻 없음 ${meaningNone}`)
 console.log(`  → ${join(DICT_DIR, 'korean-class.json')}`)
 if (unfilled > 0 && !TRUST_LLM) console.log(`  ⚠ 미검수 ${unfilled}건은 잠정 2번. verdict 채우거나 --trust-llm 사용.`)
