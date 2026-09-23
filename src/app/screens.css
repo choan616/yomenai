@@ -498,7 +498,7 @@
 }
 .mix-bar {
   display: flex;
-  /* 14px — 흔들림 테두리(안쪽 2px)를 둘러도 밴드 색이 가운데 10px 로 남는다 (2026-09-22 실측) */
+  /* 14px — 45° 사선이 결로 읽히려면 이만큼은 있어야 한다. 10px 에서는 줄눈이 눌린다 */
   height: 14px;
   border-radius: 999px;
   overflow: hidden;
@@ -510,12 +510,8 @@
   display: block;
   height: 100%;
   min-width: 3px;
-  background: var(--band-4);
-}
-/* 흔들리는 밴드는 **색을 뺏기지 않고** 朱 테두리를 두른다 (2026-09-22) — 세그먼트를
-   통째로 --ng 로 칠하면 그 칸이 어느 밴드인지 색으로 못 읽는다 */
-.mix-seg.band-shaky {
-  box-shadow: inset 0 0 0 2px var(--ng);
+  /* shorthand 가 아니라 background-color 다 — 흔들림 줄무늬(background-image)를 안 지운다 */
+  background-color: var(--band-4);
 }
 .mix-legend {
   display: flex;
@@ -550,23 +546,37 @@
 /* 밴드 색은 한 자리에서만 고른다 — 세그먼트와 범례 점이 갈리면 범례가 거짓말을 한다 */
 .mix-seg[data-band='0'],
 .mix-dot[data-band='0'] {
-  background: var(--band-0);
+  background-color: var(--band-0);
 }
 .mix-seg[data-band='1'],
 .mix-dot[data-band='1'] {
-  background: var(--band-1);
+  background-color: var(--band-1);
 }
 .mix-seg[data-band='2'],
 .mix-dot[data-band='2'] {
-  background: var(--band-2);
+  background-color: var(--band-2);
 }
 .mix-seg[data-band='3'],
 .mix-dot[data-band='3'] {
-  background: var(--band-3);
+  background-color: var(--band-3);
 }
 .mix-seg[data-band='4'],
 .mix-dot[data-band='4'] {
-  background: var(--band-4);
+  background-color: var(--band-4);
+}
+
+/* 흔들리는 밴드는 **색을 뺏기지 않고** 바탕색 사선을 덧댄다 (2026-09-23 사용자 선택).
+   처음엔 朱 테두리였는데 22% 폭 세그먼트에서 안쪽 2px 이 위아래를 먹어 그냥 붉은 칸으로
+   보였다 — 어느 밴드인지 색으로 못 읽었다 (사용자 지적 "라인으로 표현하는게 어색하다").
+   사선은 밴드 색을 남긴 채 「아직 성글다」로 읽히고, **색 채널을 안 건드려** PLAN §7 의
+   「붉으면 오답」이 안 흔들린다. 흔들림의 朱 는 범례 글자와 아래 판정 배지가 이미 든다.
+   비교한 넷(朱 테두리 · 朱 사선 · 바탕 사선 · 투명도 40%)은 context-notes 참조 */
+.mix-seg.band-shaky {
+  background-image: repeating-linear-gradient(
+    45deg,
+    rgba(0, 0, 0, 0) 0 4px,
+    var(--hatch) 4px 6px
+  );
 }
 
 /* 밴드 행에는 막대가 없다 (2026-09-22) — 이름과 판정 배지 둘뿐이다.

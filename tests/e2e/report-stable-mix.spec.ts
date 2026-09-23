@@ -123,3 +123,49 @@ test('요약 막대가 숙지한 표현을 밴드별로 나누고, 출제가 늘
   expect(after[0]).toBeCloseTo(before[0], 2)
   expect(after[1]).toBeCloseTo(before[1], 2)
 })
+
+test('흔들리는 밴드는 밴드 색을 잃지 않고 사선만 덧입는다', async ({ page }) => {
+  await page.goto('/')
+  await expect(page.getByRole('button', { name: '세션 시작' })).toBeVisible({ timeout: 20_000 })
+  await page.evaluate(() => {
+    localStorage.setItem('yomenai:diagnosticDone', '1')
+    localStorage.setItem('yomenai:welcomeSeen', '1')
+  })
+
+  await seed(page, [
+    // 밴드 0 — 안정. 대조군이다
+    ...BAND0.map((idiomId) => ({ idiomId, days: CORRECT_AT, correct: true })),
+    // 밴드 2 — 둘은 숙지, 나머지는 최근에 계속 틀려 흔들림으로 떨어진다
+    ...['1149590', '1150990'].map((idiomId) => ({ idiomId, days: CORRECT_AT, correct: true })),
+    ...['1151090', '1151120', '1151900', '1152020'].map((idiomId) => ({
+      idiomId,
+      days: [4, 3, 2],
+      correct: false,
+    })),
+  ])
+  await page.reload()
+  await page.getByRole('button', { name: '리포트' }).click()
+  await expect(page.locator('.mix-bar')).toBeVisible()
+
+  const shaky = page.locator('.mix-seg.band-shaky')
+  await expect(shaky).toHaveCount(1)
+
+  // ── 처음엔 朱 테두리였다. 22% 폭에서 안쪽 2px 이 위아래를 먹어 그냥 붉은 칸이 됐고,
+  //    어느 밴드인지 색으로 못 읽혔다 (사용자 지적). 사선으로 바꾼 자리라 둘 다 못 박는다
+  const paint = await shaky.evaluate((el) => {
+    const s = getComputedStyle(el)
+    return { color: s.backgroundColor, image: s.backgroundImage, shadow: s.boxShadow }
+  })
+  // ① 밴드 색이 그대로 남는다 — 안정 칸과 같은 방식으로 칠해져 있다
+  const solid = await page
+    .locator('.mix-seg:not(.band-shaky)')
+    .first()
+    .evaluate((el) => getComputedStyle(el).backgroundColor)
+  expect(paint.color).not.toBe('rgba(0, 0, 0, 0)')
+  expect(paint.color).not.toBe(solid)
+  // ② 표시는 사선이지 선이 아니다
+  expect(paint.image).toContain('repeating-linear-gradient')
+  expect(paint.shadow === 'none' || paint.shadow === '').toBe(true)
+  // ③ 朱 는 막대에서 빠졌지만 범례 글자에는 남는다
+  await expect(page.locator('.mix-key.band-shaky')).toHaveCount(1)
+})
