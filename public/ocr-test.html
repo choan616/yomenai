@@ -1,7 +1,11 @@
 <!doctype html>
 <!-- 카메라 한자 인식 실측용 임시 페이지 (2026-09-23). 앱이 아니라 독립 문서다.
      재는 것 셋 — 폰에서의 속도 · 진짜 사진에서의 인식률 · 사전 조회까지 이어지는가.
-     결론이 나면 지운다. 앱 어디서도 링크하지 않는다 (주소로만 들어온다). -->
+     결론이 나면 지운다. 앱 어디서도 링크하지 않는다 (주소로만 들어온다).
+
+     2차 (사용자 폰 로그에서 (빈칸)·「8上」이 쏟아진 뒤) — 원인은 **조각을 너무 크게
+     넣은 것**이었다. 같은 이미지를 줄이기만 해도 6/40 → 37/40 이다 (실측).
+     흑백·대비·선명화는 차이가 없어서(±1) 안 넣는다. 축소만 한다. -->
 <html lang="ko">
 <head>
 <meta charset="utf-8">
@@ -30,8 +34,8 @@
   label.file input { display:none }
   .stage { position:relative; width:100%; background:#000; border-radius:10px; overflow:hidden }
   video, #shot { display:block; width:100% }
-  #frame { position:absolute; left:12%; top:38%; width:76%; height:20%;
-           border:2px solid var(--ok); border-radius:6px; box-shadow:0 0 0 9999px rgba(0,0,0,.35) }
+  #frame { position:absolute; border:2px solid var(--ok); border-radius:6px;
+           box-shadow:0 0 0 9999px rgba(0,0,0,.35) }
   .hint { font-size:12px; color:var(--faint); margin:8px 0 0 }
   .big { font-size:30px; letter-spacing:.04em; margin:6px 0;
          font-family:"Hiragino Kaku Gothic ProN","Yu Gothic","Meiryo",sans-serif }
@@ -39,7 +43,7 @@
   .v { font-variant-numeric:tabular-nums }
   .hit { color:var(--ok) } .miss { color:var(--ng) }
   #log { font:12px/1.5 ui-monospace,monospace; color:var(--faint); white-space:pre-wrap;
-         max-height:150px; overflow:auto }
+         max-height:190px; overflow:auto }
   table { width:100%; border-collapse:collapse; font-size:13px }
   td { padding:4px 0; vertical-align:top } td:first-child { color:var(--dim); width:6.5em }
 </style>
@@ -53,6 +57,12 @@
     <span class="k">글 방향</span>
     <button id="mHor" aria-pressed="true">가로쓰기</button>
     <button id="mVer" aria-pressed="false">세로쓰기</button>
+  </div>
+  <div class="row" style="margin-top:8px">
+    <span class="k">네모 크기</span>
+    <button id="bS" aria-pressed="false">좁게</button>
+    <button id="bM" aria-pressed="true">보통</button>
+    <button id="bL" aria-pressed="false">넓게</button>
   </div>
   <p class="hint">방향이 틀리면 결과가 통째로 무너진다 (실측 0/12). 소설은 대개 세로쓰기다.</p>
 </div>
@@ -72,7 +82,7 @@
     <button id="shoot" class="primary">네모 안을 읽기</button>
     <button id="shootAll">화면 전체 읽기</button>
   </div>
-  <p class="hint" id="camHint" hidden>초록 네모에 단어를 맞추고 누른다. 네모 안만 잘라서 읽는다.</p>
+  <p class="hint" id="camHint" hidden>초록 네모를 단어로 꽉 채운다. 네모 안만 잘라서 읽는다.</p>
 </div>
 
 <div class="card">
@@ -82,6 +92,7 @@
     <tr><td>인식 시간</td><td class="v" id="tOcr">—</td></tr>
     <tr><td>모델 준비</td><td class="v" id="tInit">—</td></tr>
     <tr><td>사전 조회</td><td id="dict">—</td></tr>
+    <tr><td>후보 전부</td><td class="k v" id="cands">—</td></tr>
   </table>
 </div>
 
@@ -105,6 +116,17 @@ const OPTS = {
   logger: () => {},
 }
 
+/**
+ * 조각을 **줄여서** 넣는다. 이게 이 페이지의 핵심 교훈이다 —
+ * 1차 폰 시험에서 (빈칸)과 「8上」이 쏟아졌는데, 같은 이미지를 줄이기만 해도
+ * 6/40 → 37/40 이 됐다 (실측). 터서랙트는 글자가 너무 크면 못 읽는다.
+ *
+ * 최적 높이는 44~56px 인데 **네모를 얼마나 꽉 채웠는지에 따라 달라진다.**
+ * 그래서 하나로 정하지 않고 여러 배율로 넣어 보고, 어느 것이 맞는지는
+ * **사전이 고르게 한다.** 한 번에 50ms 남짓이라 네 번 돌려도 싸다.
+ */
+const SCALES = [56, 44, 72, 34]
+
 let vertical = false
 $("mHor").onclick = () => setDir(false)
 $("mVer").onclick = () => setDir(true)
@@ -112,10 +134,48 @@ function setDir(v) {
   vertical = v
   $("mHor").setAttribute("aria-pressed", String(!v))
   $("mVer").setAttribute("aria-pressed", String(v))
-  log("글 방향 → " + (v ? "세로(jpn_vert)" : "가로(jpn)"))
+  drawFrame()
+  log("글 방향 → " + (v ? "세로(jpn_vert) · 네모가 세로로 선다" : "가로(jpn) · 네모가 옆으로 눕는다"))
 }
 
-/** 방향별로 따로 만들어 두고 재사용한다. 만드는 값이 비싸다 (모델 내려받기) */
+/**
+ * 네모 — 화면에 그리는 값과 자르는 값이 **같은 한 곳**에서 나와야 어긋나지 않는다.
+ *
+ * 방향마다 모양이 다르다. 가로쓰기 글줄은 옆으로 길고 세로쓰기 글줄은 아래로 길다.
+ * 가로용 납작한 네모로 세로쓰기를 찍으면 여러 글줄을 가로질러 토막만 걷는다
+ */
+const BOXES_H = {
+  S: { l: 0.28, t: 0.42, w: 0.44, h: 0.12 },
+  M: { l: 0.18, t: 0.40, w: 0.64, h: 0.16 },
+  L: { l: 0.08, t: 0.36, w: 0.84, h: 0.24 },
+}
+const BOXES_V = {
+  S: { l: 0.44, t: 0.22, w: 0.12, h: 0.56 },
+  M: { l: 0.40, t: 0.14, w: 0.20, h: 0.72 },
+  L: { l: 0.34, t: 0.08, w: 0.32, h: 0.84 },
+}
+const boxes = () => (vertical ? BOXES_V : BOXES_H)
+let boxKey = "M"
+for (const [k, id] of [["S", "bS"], ["M", "bM"], ["L", "bL"]]) {
+  $(id).onclick = () => {
+    boxKey = k
+    for (const [kk, ii] of [["S", "bS"], ["M", "bM"], ["L", "bL"]]) {
+      $(ii).setAttribute("aria-pressed", String(kk === k))
+    }
+    drawFrame()
+    log("네모 → " + k)
+  }
+}
+function drawFrame() {
+  const b = boxes()[boxKey]
+  const f = $("frame").style
+  f.left = b.l * 100 + "%"
+  f.top = b.t * 100 + "%"
+  f.width = b.w * 100 + "%"
+  f.height = b.h * 100 + "%"
+}
+drawFrame()
+
 const workers = {}
 async function getWorker() {
   const lang = vertical ? "jpn_vert" : "jpn"
@@ -123,8 +183,8 @@ async function getWorker() {
   const t0 = performance.now()
   log(lang + " 모델 준비 중…")
   const w = await createWorker(lang, 1, OPTS)
-  // PSM 7 = 한 줄, 5 = 세로 한 블록. 실측에서 이 조합이 제일 나았다
-  await w.setParameters({ tessedit_pageseg_mode: vertical ? "5" : "7" })
+  // PSM 7 = 한 줄, 5 = 세로 한 블록. dpi 를 안 주면 터서랙트가 추정하다 흔들린다
+  await w.setParameters({ tessedit_pageseg_mode: vertical ? "5" : "7", user_defined_dpi: "300" })
   const ms = Math.round(performance.now() - t0)
   $("tInit").textContent = lang + " " + ms + "ms"
   log(lang + " 준비 완료 " + ms + "ms")
@@ -148,18 +208,19 @@ $("start").onclick = async () => {
     log("카메라 " + t.width + "×" + t.height)
   } catch (e) {
     log("카메라 실패: " + e.name + " — " + e.message)
-    log("(HTTPS 가 아니거나 권한을 거부했을 때 난다. 아래 「사진 고르기」로도 잴 수 있다)")
+    log("(HTTPS 가 아니거나 권한을 거부했을 때 난다. 「사진 고르기」로도 잴 수 있다)")
   }
 }
 
-/** 네모 안만 잘라 캔버스로. 자르기가 인식률을 가장 크게 바꾼다 */
+/** 네모 안만 잘라 온다. 화면의 네모와 **같은 비율**을 쓴다 */
 function grab(cropToFrame) {
   const v = $("cam")
   const W = v.videoWidth, H = v.videoHeight
   const c = document.createElement("canvas")
   const ctx = c.getContext("2d")
   if (cropToFrame) {
-    const x = W * 0.12, y = H * 0.38, w = W * 0.76, h = H * 0.2
+    const b = boxes()[boxKey]
+    const x = W * b.l, y = H * b.t, w = W * b.w, h = H * b.h
     c.width = w; c.height = h
     ctx.drawImage(v, x, y, w, h, 0, 0, w, h)
   } else {
@@ -169,40 +230,86 @@ function grab(cropToFrame) {
   return c
 }
 
-async function run(src, label) {
+/**
+ * 글줄을 가로지르는 축을 target 에 맞춰 줄인다. 키우지는 않는다 — 없는 정보를
+ * 만들어 봐야 소용없다.
+ *
+ * **가로글은 높이, 세로글은 폭이다.** 세로 글줄은 아래로 길어서 높이로 줄이면
+ * 한 줄이 통째로 뭉개진다. 재야 하는 건 글줄 길이가 아니라 **글자 크기**다
+ */
+function shrink(src, target) {
+  const axis = vertical ? src.width : src.height
+  if (axis <= target) return src
+  const r = target / axis
+  const c = document.createElement("canvas")
+  c.width = Math.max(1, Math.round(src.width * r))
+  c.height = Math.max(1, Math.round(src.height * r))
+  const ctx = c.getContext("2d")
+  ctx.imageSmoothingEnabled = true
+  ctx.imageSmoothingQuality = "high"
+  ctx.drawImage(src, 0, 0, c.width, c.height)
+  return c
+}
+
+/** 이미지를 캔버스로 — 파일 입력도 같은 경로를 타게 한다 */
+function toCanvas(img) {
+  const c = document.createElement("canvas")
+  c.width = img.naturalWidth
+  c.height = img.naturalHeight
+  c.getContext("2d").drawImage(img, 0, 0)
+  return c
+}
+
+/**
+ * @param oneLine 네모로 딴 **글줄 하나**인가. 이게 갈리면 줄이는 법이 달라진다 —
+ *   글줄 하나는 가로지르는 축이 곧 글자 크기지만, 페이지처럼 여러 글줄이 든 덩이는
+ *   그 축이 「줄 개수 × 글자」라 같은 자로 줄이면 통째로 뭉갠다 (실측: 세로 페이지를
+ *   폭 56px 로 줄이니 (빈칸), 안 줄이면 읽힌다)
+ */
+async function run(canvas, label, oneLine) {
   $("out").textContent = "읽는 중…"
   $("dict").textContent = "—"
+  $("cands").textContent = "—"
+  const d = await loadDict()
   const w = await getWorker()
+  log(label + " 조각 " + canvas.width + "×" + canvas.height + " · " +
+    (oneLine ? (vertical ? "폭" : "높이") + "을 줄여 여러 배율로" : "덩이라 원본 그대로"))
+
+  // 덩이는 안 줄인다. 한 번만 넣는다
+  const plan = oneLine ? SCALES : [0]
+  const tries = []
   const t0 = performance.now()
-  const { data } = await w.recognize(src)
+  for (const h of plan) {
+    const small = h === 0 ? canvas : shrink(canvas, h)
+    const { data } = await w.recognize(small)
+    const text = norm(data.text)
+    tries.push({ h: vertical ? small.width : small.height, text, hit: findInDict(d, text) })
+    log("  " + small.width + "×" + small.height + " → " + (text.slice(0, 40) || "(빈칸)"))
+    // 사전이 답을 알아본 순간 멈춘다. 더 돌 이유가 없다
+    if (tries[tries.length - 1].hit) break
+  }
   const ms = Math.round(performance.now() - t0)
-  const text = norm(data.text)
-  $("tOcr").textContent = ms + "ms"
-  $("out").textContent = text || "(빈칸)"
-  log(label + ": " + ms + "ms · " + (text.slice(0, 60) || "(빈칸)"))
-  lookup(text)
+  $("tOcr").textContent = ms + "ms (" + tries.length + "번)"
+
+  const best = tries.find((t) => t.hit) || tries.find((t) => t.text) || tries[0]
+  $("out").textContent = best.text || "(빈칸)"
+  $("cands").textContent = tries.map((t) => t.h + "px:" + (t.text || "-")).join("  ")
+  showDict(d, best)
+  log(label + " 끝 " + ms + "ms · " + (best.hit ? "사전 적중 " + best.hit.headword : "사전 실패"))
 }
 
-$("shoot").onclick = async () => {
-  const c = grab(true)
-  $("shot").src = c.toDataURL("image/png"); $("shot").hidden = false
-  await run(c, "네모")
-}
-$("shootAll").onclick = async () => {
-  const c = grab(false)
-  $("shot").src = c.toDataURL("image/jpeg", 0.8); $("shot").hidden = false
-  await run(c, "전체")
-}
-$("file").onchange = async (e) => {
+$("shoot").onclick = () => run(grab(true), "네모", true)
+$("shootAll").onclick = () => run(grab(false), "전체", false)
+$("file").onchange = (e) => {
   const f = e.target.files[0]
   if (!f) return
-  const url = URL.createObjectURL(f)
-  $("shot").src = url; $("shot").hidden = false
-  log("파일 " + (f.size / 1048576).toFixed(2) + "MB")
-  await run(url, "파일")
+  const img = new Image()
+  // 파일은 대개 페이지 전체를 찍은 것이라 덩이로 본다
+  img.onload = () => { $("shot").src = img.src; $("shot").hidden = false; run(toCanvas(img), "파일", false) }
+  img.src = URL.createObjectURL(f)
 }
 
-/* ── 사전 조회 — 여기까지 이어져야 기능이다 ──────────────────────── */
+/* ── 사전 — 여기까지 이어져야 기능이다. 배율 고르는 심판 노릇도 한다 ───────── */
 let dict = null
 async function loadDict() {
   if (dict) return dict
@@ -216,28 +323,33 @@ async function loadDict() {
   return dict
 }
 
-async function lookup(text) {
-  if (!text) { $("dict").textContent = "읽은 글자가 없다"; return }
-  const d = await loadDict()
-  // 정확히 맞는 것부터 — 인식 결과 안의 어느 구간이든 사전에 있으면 잡는다
+/** 인식 결과 안의 **어느 구간이든** 사전에 있으면 잡는다. 긴 것부터 본다 */
+function findInDict(d, text) {
+  if (!text) return null
   for (let len = Math.min(6, text.length); len >= 2; len--) {
     for (let i = 0; i + len <= text.length; i++) {
       const hit = d.get(text.slice(i, i + len))
-      if (hit) {
-        const def = (hit.koMeaning && hit.koMeaning.definition) || ""
-        $("dict").innerHTML =
-          '<span class="hit">' + hit.headword + " " + hit.reading + "</span><br>" +
-          '<span class="k">' + def.slice(0, 40) + "</span>"
-        return
-      }
+      if (hit) return hit
     }
   }
-  // 한 글자만 어긋난 경우 — 실측에서 오답이 대개 이 꼴이었다 (軍艦→軍朋)
+  return null
+}
+
+function showDict(d, best) {
+  if (!best.text) { $("dict").textContent = "읽은 글자가 없다"; return }
+  if (best.hit) {
+    const def = (best.hit.koMeaning && best.hit.koMeaning.definition) || ""
+    $("dict").innerHTML =
+      '<span class="hit">' + best.hit.headword + " " + best.hit.reading + "</span><br>" +
+      '<span class="k">' + def.slice(0, 40) + "</span>"
+    return
+  }
+  // 한 글자만 어긋난 경우 — 실측 오답이 대개 이 꼴이었다 (軍艦→軍朋)
   const near = []
   for (const head of d.keys()) {
-    if (head.length !== text.length) continue
+    if (head.length !== best.text.length) continue
     let diff = 0
-    for (let i = 0; i < head.length; i++) if (head[i] !== text[i]) diff++
+    for (let i = 0; i < head.length; i++) if (head[i] !== best.text[i]) diff++
     if (diff === 1) { near.push(head); if (near.length >= 5) break }
   }
   $("dict").innerHTML = near.length
