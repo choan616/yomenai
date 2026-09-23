@@ -29,7 +29,13 @@ import { getDeviceId } from '../db/device.ts'
 import { db } from '../db/schema.ts'
 import { LOCAL_USER_ID } from '../db/events.ts'
 import { listEvents } from '../db/events.ts'
-import { loadBaseIdioms, loadKanji, studyPool, type RuntimeIdiom } from '../dict/load.ts'
+import {
+  loadBand4Idioms,
+  loadBaseIdioms,
+  loadKanji,
+  studyPool,
+  type RuntimeIdiom,
+} from '../dict/load.ts'
 import { mistakeContextFromKanji } from '../dict/mistakeContext.ts'
 import { loadSettings, OBSERVE_GATE } from '../app/settings.ts'
 
@@ -274,10 +280,32 @@ export function useStudySession({
         // 범위는 **풀에서** 가른다. 세션을 짜는 쪽(정규·재대결·집중)을 하나도 안 건드리고
         // 훈독을 넣고 뺄 수 있는 자리가 여기뿐이다
         const { sessionLimit, ratio, kunPercent } = loadSettings()
-        const loaded = studyPool(all, kunPercent > 0)
+        const state = replay(events)
+        let loaded = studyPool(all, kunPercent > 0)
+
+        /**
+         * **담아 둔 밴드 4 를 들인다** (2026-09-23 사용자 요청 「학습범위 밖 표현도
+         * 세션에 추가할 수 없나」).
+         *
+         * 자동 출제는 안 한다 — 85,418개가 저절로 섞이면 밀도가 확 떨어진다.
+         * 「내가 만난 말을 담는다」는 담기의 뜻 그대로, **담은 것만** 온다.
+         *
+         * 담긴 것이 전부 기본 사전 안에 있으면 20MB 를 아예 안 받는다. 담기 전에는
+         * 이 갈래가 돌 일이 없다
+         */
+        const missing = [...state.starred].filter((id) => !loaded.some((it) => it.idiomId === id))
+        if (missing.length > 0) {
+          const want = new Set(missing)
+          const extra = studyPool(await loadBand4Idioms(), kunPercent > 0).filter((it) =>
+            want.has(it.idiomId),
+          )
+          if (!alive) return
+          if (extra.length > 0) loaded = [...loaded, ...extra]
+        }
+
         setPool(loaded)
         setPriorEvents(events)
-        setVotes(replay(events).meaningVotes)
+        setVotes(state.meaningVotes)
         mistakes.current = mistakeContextFromKanji(kanji)
         const rubyLookup = mistakes.current.lookup
         setRubyOfIdiom(() => (i: RuntimeIdiom) => rubyOf(i.headword, i.reading, rubyLookup))

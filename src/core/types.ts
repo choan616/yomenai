@@ -25,7 +25,7 @@ export type MistakeType =
 export type KoreanCategory = 1 | 2 | 3
 
 /** 모드가 어느 단계에서 정해졌는지 (PLAN §6 "모드 자동 배정 3단계") */
-export type ModeSource = 'korean-class' | 'diagnostic' | 'reassign'
+export type ModeSource = 'korean-class' | 'diagnostic' | 'reassign' | 'no-meaning'
 
 /** FSRS 채점 등급. ts-fsrs Rating 의 Manual 을 제외한 4단계와 같은 값이다 */
 export type Grade = 1 | 2 | 3 | 4

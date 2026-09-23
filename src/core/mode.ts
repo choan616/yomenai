@@ -10,6 +10,17 @@ export interface ModeInput {
   meaningKnown?: boolean
   /** 3단계 — 학습 중인 뜻 카드 상태 */
   meaningCard?: Card
+  /**
+   * 한국어 뜻이 있나 (2026-09-23). **없으면 뜻을 물을 수 없다.**
+   *
+   * 밴드 4 를 담아 세션에 넣을 수 있게 되면서 생긴 조건이다 — 밴드 4 는 번역을 아직
+   * 안 돌려 `koMeaning` 이 비어 있다. 확장 모드로 보내면 뜻 카드가 떠서
+   * 「뜻을 떠올려 볼까요?」를 묻고는 「뜻 미등록」을 보여 준다.
+   *
+   * **밴드가 아니라 뜻 유무로 가른다.** 그래야 번역이 채워지는 순간 저절로 원래
+   * 규칙을 탄다 — 되돌릴 코드가 없다
+   */
+  hasMeaning?: boolean
 }
 
 export interface ModeAssignment {
@@ -31,6 +42,12 @@ export function assignMode(input: ModeInput): ModeAssignment {
   if (input.meaningKnown !== undefined) {
     mode = input.meaningKnown ? 'correction' : 'expansion'
     source = 'diagnostic'
+  }
+
+  // **뜻이 없으면 무엇으로도 확장 모드가 될 수 없다.** 위 단계들을 다 덮는다 —
+  // 물을 것이 없는데 묻는 카드를 내는 쪽이 늘 더 나쁘다
+  if (input.hasMeaning === false) {
+    return { mode: 'correction', source: 'no-meaning' }
   }
 
   const card = input.meaningCard

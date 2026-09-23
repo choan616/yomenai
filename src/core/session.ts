@@ -44,6 +44,12 @@ export interface IdiomEntry {
    * 안 주면 음독 취급 — 훈독을 모르는 호출부(테스트·시뮬레이션)는 예전과 똑같이 돈다
    */
   readingKind?: 'on' | 'mix' | 'kun'
+  /**
+   * 한국어 뜻이 있나 (2026-09-23). 없으면 `assignMode` 가 교정 모드로 고정한다 —
+   * 물을 것이 없는데 뜻 카드를 내면 「뜻 미등록」을 보여 주게 된다.
+   * 안 주면 있다고 본다 — 옛 호출부(테스트·시뮬레이션)는 예전과 똑같이 돈다
+   */
+  hasMeaning?: boolean
 }
 
 export interface SessionCard extends SessionItem {
@@ -81,6 +87,7 @@ export function buildSession(
     kun: p.readingKind === 'kun',
     mode: assignMode({
       category: p.category,
+      hasMeaning: p.hasMeaning,
       meaningKnown: state.meaningKnown.get(p.idiomId),
       meaningCard: state.cards.get(cardKey(p.idiomId, 'meaning'))?.card,
     }).mode,
@@ -309,6 +316,7 @@ export function buildRematch(
         cardType: 'reading',
         mode: assignMode({
           category: entry.category,
+          hasMeaning: entry.hasMeaning,
           meaningKnown: state.meaningKnown.get(card.idiomId),
           meaningCard: state.cards.get(cardKey(card.idiomId, 'meaning'))?.card,
         }).mode,
@@ -427,6 +435,7 @@ export function buildFocus(
         cardType: 'reading',
         mode: assignMode({
           category: entry.category,
+          hasMeaning: entry.hasMeaning,
           meaningKnown: state.meaningKnown.get(entry.idiomId),
           meaningCard: state.cards.get(cardKey(entry.idiomId, 'meaning'))?.card,
         }).mode,

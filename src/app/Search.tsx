@@ -346,6 +346,8 @@ function Basket({
         담아 둔 표현<span className="dim"> · {waiting.length}</span>
       </p>
       <IdiomRows ids={waiting} loaded={loaded} starred={starred} onToggle={onToggle} />
+      {/* 밴드 4(출제 범위 밖)도 **담으면 나온다** (2026-09-23). 자동 출제는 안 하고
+          담은 것만 들인다 — 「내가 만난 말을 담는다」는 담기의 뜻 그대로다 */}
       <p className="basket-note">다음 세션에 소개로 먼저 나와요.</p>
     </div>
   )
@@ -387,9 +389,7 @@ function IdiomRows({
               {it.reading}
             </span>
             <span className="r-sub r-meaning">{it.koMeaning?.definition ?? ''}</span>
-            {it.band === 4 ? (
-              <span className="star-slot dim">학습 범위 밖</span>
-            ) : loaded.started.has(id) ? (
+            {loaded.started.has(id) ? (
               <span className="star-slot dim">학습 중</span>
             ) : (
               <StarButton
@@ -524,11 +524,7 @@ function Group({
             )}
             {/* 이미 카드가 생긴 숙어에는 담기를 안 낸다 — 담아도 아무 일이 안 일어난다.
                 빈칸으로 두면 "왜 이 줄만 없지"가 되므로 그 자리에 이유를 적는다 */}
-            {/* 밴드 4 는 **출제 범위 밖**이다. 담아도 세션에 안 나오니 담기를 안 낸다 —
-                빈칸으로 두면 「왜 이 줄만 없지」가 되므로 그 자리에 이유를 적는다 */}
-            {it.band === 4 ? (
-              <span className="star-slot dim">학습 범위 밖</span>
-            ) : loaded.started.has(it.idiomId) ? (
+            {loaded.started.has(it.idiomId) ? (
               <span className="star-slot dim">학습 중</span>
             ) : (
               <StarButton

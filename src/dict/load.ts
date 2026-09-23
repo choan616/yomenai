@@ -100,6 +100,8 @@ export function normalizeIdiom(r: RawIdiom): RuntimeIdiom {
     pos: r.pos,
     common: r.common,
     koMeaning: r.koMeaning,
+    // 뜻이 없으면 뜻 카드를 낼 수 없다 — 밴드 4 는 아직 번역을 안 돌렸다 (2026-09-23)
+    hasMeaning: (r.koMeaning?.definition ?? '').trim() !== '',
     readingKind: r.readingKind,
     altReadings: r.altReadings,
   }
