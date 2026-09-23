@@ -342,7 +342,7 @@ async function runOnce(canvas, label, oneLine) {
   const w = await getWorker()
   window.__lastCrop = { w: canvas.width, h: canvas.height }
   log(label + " 조각 " + canvas.width + "×" + canvas.height + " · " +
-    (oneLine ? (vertical ? "폭" : "높이") + "를 줄여 여러 배율로" : "덩이라 원본 그대로"))
+    (oneLine ? (vertical ? "폭을" : "높이를") + " 줄여 여러 배율로" : "덩이라 원본 그대로"))
 
   // 덩이는 안 줄인다. 한 번만 넣는다
   const plan = oneLine ? SCALES : [0]
