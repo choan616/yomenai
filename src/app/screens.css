@@ -1515,11 +1515,20 @@ p.rule-record {
   flex: none;
   width: var(--tap);
   height: var(--tap);
+  display: flex;
+  align-items: center;
+  justify-content: center;
   border: 1px solid var(--border);
   border-radius: var(--radius);
   background: var(--surface);
-  font-size: calc(20px * var(--ui-scale));
-  line-height: 1;
+  color: var(--text-dim);
+}
+/* 선 아이콘 — 이모지를 쓰면 컬러로 그려져 무채색 원칙이 깨지고 기기마다 그림도 다르다.
+   currentColor 라 테마를 따라간다 (2026-09-23 사용자 요청) */
+.icon {
+  width: calc(22px * var(--ui-scale));
+  height: calc(22px * var(--ui-scale));
+  display: block;
 }
 
 /* 띠는 **짧다** — 세로 프레임을 폭에 맞추면 360×640 이 되어 화면을 다 먹고 결과가 접혀

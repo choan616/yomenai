@@ -196,7 +196,7 @@ export function Search({
         {/* 읽는 법을 모를 때 쓰는 입력 수단이다. 검색창 **옆**에 두는 이유가 그것이다 —
             둘 다 같은 질문("이 단어가 뭐냐")에 답하는 길이다 */}
         <button type="button" className="cam-open" onClick={onCamera} aria-label="카메라로 찾기">
-          <span aria-hidden="true">📷</span>
+          <CameraIcon />
         </button>
         </div>
         {/* 자판은 **입력창을 눌렀을 때만** 뜬다. 찾기는 결과 목록이 주인공이라
@@ -395,6 +395,33 @@ function StarButton({
     >
       {on ? '−' : '+'}
     </button>
+  )
+}
+
+/**
+ * 카메라 단추의 선 아이콘 (2026-09-23 사용자 요청).
+ *
+ * 이모지(📷)를 쓰고 있었는데 **컬러로 그려져** 「무채색 기반, 색은 오답에만」(PLAN §7)을
+ * 깼다. 게다가 기기마다 그림이 달라 화면이 어떻게 보일지 우리가 못 정한다.
+ *
+ * `currentColor` 로 그려 글자와 같은 색을 따라간다 — 테마가 바뀌어도 따로 손댈 게 없다.
+ */
+function CameraIcon() {
+  return (
+    <svg
+      className="icon"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      {/* 몸통과 그 위에 솟은 뷰파인더를 한 획으로 잇는다 */}
+      <path d="M3 8.5A1.5 1.5 0 0 1 4.5 7h2.2a1 1 0 0 0 .83-.45l.94-1.4A1 1 0 0 1 9.3 4.7h5.4a1 1 0 0 1 .83.45l.94 1.4a1 1 0 0 0 .83.45h2.2A1.5 1.5 0 0 1 21 8.5v9a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 17.5z" />
+      <circle cx="12" cy="13" r="3.4" />
+    </svg>
   )
 }
 
