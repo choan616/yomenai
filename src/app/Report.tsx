@@ -1,5 +1,5 @@
 // 진단 리포트 화면 — 수준, 다음에 볼 것, 다시보기 진입, 오답 유형 분포, 1등 오답, 취약 음독. 이 앱의 얼굴이다 (PLAN §7)
-import { useEffect, useState } from 'react'
+import { Fragment, useEffect, useState } from 'react'
 import { dataVersion } from '../core/dataVersion.ts'
 import { onyomiSiblings } from '../core/contrast.ts'
 import {
@@ -363,6 +363,9 @@ function ReportBody({
 /* ── 수준 ─────────────────────────────────────────────────────────
    "내가 어디쯤인가"를 밴드 사다리 하나로 답한다. 경계선이 이 화면의 핵심 도형이다. */
 
+/** 아직 잴 것이 없는 칸. 0 으로 적으면 「0개를 숙지했다」로 읽혀 안 푼 것과 못 외운 것이 섞인다 */
+const NO_DATA = '—'
+
 const BAND_STATUS_LABEL: Record<BandRow['status'], string> = {
   solid: '안정',
   shaky: '흔들림',
@@ -397,9 +400,9 @@ function LevelSection({
       <p className="stat-line">
         읽기 {reviews}회 · 전체 정답률 {accuracy}%
       </p>
-      {/* 사다리 숫자는 정답률이 아니라 **붙은 숙어 개수**다 (2026-09-19). 정답률은 순간
+      {/* 큰 숫자는 정답률이 아니라 **붙은 숙어 개수**다 (2026-09-19). 정답률은 순간
           상태라 표본이 흔들면 같이 뒤집히는데, 수준은 쌓인 것이라 그러면 안 된다.
-          정답률은 상태 줄(안정/흔들림)에 남겨 경계선을 긋는 데만 쓴다 */}
+          정답률은 표의 한 열로 내려 경계선을 긋는 데만 쓴다 */}
       <div className="ladder-head">
         <p className="ladder-title">밴드별 숙지한 표현</p>
         <p className="ladder-total">{totalStable}개</p>
@@ -407,44 +410,52 @@ function LevelSection({
 
       <StableMix bands={level.bands} total={totalStable} />
 
-      <div className="ladder">
-        {level.bands.map((b, i) => (
-          <div className="ladder-item" key={b.band}>
-            {/* 경계선 — 안정 구간과 흔들리는 구간 사이에 실제로 선을 긋는다 */}
-            {level.edge === b.band && level.solidThrough !== null && (
-              <p className="edge-line">
-                <span>경계선</span>
-              </p>
-            )}
-            {/* 밴드 행에는 막대가 없다 (2026-09-22) — 밴드마다 `stable/met` 을 그리면
-                새 표현을 만날수록 분모만 늘어 막대가 내려간다. 비율은 위 요약 막대가 한
-                번만 그리고, 여기는 이름·판정·수치만 남는다 (context-notes 같은 날 절) */}
-            <div className={`bar-row band-${b.status}`} style={{ '--i': i } as React.CSSProperties}>
-              <span>
-                밴드 {b.band}
-                <span className="dim"> {BAND_NOTE[b.band]}</span>
-              </span>
-              {/* 배지는 **줄 오른쪽 끝**이다 (2026-09-22). 밴드 이름 옆에 붙이면 자리가
-                  글자 길이를 타서 줄마다 어긋나고, 아래 수치와 이룰 오른쪽 선도 안 생긴다 */}
-              <span className="band-badge">{BAND_STATUS_LABEL[b.status]}</span>
-            </div>
-            {/* 수치는 배지 아래 오른쪽 정렬 (2026-09-22 사용자 요청). 배지와 같은 선에 서서
-                오른쪽이 「상태·수치」 한 칸으로 읽힌다 */}
-            <p className={`band-note band-${b.status}`}>
-              {b.met > 0 && (
-                <span className="dim">
-                  출제 {b.met}개 / 숙지 {b.stable}개
-                  {b.seen > 0 && ` / ${Math.round(b.rate * 100)}% (최근 ${b.seen}회)`}
-                </span>
+      {/* 표다 (2026-09-23 사용자 요청 "이 영역을 정리하고 싶다"). 한 밴드가 두 줄을 쓰고
+          알약 배지가 밴드마다 같은 말을 되풀이해 여덟 줄을 먹고 있었다. 무엇보다 수치가
+          오른쪽 정렬이라 150·462·77·250 의 자리가 제각각이어서 **밴드끼리 비교가 안 됐다** */}
+      <table className="ladder">
+        <thead>
+          <tr>
+            <th scope="col">밴드</th>
+            <th scope="col">출제</th>
+            <th scope="col">숙지</th>
+            <th scope="col">정답률</th>
+          </tr>
+        </thead>
+        <tbody>
+          {level.bands.map((b) => (
+            <Fragment key={b.band}>
+              {/* 경계선 — 안정 구간과 흔들리는 구간 사이에 실제로 선을 긋는다 */}
+              {level.edge === b.band && level.solidThrough !== null && (
+                <tr className="edge-row">
+                  <td colSpan={4}>
+                    <p className="edge-line">
+                      <span>경계선</span>
+                    </p>
+                  </td>
+                </tr>
               )}
-            </p>
-          </div>
-        ))}
-      </div>
+              <tr className={`band-${b.status}`}>
+                <th scope="row">
+                  밴드 {b.band}
+                  <span className="dim"> {BAND_NOTE[b.band]}</span>
+                  {/* 판정은 왼쪽 줄로만 보인다 (2026-09-23 사용자 선택). 도형은 읽어 주지
+                      못하므로 이름은 글자로 남긴다 */}
+                  <span className="sr-only"> · {BAND_STATUS_LABEL[b.status]}</span>
+                </th>
+                <td>{b.met > 0 ? b.met : NO_DATA}</td>
+                <td>{b.met > 0 ? b.stable : NO_DATA}</td>
+                <td className="rate">{b.seen > 0 ? `${Math.round(b.rate * 100)}%` : NO_DATA}</td>
+              </tr>
+            </Fragment>
+          ))}
+        </tbody>
+      </table>
       <p className="ladder-caption">
-        숙지 = {READING_STABLE_DAYS}일 이상 안 잊는 상태 · 출제된 표현에는 틀린 것·넘긴 것도
-        들어가요 (소개만 본 건 빼요) · 안정·흔들림은 최근 {LEVEL_WINDOW}회 정답률{' '}
-        {Math.round(LEVEL_SOLID_RATE * 100)}% 기준 · {LEVEL_MIN_SEEN}회 미만 표본 부족
+        왼쪽 붉은 줄은 흔들리는 밴드, 점선은 표본이 모자란 밴드예요 · 숙지 ={' '}
+        {READING_STABLE_DAYS}일 이상 안 잊는 상태 · 출제된 표현에는 틀린 것·넘긴 것도 들어가요
+        (소개만 본 건 빼요) · 흔들림은 최근 {LEVEL_WINDOW}회 정답률{' '}
+        {Math.round(LEVEL_SOLID_RATE * 100)}% 미만 · {LEVEL_MIN_SEEN}회 미만은 표본 부족
       </p>
     </section>
   )

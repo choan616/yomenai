@@ -467,12 +467,6 @@
   margin: 4px 0 0;
   font-variant-numeric: tabular-nums;
 }
-.ladder {
-  margin-top: 18px;
-}
-.ladder-item + .ladder-item {
-  margin-top: 10px;
-}
 /* 제목과 총계가 한 줄에 마주 선다 — 총계가 요약 막대의 분모다 (2026-09-22) */
 .ladder-head {
   margin-top: 14px;
@@ -579,46 +573,88 @@
   );
 }
 
-/* 밴드 행에는 막대가 없다 (2026-09-22) — 이름과 판정 배지 둘뿐이다.
-   배지 칸은 **고정 폭**이라야 줄마다 같은 선에 선다. `auto` 로 두면 행마다 그리드가
-   따로라 배지 폭을 타고 어긋난다. 4.5em 은 가장 긴 「표본 부족」이 들어가는 폭이다 */
-.ladder .bar-row {
-  grid-template-columns: 1fr 4.5em;
-  gap: 5px;
+/* ── 밴드 표 (2026-09-23 사용자 요청 "이 영역을 정리하고 싶다") ──
+   한 밴드가 두 줄(이름+배지 / 수치)을 써서 여덟 줄이었고, 알약 배지가 밴드마다 같은
+   말을 되풀이했다. 표로 접으면 줄이 절반이 되고, 무엇보다 **수치가 열로 맞아** 밴드끼리
+   비교가 된다 — 오른쪽 정렬이던 전에는 150·462·77·250 의 자리가 제각각이었다 */
+.ladder {
+  width: 100%;
+  margin-top: 16px;
+  border-collapse: collapse;
+  font-size: calc(13px * var(--ui-scale));
 }
-/* 판정 배지 + 수치 한 줄 (2026-09-22 사용자 요청) */
-.band-note {
-  display: flex;
-  /* 수치는 오른쪽 정렬 — 배지와 같은 선에 세운다 (2026-09-22 사용자 요청) */
-  justify-content: flex-end;
-  align-items: baseline;
-  /* 375px 기본 글자에서는 한 줄에 들어간다(수치 261px / 가용 286px). 「크게」(×1.1)나
-     세 자리 수에서만 넘치는데, 그때 눌러 찌그러뜨리는 대신 배지 아래로 접는다 */
-  flex-wrap: wrap;
-  gap: 8px;
-  margin: 3px 0 0;
-  font-size: calc(12px * var(--ui-scale));
-  color: var(--text-faint);
+.ladder th,
+.ladder td {
+  padding: 7px 0;
+  text-align: right;
+  font-weight: 400;
   font-variant-numeric: tabular-nums;
-}
-/* 알약 배지 — 카드의 `.tag` 와 같은 모양이다. 판정이 수치와 한 덩어리로 붙어 읽히지
-   않게 떼어 두는 게 목적이라, 색은 흔들릴 때만 준다 (안정에 색을 주면 상태가 둘 다
-   이벤트가 되어 경계선이 안 보인다 — `--ok` 가 무채인 것과 같은 이유) */
-.band-badge {
-  flex: none;
-  /* 칸 안에서 오른쪽에 붙인다 — 배지 폭이 제각각이라 왼쪽에 붙이면 오른쪽 선이 깨진다 */
-  justify-self: end;
-  border-radius: 999px;
-  padding: 2px 9px;
-  background: var(--surface-2);
   color: var(--text-dim);
-  /* 막대 줄(14px) 안에 들어가지만 글자는 수치 줄과 같은 크기로 둔다 */
-  font-size: calc(12px * var(--ui-scale));
 }
-.band-shaky .band-badge {
-  background: var(--ng-bg);
+.ladder thead th {
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+  font-size: calc(11px * var(--ui-scale));
+  color: var(--text-faint);
+}
+/* 밴드 이름 칸 — 왼쪽 정렬이고 판정 줄이 여기 선다. 왼쪽 여백은 그 줄 자리다 */
+.ladder th:first-child,
+.ladder td:first-child {
+  position: relative;
+  padding-left: 10px;
+  text-align: left;
+}
+.ladder tbody th:first-child {
+  font-size: calc(14px * var(--ui-scale));
+  color: var(--text);
+}
+/* 판정은 **왼쪽 줄**이다 (2026-09-23 사용자 선택) — 알약 배지가 상태마다 같은 말을
+   되풀이하며 자리만 먹었다. 흔들림은 朱 실선, 표본 부족은 무채 **점선**이다.
+   색과 결 두 채널로 가른다 — 색만으로 구분하지 않는다는 PLAN §7 을 지키는 자리다.
+   안정과 미학습은 줄이 없다 (미학습은 수치 칸이 「—」라 저절로 갈린다) */
+.ladder tbody tr.band-shaky th:first-child::before,
+.ladder tbody tr.band-thin th:first-child::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 6px;
+  bottom: 6px;
+  width: 3px;
+  border-radius: 2px;
+}
+.ladder tbody tr.band-shaky th:first-child::before {
+  background: var(--ng);
+}
+.ladder tbody tr.band-thin th:first-child::before {
+  /* 「판단을 보류한다」가 실선으로 보이면 안 된다 — 세로로 끊어 그린다 */
+  background: repeating-linear-gradient(
+    to bottom,
+    var(--text-faint) 0 3px,
+    rgba(0, 0, 0, 0) 3px 6px
+  );
+}
+/* 정답률에도 朱 를 준다 — 왼쪽 줄과 같은 것을 두 번 말하는 게 아니라, 어느 수치 때문에
+   그 판정이 났는지를 짚는 자리다 */
+.ladder tbody tr.band-shaky td.rate {
   color: var(--ng);
 }
+/* 경계선 줄은 표의 칸 여백을 안 쓴다 — .edge-line 이 제 여백을 들고 있다 */
+.ladder .edge-row td {
+  padding: 0;
+}
+
+/* 화면에서는 감추고 읽어 주는 쪽에만 남긴다 */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
 /* 경계선 — 안정 구간과 흔들리는 구간 사이에 실제로 선을 긋는다. 이 화면의 핵심 도형 */
 .edge-line {
   display: flex;

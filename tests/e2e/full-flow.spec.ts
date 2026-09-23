@@ -62,14 +62,16 @@ test('진입 진단 → 세션 → 리포트 전체 흐름을 완주한다', asy
   await expect(page.locator('.level .report-lead')).not.toBeEmpty()
   await expect(page.locator('.level .stat-line')).toContainText('읽기')
   await expect(page.locator('.level .stat-line')).toContainText('정답률')
-  expect(await page.locator('.ladder .bar-row').count()).toBeGreaterThanOrEqual(3)
-  // 사다리 숫자는 정답률이 아니라 붙은 숙어 개수다 (2026-09-19). 흔들림은 상태 줄로 내려갔다
+  expect(await page.locator('.ladder tbody tr').count()).toBeGreaterThanOrEqual(3)
+  // 표의 머리글이 무엇을 재는지 말한다 (2026-09-23) — 열이 맞아야 밴드끼리 비교가 된다
+  await expect(page.locator('.ladder thead th')).toHaveText(['밴드', '출제', '숙지', '정답률'])
+  // 큰 숫자는 정답률이 아니라 붙은 숙어 개수다 (2026-09-19). 정답률은 표의 한 열이다
   await expect(page.locator('.ladder-title')).toHaveText('밴드별 숙지한 표현')
   await expect(page.locator('.ladder-caption')).toContainText('숙지')
   // 이름이 포함 범위를 말해야 한다 — 틀린 것·넘긴 것이 들어가고 소개만 본 건 빠진다 (2026-09-20)
   await expect(page.locator('.ladder-caption')).toContainText('틀린 것·넘긴 것도')
-  // 막대 오른쪽에는 텍스트가 없다. 판정은 알약 배지, 수치는 아래 한 줄이다 (2026-09-22)
-  await expect(page.locator('.ladder .bar-num')).toHaveCount(0)
+  // 왼쪽 줄이 무엇인지 캡션이 말한다 — 도형만 두고 이름을 안 주면 못 읽는다 (2026-09-23)
+  await expect(page.locator('.ladder-caption')).toContainText('점선')
   // 밴드 행에는 막대가 없다 (2026-09-22) — `stable/met` 은 새 표현을 만날수록 분모만 늘어
   // 막대가 내려간다. 비율은 위 요약 막대가 한 번만 그린다
   await expect(page.locator('.ladder .bar-track')).toHaveCount(0)
@@ -88,27 +90,22 @@ test('진입 진단 → 세션 → 리포트 전체 흐름을 완주한다', asy
     // 총계가 요약 막대의 분모다
     await expect(page.locator('.ladder-total')).toHaveText(/^d+개$/)
   }
-  const badge = page.locator('.ladder .band-badge').first()
-  await expect(badge).toHaveText(/^(안정|흔들림|표본 부족|미학습)$/)
-  expect(await badge.evaluate((el) => getComputedStyle(el).borderRadius)).toBe('999px')
-  const nums = page.locator('.ladder .band-note .dim').first()
-  if ((await nums.count()) > 0) {
-    await expect(nums).toHaveText(/출제 \d+개 \/ 숙지 \d+개/)
-    // 기본 글자에서는 한 줄이다 — 줄이 접히면 이 칸이 다시 복잡해진다 (2026-09-22)
-    expect(await nums.evaluate((el) => el.getClientRects().length)).toBe(1)
-    // 배지와 수치가 **같은 오른쪽 선**에 선다 (2026-09-22 사용자 요청). 배지를 밴드 이름
-    // 옆에 두면 그 선이 안 생긴다 — 그게 막대 오른쪽 끝을 고른 이유다
-    const item = page
-      .locator('.ladder .ladder-item')
-      .filter({ has: page.locator('.band-note .dim') })
-      .first()
-    const gap = await item.evaluate((el) => {
-      const badge = el.querySelector('.band-badge')!.getBoundingClientRect()
-      const note = el.querySelector('.band-note .dim')!.getBoundingClientRect()
-      return Math.round(badge.right - note.right)
-    })
-    expect(Math.abs(gap)).toBeLessThanOrEqual(1)
-  }
+  // 알약 배지는 없어졌다 (2026-09-23) — 밴드마다 같은 말을 되풀이하며 자리만 먹었다
+  await expect(page.locator('.ladder .band-badge')).toHaveCount(0)
+  // 판정 이름은 화면에서 빠졌지만 **읽어 주는 쪽에는 남는다.** 도형은 낭독이 안 된다
+  const sr = page.locator('.ladder tbody th .sr-only').first()
+  await expect(sr).toHaveText(/(안정|흔들림|표본 부족|미학습)/)
+  expect(await sr.evaluate((el) => el.getBoundingClientRect().width)).toBeLessThanOrEqual(1)
+  // 수치가 **열로 맞는다** — 오른쪽 정렬이던 전에는 밴드끼리 비교가 안 됐다 (2026-09-23)
+  const cols = await page
+    .locator('.ladder tbody tr:not(.edge-row)')
+    .evaluateAll((rows) =>
+      rows.map((r) =>
+        [...r.querySelectorAll('td')].map((c) => Math.round(c.getBoundingClientRect().right)),
+      ),
+    )
+  expect(cols.length).toBeGreaterThanOrEqual(3)
+  for (const row of cols) expect(row).toEqual(cols[0])
   // 처방 — 진단 직후는 표본이 적어 "더 봐야 한다"가 뜬다
   await expect(page.getByText('다음에 볼 것')).toBeVisible()
   await expect(page.locator('.rx-list > li').first()).toBeVisible()

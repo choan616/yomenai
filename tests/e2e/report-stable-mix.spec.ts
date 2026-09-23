@@ -168,4 +168,23 @@ test('흔들리는 밴드는 밴드 색을 잃지 않고 사선만 덧입는다'
   expect(paint.shadow === 'none' || paint.shadow === '').toBe(true)
   // ③ 朱 는 막대에서 빠졌지만 범례 글자에는 남는다
   await expect(page.locator('.mix-key.band-shaky')).toHaveCount(1)
+
+  // ── 밴드 표 (2026-09-23) — 흔들리는 행에만 왼쪽 줄이 선다
+  const rules = await page.locator('.ladder tbody tr').evaluateAll((rows) =>
+    rows.map((r) => {
+      const cell = r.querySelector('th')
+      if (!cell) return null
+      const before = getComputedStyle(cell, '::before')
+      return before.content === 'none' ? null : before.background
+    }),
+  )
+  expect(rules.filter(Boolean).length).toBeGreaterThanOrEqual(1)
+
+  // **큰 글자에서도 밴드 이름이 한 줄이다.** 「밴드 2 N2~N1 경계」가 가장 길다 —
+  // 접히면 표의 열이 어긋나 정리한 이유가 사라진다
+  await page.evaluate(() => document.documentElement.setAttribute('data-text-scale', 'lg'))
+  const lines = await page
+    .locator('.ladder tbody th')
+    .evaluateAll((cells) => cells.map((c) => c.getClientRects().length))
+  for (const n of lines) expect(n).toBe(1)
 })
