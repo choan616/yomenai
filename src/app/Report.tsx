@@ -23,6 +23,7 @@ import {
 } from '../core/ruleRecord.ts'
 import type { MistakeType } from '../core/types.ts'
 import { BROWSE_N, buildReport, type MistakeSlice, type Report as ReportData } from '../core/report.ts'
+import { pairRows, summarize, type OnyomiMasterySummary } from '../core/onyomiMap.ts'
 import { LOCAL_USER_ID, listEvents } from '../db/events.ts'
 import { db } from '../db/schema.ts'
 import { loadBaseIdioms, loadKanji, loadPairs, studyPool } from '../dict/load.ts'
@@ -58,6 +59,11 @@ interface Loaded {
   rows: MistakeRow[]
   /** 「모르겠어요」로 넘긴 오답. 이름이 아니라 **답이 없는** 것이라 분포 맨 아래에 따로 둔다 */
   passed: number
+  /**
+   * 음독 맵의 수치 (2026-09-23 사용자 보고 「음독맵의 숫자와 밴드의 숫자가 다르다」).
+   * 두 화면이 서로의 자를 밝히기로 했다 — 여기서는 음독 맵으로 들어가는 행이 그 수를 든다
+   */
+  onyomi: OnyomiMasterySummary
 }
 
 /**
@@ -129,8 +135,12 @@ export function Report({
         const voicing = voicingCounts(classifiedMistakes(events), again)
         // 미분류 중 답이 있는 몫만 「잘못 읽기」다. 넘김(빈 답)은 이름 이전에 답이 없다
         const passed = passedCount(events)
+        // 음독 맵과 **같은 함수·같은 분모**로 센다. 따로 세면 두 화면이 또 갈라진다
+        const learn = pool.filter((p) => inPool.has(p.idiomId))
+        const onyomi = summarize(pairRows(learn.flatMap((p) => p.pairIds), pairs, state))
         const next: Loaded = {
           report,
+          onyomi,
           level,
           voicing,
           passed,
@@ -164,7 +174,11 @@ export function Report({
       <div className="screen-body">
         {/* 도구 둘은 **기록이 없어도** 보인다 (2026-09-17). 규칙은 처방에서만 닿게 두면
             읽기 30회를 채우기 전에는 아예 못 여는데, 규칙은 처음 틀린 날 가장 필요하다 */}
-        <ToolsSection onOnyomi={onOnyomi} onRules={() => onRule(null)} />
+        <ToolsSection
+          onyomi={data?.onyomi ?? null}
+          onOnyomi={onOnyomi}
+          onRules={() => onRule(null)}
+        />
 
         {/* 알림은 **도구 아래**, 곧 본문이 들어설 자리에 둔다 (2026-09-21 사용자 지적).
             위에 두면 계산이 끝나 문구가 사라질 때 도구 묶음이 통째로 24px 올라간다 —
@@ -635,7 +649,16 @@ function RxItem({
  * 이 둘은 그 답을 들고 가는 자리다 — 음독 맵은 전체에서 어디까지 왔나, 규칙은 왜 틀리나.
  * **기록이 없어도 보인다** — 처음 틀린 날 규칙이 가장 필요하다.
  */
-function ToolsSection({ onOnyomi, onRules }: { onOnyomi: () => void; onRules: () => void }) {
+function ToolsSection({
+  onyomi,
+  onOnyomi,
+  onRules,
+}: {
+  /** 계산 전에는 `null` 이다 — 이 묶음은 기록이 없어도, 재생이 끝나기 전에도 보인다 */
+  onyomi: OnyomiMasterySummary | null
+  onOnyomi: () => void
+  onRules: () => void
+}) {
   return (
     <section className="tools">
       <p className="section-title">도구</p>
@@ -646,7 +669,15 @@ function ToolsSection({ onOnyomi, onRules }: { onOnyomi: () => void; onRules: ()
       </button>
       <button type="button" className="tool-row" onClick={onOnyomi}>
         <span className="tool-name">음독 맵</span>
-        <span className="tool-note">(한자, 음독) 쌍 숙달 현황</span>
+        {/* 표현이 아니라 **쌍**을 센다고 행이 직접 말한다 (2026-09-23) — 위 사다리의
+            「숙지한 표현 N개」와 다른 자라는 걸 들어가기 전에 알아야 한다.
+            **두 문구 다 한 줄이다** — 수치가 채워질 때 줄이 늘면 도구 묶음이 덜컥인다
+            (`screen-cache.spec.ts` 가 그걸 못 박는다) */}
+        <span className="tool-note">
+          {onyomi === null
+            ? '(한자, 음독) 쌍 숙달 현황'
+            : `한자 읽기 ${onyomi.mastered}/${onyomi.total}쌍 숙달`}
+        </span>
         <span className="chev">›</span>
       </button>
     </section>

@@ -32,6 +32,36 @@ export const LEVEL_WINDOW = 30
  */
 export const READING_STABLE_DAYS = 14
 
+/**
+ * 이 읽기 카드를 「숙지」로 보는가 (2026-09-23).
+ *
+ * **판정이 두 자리에 있으면 언젠가 갈라진다.** 밴드 사다리와 음독 맵이 서로의 수치를
+ * 인용하게 되면서(사용자 보고 「음독맵의 숫자와 밴드의 숫자가 다르다」) 두 화면이 같은
+ * 정의를 써야 할 이유가 생겼다 — `reclassifier` 를 한 자리에 둔 것과 같은 관례다.
+ */
+export function isReadingStable(card: CardState['card']): boolean {
+  return card.state === State.Review && card.stability >= READING_STABLE_DAYS
+}
+
+/**
+ * 숙지한 읽기 카드 수. **밴드 사다리의 `stable` 합과 같은 값이다.**
+ *
+ * `inPool` 은 출제 범위다 — 훈독을 꺼 놓으면 그 숙어는 앞으로 안 나오므로 총량에서도
+ * 뺀다 (`buildLevel` 의 `bandOf` 가 `undefined` 를 돌려주는 것과 같은 몫).
+ */
+export function stableReadingCount(
+  cards: ReadonlyMap<string, CardState>,
+  inPool: (idiomId: string) => boolean,
+): number {
+  let n = 0
+  for (const [key, st] of cards) {
+    if (st.cardType !== 'reading' || key !== cardKey(st.idiomId, 'reading')) continue
+    if (!inPool(st.idiomId)) continue
+    if (isReadingStable(st.card)) n++
+  }
+  return n
+}
+
 export type BandStatus = 'solid' | 'shaky' | 'thin' | 'unseen'
 
 export interface BandRow {
@@ -110,7 +140,7 @@ export function buildLevel(
     const band = bandOf(st.idiomId)
     if (band === undefined) continue
     met.set(band, (met.get(band) ?? 0) + 1)
-    if (st.card.state === State.Review && st.card.stability >= READING_STABLE_DAYS) {
+    if (isReadingStable(st.card)) {
       stable.set(band, (stable.get(band) ?? 0) + 1)
     }
   }
