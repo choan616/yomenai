@@ -1,6 +1,7 @@
 // 소개 카드 — 처음 만나는 숙어를 시험 대신 보여준다 (2026-09-13).
 // 채점도 이벤트도 없다. 다음 만남부터 문제로 나온다.
 import { useEffect, useState } from 'react'
+import { SoundIcon } from '../app/icons.tsx'
 import type { RubySegment } from '../core/ruby.ts'
 import { loadExamples, type RuntimeIdiom } from '../dict/load.ts'
 import { tts } from './tts.ts'
@@ -59,7 +60,7 @@ export function IntroCard({
         {idiom.koMeaning?.definition && <p className="meaning">{idiom.koMeaning.definition}</p>}
         {tts.available && (
           <button type="button" className="tts-btn" onClick={() => tts.speak(idiom.reading)}>
-            <span aria-hidden="true">🔊</span> 소리 듣기
+            <SoundIcon /> 소리 듣기
           </button>
         )}
         {sentence !== null && (

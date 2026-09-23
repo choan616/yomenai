@@ -5,6 +5,7 @@
 // 스냅을 브라우저가 하고, 이 파일은 스크롤 위치에서 지금 장을 읽어 머리말에 반영하는 것과
 // 버튼이 트랙을 스크롤하게 하는 것만 한다.
 import { useEffect, useRef, useState } from 'react'
+import { SoundIcon } from './icons.tsx'
 import { frequentIdioms, pickBrowse, pickBrowseMore } from '../core/report.ts'
 import { replay } from '../core/replay.ts'
 import {
@@ -345,7 +346,7 @@ function BrowseSlide({
           {item.meaning && <p className="meaning">{item.meaning}</p>}
           {tts.available && (
             <button type="button" className="tts-btn" onClick={() => tts.speak(item.reading)}>
-              <span aria-hidden="true">🔊</span> 소리 듣기
+              <SoundIcon /> 소리 듣기
             </button>
           )}
           {sentence !== undefined && (

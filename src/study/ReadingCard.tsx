@@ -1,6 +1,7 @@
 // 읽기 교정 카드 — 숙어 제시 → 히라가나 입력. 객관식이 아니다 (PLAN §6).
 // 입력창은 피드백 중에도 마운트를 유지한다 — iOS 스탠드얼론에서 포커스·키보드를 놓지 않으려고.
 import { useEffect, useState } from 'react'
+import { SoundIcon } from '../app/icons.tsx'
 import type { Confidence } from '../core/scheduler.ts'
 import { diffAnswer } from '../core/answerDiff.ts'
 import { toHiragana } from '../lib/readings.ts'
@@ -141,7 +142,7 @@ export function ReadingCard({
             )}
             {tts.available && (
               <button type="button" className="tts-btn" onClick={() => tts.speak(fb.expected)}>
-                <span aria-hidden="true">🔊</span> 소리 듣기
+                <SoundIcon /> 소리 듣기
               </button>
             )}
             <ExampleSentence key={idiom.idiomId} idiomId={idiom.idiomId} />

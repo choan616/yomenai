@@ -1,5 +1,6 @@
 // 어휘 확장 카드 — 뜻 + 읽기 확인. 동형이의·일본 고유 그룹에서만 나온다 (PLAN §6)
 import { useState } from 'react'
+import { SoundIcon, ThumbDownIcon, ThumbUpIcon } from '../app/icons.tsx'
 import type { RubySegment } from '../core/ruby.ts'
 import type { MeaningVerdict } from '../core/types.ts'
 import type { RuntimeIdiom } from '../dict/load.ts'
@@ -58,7 +59,7 @@ export function MeaningCard({ idiom, ruby, graded, onGrade, onNext, vote, onVote
         {/* 확인 단계(뜻 확인 후)에만 소리를 보탠다 — 문제 풀이(뜻 떠올리기) 중엔 안 준다 */}
         {(revealed || graded) && tts.available && (
           <button type="button" className="tts-btn" onClick={() => tts.speak(idiom.reading)}>
-            <span aria-hidden="true">🔊</span> 소리 듣기
+            <SoundIcon /> 소리 듣기
           </button>
         )}
 
@@ -91,7 +92,7 @@ export function MeaningCard({ idiom, ruby, graded, onGrade, onNext, vote, onVote
                 aria-label="해석이 맞아요"
                 onClick={() => onVote('ok')}
               >
-                <span aria-hidden="true">👍</span>
+                <ThumbUpIcon />
               </button>
               <button
                 type="button"
@@ -100,7 +101,7 @@ export function MeaningCard({ idiom, ruby, graded, onGrade, onNext, vote, onVote
                 aria-label="해석이 이상해요"
                 onClick={() => onVote('bad')}
               >
-                <span aria-hidden="true">👎</span>
+                <ThumbDownIcon />
               </button>
             </div>
           </div>
