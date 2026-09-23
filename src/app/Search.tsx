@@ -18,10 +18,17 @@ import { recordStar } from '../core/session.ts'
 import { getDeviceId } from '../db/device.ts'
 import { LOCAL_USER_ID, appendEvent, listEvents } from '../db/events.ts'
 import { db } from '../db/schema.ts'
-import { loadBaseIdioms, loadKanji, type KanjiInfo, type RuntimeIdiom } from '../dict/load.ts'
+import {
+  loadBand4Idioms,
+  loadBaseIdioms,
+  loadKanji,
+  type KanjiInfo,
+  type RuntimeIdiom,
+} from '../dict/load.ts'
 import type { CameraFound } from './CameraFind.tsx'
 import {
   loadReadingIndex,
+  loadWideReadingIndex,
   searchByReading,
   type ReadingGroup,
   type ReadingIndex,
@@ -153,9 +160,61 @@ export function Search({
     setRaw(found.fill ?? '')
   }
 
+  /**
+   * 밴드 4까지 넓힌 자료 (2026-09-23 사용자 판정). **찾기는 학습이 아니라 조회라**
+   * 출제 범위와 찾을 수 있는 범위가 같을 이유가 없다 — 소설에서 막히는 말일수록
+   * 빈도표 밖이다 (`陰鬱`·`憂鬱` 이 밴드 4다).
+   *
+   * 20MB 라 화면을 열 때가 아니라 **실제로 찾기 시작할 때** 부른다. 한 번 받으면
+   * 서비스워커 런타임 캐시에 남는다
+   */
+  const [wide, setWide] = useState<Pick<Loaded, 'index' | 'byId' | 'idOfHead' | 'poolSize'> | null>(
+    null,
+  )
+  const [widening, setWidening] = useState(false)
+  const asked = useRef(false)
+  const wants = raw.trim() !== '' || found !== null
+
+  useEffect(() => {
+    if (!wants || asked.current) return
+    asked.current = true
+    let alive = true
+    setWidening(true)
+    ;(async () => {
+      try {
+        const [index, band4, base] = await Promise.all([
+          loadWideReadingIndex(),
+          loadBand4Idioms(),
+          loadBaseIdioms(),
+        ])
+        if (!alive) return
+        const all = [...base, ...band4]
+        setWide({
+          index,
+          byId: new Map(all.map((it) => [it.idiomId, it])),
+          idOfHead: new Map(all.map((it): [string, string] => [it.headword, it.idiomId]).reverse()),
+          poolSize: all.length,
+        })
+      } catch {
+        /* 못 받으면 좁은 자료로 그대로 간다. 찾기가 멈추지는 않는다 */
+      } finally {
+        if (alive) setWidening(false)
+      }
+    })()
+    return () => {
+      alive = false
+    }
+  }, [wants])
+
+  /** 넓힌 게 오면 그걸 쓰고, 아니면 기본 자료로 */
+  const view = useMemo(
+    () => (loaded === null ? null : wide === null ? loaded : { ...loaded, ...wide }),
+    [loaded, wide],
+  )
+
   const groups = useMemo(
-    () => (loaded === null ? [] : searchByReading(loaded.index, raw, GROUP_LIMIT)),
-    [loaded, raw],
+    () => (view === null ? [] : searchByReading(view.index, raw, GROUP_LIMIT)),
+    [view, raw],
   )
 
   const typed = raw.trim() !== ''
@@ -217,35 +276,43 @@ export function Search({
 
         {error !== null ? (
           <p className="empty">불러오지 못했어요: {error}</p>
-        ) : loaded === null ? (
+        ) : view === null ? (
           <p className="empty">불러오고 있어요…</p>
         ) : !typed ? (
           <>
             {found !== null && found.fill === null && (
               <CameraCandidates
                 found={found}
-                loaded={loaded}
+                loaded={view}
                 starred={starred}
                 onToggle={toggleStar}
                 onClose={onUsedFound}
               />
             )}
-            <Basket loaded={loaded} starred={starred} onToggle={toggleStar} />
-            <Scope poolSize={loaded.poolSize} />
+            <Basket loaded={view} starred={starred} onToggle={toggleStar} />
+            <Scope poolSize={view.poolSize} widening={widening} />
           </>
         ) : groups.length === 0 ? (
           <>
             <p className="empty">
-              <b lang="ja">{raw}</b> 로 읽히는 숙어가 없어요.
+              {widening ? (
+                <>
+                  <b lang="ja">{raw}</b> 로 찾는 중이에요. 더 넓은 사전을 받고 있어요…
+                </>
+              ) : (
+                <>
+                  <b lang="ja">{raw}</b> 로 읽히는 숙어가 없어요.
+                </>
+              )}
             </p>
-            <Scope poolSize={loaded.poolSize} />
+            <Scope poolSize={view.poolSize} widening={widening} />
           </>
         ) : (
           groups.map((g) => (
             <Group
               key={g.reading}
               group={g}
-              loaded={loaded}
+              loaded={view}
               starred={starred}
               onToggle={toggleStar}
             />
@@ -320,7 +387,9 @@ function IdiomRows({
               {it.reading}
             </span>
             <span className="r-sub r-meaning">{it.koMeaning?.definition ?? ''}</span>
-            {loaded.started.has(id) ? (
+            {it.band === 4 ? (
+              <span className="star-slot dim">학습 범위 밖</span>
+            ) : loaded.started.has(id) ? (
               <span className="star-slot dim">학습 중</span>
             ) : (
               <StarButton
@@ -400,10 +469,11 @@ function StarButton({
 }
 
 /** 찾을 수 있는 범위. 검색창은 "아무거나 찾아도 된다"고 약속하는 물건이라 경계를 적어 둔다 */
-function Scope({ poolSize }: { poolSize: number }) {
+function Scope({ poolSize, widening }: { poolSize: number; widening: boolean }) {
   return (
     <p className="search-scope">
-      한자 숙어 <b>{poolSize.toLocaleString('ko')}</b>개에서 찾아요.
+      한자 숙어 <b>{poolSize.toLocaleString('ko')}</b>개에서 찾아요
+      {widening && <span className="dim"> · 더 넓은 사전을 받는 중…</span>}
       <br />
       동사·형용사와 가나로 쓰는 말은 이 앱이 다루지 않아 나오지 않아요.
     </p>
@@ -454,7 +524,11 @@ function Group({
             )}
             {/* 이미 카드가 생긴 숙어에는 담기를 안 낸다 — 담아도 아무 일이 안 일어난다.
                 빈칸으로 두면 "왜 이 줄만 없지"가 되므로 그 자리에 이유를 적는다 */}
-            {loaded.started.has(it.idiomId) ? (
+            {/* 밴드 4 는 **출제 범위 밖**이다. 담아도 세션에 안 나오니 담기를 안 낸다 —
+                빈칸으로 두면 「왜 이 줄만 없지」가 되므로 그 자리에 이유를 적는다 */}
+            {it.band === 4 ? (
+              <span className="star-slot dim">학습 범위 밖</span>
+            ) : loaded.started.has(it.idiomId) ? (
               <span className="star-slot dim">학습 중</span>
             ) : (
               <StarButton

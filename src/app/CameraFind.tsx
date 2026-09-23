@@ -10,7 +10,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { nearMisses, normalize, pickBest, type DictHit } from '../core/ocrMatch.ts'
 import { flip, recognize, shutdown, warmUp, type Direction } from '../dict/ocr.ts'
-import { loadBaseIdioms, studyPool } from '../dict/load.ts'
+import { loadBand4Idioms, loadBaseIdioms, studyPool } from '../dict/load.ts'
 import { loadSettings } from './settings.ts'
 
 /** 카메라를 못 켠 이유. 무엇을 하면 되는지가 사유마다 다르다 */
@@ -92,22 +92,41 @@ export function CameraFind({
    */
   const [dir, setDir] = useState<Direction>('vertical')
 
-  /** 사전 — 표기로 찾는다. 찾기 화면과 같은 풀(훈독 설정 반영)을 본다 */
+  /**
+   * 사전 — 표기로 찾는다. **밴드 4까지 본다** (2026-09-23).
+   *
+   * 여기가 밴드 4가 가장 필요한 자리다 — **모르는 말이라서 찍는 것**이고, 모르는 말일수록
+   * 빈도표 밖이다. 찍었는데 「사전에 없음」이 나오면 기능이 성립하지 않는다.
+   *
+   * 기본 사전을 먼저 세우고 넓은 쪽은 뒤따라 받는다(20MB). 그 사이에 찍어도 기본 사전으로
+   * 답하고, 거기서 못 찾으면 `shoot` 이 넓은 쪽을 기다린다 — **실패할 때만 기다린다.**
+   */
   const dict = useRef<Map<string, DictHit> | null>(null)
+  const wide = useRef<Promise<Map<string, DictHit>> | null>(null)
 
   useEffect(() => {
     let alive = true
-    void (async () => {
-      const pool = await loadBaseIdioms()
-      if (!alive) return
-      const learn = studyPool(pool, loadSettings().kunPercent > 0)
+    const toMap = (pool: { idiomId: string; headword: string; reading: string }[]) => {
       const map = new Map<string, DictHit>()
-      for (const it of learn) {
+      for (const it of pool) {
         if (!map.has(it.headword)) {
           map.set(it.headword, { idiomId: it.idiomId, headword: it.headword, reading: it.reading })
         }
       }
-      dict.current = map
+      return map
+    }
+    void (async () => {
+      const pool = await loadBaseIdioms()
+      if (!alive) return
+      // 훈독을 꺼 놨으면 훈독 숙어는 뺀다 — 찾기·출제와 같은 범위다
+      const kun = loadSettings().kunPercent > 0
+      dict.current = toMap(studyPool(pool, kun))
+      wide.current = Promise.all([loadBaseIdioms(), loadBand4Idioms()]).then(([base, band4]) =>
+        toMap([...studyPool(base, kun), ...studyPool(band4, kun)]),
+      )
+      void wide.current.then((m) => {
+        if (alive) dict.current = m
+      })
     })()
     return () => {
       alive = false
@@ -197,15 +216,19 @@ export function CameraFind({
     setReading(true)
     setMiss(null)
     try {
-      const lookup = (h: string) => dict.current?.get(h)
-      // 기본 방향으로 먼저. 사전이 못 알아보면 **그때만** 반대로 한 번 더 —
-      // 늘 양쪽을 돌리면 비용이 늘 두 배인데 이득은 실패했을 때만이다 (결정 2)
-      let best = pickBest(await recognize(canvas, dir), lookup)
+      const narrow = (h: string) => dict.current?.get(h)
+      // 읽어 둔 것을 **모아 둔다.** 사전이 넓어지면 OCR 을 다시 돌리지 않고 다시 맞추기만
+      // 하면 된다 — 글자는 그대로고 찾을 자리만 넓어진 것이다
+      const attempts = [...(await recognize(canvas, dir))]
+      let best = pickBest(attempts, narrow)
+
       if (best?.hit === undefined) {
         // **같은 조각을 그대로 반대 모델에 넣는다.** 네모가 정사각형이라 모양을 다시
-        // 맞출 일이 없다 — 길쭉했다면 여기서 다시 잘라야 했다
+        // 맞출 일이 없다 — 길쭉했다면 여기서 다시 잘라야 했다 (결정 2)
         const other = flip(dir)
-        const again = pickBest(await recognize(canvas, other), lookup)
+        const more = await recognize(canvas, other)
+        attempts.push(...more)
+        const again = pickBest(more, narrow)
         if (again?.hit !== undefined) {
           setDir(other)
           best = again
@@ -214,13 +237,22 @@ export function CameraFind({
         }
       }
 
+      // 여기까지 못 찾았으면 **그때** 넓은 사전(밴드 4)을 기다린다. 맞혔으면 기다릴 일이 없다
+      let words = dict.current
+      if (best?.hit === undefined && wide.current !== null) {
+        words = await wide.current
+        const wider = words
+        const retry = pickBest(attempts, (h) => wider.get(h))
+        if (retry?.hit !== undefined) best = retry
+      }
+
       const raw = normalize(best?.attempt.text ?? '')
       if (best?.hit !== undefined) {
         onFound({ fill: best.hit.reading, candidates: [best.hit.headword], raw })
         return
       }
       // 못 맞혔다. **단정하지 않고** 한 자 어긋난 것들을 후보로 낸다 (결정 6)
-      const near = dict.current === null ? [] : nearMisses(raw, dict.current.keys())
+      const near = words === null ? [] : nearMisses(raw, words.keys())
       if (near.length > 0) {
         onFound({ fill: null, candidates: near, raw })
         return

@@ -33,7 +33,11 @@ test('히라가나로 한자 표기를 찾는다', async ({ page }) => {
   // 앞부분 일치 — 다 치기 전에도 후보가 나온다
   await input.fill('こうしょう')
   await expect(page.locator('.hit-group .section-title').first()).toContainText('こうしょう')
-  await expect(page.locator('.rows > li').filter({ hasText: '交渉' })).toContainText('교섭')
+  // **표기가 정확히 그것인 줄**을 집는다. 부분 일치로 잡으면 交渉人·団体交渉 까지
+  // 걸린다 — 밴드 4 를 열면서 9줄이 됐다 (2026-09-23)
+  await expect(
+    page.locator('.rows > li').filter({ has: page.locator('.r-main', { hasText: /^交渉$/ }) }),
+  ).toContainText('교섭')
 
   // 채점하는 화면이 아니다
   await expect(page.locator('.kana-input')).toHaveCount(0)

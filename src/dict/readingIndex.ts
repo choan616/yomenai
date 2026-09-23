@@ -4,7 +4,7 @@
 // 묶이고("이 한자가 이 음을 갖는 다른 예"), 이쪽 키는 단어 전체 읽기라 光輝·好機 처럼
 // 한자가 하나도 안 겹치는 것이 묶인다("이 소리로 읽히는 다른 단어").
 import { toHiragana } from '../lib/readings.ts'
-import { loadBaseIdioms, type RuntimeIdiom } from './load.ts'
+import { loadBand4Idioms, loadBaseIdioms, type RuntimeIdiom } from './load.ts'
 
 export interface ReadingIndex {
   /** 읽기 → 그 읽기를 가진 숙어. 값은 등장 순서(사전 DB 정렬) 그대로 */
@@ -82,4 +82,23 @@ let indexPromise: Promise<ReadingIndex> | null = null
 export function loadReadingIndex(): Promise<ReadingIndex> {
   indexPromise ??= loadBaseIdioms().then(buildReadingIndex)
   return indexPromise
+}
+
+let widePromise: Promise<ReadingIndex> | null = null
+
+/**
+ * 밴드 4까지 넣은 역인덱스 (2026-09-23 사용자 판정).
+ *
+ * **찾기는 학습이 아니라 조회다.** 출제 범위(밴드 0~3)와 찾을 수 있는 범위가 같아야 할
+ * 이유가 없다. 소설에서 막히는 말일수록 빈도표 밖이라 — `陰鬱`·`憂鬱` 이 밴드 4다.
+ * 카메라를 붙이면서 더 그렇다. 모르는 말이라서 찍는 것이니까.
+ *
+ * **20MB 다.** 그래서 찾기를 열 때가 아니라 **실제로 찾기 시작할 때** 부른다
+ * (`Search.tsx`). 한 번 받으면 서비스워커 런타임 캐시에 남는다.
+ */
+export function loadWideReadingIndex(): Promise<ReadingIndex> {
+  widePromise ??= Promise.all([loadBaseIdioms(), loadBand4Idioms()]).then(([base, band4]) =>
+    buildReadingIndex([...base, ...band4]),
+  )
+  return widePromise
 }
