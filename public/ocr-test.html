@@ -35,13 +35,18 @@
 /* 미리보기는 **짧은 띠**다 (2026-09-23 사용자 지적 「카메라 화면이 클 필요가 없다」).
      세로 프레임을 폭에 맞추면 360×640 이 되어 화면을 다 먹고 결과가 접혀 내려간다.
      겨눌 때 필요한 건 단어 둘레뿐이라 가운데만 남기고 위아래를 자른다 */
-  .stage { position:relative; width:100%; height:200px; background:#000; border-radius:10px;
+  .stage { cursor:pointer; -webkit-tap-highlight-color:transparent;
+           position:relative; width:100%; height:200px; background:#000; border-radius:10px;
            overflow:hidden; display:flex; align-items:center; justify-content:center }
   #cam { display:block; width:100%; height:auto; flex:none;
          transform-origin:center center; transition:transform 140ms ease-out }
   #shot { display:block; width:100%; max-height:200px; object-fit:contain; background:#000 }
   #frame { position:absolute; border:2px solid var(--ok); border-radius:6px;
-           box-shadow:0 0 0 9999px rgba(0,0,0,.35) }
+           box-shadow:0 0 0 9999px rgba(0,0,0,.35); pointer-events:none }
+  /* 누르면 한 번 밝아진다 — 155ms 만에 끝나서 아무 일도 안 난 것처럼 보인다 */
+  #flash { position:absolute; inset:0; background:#fff; opacity:0; pointer-events:none }
+  #flash.on { animation: blink 220ms ease-out }
+  @keyframes blink { from { opacity:.5 } to { opacity:0 } }
   .hint { font-size:12px; color:var(--faint); margin:8px 0 0 }
   .big { font-size:30px; letter-spacing:.04em; margin:6px 0;
          font-family:"Hiragino Kaku Gothic ProN","Yu Gothic","Meiryo",sans-serif }
@@ -90,15 +95,17 @@
       <input id="file" type="file" accept="image/*" capture="environment">
     </label>
   </div>
-  <div class="stage" id="stage" hidden>
+  <div class="stage" id="stage" role="button" tabindex="0"
+       aria-label="네모 안을 읽기" hidden>
     <video id="cam" playsinline muted autoplay></video>
     <div id="frame"></div>
+    <div id="flash"></div>
   </div>
   <div class="row" id="shootRow" hidden style="margin-top:10px">
-    <button id="shoot" class="primary">네모 안을 읽기</button>
-    <button id="shootAll">화면 전체 읽기</button>
+    <button id="shootAll">띠 전체 읽기</button>
   </div>
-  <p class="hint" id="camHint" hidden>초록 네모를 단어로 꽉 채운다. 네모 안만 잘라서 읽는다.</p>
+  <p class="hint" id="camHint" hidden>초록 네모를 단어로 꽉 채우고 <b>화면을 누른다</b>.
+    네모 안만 잘라서 읽는다.</p>
 </div>
 
 <div class="card">
@@ -335,7 +342,7 @@ async function runOnce(canvas, label, oneLine) {
   const w = await getWorker()
   window.__lastCrop = { w: canvas.width, h: canvas.height }
   log(label + " 조각 " + canvas.width + "×" + canvas.height + " · " +
-    (oneLine ? (vertical ? "폭" : "높이") + "을 줄여 여러 배율로" : "덩이라 원본 그대로"))
+    (oneLine ? (vertical ? "폭" : "높이") + "를 줄여 여러 배율로" : "덩이라 원본 그대로"))
 
   // 덩이는 안 줄인다. 한 번만 넣는다
   const plan = oneLine ? SCALES : [0]
@@ -373,7 +380,21 @@ function shootWith(cropToFrame, label, oneLine) {
   $("shot").hidden = false
   return run(c, label, oneLine)
 }
-$("shoot").onclick = () => shootWith(true, "네모", true)
+/**
+ * **화면을 누르면 읽는다** (2026-09-23 사용자 요청 「버튼이 따로 있어서 불편했다」).
+ * 겨누는 손과 누르는 손이 같은 자리여야 한다 — 겨눠 놓고 아래 버튼으로 손을 옮기면
+ * 그 사이에 흔들린다
+ */
+function flash() {
+  const el = $("flash")
+  el.classList.remove("on")
+  void el.offsetWidth // 애니메이션을 다시 태우려면 한 번 끊어야 한다
+  el.classList.add("on")
+}
+$("stage").onclick = () => { flash(); shootWith(true, "네모", true) }
+$("stage").onkeydown = (e) => {
+  if (e.key === "Enter" || e.key === " ") { e.preventDefault(); flash(); shootWith(true, "네모", true) }
+}
 $("shootAll").onclick = () => shootWith(false, "띠 전체", false)
 $("file").onchange = (e) => {
   const f = e.target.files[0]
