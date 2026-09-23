@@ -2146,14 +2146,14 @@ RENDAKU 7(安心 あんしん/あんじん, 境界 きょうかい/きょうが�
 
 ### 1단계 — 모델을 우리 오리진에서, 오프라인으로
 
-- [ ] **`jpn`·`jpn_vert`(tessdata_fast) + `tesseract.js-core` WASM 을 `public/ocr/` 에 둔다**
+- [x] **`jpn`·`jpn_vert`(tessdata_fast) + `tesseract.js-core` WASM 을 `public/ocr/` 에 둔다**
   - CDN 금지 (PLAN §2 로컬 우선 · CLAUDE.md IndexedDB 금지)
   - 검증: 네트워크를 끊고도 두 번째 사용이 된다
-- [ ] **프리캐시에서 빼고 런타임 캐시로** — `globIgnores` + `runtimeCaching` (`band4.json` 관례)
+- [x] **프리캐시에서 빼고 런타임 캐시로** — `globIgnores` + `runtimeCaching` (`band4.json` 관례)
   - 검증: `npm run build` 의 프리캐시 목록에 `ocr/` 가 **없고**, 여유가 6.37MB 그대로다
-- [ ] **`cacheMethod: 'none'`** — tesseract 가 IndexedDB 에 쓰지 않게 막는다
+- [x] **`cacheMethod: 'none'`** — tesseract 가 IndexedDB 에 쓰지 않게 막는다
   - 검증: 인식 후 IndexedDB 에 `yomenai` 말고 새 DB 가 안 생긴다
-- [ ] **라이선스 고지** — 안내서에 Apache-2.0 출처를 싣는다
+- [x] **라이선스 고지** — 안내서에 Apache-2.0 출처를 싣는다
 
 ### 2단계 — 화면과 겨누기
 
@@ -2175,6 +2175,9 @@ RENDAKU 7(安心 あんしん/あんじん, 境界 きょうかい/きょうが�
   - 검증: 꼬리에 잡소리가 붙은 입력에서 짧은 오적중(`和合`)을 안 고른다
 - [ ] **근사 매칭** — 같은 길이·한 자 차이를 **후보로만** 낸다. 단정하지 않는다
   - 검증: `軍朋` 을 넣으면 `軍艦` 이 후보에 뜨되 답으로 확정되지 않는다
+- [ ] **맞은 구간을 강조한다** — 원문 `4ら飲料缶の` 중 `飲料` 가 걸린 것인데 화면이
+      그걸 안 알려 주면 사용자가 무엇을 찾았는지 모른다 (2026-09-23 실물 확인)
+  - 검증: 앞뒤에 이웃 글자가 붙은 인식 결과에서 맞은 두 글자만 도드라진다
 - [ ] **결과는 기존 찾기 카드** — 담아 두기(`star`)가 그대로 동작한다. 새 이벤트 타입 없음
   - 검증: 카메라로 찾은 숙어를 담으면 다음 세션에 소개로 나온다
 

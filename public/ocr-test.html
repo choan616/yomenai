@@ -124,18 +124,31 @@
 <script type="module">
 // ESM 번들은 **기본 내보내기 하나**다. `{ createWorker }` 로 꺼내면
 // "does not provide an export named 'createWorker'" 로 죽는다 (2026-09-23 실측)
-import Tesseract from "https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.esm.min.js"
+import Tesseract from "./ocr/tesseract.esm.min.js"
 const { createWorker } = Tesseract
 
 const $ = (id) => document.getElementById(id)
 const log = (s) => { $("log").textContent += s + "\n"; $("log").scrollTop = 1e6 }
 const norm = (s) => (s || "").replace(/[\s　]/g, "")
 
-const CDN = "https://cdn.jsdelivr.net/npm"
+/**
+ * **우리 오리진에서 받는다** (2026-09-23). CDN 이 아니다 —
+ * PLAN §2 의 로컬 우선 PWA 와 CLAUDE.md 의 「사전류는 정적 자산, IndexedDB 금지」를
+ * 둘 다 지키려면 제3자에 매달릴 수 없다.
+ *
+ * `corePath` 를 **파일로** 가리킨다. 디렉터리를 주면 `getCore` 가
+ * `.wasm.js`(3.76MB, JS 에 wasm 을 박은 것)를 받는데, `.js`+`.wasm` 쌍(2.85MB)을 먼저 써 봤는데 **안 된다** — 워커 안에서 `.wasm` 을
+ * 상대 이름으로 찾다 URL 파싱에 실패한다(실측). wasm 을 품은 `.wasm.js` 를 쓴다.
+ *
+ * `cacheMethod: "none"` — tesseract 기본값은 traineddata 를 **IndexedDB 에 쓴다.**
+ * 사용자 DB 는 백업 대상이고 사전류는 거기 안 들어간다는 게 이 프로젝트 규칙이라,
+ * 캐시는 서비스워커에 맡긴다
+ */
 const OPTS = {
-  langPath: "https://tessdata.projectnaptha.com/4.0.0_fast",
-  workerPath: CDN + "/tesseract.js@5.1.1/dist/worker.min.js",
-  corePath: CDN + "/tesseract.js-core@5",
+  langPath: "./ocr",
+  workerPath: "./ocr/worker.min.js",
+  corePath: "./ocr/tesseract-core-simd-lstm.wasm.js",
+  cacheMethod: "none",
   logger: () => {},
 }
 

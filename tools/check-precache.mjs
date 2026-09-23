@@ -24,6 +24,14 @@ const REQUIRED = [
   'dict/kanji.json',
   'dict/examples.json',
 ]
+/**
+ * **들어가면 안 되는 것.** 카메라 인식 자산(7.4MB)은 런타임 캐시로 미룬다 —
+ * 카메라를 안 쓰는 사람에게 받게 할 이유가 없다. globPatterns 의 js·css·html 패턴이
+ * .wasm.js 와 worker 를 먼저 집으므로, globIgnores 를 건드리면 조용히 딸려 들어간다.
+ * 그걸 여기서 막는다 (2026-09-23)
+ */
+const FORBIDDEN = [/^ocr\//]
+
 /** `vite.config.ts` 의 `maximumFileSizeToCacheInBytes` 와 같아야 한다 */
 const CAP = 12 * 1024 * 1024
 
@@ -32,6 +40,7 @@ const cached = new Set([...sw.matchAll(/url:"([^"]+)"/g)].map((m) => m[1]))
 
 const mb = (n) => (n / 1048576).toFixed(2)
 const missing = REQUIRED.filter((f) => !cached.has(f))
+const sneaked = [...cached].filter((f) => FORBIDDEN.some((re) => re.test(f)))
 
 console.log(`프리캐시 ${cached.size}개 · 상한 ${mb(CAP)}MB`)
 let tightest = 0
@@ -53,6 +62,15 @@ if (missing.length > 0) {
     `\n프리캐시에서 빠졌다: ${missing.join(', ')}\n` +
       `상한(${mb(CAP)}MB)을 넘었을 가능성이 크다. vite.config.ts 의 ` +
       `maximumFileSizeToCacheInBytes 와 이 파일의 CAP 을 함께 올려라.`,
+  )
+  process.exit(1)
+}
+
+if (sneaked.length > 0) {
+  console.error(
+    `\n프리캐시에 딸려 들어갔다: ${sneaked.join(', ')}\n` +
+      `카메라 인식 자산(7.4MB)은 런타임 캐시로 미룬다 — 카메라를 안 쓰는 사람에게 ` +
+      `받게 할 이유가 없다. vite.config.ts 의 globIgnores 에서 '**/ocr/**' 가 빠졌는지 봐라.`,
   )
   process.exit(1)
 }

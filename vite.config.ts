@@ -45,7 +45,10 @@ export default defineConfig(({ command, isPreview }) => ({
           'dict/kanji.json',
           'dict/examples.json',
         ],
-        globIgnores: ['**/dict/band4.json'],
+        // ocr/ — 카메라 한자 인식 모델·엔진 (7.4MB). **프리캐시에 넣지 않는다** —
+        // 카메라를 안 쓰는 사람에게 받게 할 이유가 없다. band4.json 과 같은 자리다.
+        // `**/*.{js,...}` 가 .wasm.js 와 worker 를 먼저 집으므로 여기서 빼야 한다
+        globIgnores: ['**/dict/band4.json', '**/ocr/**'],
         /**
          * 프리캐시에 넣을 파일 하나의 상한. **넘으면 빌드가 실패한다** —
          * vite-plugin-pwa 가 PLUGIN_ERROR 를 던진다 (실측 2026-09-22). 조용히 빠지진 않으니
@@ -71,6 +74,18 @@ export default defineConfig(({ command, isPreview }) => ({
         cleanupOutdatedCaches: true,
         clientsClaim: true,
         runtimeCaching: [
+          {
+            // 카메라 인식 자산 — 첫 사용 때 받고 그 뒤로는 캐시에서 온다.
+            // 내용이 바뀌지 않는 고정 자산이라 CacheFirst 다 (band4 는 갱신될 수 있어
+            // StaleWhileRevalidate 인 것과 다르다)
+            urlPattern: ({ url }) => url.pathname.startsWith('/yomenai/ocr/'),
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'yomenai-ocr-v1',
+              expiration: { maxEntries: 12, maxAgeSeconds: 60 * 60 * 24 * 365 },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
           {
             // band4.json — 밴드 4 를 켠 적이 있으면 그때 캐시되고 이후 오프라인에서 열린다.
             urlPattern: ({ url }) => url.pathname === '/yomenai/dict/band4.json',
