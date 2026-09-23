@@ -1498,3 +1498,156 @@ p.rule-record {
   align-self: center;
   color: var(--text-faint);
 }
+
+/* ── 카메라로 찾기 (2026-09-23) ──
+   읽는 법을 몰라 막힌 순간에 쓰는 입력 수단이다. 검색창 **옆**에 두는 이유가 그것이다 —
+   둘 다 같은 질문("이 단어가 뭐냐")에 답하는 길이라 나란히 선다 */
+.search-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.search-row .search-input {
+  flex: 1;
+  min-width: 0;
+}
+.cam-open {
+  flex: none;
+  width: var(--tap);
+  height: var(--tap);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  font-size: calc(20px * var(--ui-scale));
+  line-height: 1;
+}
+
+/* 띠는 **짧다** — 세로 프레임을 폭에 맞추면 360×640 이 되어 화면을 다 먹고 결과가 접혀
+   내려간다. 겨눌 때 필요한 건 단어 둘레뿐이라 가운데만 남긴다 (2026-09-23 사용자 지적) */
+.cam-stage {
+  position: relative;
+  width: 100%;
+  height: 220px;
+  margin-top: 4px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius);
+  background: #000;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.cam-stage video {
+  display: block;
+  width: 100%;
+  height: auto;
+  flex: none;
+  transform-origin: center center;
+  transition: transform 140ms ease-out;
+}
+/* 초록 네모 안과 실제로 자르는 곳은 **같다.** 여기 값은 화면 기준이고, 자를 때
+   `getBoundingClientRect` 로 환산한다 — 양쪽을 따로 계산하면 언젠가 어긋난다 */
+.cam-frame {
+  position: absolute;
+  /* 정사각형이다 — 높이만 주고 폭은 따라온다. 방향이 바뀌어도 모양이 안 튄다 */
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  aspect-ratio: 1;
+  border: 2px solid var(--band-0);
+  border-radius: 6px;
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.35);
+  pointer-events: none;
+}
+/* 누르면 한 번 밝아진다 — 150ms 만에 끝나서 안 그러면 아무 일도 안 난 것처럼 보인다 */
+.cam-flash {
+  position: absolute;
+  inset: 0;
+  background: #fff;
+  opacity: 0;
+  pointer-events: none;
+}
+.cam-flash.on {
+  animation: cam-blink 220ms ease-out;
+}
+@keyframes cam-blink {
+  from {
+    opacity: 0.5;
+  }
+  to {
+    opacity: 0;
+  }
+}
+.cam-reading {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 10px;
+  margin: 0;
+  text-align: center;
+  font-size: calc(13px * var(--ui-scale));
+  color: var(--text);
+  text-shadow: 0 1px 4px #000;
+}
+.cam-zoom {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+}
+.cam-zoom button {
+  min-height: 40px;
+  padding: 6px 14px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface-2);
+  color: var(--text);
+  font-size: calc(14px * var(--ui-scale));
+  font-variant-numeric: tabular-nums;
+}
+.cam-zoom button[aria-pressed='true'] {
+  border-color: var(--band-0);
+  color: var(--band-0);
+}
+.cam-hint {
+  margin: 12px 0 0;
+  font-size: calc(0.78rem * var(--ui-scale));
+  line-height: 1.6;
+  color: var(--text-dim);
+}
+
+/* 카메라를 못 켠 자리. **무엇을 하면 되는지**가 사유마다 다르다 */
+.cam-trouble {
+  margin-top: 20px;
+}
+.cam-trouble-head {
+  margin: 0 0 8px;
+  font-size: calc(16px * var(--ui-scale));
+}
+.cam-trouble-body {
+  margin: 0 0 18px;
+  font-size: calc(0.85rem * var(--ui-scale));
+  line-height: 1.7;
+  color: var(--text-dim);
+}
+
+/* 확실치 않을 때 내는 후보. **단정하지 않는다** — 무엇으로 읽혔는지를 같이 보여 주고
+   고르는 것은 사용자에게 맡긴다 (결정 6) */
+.cam-candidates {
+  margin-bottom: 18px;
+}
+.cam-raw {
+  margin: 4px 0 10px;
+  font-size: calc(0.78rem * var(--ui-scale));
+  line-height: 1.6;
+  color: var(--text-dim);
+}
+.cam-raw [lang='ja'] {
+  font-family: var(--font-ja);
+  color: var(--text);
+}
+.cam-close {
+  margin-top: 8px;
+  font-size: calc(0.78rem * var(--ui-scale));
+}

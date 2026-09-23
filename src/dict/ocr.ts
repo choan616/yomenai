@@ -39,12 +39,38 @@ interface TesseractModule {
 const asset = (name: string): string => `${import.meta.env.BASE_URL}ocr/${name}`
 
 let modulePromise: Promise<TesseractModule> | null = null
+
+/**
+ * **주입한 `<script type="module">` 안에서 부른다.** 소스에서 곧바로 `import()` 하면
+ * dev 서버가 500 을 낸다 — `public/` 은 변환을 안 거치고 복사만 되는 자리라 소스에서
+ * 가져오면 안 된다고 Vite 가 막는다 (2026-09-23 실측). 주입한 스크립트는 브라우저가
+ * 직접 받으므로 그 변환을 안 지난다.
+ *
+ * ESM 번들은 **기본 내보내기 하나**다. `{ createWorker }` 로 꺼내면
+ * "does not provide an export named 'createWorker'" 로 죽는다 (실측).
+ */
 function loadModule(): Promise<TesseractModule> {
-  // ESM 번들은 **기본 내보내기 하나**다. `{ createWorker }` 로 꺼내면
-  // "does not provide an export named 'createWorker'" 로 죽는다 (2026-09-23 실측)
-  modulePromise ??= import(/* @vite-ignore */ asset('tesseract.esm.min.js')).then(
-    (m: { default: TesseractModule }) => m.default,
-  )
+  modulePromise ??= new Promise<TesseractModule>((resolve, reject) => {
+    const key = '__yomenaiTesseract'
+    const ok = key + ':ok'
+    const fail = key + ':fail'
+    const slot = window as unknown as Record<string, unknown>
+    window.addEventListener(ok, () => resolve(slot[key] as TesseractModule), { once: true })
+    window.addEventListener(
+      fail,
+      () => reject(new Error(String(slot[key + 'Err'] ?? '인식 모듈을 받지 못했어요'))),
+      { once: true },
+    )
+    const el = document.createElement('script')
+    el.type = 'module'
+    el.textContent =
+      `import(${JSON.stringify(asset('tesseract.esm.min.js'))})` +
+      `.then((m) => { window[${JSON.stringify(key)}] = m.default;` +
+      ` window.dispatchEvent(new Event(${JSON.stringify(ok)})); })` +
+      `.catch((e) => { window[${JSON.stringify(key + 'Err')}] = String(e);` +
+      ` window.dispatchEvent(new Event(${JSON.stringify(fail)})); });`
+    document.head.append(el)
+  })
   return modulePromise
 }
 
@@ -69,8 +95,12 @@ function worker(dir: Direction): Promise<TesseractWorker> {
         logger: () => {},
       })
       await it.setParameters({
-        // 7 = 한 줄, 5 = 세로 한 블록. 실측에서 이 조합이 가장 나았다
-        tessedit_pageseg_mode: dir === 'vertical' ? '5' : '7',
+        // 5 = 세로 한 블록, 6 = 가로 한 블록.
+        //
+        // 가로가 7(한 줄)이 아닌 이유 — 네모가 정사각형이라 이웃 줄이 1.4줄쯤 담긴다.
+        // 「한 줄」 모드는 거기서 실패한다 (실측: 7 은 「抽」, 6 은 「爆弾に」).
+        // 단어만 꽉 찬 조각에서는 둘이 같았다 (39/40 동일)
+        tessedit_pageseg_mode: dir === 'vertical' ? '5' : '6',
         // 안 주면 터서랙트가 dpi 를 추정하다 흔들린다
         user_defined_dpi: '300',
       })

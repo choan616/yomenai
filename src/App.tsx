@@ -13,6 +13,7 @@ import { Report } from './app/Report.tsx'
 import { Settings } from './app/Settings.tsx'
 import { Browse } from './app/Browse.tsx'
 import { Search } from './app/Search.tsx'
+import { CameraFind, type CameraFound } from './app/CameraFind.tsx'
 import { Backup } from './app/Backup.tsx'
 import { Feedback } from './app/Feedback.tsx'
 import { Rules } from './app/Rules.tsx'
@@ -34,6 +35,11 @@ export type Sub =
   | { kind: 'feedback' }
   /** 백업·학습 기록 초기화. 설정에서 한 겹 들어간다 (2026-09-22) */
   | { kind: 'backup' }
+  /**
+   * 카메라로 찾기. 찾기에서 한 겹 들어간다 (2026-09-23).
+   * 전체화면(flow)이 아니라 sub 다 — 키보드가 안 올라와 탭바를 덮을 이유가 없다
+   */
+  | { kind: 'camera' }
 
 /**
  * 탭바를 덮는 전체화면 흐름. 끝나면 열었던 탭으로 돌아온다.
@@ -76,11 +82,33 @@ function Shell() {
   }
   const closeFlow = () => setFlow(null)
 
+  /**
+   * 카메라가 찾아낸 것. 찾기 화면이 받아서 **입력란을 대신 채우거나** 후보를 낸다
+   * (2026-09-23 결정 9). 카메라는 키보드를 대신하는 입력 수단이지 새 화면 계통이 아니다
+   */
+  const [found, setFound] = useState<CameraFound | null>(null)
+  const takeFound = (f: CameraFound) => {
+    setFound(f)
+    setSub(null)
+  }
+
   if (flow) return <FlowScreen flow={flow} onExit={closeFlow} onDone={goTab} />
 
   return (
     <>
-      <div className="tabbed">{sub ? <SubScreen sub={sub} onBack={() => setSub(null)} /> : <TabRoot tab={tab} onSub={setSub} onFlow={setFlow} />}</div>
+      <div className="tabbed">
+        {sub ? (
+          <SubScreen sub={sub} onBack={() => setSub(null)} onFound={takeFound} />
+        ) : (
+          <TabRoot
+            tab={tab}
+            onSub={setSub}
+            onFlow={setFlow}
+            found={found}
+            onUsedFound={() => setFound(null)}
+          />
+        )}
+      </div>
       <TabBar tab={tab} onSelect={goTab} />
     </>
   )
@@ -126,10 +154,14 @@ function TabRoot({
   tab,
   onSub,
   onFlow,
+  found,
+  onUsedFound,
 }: {
   tab: Tab
   onSub: (s: Sub) => void
   onFlow: (f: Flow) => void
+  found: CameraFound | null
+  onUsedFound: () => void
 }) {
   switch (tab) {
     case 'home':
@@ -147,7 +179,13 @@ function TabRoot({
         />
       )
     case 'search':
-      return <Search />
+      return (
+        <Search
+          onCamera={() => onSub({ kind: 'camera' })}
+          found={found}
+          onUsedFound={onUsedFound}
+        />
+      )
     case 'settings':
       return (
         <Settings
@@ -158,7 +196,15 @@ function TabRoot({
   }
 }
 
-function SubScreen({ sub, onBack }: { sub: Sub; onBack: () => void }) {
+function SubScreen({
+  sub,
+  onBack,
+  onFound,
+}: {
+  sub: Sub
+  onBack: () => void
+  onFound: (found: CameraFound) => void
+}) {
   switch (sub.kind) {
     case 'onyomi':
       return <OnyomiMap onBack={onBack} />
@@ -168,5 +214,7 @@ function SubScreen({ sub, onBack }: { sub: Sub; onBack: () => void }) {
       return <Feedback onBack={onBack} />
     case 'backup':
       return <Backup onBack={onBack} />
+    case 'camera':
+      return <CameraFind onBack={onBack} onFound={onFound} />
   }
 }

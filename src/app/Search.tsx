@@ -18,6 +18,7 @@ import { getDeviceId } from '../db/device.ts'
 import { LOCAL_USER_ID, appendEvent, listEvents } from '../db/events.ts'
 import { db } from '../db/schema.ts'
 import { loadBaseIdioms, loadKanji, type KanjiInfo, type RuntimeIdiom } from '../dict/load.ts'
+import type { CameraFound } from './CameraFind.tsx'
 import {
   loadReadingIndex,
   searchByReading,
@@ -36,6 +37,8 @@ interface Loaded {
   wrong: Map<string, number>
   /** 담아 둔 목록을 그리려면 id 만으로 표기·읽기를 찾을 수 있어야 한다 */
   byId: Map<string, RuntimeIdiom>
+  /** 표기 → id. 카메라 후보는 표기로 오므로 되짚을 길이 있어야 한다 (2026-09-23) */
+  idOfHead: Map<string, string>
   /** 이미 카드가 생긴 숙어 — 담겨 있어도 별이 할 일이 끝난 것들이다 (`select.ts` 와 같은 기준) */
   started: Set<string>
 }
@@ -56,7 +59,18 @@ function koreanOf(headword: string, kanji: Map<string, KanjiInfo>): string {
  */
 let cache: { version: number; loaded: Loaded; starred: Set<string> } | null = null
 
-export function Search() {
+export function Search({
+  onCamera,
+  found,
+  onUsedFound,
+}: {
+  /** 카메라로 찾기로 한 겹 들어간다 (2026-09-23) */
+  onCamera: () => void
+  /** 카메라가 찾아낸 것. 없으면 `null` */
+  found: CameraFound | null
+  /** 받아서 썼다고 알린다 — 다시 들어올 때 옛 결과가 남아 있으면 안 된다 */
+  onUsedFound: () => void
+}) {
   const [raw, setRaw] = useState('')
   const [loaded, setLoaded] = useState<Loaded | null>(
     () => (cache?.version === dataVersion() ? cache.loaded : null),
@@ -110,6 +124,7 @@ export function Search() {
         const next: Loaded = {
           index, kanji, poolSize: pool.length, wrong, started,
           byId: new Map(pool.map((it) => [it.idiomId, it])),
+          idOfHead: new Map(pool.map((it): [string, string] => [it.headword, it.idiomId]).reverse()),
         }
         cache = { version: dataVersion(), loaded: next, starred: state.starred }
         setLoaded(next)
@@ -122,6 +137,20 @@ export function Search() {
       alive = false
     }
   }, [])
+
+  /**
+   * 카메라가 찾아낸 것을 받는다 (결정 9). **정확히 걸렸으면 입력란을 대신 채운다** —
+   * 그러면 기존 검색이 그대로 돌아 결과가 뜬다. 카메라는 키보드를 대신하는 입력
+   * 수단이지 새 화면 계통이 아니다. 확실치 않으면 후보를 아래에 나열한다.
+   *
+   * 효과가 아니라 **렌더 중에 맞춘다.** 효과로 두면 한 번 그린 뒤 다시 그려서 빈 칸이
+   * 한 박자 비친다 — prop 이 바뀔 때 상태를 맞추는 React 권장 형태다
+   */
+  const [seen, setSeen] = useState<CameraFound | null>(null)
+  if (found !== null && found !== seen) {
+    setSeen(found)
+    setRaw(found.fill ?? '')
+  }
 
   const groups = useMemo(
     () => (loaded === null ? [] : searchByReading(loaded.index, raw, GROUP_LIMIT)),
@@ -141,6 +170,7 @@ export function Search() {
       </div>
 
       <div className={`screen-body${keypad && typing ? ' with-keypad' : ''}`}>
+        <div className="search-row">
         <input
           className="search-input"
           type="text"
@@ -163,6 +193,12 @@ export function Search() {
           onChange={(e) => setRaw(toKana(e.target.value, { IMEMode: 'toHiragana' }))}
           onFocus={() => setTyping(true)}
         />
+        {/* 읽는 법을 모를 때 쓰는 입력 수단이다. 검색창 **옆**에 두는 이유가 그것이다 —
+            둘 다 같은 질문("이 단어가 뭐냐")에 답하는 길이다 */}
+        <button type="button" className="cam-open" onClick={onCamera} aria-label="카메라로 찾기">
+          <span aria-hidden="true">📷</span>
+        </button>
+        </div>
         {/* 자판은 **입력창을 눌렀을 때만** 뜬다. 찾기는 결과 목록이 주인공이라
             자판이 늘 떠 있으면 화면을 절반 먹는다 (2026-09-19) */}
         {keypad && typing && (
@@ -184,6 +220,15 @@ export function Search() {
           <p className="empty">불러오고 있어요…</p>
         ) : !typed ? (
           <>
+            {found !== null && found.fill === null && (
+              <CameraCandidates
+                found={found}
+                loaded={loaded}
+                starred={starred}
+                onToggle={toggleStar}
+                onClose={onUsedFound}
+              />
+            )}
             <Basket loaded={loaded} starred={starred} onToggle={toggleStar} />
             <Scope poolSize={loaded.poolSize} />
           </>
@@ -232,23 +277,7 @@ function Basket({
       <p className="section-title">
         담아 둔 표현<span className="dim"> · {waiting.length}</span>
       </p>
-      <ul className="rows">
-        {waiting.map((id) => {
-          const it = loaded.byId.get(id)!
-          return (
-            <li key={id}>
-              <span className="r-main" lang="ja">
-                {it.headword}
-              </span>
-              <span className="r-sub" lang="ja">
-                {it.reading}
-              </span>
-              <span className="r-sub r-meaning">{it.koMeaning?.definition ?? ''}</span>
-              <StarButton headword={it.headword} on onToggle={() => onToggle(id)} />
-            </li>
-          )
-        })}
-      </ul>
+      <IdiomRows ids={waiting} loaded={loaded} starred={starred} onToggle={onToggle} />
       <p className="basket-note">다음 세션에 소개로 먼저 나와요.</p>
     </div>
   )
@@ -258,6 +287,95 @@ function Basket({
  * 담기·빼기 한 버튼 (2026-09-21 사용자 요청으로 ☆ → +).
  * 색만으로 구분하지 않는다 (PLAN §7) — 기호 자체가 + 와 − 로 바뀐다.
  */
+/**
+ * 표기·읽기·뜻·담기 한 줄씩. **담아 둔 목록과 카메라 후보가 같은 모양을 쓴다** —
+ * 카메라는 입력 수단이 하나 느는 것이지 새 카드 계통이 아니다 (2026-09-23 결정 9).
+ *
+ * 읽기를 같이 내는 게 핵심이다. 검색 결과(`Group`)는 읽기로 찾은 것이라 한국 한자음을
+ * 내는데, 여기 오는 사람은 **읽는 법을 몰라서** 왔다
+ */
+function IdiomRows({
+  ids,
+  loaded,
+  starred,
+  onToggle,
+}: {
+  ids: readonly string[]
+  loaded: Loaded
+  starred: Set<string>
+  onToggle: (idiomId: string) => void
+}) {
+  return (
+    <ul className="rows">
+      {ids.map((id) => {
+        const it = loaded.byId.get(id)
+        if (it === undefined) return null
+        return (
+          <li key={id}>
+            <span className="r-main" lang="ja">
+              {it.headword}
+            </span>
+            <span className="r-sub" lang="ja">
+              {it.reading}
+            </span>
+            <span className="r-sub r-meaning">{it.koMeaning?.definition ?? ''}</span>
+            {loaded.started.has(id) ? (
+              <span className="star-slot dim">학습 중</span>
+            ) : (
+              <StarButton
+                headword={it.headword}
+                on={starred.has(id)}
+                onToggle={() => onToggle(id)}
+              />
+            )}
+          </li>
+        )
+      })}
+    </ul>
+  )
+}
+
+/**
+ * 카메라가 확실치 않을 때 내는 후보 (2026-09-23 결정 6·9).
+ *
+ * **단정하지 않는다.** 오답이 `軍艦→軍朋` 처럼 한 자만 틀리는 꼴이라 되살릴 여지가
+ * 큰데, 읽기를 배우는 앱에서 틀린 단어를 맞다고 하면 그게 곧 오학습이다. 무엇으로
+ * 읽혔는지를 같이 보여 주고 고르는 것은 사용자에게 맡긴다
+ */
+function CameraCandidates({
+  found,
+  loaded,
+  starred,
+  onToggle,
+  onClose,
+}: {
+  found: CameraFound
+  loaded: Loaded
+  starred: Set<string>
+  onToggle: (idiomId: string) => void
+  onClose: () => void
+}) {
+  const ids = found.candidates
+    .map((head) => loaded.idOfHead.get(head))
+    .filter((id): id is string => id !== undefined)
+  if (ids.length === 0) return null
+
+  return (
+    <div className="cam-candidates">
+      <p className="section-title">
+        카메라로 찾은 후보<span className="dim"> · {ids.length}</span>
+      </p>
+      <p className="cam-raw">
+        <span lang="ja">{found.raw}</span> 로 읽혔어요. 아래 중에 있으면 골라 주세요.
+      </p>
+      <IdiomRows ids={ids} loaded={loaded} starred={starred} onToggle={onToggle} />
+      <button type="button" className="link cam-close" onClick={onClose}>
+        닫기
+      </button>
+    </div>
+  )
+}
+
 function StarButton({
   headword,
   on,
