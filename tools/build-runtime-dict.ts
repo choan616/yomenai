@@ -79,6 +79,24 @@ const pairsRaw = read<{ pairs: Record<string, { kanji: string; base: string; kin
   'onyomi-map.json',
 ).pairs
 const koClass = read<{ byId: Record<string, KoClass> }>('korean-class.json').byId
+/**
+ * 뜻만 따로 온다 (2026-09-24). **분류와 뜻은 범위가 다른 자료다.**
+ *
+ * `korean-class.json` 은 한국어 대조를 돌린 것(밴드 0~3, 17,213개)만 담는다. 밴드 4는
+ * 애초에 거기 안 들어가므로, 뜻을 그 한 곳에서만 읽으면 밴드 4가 영영 뜻 없이 나온다 —
+ * 번역(`build:korean-meaning --band=4`)을 다 돌려 놓고도 반영이 안 됐다 (실측).
+ *
+ * 검수를 거친 뜻은 `korean-class` 쪽에 있으므로(`apply:korean-meaning` 이 거기 쓴다)
+ * **그쪽이 우선**이고, 없을 때만 번역본을 본다.
+ */
+const koMeaningById: Record<string, { ko: string; glossEn: string[] }> = existsSync(
+  join(DICT_DIR, 'korean-meaning.json'),
+)
+  ? (JSON.parse(readFileSync(join(DICT_DIR, 'korean-meaning.json'), 'utf8')).byId as Record<
+      string,
+      { ko: string; glossEn: string[] }
+    >)
+  : {}
 const kanji = read<{ kanji: Record<string, KanjiRow> }>('kanji.json').kanji
 
 /** 구성 쌍의 음독 비율로 갈래를 정한다. 쌍이 비는 일은 없다 — segs 없는 숙어는 위에서 걸린다 */
@@ -86,6 +104,25 @@ function readingKindOf(segs: Seg[]): 'on' | 'mix' | 'kun' {
   const on = segs.filter(([, , , kind]) => kind === 'on').length
   if (on === 0) return 'kun'
   return on === segs.length ? 'on' : 'mix'
+}
+
+/**
+ * 런타임에 싣는 뜻. **`glossEn` 은 뺀다** (2026-09-24).
+ *
+ * 영어 뜻은 빌드·검수용이다 — `tools/lib/dict.ts` 도 「DB 보관, 화면 비표시」라 적어
+ * 뒀는데 번들에는 실려 나가고 있었다. 앱은 한 곳에서도 안 읽는다.
+ * 밴드 4에 뜻이 붙으며 그 무게가 드러났다 — 빼면 band4 가 29.15 → 25.06MB 다.
+ */
+function slim(m: KoClass['koMeaning']): RuntimeIdiom['koMeaning'] {
+  if (!m) return null
+  return { definition: m.definition, source: m.source, verified: m.verified }
+}
+
+/** 분류표에 없는 숙어(밴드 4)의 뜻. 번역본에서 그대로 가져온다 */
+function fallbackMeaning(id: string): RuntimeIdiom['koMeaning'] {
+  const m = koMeaningById[id]
+  if (!m?.ko) return null
+  return { definition: m.ko, source: 'llm', verified: false }
 }
 
 const base: RuntimeIdiom[] = []
@@ -108,7 +145,7 @@ for (const it of idioms) {
     common: it.common,
     category: ko?.category ?? null,
     classSource: ko?.classSource ?? null,
-    koMeaning: ko?.koMeaning ?? null,
+    koMeaning: ko?.koMeaning ? slim(ko.koMeaning) : fallbackMeaning(it.id),
     pairIds: segs.map(([k, , b, kind]) => pairId(k, b, kind)),
     readingKind: readingKindOf(segs),
   }
