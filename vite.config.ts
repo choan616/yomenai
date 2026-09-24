@@ -64,13 +64,7 @@ export default defineConfig(({ command, isPreview }) => ({
         navigateFallback: 'index.html',
         // guide.html 은 앱이 아니라 독립 문서다. 이게 없으면 SW 가 설치된 기기에서
         // 안내서 주소로 들어가도 앱 셸(index.html)이 대신 뜬다.
-        // ocr-test.html 도 같은 이유다 — 카메라 인식을 폰에서 재 보는 임시 페이지고,
-        // 결론이 나면 페이지와 함께 이 줄도 지운다 (2026-09-23)
-        navigateFallbackDenylist: [
-          /^\/yomenai\/dict\//,
-          /^\/yomenai\/guide\.html$/,
-          /^\/yomenai\/ocr-test\.html$/,
-        ],
+        navigateFallbackDenylist: [/^\/yomenai\/dict\//, /^\/yomenai\/guide\.html$/],
         cleanupOutdatedCaches: true,
         clientsClaim: true,
         runtimeCaching: [

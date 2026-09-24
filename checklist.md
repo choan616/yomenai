@@ -2187,7 +2187,8 @@ RENDAKU 7(安心 あんしん/あんじん, 境界 きょうかい/きょうが�
 
 ### 4단계 — 마무리
 
-- [ ] **시험 페이지 제거** — `public/ocr-test.html` + `vite.config.ts` denylist 한 줄
+- [x] **시험 페이지 제거** — `public/ocr-test.html` + `vite.config.ts` denylist 한 줄 (2026-09-25).
+      프리캐시가 17 → 16 으로 줄었다 — 앱에서 링크도 안 하는 페이지가 실려 나가고 있었다
 - [ ] **검증 실행** — `npm test` · `playwright` · tsc · oxlint · build 전부
 
 ### 2·3단계 하며 바뀐 것
