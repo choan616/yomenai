@@ -30,7 +30,7 @@ const REQUIRED = [
  * .wasm.js 와 worker 를 먼저 집으므로, globIgnores 를 건드리면 조용히 딸려 들어간다.
  * 그걸 여기서 막는다 (2026-09-23)
  */
-const FORBIDDEN = [/^ocr\//, /^dict\/wide\.json$/]
+const FORBIDDEN = [/^ocr\//, /^dict\/wide\.json$/, /^fonts\/wide\.css$/, /^fonts\/.*-wide\.woff2$/]
 
 /** `vite.config.ts` 의 `maximumFileSizeToCacheInBytes` 와 같아야 한다 */
 const CAP = 12 * 1024 * 1024

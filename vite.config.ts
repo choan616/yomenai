@@ -48,7 +48,16 @@ export default defineConfig(({ command, isPreview }) => ({
         // ocr/ — 카메라 한자 인식 모델·엔진 (7.4MB). **프리캐시에 넣지 않는다** —
         // 카메라를 안 쓰는 사람에게 받게 할 이유가 없다. band4.json 과 같은 자리다.
         // `**/*.{js,...}` 가 .wasm.js 와 worker 를 먼저 집으므로 여기서 빼야 한다
-        globIgnores: ['**/dict/band4.json', '**/dict/wide.json', '**/ocr/**'],
+        // fonts/*-wide.woff2 + fonts/wide.css — 넓힌 사전 전용 글자(1.4MB)와 그 @font-face
+        // 선언(39KB). 사전이 지연 로드면 폰트도 지연 로드라야 한다.
+        // `**/*.{...,woff2}` 와 `**/*.{...,css}` 가 먼저 집으므로 여기서 빼야 한다
+        globIgnores: [
+          '**/dict/band4.json',
+          '**/dict/wide.json',
+          '**/ocr/**',
+          '**/fonts/*-wide.woff2',
+          '**/fonts/wide.css',
+        ],
         /**
          * 프리캐시에 넣을 파일 하나의 상한. **넘으면 빌드가 실패한다** —
          * vite-plugin-pwa 가 PLUGIN_ERROR 를 던진다 (실측 2026-09-22). 조용히 빠지진 않으니
@@ -98,6 +107,17 @@ export default defineConfig(({ command, isPreview }) => ({
             options: {
               cacheName: 'yomenai-dict-wide-v1',
               expiration: { maxEntries: 2, maxAgeSeconds: 60 * 60 * 24 * 90 },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
+          {
+            // 넓힌 사전 전용 폰트·선언. 사전과 같이 처음 받고 그 뒤로는 캐시에서 온다.
+            // 내용이 바뀌지 않는 고정 자산이라 CacheFirst 다 (ocr 과 같다)
+            urlPattern: ({ url }) => /\/fonts\/(wide\.css|.*-wide\.woff2)$/.test(url.pathname),
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'yomenai-fonts-wide-v1',
+              expiration: { maxEntries: 6, maxAgeSeconds: 60 * 60 * 24 * 365 },
               cacheableResponse: { statuses: [0, 200] },
             },
           },
