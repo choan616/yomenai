@@ -13,7 +13,7 @@ test('히라가나로 한자 표기를 찾는다', async ({ page }) => {
   // 찾기 전에는 범위를 먼저 알린다 — 검색창이 약속하는 것과 코퍼스가 다르다
   await expect(page.locator('.search-scope')).toContainText('한자 숙어')
 
-  const input = page.getByLabel('읽기 검색')
+  const input = page.getByLabel('읽기 또는 한자 검색')
   await input.fill('kouki')
   await expect(input).toHaveValue('こうき')
 
@@ -52,4 +52,30 @@ test('히라가나로 한자 표기를 찾는다', async ({ page }) => {
   // 찾기는 탭 루트라 「‹」 가 없다 — 홈 탭으로 돌아간다 (2026-09-17 하단 탭 전환)
   await page.getByRole('button', { name: '홈', exact: true }).click()
   await expect(page.getByRole('button', { name: '세션 시작' })).toBeVisible()
+})
+
+// 한자를 그대로 넣어 찾는다 (2026-09-24 사용자 요청).
+// 책에서 본 한자를 가져올 때 쓰는 길이다 — 읽는 법을 모르니까 찾는 것인데,
+// 그전에는 읽기를 알아야만 찾을 수 있었다.
+test('한자를 붙여넣으면 표기로 찾고 읽기를 알려 준다', async ({ page }) => {
+  await page.goto('/')
+  const tab = page.getByRole('button', { name: '찾기', exact: true })
+  await expect(tab).toBeVisible({ timeout: 20_000 })
+  await tab.click()
+
+  const input = page.getByLabel('읽기 또는 한자 검색')
+  // fill 은 붙여넣기와 같은 경로다 — 자판을 거치지 않고 값이 통째로 들어온다
+  await input.fill('交渉')
+  await expect(input).toHaveValue('交渉')
+
+  // 묶음 제목이 읽기다 — 한자로 찾았어도 알고 싶은 것은 읽기다
+  const group = page.locator('.hit-group').first()
+  await expect(group.locator('.section-title')).toContainText('こうしょう')
+  await expect(
+    group.locator('.rows > li').filter({ has: page.locator('.r-main', { hasText: /^交渉$/ }) }),
+  ).toContainText('교섭')
+
+  // 사전에 없는 표기는 읽기 쪽과 다른 문구로 답한다
+  await input.fill('爆轟')
+  await expect(page.locator('.empty')).toContainText('표기가 사전에 없어요')
 })

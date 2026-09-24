@@ -29,6 +29,8 @@ import type { CameraFound } from './CameraFind.tsx'
 import {
   loadReadingIndex,
   loadWideReadingIndex,
+  looksLikeHeadword,
+  searchByHeadword,
   searchByReading,
   type ReadingGroup,
   type ReadingIndex,
@@ -212,9 +214,16 @@ export function Search({
     [loaded, wide],
   )
 
+  /** 한자가 섞였으면 표기로, 아니면 읽기로 찾는다 (2026-09-24) */
+  const byHead = looksLikeHeadword(raw)
   const groups = useMemo(
-    () => (view === null ? [] : searchByReading(view.index, raw, GROUP_LIMIT)),
-    [view, raw],
+    () =>
+      view === null
+        ? []
+        : byHead
+          ? searchByHeadword(view.index, raw, GROUP_LIMIT)
+          : searchByReading(view.index, raw, GROUP_LIMIT),
+    [view, raw, byHead],
   )
 
   const typed = raw.trim() !== ''
@@ -247,8 +256,8 @@ export function Search({
           autoComplete="off"
           autoCorrect="off"
           spellCheck={false}
-          placeholder="읽는 법 (히라가나 · 로마자)"
-          aria-label="읽기 검색"
+          placeholder="읽는 법 · 한자 (붙여넣기)"
+          aria-label="읽기 또는 한자 검색"
           value={raw}
           onChange={(e) => setRaw(toKana(e.target.value, { IMEMode: 'toHiragana' }))}
           onFocus={() => setTyping(true)}
@@ -298,6 +307,10 @@ export function Search({
               {widening ? (
                 <>
                   <b lang="ja">{raw}</b> 로 찾는 중이에요. 더 넓은 사전을 받고 있어요…
+                </>
+              ) : byHead ? (
+                <>
+                  <b lang="ja">{raw}</b> 라는 표기가 사전에 없어요.
                 </>
               ) : (
                 <>

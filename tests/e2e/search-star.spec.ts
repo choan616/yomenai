@@ -35,7 +35,7 @@ test('담은 표현이 다음 세션에 나온다 — 밴드 0 이라 담지 않
   await fresh(page)
   await openSearch(page)
 
-  const input = page.getByLabel('읽기 검색')
+  const input = page.getByLabel('읽기 또는 한자 검색')
   await input.fill(READING)
   const row = page.locator('.rows > li').filter({ hasText: WORD }).first()
   await expect(row).toBeVisible()
@@ -86,7 +86,7 @@ test('빼면 목록에서 사라진다', async ({ page }) => {
   await fresh(page)
   await openSearch(page)
 
-  const input = page.getByLabel('읽기 검색')
+  const input = page.getByLabel('읽기 또는 한자 검색')
   await input.fill(READING)
   const row = page.locator('.rows > li').filter({ hasText: WORD }).first()
   await row.getByRole('button', { name: `${WORD} 담기` }).click()

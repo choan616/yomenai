@@ -11,6 +11,16 @@ export interface ReadingIndex {
   byReading: Map<string, RuntimeIdiom[]>
   /** 앞부분 일치 구간을 이진 탐색으로 자르기 위한 정렬된 키 배열 */
   keys: string[]
+  /**
+   * 표기 → 그 표기를 가진 숙어 (2026-09-24). 같은 한자를 달리 읽는 항목이 있어 값이 배열이다
+   * (`生物` せいぶつ·なまもの).
+   *
+   * **읽기와 같은 Map 에 안 넣는다.** 결과를 읽기로 묶어 보여 주는 화면이라
+   * 한자가 묶음 제목 자리에 들어가면 그게 읽기처럼 보인다
+   */
+  byHeadword: Map<string, RuntimeIdiom[]>
+  /** 표기 쪽 앞부분 일치용 정렬 키 */
+  headKeys: string[]
 }
 
 /** 같은 읽기로 묶인 결과 한 덩이 */
@@ -36,11 +46,25 @@ export function buildReadingIndex(pool: RuntimeIdiom[]): ReadingIndex {
     if (list === undefined) byReading.set(key, (list = []))
     if (!list.includes(it)) list.push(it)
   }
+  const byHeadword = new Map<string, RuntimeIdiom[]>()
   for (const it of pool) {
     put(it.reading, it)
     for (const alt of it.altReadings ?? []) put(alt, it)
+    let heads = byHeadword.get(it.headword)
+    if (heads === undefined) byHeadword.set(it.headword, (heads = []))
+    heads.push(it)
   }
-  return { byReading, keys: [...byReading.keys()].sort() }
+  return {
+    byReading,
+    keys: [...byReading.keys()].sort(),
+    byHeadword,
+    headKeys: [...byHeadword.keys()].sort(),
+  }
+}
+
+/** 한자가 섞였나 — 섞였으면 읽기가 아니라 표기로 찾는다 (々 는 표기에만 쓴다) */
+export function looksLikeHeadword(query: string): boolean {
+  return /[一-鿿㐀-䶿々]/u.test(query)
 }
 
 /** 정렬된 키 배열에서 `prefix` 로 시작하는 첫 자리 */
@@ -74,6 +98,40 @@ export function searchByReading(index: ReadingIndex, query: string, limit = 20):
   }
   // lowerBound 가 사전순으로 잡아 주므로 정확 일치는 이미 맨 앞이다. 정렬을 더 하지 않는다
   return out
+}
+
+/**
+ * 표기로 찾는다 (2026-09-24 사용자 요청 「한자를 직접 붙여넣어도 검색이 되는지」).
+ *
+ * 책에서 본 한자를 그대로 가져올 때 쓴다 — 읽는 법을 모르니까 찾는 것인데, 지금까지는
+ * 읽기를 알아야만 찾을 수 있었다. 카메라가 대신하던 길을 손으로도 열어 둔다.
+ *
+ * **결과는 읽기로 묶어 돌려준다.** 화면이 읽기 묶음을 그리게 돼 있고, 한자로 찾았어도
+ * 정작 알고 싶은 것은 읽기라 묶음 제목이 답이 된다.
+ */
+export function searchByHeadword(index: ReadingIndex, query: string, limit = 20): ReadingGroup[] {
+  const q = query.trim()
+  if (q === '') return []
+
+  const groups: ReadingGroup[] = []
+  const byKey = new Map<string, ReadingGroup>()
+  // 정렬 키를 앞부분으로 자르므로 정확 일치 표기가 늘 먼저 온다 — 읽기 쪽과 같은 수법이다
+  for (let i = lowerBound(index.headKeys, q); i < index.headKeys.length; i++) {
+    const key = index.headKeys[i]!
+    if (!key.startsWith(q)) break
+    for (const it of index.byHeadword.get(key) ?? []) {
+      const reading = toHiragana(it.reading)
+      let group = byKey.get(reading)
+      if (group === undefined) {
+        if (groups.length >= limit) return groups
+        group = { reading, items: [], exact: key === q }
+        byKey.set(reading, group)
+        groups.push(group)
+      }
+      group.items.push(it)
+    }
+  }
+  return groups
 }
 
 let indexPromise: Promise<ReadingIndex> | null = null
