@@ -15,7 +15,12 @@
 //   verdict null            → 취소. 이 도구는 **안 건드린다** — 이미 찍힌 사람 판정을
 //                             앱의 취소가 지우면 안 된다
 //
-// 입력 — data/events/*.json (Drive 의 YomenaiSync 파일을 그대로 내려받아 넣는다)
+// 입력은 둘이고, **앞의 것이 원본이다.**
+//   1. data/dict/korean-meaning-app-review.tsv — 앱의 「판정 내보내기」가 낸 파일.
+//      판정 네 칸뿐이라 저장소에 커밋된다 (`.gitignore` 의 `*-review.tsv` 예외).
+//      검수 TSV 와 같은 자격으로 추적되는 것이 요점이다 — `src/core/reviewExport.ts` 머리말
+//   2. data/events/*.json — Drive 동기화 파일 통째. 학습 기록이 섞여 있어 커밋을 못 한다.
+//      내보내기가 생기기 전의 경로이고, 지금도 읽히기는 한다
 // 출력 — data/dict/korean-meaning-worklist*.tsv 의 verdict·fix 칸
 import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
@@ -25,9 +30,20 @@ import { readTsv, writeTsvBom } from './lib/tsv.ts'
 const EVENTS_DIR =
   process.argv.find((a) => a.startsWith('--events='))?.split('=')[1] ??
   join(import.meta.dirname, '..', 'data', 'events')
+const EXPORT_PATH =
+  process.argv.find((a) => a.startsWith('--export='))?.split('=')[1] ??
+  join(DICT_DIR, 'korean-meaning-app-review.tsv')
 const DRY = process.argv.includes('--dry')
 
+type Mark = 'o' | 'x' | '~'
 interface Vote {
+  /** 검수 TSV 의 판정 글자. `null` 은 취소 — 봤다는 표시일 뿐 판정이 아니다 */
+  mark: Mark | null
+  fix?: string
+  headword: string
+}
+/** 동기화 파일에서 접은 것. 어휘가 아직 이벤트 쪽(`ok`/`bad`)이고 `at` 으로 마지막을 가린다 */
+interface EventVote {
   verdict: 'ok' | 'bad' | null
   fix?: string
   headword: string
@@ -35,8 +51,8 @@ interface Vote {
 }
 
 /** 마지막 판정이 이긴다 — `replay` 와 같은 규칙. 취소(`null`)도 마지막이면 이긴다 */
-function foldVotes(): Map<string, Vote> {
-  const out = new Map<string, Vote>()
+function foldVotes(): Map<string, EventVote> {
+  const out = new Map<string, EventVote>()
   if (!existsSync(EVENTS_DIR)) return out
   for (const f of readdirSync(EVENTS_DIR).filter((f) => f.endsWith('.json'))) {
     let parsed: unknown
@@ -75,12 +91,55 @@ function foldVotes(): Map<string, Vote> {
   return out
 }
 
-const votes = foldVotes()
+/** 이벤트 어휘를 검수 TSV 어휘로 옮긴다. 앱 내보내기는 이미 옮겨진 채로 온다 */
+function markOf(v: { verdict: 'ok' | 'bad' | null; fix?: string }): Mark | null {
+  return v.verdict === null ? null : v.verdict === 'ok' ? 'o' : v.fix ? 'x' : '~'
+}
+
+/**
+ * 앱이 내보낸 판정 파일. `id·headword·verdict·fix` 네 칸이고 판정 글자가 이미 TSV 어휘다
+ * (`o` `x` `~` `-`). `-` 는 취소라 여기서 `null` 이 된다
+ */
+function fromExport(): Map<string, Vote> {
+  const out = new Map<string, Vote>()
+  if (!existsSync(EXPORT_PATH)) return out
+  const rows = readTsv(EXPORT_PATH)
+  const head = (rows[0] ?? []).map((h) => h.replace(/^﻿/, '').trim())
+  const col = { id: head.indexOf('id'), head: head.indexOf('headword'), v: head.indexOf('verdict'), fix: head.indexOf('fix') }
+  if (col.id < 0 || col.v < 0) {
+    console.error(`  ! ${EXPORT_PATH} 에 id/verdict 칸이 없다 — 건너뛴다`)
+    return out
+  }
+  for (const r of rows.slice(1)) {
+    const id = r[col.id]?.trim()
+    if (!id) continue
+    const raw = (r[col.v] ?? '').trim()
+    const fix = (col.fix >= 0 ? (r[col.fix] ?? '') : '').trim()
+    out.set(id, {
+      mark: raw === 'o' || raw === 'x' || raw === '~' ? raw : null,
+      ...(fix ? { fix } : {}),
+      headword: (col.head >= 0 ? (r[col.head] ?? '') : '').trim(),
+    })
+  }
+  return out
+}
+
+// 둘 다 있으면 **내보낸 파일이 이긴다.** 그쪽이 저장소에 남아 되짚을 수 있는 원본이다
+const exported = fromExport()
+const votes = new Map<string, Vote>([
+  ...[...foldVotes()].map(([id, v]): [string, Vote] => [
+    id,
+    { mark: markOf(v), ...(v.fix ? { fix: v.fix } : {}), headword: v.headword },
+  ]),
+  ...exported,
+])
 if (votes.size === 0) {
-  console.error(`${EVENTS_DIR} 에서 뜻 판정을 못 찾았다.`)
-  console.error('Drive 의 YomenaiSync 폴더에서 동기화 파일을 내려받아 넣는다 (--events= 로 경로 지정).')
+  console.error('뜻 판정을 못 찾았다. 둘 중 하나가 있어야 한다.')
+  console.error(`  ${EXPORT_PATH} — 앱의 뜻 검수 화면에서 「판정 내보내기」로 받은 파일`)
+  console.error(`  ${EVENTS_DIR}/*.json — Drive 의 YomenaiSync 동기화 파일`)
   process.exit(1)
 }
+if (exported.size > 0) console.log(`앱 내보내기 ${exported.size}건을 읽었다 (${EXPORT_PATH})`)
 
 const files = readdirSync(DICT_DIR).filter((f) => /^korean-meaning-worklist.*\.tsv$/.test(f))
 if (files.length === 0) {
@@ -114,7 +173,7 @@ for (const file of files) {
     touched.delete(id)
 
     // 취소는 안 건드린다. 앱에서 엄지를 껐다고 사람이 찍은 판정을 지울 이유가 없다
-    if (v.verdict === null) {
+    if (v.mark === null) {
       tally.skipCancel++
       continue
     }
@@ -126,10 +185,9 @@ for (const file of files) {
       continue
     }
 
-    const mark = v.verdict === 'ok' ? 'o' : v.fix ? 'x' : '~'
-    r[col.verdict] = mark
+    r[col.verdict] = v.mark
     if (v.fix) r[col.fix] = v.fix
-    tally[mark]++
+    tally[v.mark]++
     changed++
   }
 
@@ -149,6 +207,6 @@ if (tally.notInList.size > 0) {
   console.log(
     `  작업 파일에 없는 판정 ${tally.notInList.size}개 — ${[...tally.notInList].slice(0, 8).join(' ')}`,
   )
-  console.log('  (build:korean-meaning-worklist 를 --events= 와 같이 돌리면 담은 것이 실린다)')
+  console.log('  (build:korean-meaning-worklist 를 먼저 돌리면 내보낸 판정·담은 것이 실린다)')
 }
 if (!DRY) console.log('  → 이어서 apply:korean-meaning 을 돌린다')

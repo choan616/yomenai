@@ -1677,6 +1677,18 @@ p.rule-record {
   line-height: 1.6;
   color: var(--text-faint);
 }
+/* 내보내기 — 판정만 담긴 파일. 무엇이 나가는지 목록을 훑기 전에 읽히도록 위에 둔다 */
+.review-export {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 0 0 14px;
+}
+.review-export .dim {
+  font-size: calc(0.74rem * var(--ui-scale));
+  line-height: 1.5;
+}
 .review-list {
   list-style: none;
   margin: 0;

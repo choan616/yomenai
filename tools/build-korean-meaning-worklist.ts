@@ -126,7 +126,28 @@ function fromEvents(): { starred: Set<string>; voted: Set<string> } {
   return { starred: out, voted }
 }
 
+/**
+ * 앱이 내보낸 판정 파일 (`src/core/reviewExport.ts`). 여기 실린 줄이 작업 파일에도 있어야
+ * 판정이 반영될 자리가 생긴다 — 동기화 파일 없이 이 파일만으로도 고리가 닫혀야 한다
+ */
+function fromExportVotes(): Set<string> {
+  const p =
+    process.argv.find((a) => a.startsWith('--export='))?.split('=')[1] ??
+    join(DICT_DIR, 'korean-meaning-app-review.tsv')
+  const out = new Set<string>()
+  if (!existsSync(p)) return out
+  const rows = readTsv(p)
+  const i = (rows[0] ?? []).map((h) => h.replace(/^﻿/, '').trim()).indexOf('id')
+  if (i < 0) return out
+  for (const r of rows.slice(1)) {
+    const id = r[i]?.trim()
+    if (id) out.add(id)
+  }
+  return out
+}
+
 const { starred, voted } = fromEvents()
+for (const id of fromExportVotes()) voted.add(id)
 /** 담은 것 + 앱에서 판정한 것. 둘 다 「내가 실제로 본 것」이라 늘 싣는다 */
 const fromApp = new Set([...starred, ...voted])
 /** 담긴 밴드 4 — 번역은 있는데 분류표에 없는 것들 */

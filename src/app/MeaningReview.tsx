@@ -12,6 +12,7 @@
 // 늘어놓아 봐야 소용없다. 본 적 없는 뜻은 맞는지 판단할 수도 없다.
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { replay } from '../core/replay.ts'
+import { REVIEW_EXPORT_FILENAME, buildReviewExport } from '../core/reviewExport.ts'
 import { recordMeaningVote } from '../core/session.ts'
 import type { MeaningVerdict } from '../core/types.ts'
 import { getDeviceId } from '../db/device.ts'
@@ -45,6 +46,8 @@ export function MeaningReview({ onBack }: { onBack: () => void }) {
   const [local, setLocal] = useState<Map<string, { verdict: MeaningVerdict | null; fix?: string }>>(
     new Map(),
   )
+  /** 방금 내보낸 줄 수. 파일이 어디로 갔는지 안 보이는 기기가 있어 숫자로라도 알린다 */
+  const [saved, setSaved] = useState<number | null>(null)
 
   useEffect(() => {
     let alive = true
@@ -121,6 +124,27 @@ export function MeaningReview({ onBack }: { onBack: () => void }) {
     )
   }, [])
 
+  /**
+   * 판정만 담은 파일을 내려받는다 (2026-09-24). Drive 동기화 파일에는 학습 기록이 섞여
+   * 있어 공개 저장소에 못 올린다 — 여기서 나가는 네 칸은 검수 TSV 옆에 그대로 커밋된다
+   * (`core/reviewExport.ts` 머리말).
+   *
+   * 화면에 뜬 줄이 아니라 **이벤트를 다시 읽어** 만든다. 방금 찍은 판정까지 들어가야 하고,
+   * 지금 목록에 없는(이미 검수된) 옛 판정도 파일에는 남아 있어야 한다
+   */
+  const exportVerdicts = useCallback(async () => {
+    const tsv = buildReviewExport(await listEvents(db(), LOCAL_USER_ID))
+    // 엑셀이 더블클릭으로 열 때 UTF-8 로 읽게 BOM 을 붙인다 (tools/lib/tsv.ts 와 같은 관례)
+    const url = URL.createObjectURL(new Blob(['﻿' + tsv], { type: 'text/tab-separated-values' }))
+    const a = document.createElement('a')
+    a.href = url
+    a.download = REVIEW_EXPORT_FILENAME
+    a.click()
+    // 바로 거두면 iOS 에서 내려받기가 끊긴다. 한 틱 뒤로 미룬다
+    setTimeout(() => URL.revokeObjectURL(url), 0)
+    setSaved(tsv.split('\n').length - 2)
+  }, [])
+
   const done = useMemo(() => {
     if (loaded === null) return 0
     return loaded.rows.filter((r) => (local.get(r.it.idiomId)?.verdict ?? r.verdict) !== null).length
@@ -140,33 +164,48 @@ export function MeaningReview({ onBack }: { onBack: () => void }) {
           <p className="empty">불러오지 못했어요: {error}</p>
         ) : loaded === null ? (
           <p className="empty">불러오고 있어요…</p>
-        ) : loaded.rows.length === 0 ? (
-          <p className="empty">
-            아직 볼 게 없어요. 세션에서 만나거나 찾기에서 담은 표현의 뜻만 여기 올라와요.
-          </p>
         ) : (
           <>
-            <p className="stat-line">
-              {done}/{loaded.rows.length}개 봄
-              {loaded.unseen > 0 && (
-                <span className="dim"> · 아직 안 만난 미검수 {loaded.unseen.toLocaleString('ko')}</span>
-              )}
-            </p>
+            {loaded.rows.length === 0 ? (
+              <p className="empty">
+                아직 볼 게 없어요. 세션에서 만나거나 찾기에서 담은 표현의 뜻만 여기 올라와요.
+              </p>
+            ) : (
+              <p className="stat-line">
+                {done}/{loaded.rows.length}개 봄
+                {loaded.unseen > 0 && (
+                  <span className="dim"> · 아직 안 만난 미검수 {loaded.unseen.toLocaleString('ko')}</span>
+                )}
+              </p>
+            )}
             {/* 무엇을 남기는지 먼저 말한다 — 이 화면이 사전을 직접 고치는 것으로 보이면 안 된다 */}
             <p className="review-note">
               판정은 백업에 실려 나가고, 사전 빌드에서 반영돼요. 여기서 바로 사전이 바뀌지는
               않아요.
             </p>
-            <ul className="review-list">
-              {loaded.rows.slice(0, shown).map((r) => (
-                <ReviewRow
-                  key={r.it.idiomId}
-                  row={r}
-                  live={local.get(r.it.idiomId)}
-                  onVote={(v, fix) => vote(r.it, v, fix)}
-                />
-              ))}
-            </ul>
+            {/* 내보내기는 판정만 담는다. 백업 파일과 달리 그대로 저장소에 올릴 수 있는 물건이다 */}
+            <div className="review-export">
+              <button type="button" className="btn" onClick={() => void exportVerdicts()}>
+                판정 내보내기
+              </button>
+              <span className="dim">
+                {saved === null
+                  ? '표제어·판정·고친 뜻만 담긴 파일이에요. 학습 기록은 안 들어가요.'
+                  : `${saved.toLocaleString('ko')}개를 ${REVIEW_EXPORT_FILENAME} 로 내려받았어요.`}
+              </span>
+            </div>
+            {loaded.rows.length > 0 && (
+              <ul className="review-list">
+                {loaded.rows.slice(0, shown).map((r) => (
+                  <ReviewRow
+                    key={r.it.idiomId}
+                    row={r}
+                    live={local.get(r.it.idiomId)}
+                    onVote={(v, fix) => vote(r.it, v, fix)}
+                  />
+                ))}
+              </ul>
+            )}
             {shown < loaded.rows.length && (
               <button type="button" className="btn" onClick={() => setShown((n) => n + PAGE)}>
                 더 보기 ({loaded.rows.length - shown}개 남음)
