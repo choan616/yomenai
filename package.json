@@ -43,7 +43,8 @@
     "build:icon": "tsx tools/build-icon.ts",
     "e2e": "playwright test",
     "check:update": "node tools/check-update-banner.mjs",
-    "apply:app-review": "tsx tools/apply-app-review.ts"
+    "apply:app-review": "tsx tools/apply-app-review.ts",
+    "build:wide-dict": "tsx tools/build-wide-dict.ts"
   },
   "dependencies": {
     "dexie": "^4.2.0",

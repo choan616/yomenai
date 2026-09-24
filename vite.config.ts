@@ -48,7 +48,7 @@ export default defineConfig(({ command, isPreview }) => ({
         // ocr/ — 카메라 한자 인식 모델·엔진 (7.4MB). **프리캐시에 넣지 않는다** —
         // 카메라를 안 쓰는 사람에게 받게 할 이유가 없다. band4.json 과 같은 자리다.
         // `**/*.{js,...}` 가 .wasm.js 와 worker 를 먼저 집으므로 여기서 빼야 한다
-        globIgnores: ['**/dict/band4.json', '**/ocr/**'],
+        globIgnores: ['**/dict/band4.json', '**/dict/wide.json', '**/ocr/**'],
         /**
          * 프리캐시에 넣을 파일 하나의 상한. **넘으면 빌드가 실패한다** —
          * vite-plugin-pwa 가 PLUGIN_ERROR 를 던진다 (실측 2026-09-22). 조용히 빠지진 않으니
@@ -86,6 +86,17 @@ export default defineConfig(({ command, isPreview }) => ({
             handler: 'StaleWhileRevalidate',
             options: {
               cacheName: 'yomenai-dict-band4-v1',
+              expiration: { maxEntries: 2, maxAgeSeconds: 60 * 60 * 24 * 90 },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
+          {
+            // wide.json — 학습 사전 밖 조회용(2.2MB). 「사전 밖에서 찾을까」에 그렇다고
+            // 답한 적이 있어야 받는다. band4 와 같은 자리다
+            urlPattern: ({ url }) => url.pathname === '/yomenai/dict/wide.json',
+            handler: 'StaleWhileRevalidate',
+            options: {
+              cacheName: 'yomenai-dict-wide-v1',
               expiration: { maxEntries: 2, maxAgeSeconds: 60 * 60 * 24 * 90 },
               cacheableResponse: { statuses: [0, 200] },
             },
