@@ -242,6 +242,8 @@ export function recordMeaningVote(input: {
   /** 누를 때 화면에 떠 있던 뜻. 재빌드로 바뀌어도 무엇을 보고 눌렀는지 남는다 */
   definition: string
   headword: string
+  /** 고쳐 쓴 뜻 (검수 화면에서만 온다). 빈 문자열은 안 남긴다 */
+  fix?: string
   ctx: Omit<AnswerContext, 'elapsedMs'>
 }): MeaningVoteEvent {
   return {
@@ -250,6 +252,7 @@ export function recordMeaningVote(input: {
     mistakeType: null,
     type: 'flag',
     verdict: input.verdict,
+    ...(input.fix?.trim() ? { fix: input.fix.trim() } : {}),
     definition: input.definition,
     headword: input.headword,
   }

@@ -14,6 +14,7 @@ import { Settings } from './app/Settings.tsx'
 import { Browse } from './app/Browse.tsx'
 import { Search } from './app/Search.tsx'
 import { CameraFind, type CameraFound } from './app/CameraFind.tsx'
+import { MeaningReview } from './app/MeaningReview.tsx'
 import { Backup } from './app/Backup.tsx'
 import { Feedback } from './app/Feedback.tsx'
 import { Rules } from './app/Rules.tsx'
@@ -40,6 +41,8 @@ export type Sub =
    * 전체화면(flow)이 아니라 sub 다 — 키보드가 안 올라와 탭바를 덮을 이유가 없다
    */
   | { kind: 'camera' }
+  /** 뜻 검수. 설정에서 한 겹 들어간다 — 검수 모드를 켠 기기에서만 진입로가 보인다 (2026-09-24) */
+  | { kind: 'review' }
 
 /**
  * 탭바를 덮는 전체화면 흐름. 끝나면 열었던 탭으로 돌아온다.
@@ -191,6 +194,7 @@ function TabRoot({
         <Settings
           onFeedback={() => onSub({ kind: 'feedback' })}
           onBackup={() => onSub({ kind: 'backup' })}
+          onReview={() => onSub({ kind: 'review' })}
         />
       )
   }
@@ -216,5 +220,7 @@ function SubScreen({
       return <Backup onBack={onBack} />
     case 'camera':
       return <CameraFind onBack={onBack} onFound={onFound} />
+    case 'review':
+      return <MeaningReview onBack={onBack} />
   }
 }

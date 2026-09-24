@@ -7,7 +7,8 @@
 //
 // 백업과 초기화는 `Backup.tsx` 로 뺐다. 덩치가 본문의 절반이었고, 되돌릴 수 없는 초기화가
 // 스크롤하다 만나는 자리에 있었다
-import { useState } from 'react'
+import { useRef, useState } from 'react'
+import { loadReviewMode, saveReviewMode, UNLOCK_HOLD_MS } from './reviewMode.ts'
 import {
   DEFAULT_SETTINGS,
   LIMIT_MAX,
@@ -65,7 +66,10 @@ const KEY_FEEDBACKS: { label: string; value: SettingsData['keyFeedback'] }[] = [
 export function Settings({
   onFeedback,
   onBackup,
+  onReview,
 }: {
+  /** 뜻 검수 화면으로. 검수 모드를 켠 기기에서만 보인다 (2026-09-24) */
+  onReview: () => void
   /** 테스터 피드백 화면으로 (2026-09-13) */
   onFeedback: () => void
   /** 백업·초기화 화면으로 (2026-09-22) */
@@ -74,6 +78,24 @@ export function Settings({
   const [settings, setSettings] = useState<SettingsData>(loadSettings)
   const [theme, setThemeState] = useState<Theme>(loadTheme)
   const [textScale, setTextScaleState] = useState<TextScale>(loadTextScale)
+  /**
+   * 검수 모드 — **숨은 진입**이다 (2026-09-24). 「보기」 묶음 제목을 길게 누르면 열린다.
+   * 인증이 아니라 정돈이다 — 보통 학습자에게 검수 도구를 안 보여 주는 것까지가 목적이고,
+   * 검수 결과는 내 Drive 파일을 빌드에 넣을 때만 사전에 닿는다 (`reviewMode.ts`)
+   */
+  const [review, setReview] = useState(loadReviewMode)
+  const hold = useRef<number | null>(null)
+  const startHold = () => {
+    if (review) return
+    hold.current = window.setTimeout(() => {
+      setReview(true)
+      saveReviewMode(true)
+    }, UNLOCK_HOLD_MS)
+  }
+  const endHold = () => {
+    if (hold.current !== null) window.clearTimeout(hold.current)
+    hold.current = null
+  }
 
   const update = (next: SettingsData) => {
     setSettings(next)
@@ -237,7 +259,17 @@ export function Settings({
           </span>
         </div>
 
-        <h3 className="setting-group">보기</h3>
+        {/* 이 제목이 숨은 진입이다 — 길게 누르면 검수 모드가 열린다. 눈에 띄는 표시를
+            두지 않는다: 보통 학습자에게는 그냥 묶음 제목이어야 한다 */}
+        <h3
+          className="setting-group"
+          onPointerDown={startHold}
+          onPointerUp={endHold}
+          onPointerLeave={endHold}
+          onPointerCancel={endHold}
+        >
+          보기
+        </h3>
         <div className="setting">
           <label>테마</label>
           <div className="seg" role="group" aria-label="테마">
@@ -276,6 +308,28 @@ export function Settings({
         {/* 값을 고르는 게 아니라 다른 화면으로 가는 것들. 라벨을 따로 두지 않는다 —
             「백업과 기록」 라벨 + 「백업과 기록 ›」 버튼으로 이름을 두 번 말하고 있었다 */}
         <div className="setting-links">
+        {review && (
+          <div className="setting">
+            <button type="button" className="setting-link" onClick={onReview}>
+              <span>뜻 검수</span>
+              <span className="chev" aria-hidden="true">›</span>
+            </button>
+            <span className="hint">
+              화면에 뜨는 한국어 뜻이 맞는지 봐요. 남긴 판정은 백업에 실려 나가고, 사전
+              빌드에서 반영돼요.{' '}
+              <button
+                type="button"
+                className="link"
+                onClick={() => {
+                  setReview(false)
+                  saveReviewMode(false)
+                }}
+              >
+                검수 모드 끄기
+              </button>
+            </span>
+          </div>
+        )}
         <div className="setting">
           <button type="button" className="setting-link" onClick={openGuide}>
             <span>사용 안내서</span>

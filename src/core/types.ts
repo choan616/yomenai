@@ -125,6 +125,15 @@ export interface MeaningVoteEvent extends EventBase {
   /** 누를 때 화면에 떠 있던 뜻 */
   definition: string
   /**
+   * 고쳐 쓴 뜻 (2026-09-24, 원격 검수). **선택 필드다** — 옛 이벤트에는 없고,
+   * append-only 로그라 그대로 읽힌다.
+   *
+   * 이걸로 검수 판정이 워크리스트와 **1:1** 이 된다 —
+   * `verdict: 'ok'` = `o` · `'bad'` + `fix` = `x`+`fix` · `'bad'` 만 = `~`.
+   * 새 이벤트 타입도 새 전송 수단도 안 만든다
+   */
+  fix?: string
+  /**
    * 표제어. `idiomId` 로도 찾을 수 있지만, **피드백 화면이 사전을 안 읽는다** —
    * 보낼 목록을 사람이 읽을 수 있게 하려고 이벤트가 스스로 설명하게 둔다
    */

@@ -47,7 +47,10 @@ export interface ReplayState {
    * 마지막 `flag` 이벤트가 이긴다 — 취소한 것은 여기 안 남는다.
    * 카드에 눌린 엄지를 띄우고, 피드백 화면이 이걸 모아 보낸다
    */
-  meaningVotes: Map<string, { verdict: MeaningVerdict; headword: string; definition: string }>
+  meaningVotes: Map<
+    string,
+    { verdict: MeaningVerdict; headword: string; definition: string; fix?: string }
+  >
   /** 재생에 쓴 이벤트 수 (삭제분 제외) */
   applied: number
 }
@@ -83,10 +86,12 @@ export function replay(events: LearningEvent[], options: ReplayOptions = {}): Re
     if (e.type === 'flag') {
       const verdict = voteOf(e)
       if (verdict) {
+        // `fix` 는 검수 화면에서만 온다. 이미 찍은 판정을 다시 보여 주려면 같이 들고 있어야 한다
         state.meaningVotes.set(e.idiomId, {
           verdict,
           headword: e.headword,
           definition: e.definition,
+          ...(e.fix ? { fix: e.fix } : {}),
         })
       } else state.meaningVotes.delete(e.idiomId)
       continue

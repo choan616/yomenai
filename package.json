@@ -42,7 +42,8 @@
     "build:fonts": "tsx tools/build-fonts.ts",
     "build:icon": "tsx tools/build-icon.ts",
     "e2e": "playwright test",
-    "check:update": "node tools/check-update-banner.mjs"
+    "check:update": "node tools/check-update-banner.mjs",
+    "apply:app-review": "tsx tools/apply-app-review.ts"
   },
   "dependencies": {
     "dexie": "^4.2.0",

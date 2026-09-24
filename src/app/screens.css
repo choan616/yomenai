@@ -1667,3 +1667,89 @@ p.rule-record {
   margin-top: 8px;
   font-size: calc(0.78rem * var(--ui-scale));
 }
+
+/* ── 뜻 검수 (2026-09-24) ──
+   검수는 몰아서 훑는 일이라 한 줄에 표제어·읽기·뜻·판정이 다 보여야 한다.
+   이 화면이 사전을 직접 고치는 것으로 보이면 안 된다 — 안내 한 줄을 맨 위에 둔다 */
+.review-note {
+  margin: 8px 0 14px;
+  font-size: calc(0.78rem * var(--ui-scale));
+  line-height: 1.6;
+  color: var(--text-faint);
+}
+.review-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.review-row {
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+/* 이미 본 줄은 물러난다 — 남은 일이 눈에 먼저 들어와야 한다 */
+.review-row.done {
+  opacity: 0.55;
+}
+.review-head {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.review-head .r-main {
+  font-family: var(--font-ja);
+  font-size: calc(18px * var(--ui-scale));
+}
+.review-head .r-sub {
+  font-family: var(--font-ja);
+  font-size: calc(13px * var(--ui-scale));
+  color: var(--text-dim);
+}
+.review-why {
+  margin-left: auto;
+  font-size: calc(11px * var(--ui-scale));
+}
+.review-def {
+  margin: 8px 0 0;
+  font-size: calc(15px * var(--ui-scale));
+}
+/* 고친 뜻은 원문 아래에 둔다 — 무엇을 무엇으로 바꿨는지 같이 보여야 판단이 선다 */
+.review-fix {
+  margin: 4px 0 0;
+  font-size: calc(14px * var(--ui-scale));
+  color: var(--band-0);
+}
+.review-acts,
+.review-edit .row {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+.review-acts button,
+.review-edit .row button {
+  min-height: 40px;
+  padding: 6px 14px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface-2);
+  color: var(--text);
+  font-size: calc(14px * var(--ui-scale));
+}
+.review-acts button[aria-pressed='true'] {
+  border-color: var(--text-faint);
+  background: var(--surface);
+  color: var(--text);
+  font-weight: 600;
+}
+.review-edit {
+  margin-top: 10px;
+}
+.review-edit .search-input {
+  width: 100%;
+}

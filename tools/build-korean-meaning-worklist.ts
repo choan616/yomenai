@@ -94,12 +94,14 @@ const idiomById = new Map(idioms.map((i) => [i.id, i]))
  * 담긴 목록은 **동기화 파일에서 읽는다** — `build-event-worklist` 가 세워 둔 관례 그대로
  * `data/events/*.json` 을 본다 (`--events=` 로 경로 지정). 없으면 그냥 건너뛴다.
  */
-function starredFromEvents(): Set<string> {
+function fromEvents(): { starred: Set<string>; voted: Set<string> } {
   const dir =
     process.argv.find((a) => a.startsWith('--events='))?.split('=')[1] ??
     join(import.meta.dirname, '..', 'data', 'events')
   const out = new Set<string>()
-  if (!existsSync(dir)) return out
+  /** 앱의 검수 화면에서 판정을 남긴 것 (2026-09-24). 작업 파일에 실려야 고리가 닫힌다 */
+  const voted = new Set<string>()
+  if (!existsSync(dir)) return { starred: out, voted }
   // 마지막 star 이벤트가 이긴다 — 뺀 것은 남지 않는다 (`replay` 와 같은 규칙)
   const last = new Map<string, { at: number; on: boolean }>()
   for (const f of readdirSync(dir).filter((f) => f.endsWith('.json'))) {
@@ -112,20 +114,27 @@ function starredFromEvents(): Set<string> {
     const events = (parsed as { events?: unknown[] }).events ?? (parsed as unknown[])
     if (!Array.isArray(events)) continue
     for (const e of events as { type?: string; idiomId?: string; on?: boolean; at?: number; deletedAt?: unknown }[]) {
-      if (e.type !== 'star' || e.deletedAt != null || !e.idiomId) continue
+      if (e.deletedAt != null || !e.idiomId) continue
+      // 앱에서 한 번이라도 판정한 것은 취소했어도 싣는다 — 사람이 그 줄을 봤다는 뜻이다
+      if (e.type === 'flag') voted.add(e.idiomId)
+      if (e.type !== 'star') continue
       const prev = last.get(e.idiomId)
       if (prev === undefined || (e.at ?? 0) >= prev.at) last.set(e.idiomId, { at: e.at ?? 0, on: !!e.on })
     }
   }
   for (const [id, v] of last) if (v.on) out.add(id)
-  return out
+  return { starred: out, voted }
 }
 
-const starred = starredFromEvents()
+const { starred, voted } = fromEvents()
+/** 담은 것 + 앱에서 판정한 것. 둘 다 「내가 실제로 본 것」이라 늘 싣는다 */
+const fromApp = new Set([...starred, ...voted])
 /** 담긴 밴드 4 — 번역은 있는데 분류표에 없는 것들 */
-const starredExtra = [...starred].filter((id) => !byId[id] && idiomById.has(id))
-if (starred.size > 0) {
-  console.log(`담아 둔 숙어 ${starred.size}개 중 분류표 밖 ${starredExtra.length}개를 검수 대상에 얹는다`)
+const starredExtra = [...fromApp].filter((id) => !byId[id] && idiomById.has(id))
+if (fromApp.size > 0) {
+  console.log(
+    `앱에서 온 숙어 ${fromApp.size}개(담음 ${starred.size} · 판정 ${voted.size}) 중 분류표 밖 ${starredExtra.length}개를 검수 대상에 얹는다`,
+  )
 }
 
 // 런타임에 실제로 나가는 숙어 집합. build-runtime-dict 가 onyomi-map 에 없는 숙어를
@@ -323,12 +332,12 @@ if (isBatch) {
  * 담긴 숙어는 세션에 나오고 학습 카드에 그 뜻이 뜬다 — 쓰는 말이다. 플래그가 안 붙었다고
  * 표본에서 빠지면 「담은 것만 열어 둔다」는 결정이 무의미해진다. 수가 적어 부담도 없다
  */
-if (starred.size > 0) {
+if (fromApp.size > 0) {
   const already = new Set(picked.map((r) => r.id))
-  const add = rows.filter((r) => starred.has(r.id) && !already.has(r.id))
+  const add = rows.filter((r) => fromApp.has(r.id) && !already.has(r.id))
   if (add.length > 0) {
     picked = [...add, ...picked]
-    console.log(`담아 둔 숙어 ${add.length}개를 맨 앞에 세운다`)
+    console.log(`앱에서 온 숙어 ${add.length}개를 맨 앞에 세운다`)
   }
 }
 
