@@ -83,6 +83,51 @@ const { byId } = JSON.parse(readFileSync(need(join(DICT_DIR, 'korean-class.json'
 const { idioms } = JSON.parse(readFileSync(join(DICT_DIR, 'idioms.json'), 'utf8')) as { idioms: IdiomRecord[] }
 const idiomById = new Map(idioms.map((i) => [i.id, i]))
 
+/**
+ * **담아 둔 밴드 4 를 검수 대상에 얹는다** (2026-09-24 사용자 판정 「담은 것만 열어 둔다」).
+ *
+ * `korean-class.json` 은 한국어 대조를 돌린 것(밴드 0~3)만 담아서, 밴드 4 는 작업 파일에
+ * 한 줄도 안 실렸다. 그런데 담으면 세션에 나오고 **학습 카드에 그 뜻이 뜬다** — 검수가
+ * 가장 필요한 쪽이 검수 밖에 있었다.
+ *
+ * 전체(85,417)를 여는 건 몸으로 감당이 안 되고, 실제로 쓰는 것은 담은 것뿐이다.
+ * 담긴 목록은 **동기화 파일에서 읽는다** — `build-event-worklist` 가 세워 둔 관례 그대로
+ * `data/events/*.json` 을 본다 (`--events=` 로 경로 지정). 없으면 그냥 건너뛴다.
+ */
+function starredFromEvents(): Set<string> {
+  const dir =
+    process.argv.find((a) => a.startsWith('--events='))?.split('=')[1] ??
+    join(import.meta.dirname, '..', 'data', 'events')
+  const out = new Set<string>()
+  if (!existsSync(dir)) return out
+  // 마지막 star 이벤트가 이긴다 — 뺀 것은 남지 않는다 (`replay` 와 같은 규칙)
+  const last = new Map<string, { at: number; on: boolean }>()
+  for (const f of readdirSync(dir).filter((f) => f.endsWith('.json'))) {
+    let parsed: unknown
+    try {
+      parsed = JSON.parse(readFileSync(join(dir, f), 'utf8'))
+    } catch {
+      continue
+    }
+    const events = (parsed as { events?: unknown[] }).events ?? (parsed as unknown[])
+    if (!Array.isArray(events)) continue
+    for (const e of events as { type?: string; idiomId?: string; on?: boolean; at?: number; deletedAt?: unknown }[]) {
+      if (e.type !== 'star' || e.deletedAt != null || !e.idiomId) continue
+      const prev = last.get(e.idiomId)
+      if (prev === undefined || (e.at ?? 0) >= prev.at) last.set(e.idiomId, { at: e.at ?? 0, on: !!e.on })
+    }
+  }
+  for (const [id, v] of last) if (v.on) out.add(id)
+  return out
+}
+
+const starred = starredFromEvents()
+/** 담긴 밴드 4 — 번역은 있는데 분류표에 없는 것들 */
+const starredExtra = [...starred].filter((id) => !byId[id] && idiomById.has(id))
+if (starred.size > 0) {
+  console.log(`담아 둔 숙어 ${starred.size}개 중 분류표 밖 ${starredExtra.length}개를 검수 대상에 얹는다`)
+}
+
 // 런타임에 실제로 나가는 숙어 집합. build-runtime-dict 가 onyomi-map 에 없는 숙어를
 // (熟字訓 거부·카타카나 읽기·파싱 실패) 안 싣기 때문에, 그런 건 검수해도 앱에 안 보인다.
 // 파일이 없으면(build:onyomi 전) 거르지 않는다 — 없는 채로 도는 쪽이 덜 놀랍다.
@@ -176,9 +221,25 @@ interface Row {
   tier: number
 }
 
+/** 분류표에 없는 숙어의 뜻은 번역본에서 꺼낸다 */
+function meaningAsClass(id: string): KoClass['koMeaning'] {
+  const m = meaning[id]
+  return m?.ko ? { definition: m.ko, source: 'llm', verified: false } : null
+}
+
 const rows: Row[] = []
 let droppedOffCorpus = 0
-for (const [id, k] of Object.entries(byId)) {
+// 담긴 밴드 4 를 같은 줄에 세운다. 분류가 없으므로 기본값(확장)으로 둔다 —
+// 한국어 대조를 안 돌린 것이라 「모른다」가 맞지 「동형동의가 아니다」가 아니다
+const targets: [string, KoClass][] = [
+  ...Object.entries(byId),
+  ...starredExtra.map((id): [string, KoClass] => [
+    id,
+    { category: 2, classSource: 'default', koMeaning: meaningAsClass(id) },
+  ]),
+]
+
+for (const [id, k] of targets) {
   if (!k.koMeaning) continue
   // 이미 채운 verdict 는 파일을 다시 써도 살려 둔다 (사람 판정이 날아가면 안 된다)
   if (inRuntime && !inRuntime.has(id) && !prior.has(id)) {
@@ -254,6 +315,21 @@ if (isBatch) {
     picked.push(...kept, ...rest.slice(0, take))
   }
   picked.sort((a, b) => a.tier - b.tier || a.k.category - b.k.category || priorityToBand(a.it.priority) - priorityToBand(b.it.priority) || a.it.headword.localeCompare(b.it.headword))
+}
+
+/**
+ * **담아 둔 것은 어느 모드에서든 늘 싣는다** (2026-09-24).
+ *
+ * 담긴 숙어는 세션에 나오고 학습 카드에 그 뜻이 뜬다 — 쓰는 말이다. 플래그가 안 붙었다고
+ * 표본에서 빠지면 「담은 것만 열어 둔다」는 결정이 무의미해진다. 수가 적어 부담도 없다
+ */
+if (starred.size > 0) {
+  const already = new Set(picked.map((r) => r.id))
+  const add = rows.filter((r) => starred.has(r.id) && !already.has(r.id))
+  if (add.length > 0) {
+    picked = [...add, ...picked]
+    console.log(`담아 둔 숙어 ${add.length}개를 맨 앞에 세운다`)
+  }
 }
 
 const header = [

@@ -79,7 +79,7 @@ for (const f of WORKLISTS) {
 }
 console.log(`검수 파일 ${WORKLISTS.length}개, 행 ${merged.size}개 병합`)
 
-const tally = { o: 0, x: 0, s: 0, '~': 0, cat: 0, inlineEdit: 0, skip: 0, missing: 0 }
+const tally = { o: 0, x: 0, s: 0, '~': 0, cat: 0, inlineEdit: 0, skip: 0, missing: 0, added: 0 }
 /** 폐기한 `s` 가 아직 남아 있는 행 수. 0 이 되면 워크리스트에서 그 판정이 사라진 것이다 */
 let legacyS = 0
 const perTier: Record<string, { o: number; x: number; s: number; '~': number; edited: number }> = {}
@@ -88,11 +88,41 @@ const norm = (s: string) => s.replace(/\s+/g, ' ').trim()
 // *사람이 고친 값* 으로 오인돼 검수분이 통째로 source: manual 로 뒤집힌다
 const sameText = (a: string, b: string) => norm(normalizeDefinition(a)) === norm(normalizeDefinition(b))
 
+/**
+ * 번역본에서 뜻을 꺼낸다 — 분류표에 없는 숙어(담아 둔 밴드 4)용 (2026-09-24).
+ * `korean-class.json` 은 한국어 대조를 돌린 밴드 0~3 만 담아서, 담긴 밴드 4 의 판정은
+ * 반영될 자리가 없었다(`tally.missing` 으로 세고 버렸다).
+ */
+const MEANING_PATH = join(DICT_DIR, 'korean-meaning.json')
+const llmById: Record<string, { ko: string; glossEn: string[] }> = existsSync(MEANING_PATH)
+  ? (JSON.parse(readFileSync(MEANING_PATH, 'utf8')).byId as Record<
+      string,
+      { ko: string; glossEn: string[] }
+    >)
+  : {}
+
 for (const [id, { verdict, cat, fix, llmKo, tier }] of merged) {
-  const entry = cls.byId[id]
+  let entry = cls.byId[id]
   if (!entry) {
-    tally.missing++
-    continue
+    // 판정이 실린 숙어인데 분류표에 없다 = 담아 둔 밴드 4 다. **자리를 만들어 받는다.**
+    // 분류는 한국어 대조를 안 돌린 것이라 기본값(확장)이다 — 「모른다」지 「아니다」가 아니다
+    const llm = llmById[id]
+    if (!llm?.ko) {
+      tally.missing++
+      continue
+    }
+    entry = {
+      category: 2,
+      classSource: 'default',
+      koMeaning: {
+        definition: normalizeDefinition(llm.ko),
+        glossEn: llm.glossEn,
+        source: 'llm',
+        verified: false,
+      },
+    }
+    cls.byId[id] = entry
+    tally.added++
   }
 
   if (/^[123]$/.test(cat) && Number(cat) !== entry.category) {
@@ -170,6 +200,6 @@ cls.stats.koMeaningVerified = verifiedTotal
 writeFileSync(CLASS_PATH, JSON.stringify(cls))
 
 console.log('=== 뜻 검수 반영 ===')
-console.log(`  o ${tally.o} · x ${tally.x} · s ${tally.s} · ~ ${tally['~']} (인라인 수정 ${tally.inlineEdit}) · 분류교정 ${tally.cat} · 미기입 ${tally.skip} · id 없음 ${tally.missing}`)
+console.log(`  o ${tally.o} · x ${tally.x} · s ${tally.s} · ~ ${tally['~']} (인라인 수정 ${tally.inlineEdit}) · 분류교정 ${tally.cat} · 미기입 ${tally.skip} · id 없음 ${tally.missing}개 · 새 자리 ${tally.added}`)
 console.log(`  koMeaning.verified 총 ${verifiedTotal}`)
 console.log(`  → ${CLASS_PATH}  (build:runtime-dict 재실행 필요)`)
