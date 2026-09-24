@@ -133,3 +133,39 @@ test('내가 만난 것만 올라오고, 고친 뜻이 fix 로 남는다', async
   expect(flag.definition).toBeTruthy()
   expect(flag.headword).toBe('明白')
 })
+
+// 내보내는 길이 둘이다 (2026-09-24). 파일은 저장소에 커밋할 원본이고, 복사는 폰에서
+// 텍스트를 꺼내는 네 단계(다운로드 열기·앱으로 열기·전체 선택·복사)를 없앤다.
+test('판정을 파일로 받으면 네 칸만 들어 있다', async ({ page }) => {
+  test.setTimeout(180_000)
+  await page.addInitScript(() => {
+    try {
+      localStorage.setItem('yomenai:reviewMode', '1')
+    } catch {
+      /* private mode */
+    }
+  })
+  await openSettings(page)
+  await page.getByRole('button', { name: /뜻 검수/ }).click()
+  await expect(page.locator('.review-row').first()).toBeVisible({ timeout: 60_000 })
+
+  // 복사 쪽은 클립보드 권한이 필요해 여기서는 존재만 본다 — 내용은 단위 테스트가 본다
+  await expect(page.getByRole('button', { name: '판정 복사' })).toBeVisible()
+
+  // 판정을 하나 찍어야 내보낼 줄이 생긴다
+  await page.locator('.review-row').first().getByRole('button', { name: '맞아요' }).click()
+
+  const dl = page.waitForEvent('download')
+  await page.getByRole('button', { name: '파일로 내보내기' }).click()
+  const file = await dl
+  expect(file.suggestedFilename()).toBe('korean-meaning-app-review.tsv')
+
+  const { readFile } = await import('node:fs/promises')
+  const raw = await readFile((await file.path())!, 'utf8')
+  const lines = raw.replace(/^﻿/, '').split('\n').filter((l) => l !== '')
+  expect(lines[0]).toBe('id\theadword\tverdict\tfix')
+  expect(lines.length).toBe(2)
+  // 학습 기록이 될 만한 칸은 아예 없다 — 공개 저장소에 올리는 물건이다
+  expect(raw).not.toContain('deviceId')
+  for (const l of lines) expect(l.split('\t')).toHaveLength(4)
+})

@@ -23,6 +23,11 @@ import { loadBand4Idioms, loadBaseIdioms, type RuntimeIdiom } from '../dict/load
 /** 한 화면에 내는 수. 검수는 몰아서 하는 일이라 넉넉히 두되 무한정은 아니다 */
 const PAGE = 40
 
+/** 내보낸 TSV 의 판정 수 — 머리줄과 끝 빈 줄을 뺀다 */
+function rowsOf(tsv: string): string {
+  return (tsv.split('\n').filter((l) => l !== '').length - 1).toLocaleString('ko')
+}
+
 interface Row {
   it: RuntimeIdiom
   /** 이미 찍은 판정 */
@@ -46,8 +51,8 @@ export function MeaningReview({ onBack }: { onBack: () => void }) {
   const [local, setLocal] = useState<Map<string, { verdict: MeaningVerdict | null; fix?: string }>>(
     new Map(),
   )
-  /** 방금 내보낸 줄 수. 파일이 어디로 갔는지 안 보이는 기기가 있어 숫자로라도 알린다 */
-  const [saved, setSaved] = useState<number | null>(null)
+  /** 방금 내보낸 결과 한 줄. 파일이 어디로 갔는지 안 보이는 기기가 있어 숫자로라도 알린다 */
+  const [note, setNote] = useState<string | null>(null)
 
   useEffect(() => {
     let alive = true
@@ -142,7 +147,24 @@ export function MeaningReview({ onBack }: { onBack: () => void }) {
     a.click()
     // 바로 거두면 iOS 에서 내려받기가 끊긴다. 한 틱 뒤로 미룬다
     setTimeout(() => URL.revokeObjectURL(url), 0)
-    setSaved(tsv.split('\n').length - 2)
+    setNote(`${rowsOf(tsv)}개를 ${REVIEW_EXPORT_FILENAME} 로 내려받았어요.`)
+  }, [])
+
+  /**
+   * 같은 내용을 클립보드로 (2026-09-24). 파일로 받으면 폰에서 텍스트를 꺼내는 데
+   * 네 단계가 든다 — 다운로드 열기·텍스트 앱으로 열기·전체 선택·복사. 넘기기만 할 때는
+   * 그 구간이 통째로 필요 없다. 파일 쪽은 남긴다 — 저장소에 커밋할 원본은 파일이라야 한다.
+   *
+   * BOM 은 안 붙인다. 엑셀로 열 일이 없고, 붙여넣은 첫 칸에 보이지 않는 글자가 끼면 안 된다
+   */
+  const copyVerdicts = useCallback(async () => {
+    const tsv = buildReviewExport(await listEvents(db(), LOCAL_USER_ID))
+    try {
+      await navigator.clipboard.writeText(tsv)
+      setNote(`${rowsOf(tsv)}개를 복사했어요. 붙여넣으면 돼요.`)
+    } catch {
+      setNote('복사하지 못했어요. 내보내기로 파일을 받아 주세요.')
+    }
   }, [])
 
   const done = useMemo(() => {
@@ -185,13 +207,14 @@ export function MeaningReview({ onBack }: { onBack: () => void }) {
             </p>
             {/* 내보내기는 판정만 담는다. 백업 파일과 달리 그대로 저장소에 올릴 수 있는 물건이다 */}
             <div className="review-export">
+              <button type="button" className="btn" onClick={() => void copyVerdicts()}>
+                판정 복사
+              </button>
               <button type="button" className="btn" onClick={() => void exportVerdicts()}>
-                판정 내보내기
+                파일로 내보내기
               </button>
               <span className="dim">
-                {saved === null
-                  ? '표제어·판정·고친 뜻만 담긴 파일이에요. 학습 기록은 안 들어가요.'
-                  : `${saved.toLocaleString('ko')}개를 ${REVIEW_EXPORT_FILENAME} 로 내려받았어요.`}
+                {note ?? '표제어·판정·고친 뜻만 담겨요. 학습 기록은 안 들어가요.'}
               </span>
             </div>
             {loaded.rows.length > 0 && (
