@@ -35,7 +35,7 @@ import {
   type ReadingGroup,
   type ReadingIndex,
 } from '../dict/readingIndex.ts'
-import { loadWideDict, type WideDict, type WideIdiom } from '../dict/wide.ts'
+import { adopt, loadWideDict, type WideDict, type WideIdiom } from '../dict/wide.ts'
 import { loadCurrentList } from './currentList.ts'
 
 /** 한 화면에 낼 묶음 수. 앞부분 일치는 금방 불어난다 (`こう` 로만 쳐도 수백 개) */
@@ -410,6 +410,8 @@ export function Search({
                 state={outsideFailed ? 'failed' : wantOutside ? 'loading' : 'idle'}
                 groups={outsideGroups}
                 kanji={outsideKanji ?? view.kanji}
+                starred={starred}
+                onToggle={toggleStar}
                 onAsk={getOutside}
               />
             )}
@@ -651,22 +653,27 @@ function Group({
 /**
  * 학습 사전 밖 결과 (2026-09-25 사용자 제안).
  *
- * **담기를 안 낸다.** 이쪽 항목은 음독 분해가 없어 세션에 못 들어간다 — 담아도 아무 일이
- * 안 일어나므로 별을 두면 거짓말이다. 「학습 중」 자리에 이유를 적는 관례와 같다.
+ * **담을 수 있는 줄에만 담기를 낸다.** 가르는 기준은 상용한자가 아니라 읽기를 한자
+ * 단위로 가를 수 있느냐다 — 못 가르면 음독 맵도 형제 대조도 오답 분류도 안 붙어서
+ * 담아 봐야 학습이 안 된다. 누른 뒤에 안 된다고 하면 늦으니 그릴 때 미리 가른다.
  *
- * 뜻도 영어 gloss 그대로다. 한국어 번역을 아직 안 돌렸고, 없는 것을 있는 척하지 않는다.
+ * 뜻은 영어 gloss 그대로다. 한국어 번역을 아직 안 돌렸고, 없는 것을 있는 척하지 않는다.
  */
 function Outside({
   dict,
   state,
   groups,
   kanji,
+  starred,
+  onToggle,
   onAsk,
 }: {
   dict: WideDict | null
   state: 'idle' | 'loading' | 'failed'
   groups: ReadingGroup<WideIdiom>[]
   kanji: Map<string, KanjiInfo>
+  starred: Set<string>
+  onToggle: (idiomId: string) => void
   onAsk: () => void
 }) {
   // 받는 중과 다 받은 뒤를 `dict` 로 가른다 — `state` 는 「켰나」까지만 말한다
@@ -699,9 +706,12 @@ function Outside({
 
   return (
     <>
-      <p className="outside-note">학습 범위 밖이에요. 읽는 법만 알려 드리고 공부에는 안 나와요.</p>
+      <p className="outside-note">
+        학습 사전 밖이에요. 담으면 세션에 들어와요 — 뜻이 없어 읽기만 물어요.
+        「읽기만」은 읽기를 한자 단위로 못 갈라 담을 수 없는 거예요.
+      </p>
       {groups.map((g) => (
-        <OutsideGroup key={g.reading} group={g} kanji={kanji} />
+        <OutsideGroup key={g.reading} group={g} kanji={kanji} starred={starred} onToggle={onToggle} />
       ))}
     </>
   )
@@ -710,11 +720,22 @@ function Outside({
 function OutsideGroup({
   group,
   kanji,
+  starred,
+  onToggle,
 }: {
   group: ReadingGroup<WideIdiom>
   kanji: Map<string, KanjiInfo>
+  starred: Set<string>
+  onToggle: (idiomId: string) => void
 }) {
   const { reading, items } = group
+  // 담을 수 있는지는 **그릴 때 한 번** 본다 — 누른 뒤에 안 된다고 하면 늦다.
+  // 가르는 기준은 상용한자가 아니라 읽기를 한자 단위로 가를 수 있느냐다
+  const look = (k: string) => {
+    const r = kanji.get(k)
+    return r ? { onyomi: r.on, kunyomi: r.kun } : undefined
+  }
+  const canAdopt = new Set(items.filter((it) => adopt(it, look) !== null).map((it) => it.id))
   return (
     <div className="hit-group outside">
       <p className={group.exact ? 'section-title exact' : 'section-title'}>
@@ -729,7 +750,17 @@ function OutsideGroup({
             </span>
             <span className="r-sub">{koreanOf(it.headword, kanji)}</span>
             <span className="r-sub r-meaning">{it.glossEn.slice(0, 3).join('; ')}</span>
-            <span className="star-slot dim">범위 밖</span>
+            {canAdopt.has(it.id) ? (
+              <StarButton
+                headword={it.headword}
+                on={starred.has(it.id)}
+                onToggle={() => onToggle(it.id)}
+              />
+            ) : (
+              <span className="star-slot dim" title="읽기를 한자 단위로 못 갈라요">
+                읽기만
+              </span>
+            )}
           </li>
         ))}
       </ul>

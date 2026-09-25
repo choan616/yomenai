@@ -104,9 +104,9 @@ test('학습 사전에 없으면 밖에서 찾을지 묻고, 그러면 찾아 �
   await expect(row).toContainText('detonation')
 
   // **담기를 안 낸다** — 음독 분해가 없어 세션에 못 들어간다. 별을 두면 거짓말이다
-  await expect(row.locator('.star-slot')).toHaveText('범위 밖')
-  await expect(row.getByRole('button')).toHaveCount(0)
-  await expect(page.locator('.outside-note')).toContainText('공부에는 안 나와요')
+  // 爆轟 은 음독으로 갈라지므로 담을 수 있다 — 갈라지는 것과 아닌 것은 아래 테스트가 본다
+  await expect(row.getByRole('button', { name: /爆轟 담기/ })).toBeVisible()
+  await expect(page.locator('.outside-note')).toContainText('담으면 세션에 들어와요')
 
   // 전용 @font-face 선언이 붙는다 — 없으면 轟 이 시스템 폰트로 떨어진다 (한중일 통합)
   await expect(page.locator('link[href$="fonts/wide.css"]')).toHaveCount(1)
@@ -115,4 +115,39 @@ test('학습 사전에 없으면 밖에서 찾을지 묻고, 그러면 찾아 �
   await input.fill('躊躇')
   await expect(page.locator('.hit-group.outside .section-title').first()).toContainText('ちゅうちょ')
   await expect(page.getByRole('button', { name: '학습 사전 밖에서 찾기' })).toHaveCount(0)
+})
+
+// 들이기 (2026-09-25). 15,114개를 통째로 들이면 음독 쌍이 2,532 → 4,794 가 되고 그 절반이
+// 상용 밖 글자라 「숙지한 음독」이 재는 것이 달라진다. 담은 것만 올리면 분모가 내가 넓힌
+// 만큼만 늘어서 지표의 성격이 안 바뀐다.
+test('넓힌 사전에서 담을 수 있는 것과 없는 것을 갈라 낸다', async ({ page }) => {
+  await page.goto('/')
+  const tab = page.getByRole('button', { name: '찾기', exact: true })
+  await expect(tab).toBeVisible({ timeout: 20_000 })
+  await tab.click()
+
+  const input = page.getByLabel('읽기 또는 한자 검색')
+  await input.fill('爆轟')
+  await page.getByRole('button', { name: '학습 사전 밖에서 찾기' }).click()
+
+  const row = page.locator('.hit-group.outside .rows > li').filter({ hasText: '爆轟' })
+  await expect(row).toBeVisible({ timeout: 30_000 })
+  // 음독으로 갈라지므로 담을 수 있다
+  const add = row.getByRole('button', { name: /爆轟 담기/ })
+  await expect(add).toBeVisible()
+  await add.click()
+  await expect(row.getByRole('button', { name: /爆轟 빼기/ })).toBeVisible()
+
+  // 훈독뿐이라 못 담는 것은 이유를 적는다 — 누른 뒤에 안 된다고 하면 늦다
+  await input.fill('逢引')
+  const kun = page.locator('.hit-group.outside .rows > li').filter({ hasText: '逢引' })
+  await expect(kun.locator('.star-slot')).toHaveText('읽기만')
+  await expect(kun.getByRole('button')).toHaveCount(0)
+
+  // 담은 것은 단어장에 뜬다 — 넓힌 사전에서 되짚어 오지 않으면 조용히 사라진다
+  await input.fill('')
+  await page.getByRole('button', { name: /^단어장/ }).click()
+  const wl = page.locator('.review-row').filter({ hasText: '爆轟' })
+  await expect(wl).toBeVisible({ timeout: 30_000 })
+  await expect(wl.locator('.wl-state')).toHaveText('아직 안 나옴')
 })

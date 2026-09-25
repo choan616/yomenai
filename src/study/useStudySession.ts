@@ -36,6 +36,7 @@ import {
   studyPool,
   type RuntimeIdiom,
 } from '../dict/load.ts'
+import { adopt, loadWideDict, withWideKanji } from '../dict/wide.ts'
 import { mistakeContextFromKanji } from '../dict/mistakeContext.ts'
 import { loadSettings, OBSERVE_GATE } from '../app/settings.ts'
 
@@ -294,6 +295,7 @@ export function useStudySession({
          * 이 갈래가 돌 일이 없다
          */
         const missing = [...state.starred].filter((id) => !loaded.some((it) => it.idiomId === id))
+        let kanjiAll = kanji
         if (missing.length > 0) {
           const want = new Set(missing)
           const extra = studyPool(await loadBand4Idioms(), kunPercent > 0).filter((it) =>
@@ -301,12 +303,40 @@ export function useStudySession({
           )
           if (!alive) return
           if (extra.length > 0) loaded = [...loaded, ...extra]
+          for (const it of extra) want.delete(it.idiomId)
+
+          /**
+           * **넓힌 사전에서 들인 것** (2026-09-25 사용자 제안). 밴드 4에도 없으면 학습 사전
+           * 밖에서 담은 것이다 — 상용한자 밖 글자가 섞여 임포트가 버렸던 표제어다.
+           *
+           * 15,114개를 통째로 들이면 음독 쌍이 2,532 → 4,794 가 되고 그 절반이 상용 밖
+           * 글자라 「숙지한 음독」이 재는 것이 달라진다 (실측). **담은 것만** 올리면
+           * 분모가 내가 넓힌 만큼만 늘어서 지표의 성격이 안 바뀐다.
+           */
+          if (want.size > 0) {
+            const dict = await loadWideDict().catch(() => null)
+            if (!alive) return
+            if (dict !== null) {
+              // 한자 자료를 **먼저** 합친다. `轟` 이 lookup 에 없으면 분해가 실패해
+              // 들이기도 안 되고 후리가나·오답 분류도 조용히 안 붙는다
+              kanjiAll = withWideKanji(kanji, dict)
+              const look = (k: string) => {
+                const r = kanjiAll.get(k)
+                return r ? { onyomi: r.on, kunyomi: r.kun } : undefined
+              }
+              const adopted = [...want]
+                .map((id) => dict.byId.get(id))
+                .map((it) => (it ? adopt(it, look) : null))
+                .filter((it) => it !== null)
+              if (adopted.length > 0) loaded = [...loaded, ...studyPool(adopted, kunPercent > 0)]
+            }
+          }
         }
 
         setPool(loaded)
         setPriorEvents(events)
         setVotes(state.meaningVotes)
-        mistakes.current = mistakeContextFromKanji(kanji)
+        mistakes.current = mistakeContextFromKanji(kanjiAll)
         const rubyLookup = mistakes.current.lookup
         setRubyOfIdiom(() => (i: RuntimeIdiom) => rubyOf(i.headword, i.reading, rubyLookup))
         const now = Date.now()

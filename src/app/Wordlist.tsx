@@ -17,6 +17,7 @@ import { getDeviceId } from '../db/device.ts'
 import { LOCAL_USER_ID, appendEvent, listEvents } from '../db/events.ts'
 import { db } from '../db/schema.ts'
 import { loadCurrentList, saveCurrentList } from './currentList.ts'
+import { adopt, loadWideDict, withWideKanji } from '../dict/wide.ts'
 import { loadBand4Idioms, loadBaseIdioms, loadKanji, type KanjiInfo, type RuntimeIdiom } from '../dict/load.ts'
 
 interface Row {
@@ -50,10 +51,31 @@ export function Wordlist({ onBack }: { onBack: () => void }) {
 
         // 담은 것 중 기본 사전 밖(밴드 4)이 있으면 그때만 20MB 를 받는다 — 검수 화면과 같은 관례
         const missing = [...state.wordlist.keys()].filter((id) => !byId.has(id))
+        let kanjiAll = kj
         if (missing.length > 0) {
           const want = new Set(missing)
           for (const it of await loadBand4Idioms()) if (want.has(it.idiomId)) byId.set(it.idiomId, it)
           if (!alive) return
+          for (const id of [...want]) if (byId.has(id)) want.delete(id)
+
+          // 밴드 4에도 없으면 넓힌 사전에서 들인 것이다 (2026-09-25).
+          // 여기서 안 찾으면 담아 둔 줄이 단어장에서 **조용히 사라진다**
+          if (want.size > 0) {
+            const dict = await loadWideDict().catch(() => null)
+            if (!alive) return
+            if (dict !== null) {
+              kanjiAll = withWideKanji(kj, dict)
+              const look = (k: string) => {
+                const r = kanjiAll.get(k)
+                return r ? { onyomi: r.on, kunyomi: r.kun } : undefined
+              }
+              for (const id of want) {
+                const raw = dict.byId.get(id)
+                const it = raw ? adopt(raw, look) : null
+                if (it) byId.set(id, it)
+              }
+            }
+          }
         }
 
         const out: Row[] = []
@@ -72,7 +94,7 @@ export function Wordlist({ onBack }: { onBack: () => void }) {
         }
         // 묶음 안에서는 담은 순서 그대로 — 책을 읽어 내려간 순서다
         out.sort((a, b) => a.list.localeCompare(b.list, 'ko') || a.at - b.at)
-        setKanji(kj)
+        setKanji(kanjiAll)
         setRows(out)
       } catch (e) {
         if (alive) setError(e instanceof Error ? e.message : String(e))
