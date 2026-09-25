@@ -1242,6 +1242,30 @@
 .hit-group .section-title {
   font-family: var(--font-ja);
 }
+
+/* ── 학습 사전 밖 (2026-09-25) ──
+   공부에 안 나오는 것들이라 학습 사전 결과와 같은 무게로 보이면 안 된다.
+   색으로만 가르지 않는다 (PLAN §7) — 안내 문구와 줄 끝의 「범위 밖」이 같이 말한다 */
+.outside-ask {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 4px 0 16px;
+}
+.outside-ask .dim {
+  font-size: calc(0.74rem * var(--ui-scale));
+  line-height: 1.5;
+}
+.outside-note {
+  margin: 4px 0 12px;
+  font-size: calc(0.78rem * var(--ui-scale));
+  line-height: 1.6;
+  color: var(--text-faint);
+}
+.hit-group.outside .rows > li {
+  opacity: 0.82;
+}
 /* 뜻은 길어도 줄을 안 밀어낸다 — 표기·한국음이 왼쪽에 고정돼야 훑어진다 */
 .rows .r-meaning {
   flex: 1;

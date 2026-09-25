@@ -77,5 +77,42 @@ test('한자를 붙여넣으면 표기로 찾고 읽기를 알려 준다', async
 
   // 사전에 없는 표기는 읽기 쪽과 다른 문구로 답한다
   await input.fill('爆轟')
-  await expect(page.locator('.empty')).toContainText('표기가 사전에 없어요')
+  await expect(page.locator('.empty')).toContainText('표기가 학습 사전에 없어요')
+})
+
+// 학습 사전 밖 (2026-09-25). 상용한자 밖 글자가 섞여 임포트가 버린 표현들이다.
+// 찾을 수 있는 범위의 잣대로 상용한자표를 쓸 근거가 없다 — 책에 나오는 글자와 다른 집합이다.
+test('학습 사전에 없으면 밖에서 찾을지 묻고, 그러면 찾아 준다', async ({ page }) => {
+  await page.goto('/')
+  const tab = page.getByRole('button', { name: '찾기', exact: true })
+  await expect(tab).toBeVisible({ timeout: 20_000 })
+  await tab.click()
+
+  const input = page.getByLabel('읽기 또는 한자 검색')
+  await input.fill('爆轟')
+  await expect(page.locator('.empty')).toContainText('학습 사전에 없어요')
+
+  // 묻기 전에는 안 받는다 — 사전 2.2MB + 전용 글꼴이 딸려 온다
+  const ask = page.getByRole('button', { name: '학습 사전 밖에서 찾기' })
+  await expect(ask).toBeVisible()
+  await ask.click()
+
+  const group = page.locator('.hit-group.outside').first()
+  await expect(group.locator('.section-title')).toContainText('ばくごう', { timeout: 30_000 })
+  const row = group.locator('.rows > li').filter({ hasText: '爆轟' })
+  await expect(row).toContainText('폭굉') // 한국 한자음 — 轟 은 넓힌 사전 쪽 자료에만 있다
+  await expect(row).toContainText('detonation')
+
+  // **담기를 안 낸다** — 음독 분해가 없어 세션에 못 들어간다. 별을 두면 거짓말이다
+  await expect(row.locator('.star-slot')).toHaveText('범위 밖')
+  await expect(row.getByRole('button')).toHaveCount(0)
+  await expect(page.locator('.outside-note')).toContainText('공부에는 안 나와요')
+
+  // 전용 @font-face 선언이 붙는다 — 없으면 轟 이 시스템 폰트로 떨어진다 (한중일 통합)
+  await expect(page.locator('link[href$="fonts/wide.css"]')).toHaveCount(1)
+
+  // 한 번 받았으면 다음부터는 안 묻는다
+  await input.fill('躊躇')
+  await expect(page.locator('.hit-group.outside .section-title').first()).toContainText('ちゅうちょ')
+  await expect(page.getByRole('button', { name: '학습 사전 밖에서 찾기' })).toHaveCount(0)
 })

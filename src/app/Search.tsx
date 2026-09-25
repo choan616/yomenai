@@ -7,7 +7,7 @@
 // 대신 **담아 두기**가 있다 (2026-09-21 사용자 요청). 담은 표현은 다음 세션에 소개로
 // 먼저 나온다 — 시험이 아니라 보여주는 자리라 위 문제를 안 만든다. `star` 이벤트 하나만
 // 남고 FSRS 는 그대로다.
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { CameraIcon } from './icons.tsx'
 import { toKana } from 'wanakana'
 import { RomajiKeypad } from '../study/RomajiKeypad.tsx'
@@ -28,16 +28,37 @@ import {
 import type { CameraFound } from './CameraFind.tsx'
 import {
   loadReadingIndex,
-  loadWideReadingIndex,
+  loadBand4ReadingIndex,
   looksLikeHeadword,
   searchByHeadword,
   searchByReading,
   type ReadingGroup,
   type ReadingIndex,
 } from '../dict/readingIndex.ts'
+import { loadWideDict, type WideDict, type WideIdiom } from '../dict/wide.ts'
 
 /** 한 화면에 낼 묶음 수. 앞부분 일치는 금방 불어난다 (`こう` 로만 쳐도 수백 개) */
 const GROUP_LIMIT = 20
+
+/**
+ * 학습 사전 밖까지 찾기로 한 적이 있나 (2026-09-25). 기기별이라 동기화 안 한다 —
+ * 한 번 받으면 캐시에 남으므로 같은 기기에서 다시 물을 이유가 없다
+ */
+const WIDE_KEY = 'yomenai:wideDict'
+function wideAllowed(): boolean {
+  try {
+    return localStorage.getItem(WIDE_KEY) === '1'
+  } catch {
+    return false
+  }
+}
+function allowWide(): void {
+  try {
+    localStorage.setItem(WIDE_KEY, '1')
+  } catch {
+    /* 프라이빗 모드 — 이번 세션만 */
+  }
+}
 
 interface Loaded {
   index: ReadingIndex
@@ -185,7 +206,7 @@ export function Search({
     ;(async () => {
       try {
         const [index, band4, base] = await Promise.all([
-          loadWideReadingIndex(),
+          loadBand4ReadingIndex(),
           loadBand4Idioms(),
           loadBaseIdioms(),
         ])
@@ -226,7 +247,60 @@ export function Search({
     [view, raw, byHead],
   )
 
+  /**
+   * 학습 사전 밖 (2026-09-25 사용자 제안 「학습용 사전 외의 범위에서 찾겠냐고 묻는 건 어떤가」).
+   *
+   * **0건일 때만 쓴다.** 학습 사전에서 나왔으면 그게 답이고, 밖엣것까지 섞으면 소음이다.
+   * 한 번 받겠다고 한 기기에서는 다시 안 묻는다 — 이미 캐시에 있다
+   */
+  const [outside, setOutside] = useState<WideDict | null>(null)
+  const [outsideFailed, setOutsideFailed] = useState(false)
+  /** 이번 화면에서 눌렀나. 전에 받아 둔 기기라면 안 물어도 켠 것으로 본다 */
+  const [askedOutside, setAskedOutside] = useState(false)
+  const getOutside = useCallback(() => {
+    allowWide()
+    setOutsideFailed(false)
+    setAskedOutside(true)
+  }, [])
+
   const typed = raw.trim() !== ''
+  const noHit = typed && !widening && groups.length === 0
+  const wantOutside = askedOutside || (noHit && wideAllowed())
+
+  // **효과 안에서 동기로 setState 하지 않는다** — 받아 온 뒤에만 상태가 바뀐다.
+  // 켤지 말지는 렌더 중에 파생되고(`wantOutside`), 누른 것은 이벤트가 기록한다
+  useEffect(() => {
+    if (!wantOutside || outside !== null || outsideFailed) return
+    let alive = true
+    loadWideDict().then(
+      (d) => {
+        if (alive) setOutside(d)
+      },
+      () => {
+        if (alive) setOutsideFailed(true)
+      },
+    )
+    return () => {
+      alive = false
+    }
+  }, [wantOutside, outside, outsideFailed])
+
+  const outsideGroups = useMemo(
+    () =>
+      outside === null || !typed
+        ? []
+        : byHead
+          ? searchByHeadword(outside.index, raw, GROUP_LIMIT)
+          : searchByReading(outside.index, raw, GROUP_LIMIT),
+    [outside, raw, byHead, typed],
+  )
+
+  /** 한국 한자음은 두 자료를 합쳐 본다 — `轟` 은 넓힌 사전 쪽에만 있다 */
+  const outsideKanji = useMemo(
+    () => (outside === null || loaded === null ? null : new Map([...loaded.kanji, ...outside.kanji])),
+    [outside, loaded],
+  )
+
   /** 자판을 띄울지 — 입력창을 누른 뒤에만 뜬다 */
   const [typing, setTyping] = useState(false)
   const keypad = useCoarsePointer()
@@ -310,14 +384,23 @@ export function Search({
                 </>
               ) : byHead ? (
                 <>
-                  <b lang="ja">{raw}</b> 라는 표기가 사전에 없어요.
+                  <b lang="ja">{raw}</b> 라는 표기가 학습 사전에 없어요.
                 </>
               ) : (
                 <>
-                  <b lang="ja">{raw}</b> 로 읽히는 숙어가 없어요.
+                  <b lang="ja">{raw}</b> 로 읽히는 숙어가 학습 사전에 없어요.
                 </>
               )}
             </p>
+            {noHit && (
+              <Outside
+                dict={outside}
+                state={outsideFailed ? 'failed' : wantOutside ? 'loading' : 'idle'}
+                groups={outsideGroups}
+                kanji={outsideKanji ?? view.kanji}
+                onAsk={getOutside}
+              />
+            )}
             <Scope poolSize={view.poolSize} widening={widening} />
           </>
         ) : (
@@ -546,6 +629,95 @@ function Group({
                 onToggle={() => onToggle(it.idiomId)}
               />
             )}
+          </li>
+        ))}
+      </ul>
+    </div>
+  )
+}
+
+/**
+ * 학습 사전 밖 결과 (2026-09-25 사용자 제안).
+ *
+ * **담기를 안 낸다.** 이쪽 항목은 음독 분해가 없어 세션에 못 들어간다 — 담아도 아무 일이
+ * 안 일어나므로 별을 두면 거짓말이다. 「학습 중」 자리에 이유를 적는 관례와 같다.
+ *
+ * 뜻도 영어 gloss 그대로다. 한국어 번역을 아직 안 돌렸고, 없는 것을 있는 척하지 않는다.
+ */
+function Outside({
+  dict,
+  state,
+  groups,
+  kanji,
+  onAsk,
+}: {
+  dict: WideDict | null
+  state: 'idle' | 'loading' | 'failed'
+  groups: ReadingGroup<WideIdiom>[]
+  kanji: Map<string, KanjiInfo>
+  onAsk: () => void
+}) {
+  // 받는 중과 다 받은 뒤를 `dict` 로 가른다 — `state` 는 「켰나」까지만 말한다
+  if (state === 'loading' && dict === null) {
+    return <p className="empty">학습 사전 밖에서 찾고 있어요…</p>
+  }
+  if (state === 'failed') {
+    return (
+      <div className="outside-ask">
+        <button type="button" className="btn" onClick={onAsk}>
+          다시 시도
+        </button>
+        <span className="dim">사전을 못 받았어요.</span>
+      </div>
+    )
+  }
+  if (dict === null) {
+    return (
+      <div className="outside-ask">
+        <button type="button" className="btn" onClick={onAsk}>
+          학습 사전 밖에서 찾기
+        </button>
+        <span className="dim">
+          상용한자 밖 글자가 섞인 표현까지 찾아요. 사전과 전용 글꼴을 처음 한 번 받아요 (약 3.6MB).
+        </span>
+      </div>
+    )
+  }
+  if (groups.length === 0) return <p className="empty">학습 사전 밖에서도 못 찾았어요.</p>
+
+  return (
+    <>
+      <p className="outside-note">학습 범위 밖이에요. 읽는 법만 알려 드리고 공부에는 안 나와요.</p>
+      {groups.map((g) => (
+        <OutsideGroup key={g.reading} group={g} kanji={kanji} />
+      ))}
+    </>
+  )
+}
+
+function OutsideGroup({
+  group,
+  kanji,
+}: {
+  group: ReadingGroup<WideIdiom>
+  kanji: Map<string, KanjiInfo>
+}) {
+  const { reading, items } = group
+  return (
+    <div className="hit-group outside">
+      <p className={group.exact ? 'section-title exact' : 'section-title'}>
+        <span lang="ja">{reading}</span>
+        <span className="dim"> · {items.length}</span>
+      </p>
+      <ul className="rows">
+        {items.map((it) => (
+          <li key={it.id}>
+            <span className="r-main" lang="ja">
+              {it.headword}
+            </span>
+            <span className="r-sub">{koreanOf(it.headword, kanji)}</span>
+            <span className="r-sub r-meaning">{it.glossEn.slice(0, 3).join('; ')}</span>
+            <span className="star-slot dim">범위 밖</span>
           </li>
         ))}
       </ul>
