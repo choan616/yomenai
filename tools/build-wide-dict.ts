@@ -17,7 +17,7 @@
 // `轟` 의 한국 한자음이 없다. 없으면 찾기 결과에 「—」가 뜬다.
 //
 // 출력 — public/dict/wide.json (프리캐시에서 빼고 런타임 캐시로 받는다. band4 와 같은 관례)
-import { readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { gunzipSync } from 'node:zlib'
 import { XMLParser } from 'fast-xml-parser'
@@ -42,7 +42,7 @@ interface KanjiRow {
   kunyomi: string[]
 }
 
-/** 조회 전용 항목. 학습에 쓰는 칸은 일부러 없다 */
+/** 조회 전용 항목. 밴드·음독 쌍·분류는 일부러 없다 */
 interface WideIdiom {
   id: string
   headword: string
@@ -50,7 +50,22 @@ interface WideIdiom {
   altReadings?: string[]
   pos: string[]
   glossEn: string[]
+  /**
+   * 한국어 뜻 (2026-09-26). 영어 gloss 를 옮긴 LLM 초벌이라 `verified` 는 늘 false 다 —
+   * 학습 사전의 뜻과 같은 출처·같은 수준이다 (`build-korean-meaning.ts --wide`).
+   * 번역을 아직 안 돌렸으면 필드 자체가 없다
+   */
+  koMeaning?: { definition: string; source: 'llm'; verified: false }
 }
+
+/** 번역본. 없으면 영어 gloss 만 실린다 — 없는 것을 있는 척하지 않는다 */
+const koWide: Record<string, { ko: string }> = existsSync(join(DICT_DIR, 'korean-meaning-wide.json'))
+  ? (
+      JSON.parse(readFileSync(join(DICT_DIR, 'korean-meaning-wide.json'), 'utf8')) as {
+        byId: Record<string, { ko: string }>
+      }
+    ).byId
+  : {}
 
 const kanji = (
   JSON.parse(readFileSync(join(DICT_DIR, 'kanji.json'), 'utf8')) as { kanji: Record<string, KanjiRow> }
@@ -119,6 +134,7 @@ for (const entry of doc.JMdict.entry) {
   if (readings.length === 0) continue
 
   const senses = asArray(entry.sense as El | El[] | undefined)
+  const ko = koWide[id]?.ko?.trim()
   out.push({
     id,
     headword,
@@ -126,6 +142,7 @@ for (const entry of doc.JMdict.entry) {
     ...(readings.length > 1 ? { altReadings: readings.slice(1) } : {}),
     pos: [...new Set(senses.flatMap((s) => asArray(s.pos).map(posCode)).filter(Boolean))],
     glossEn: [...new Set(senses.flatMap((s) => asArray(s.gloss).map(text)).filter(Boolean))],
+    ...(ko ? { koMeaning: { definition: ko, source: 'llm' as const, verified: false as const } } : {}),
   })
 
   for (const ch of headword) {
@@ -151,10 +168,15 @@ writeFileSync(path, JSON.stringify({ _meta: meta, idioms: out, kanji: extraKanji
 
 const mb = (readFileSync(path).length / 1024 / 1024).toFixed(2)
 const noKr = Object.values(extraKanji).filter((k) => k.kr.length === 0).length
+const withKo = out.filter((it) => it.koMeaning).length
 console.log('=== 넓힌 사전 ===')
 console.log(`  상용 밖 글자를 가진 표제어 ${candidates}개`)
 console.log(`    이미 배포 중이라 건너뜀 ${alreadyShipped} · kanjidic 밖 ${droppedNoKanjidic}`)
 console.log(`  실은 것 ${out.length}개 · 추가 한자 ${Object.keys(extraKanji).length}자`)
 console.log(`    한국 한자음이 없는 글자 ${noKr}자 (화면에서 「—」로 뜬다)`)
 console.log(`  → ${path}  ${mb}MB`)
-console.log('  뜻은 영어 gloss 뿐이다 — 한국어 번역은 아직 안 돌렸다')
+console.log(
+  withKo === out.length
+    ? `  한국어 뜻 ${withKo}개 (LLM 초벌, 전부 미검수)`
+    : `  한국어 뜻 ${withKo}/${out.length}개 — 나머지는 영어 gloss 만 실린다`,
+)

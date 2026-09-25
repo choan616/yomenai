@@ -84,3 +84,22 @@ describe('한자 자료 합치기', () => {
     expect(withWideKanji(base, null)).toBe(base)
   })
 })
+
+describe('한국어 뜻이 붙으면 (2026-09-26)', () => {
+  it('뜻 카드를 낼 수 있다고 표시한다 — assignMode 가 확장 모드를 허용한다', () => {
+    const got = adopt(
+      wide('爆轟', 'ばくごう', {
+        koMeaning: { definition: '폭굉', source: 'llm', verified: false },
+      }),
+      lookup,
+    )
+    expect(got?.hasMeaning).toBe(true)
+    expect(got?.koMeaning?.definition).toBe('폭굉')
+  })
+
+  it('번역 전 빌드는 예전과 똑같이 돈다 — 필드가 없으면 교정 모드로 고정', () => {
+    const got = adopt(wide('爆轟', 'ばくごう'), lookup)
+    expect(got?.hasMeaning).toBe(false)
+    expect(got?.koMeaning).toBeNull()
+  })
+})

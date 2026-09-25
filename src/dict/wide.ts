@@ -24,6 +24,11 @@ export interface WideIdiom {
   altReadings?: string[]
   pos: string[]
   glossEn: string[]
+  /**
+   * 한국어 뜻 (2026-09-26). 영어 gloss 를 옮긴 LLM 초벌이라 `verified` 는 늘 false 다 —
+   * 학습 사전의 뜻과 같은 출처·같은 수준이다. 번역 전 빌드에는 필드가 없다
+   */
+  koMeaning?: { definition: string; source: 'llm'; verified: false }
 }
 
 export interface WideDict {
@@ -111,8 +116,9 @@ export function adopt(
     ...(it.altReadings ? { altReadings: it.altReadings } : {}),
     pos: it.pos,
     common: false,
-    koMeaning: null,
-    hasMeaning: false,
+    // 뜻이 있으면 확장 모드(뜻 카드)로도 갈 수 있다. 없으면 `assignMode` 가 교정으로 고정한다
+    koMeaning: it.koMeaning ?? null,
+    hasMeaning: (it.koMeaning?.definition ?? '').trim() !== '',
     readingKind: kinds.has('kun') ? 'mix' : 'on',
   }
 }

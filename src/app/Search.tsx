@@ -657,7 +657,7 @@ function Group({
  * 단위로 가를 수 있느냐다 — 못 가르면 음독 맵도 형제 대조도 오답 분류도 안 붙어서
  * 담아 봐야 학습이 안 된다. 누른 뒤에 안 된다고 하면 늦으니 그릴 때 미리 가른다.
  *
- * 뜻은 영어 gloss 그대로다. 한국어 번역을 아직 안 돌렸고, 없는 것을 있는 척하지 않는다.
+ * 뜻은 한국어 번역이 있으면 그것을, 없으면 영어 gloss 를 그대로 낸다.
  */
 function Outside({
   dict,
@@ -749,7 +749,11 @@ function OutsideGroup({
               {it.headword}
             </span>
             <span className="r-sub">{koreanOf(it.headword, kanji)}</span>
-            <span className="r-sub r-meaning">{it.glossEn.slice(0, 3).join('; ')}</span>
+            {/* 한국어 번역이 있으면 그것을, 없으면 영어 gloss 를 그대로 —
+                없는 것을 있는 척하지 않는다 */}
+            <span className="r-sub r-meaning">
+              {it.koMeaning?.definition ?? it.glossEn.slice(0, 3).join('; ')}
+            </span>
             {canAdopt.has(it.id) ? (
               <StarButton
                 headword={it.headword}
