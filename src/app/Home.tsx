@@ -7,7 +7,9 @@ import { buildSession, rematchCount } from '../core/session.ts'
 import { browseCount } from '../core/report.ts'
 import { LOCAL_USER_ID, listEvents } from '../db/events.ts'
 import { db } from '../db/schema.ts'
-import { loadBaseIdioms, studyPool } from '../dict/load.ts'
+import { replay } from '../core/replay.ts'
+import { loadKanji } from '../dict/load.ts'
+import { loadStudyPool } from '../dict/pool.ts'
 import { buildLevel } from '../core/level.ts'
 import {
   isDiagnosticDone,
@@ -60,14 +62,21 @@ export function Home({ onFlow }: { onFlow: (flow: Flow) => void }) {
     let alive = true
     ;(async () => {
       try {
-        const [all, events] = await Promise.all([
-          loadBaseIdioms(),
+        const [kanji, events] = await Promise.all([
+          loadKanji(),
           listEvents(db(), LOCAL_USER_ID),
         ])
         if (!alive) return
-        // 설정이 정한 범위 그대로. 세션이 보는 것과 같은 풀이라야 미리보기가 안 어긋난다
+        // 설정이 정한 범위 그대로. 세션이 보는 것과 같은 풀이라야 미리보기가 안 어긋난다 —
+        // **같은 함수로 만든다** (2026-09-26). 전에는 `base.json` 만 봐서 담아 둔 밴드 4 가
+        // 세션에는 나오는데 미리보기 장수에는 안 잡혔다
         const { sessionLimit, ratio, kunPercent } = loadSettings()
-        const pool = studyPool(all, kunPercent > 0)
+        const { pool } = await loadStudyPool({
+          starred: replay(events).starred,
+          includeKun: kunPercent > 0,
+          kanji,
+        })
+        if (!alive) return
         const session = buildSession(pool, events, {
           now: Date.now(),
           limit: sessionLimit,

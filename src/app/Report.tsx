@@ -26,7 +26,8 @@ import { BROWSE_N, buildReport, type MistakeSlice, type Report as ReportData } f
 import { pairRows, summarize, type OnyomiMasterySummary } from '../core/onyomiMap.ts'
 import { LOCAL_USER_ID, listEvents } from '../db/events.ts'
 import { db } from '../db/schema.ts'
-import { loadBaseIdioms, loadKanji, loadPairs, studyPool } from '../dict/load.ts'
+import { loadKanji, loadPairs } from '../dict/load.ts'
+import { loadStudyPool, withRuntimePairs } from '../dict/pool.ts'
 import { loadSettings } from './settings.ts'
 import { mistakeContextFromKanji } from '../dict/mistakeContext.ts'
 import { loadPairIndex } from '../dict/pairIndex.ts'
@@ -103,15 +104,23 @@ export function Report({
     let alive = true
     ;(async () => {
       try {
-        const [pool, pairs, index, kanji, events] = await Promise.all([
-          loadBaseIdioms(),
+        const [basePairs, index, baseKanji, events] = await Promise.all([
           loadPairs(),
           loadPairIndex(),
           loadKanji(),
           listEvents(db(), LOCAL_USER_ID),
         ])
         if (!alive) return
-        const byId = new Map(pool.map((p) => [p.idiomId, p]))
+        // **세션·음독맵과 같은 풀을 쓴다** (2026-09-26). 전에는 `base.json` 만 봐서
+        // 담아 둔 밴드 4 와 들인 말이 사다리·음독 집계에서 통째로 빠져 있었다
+        const { pool: learn, kanji } = await loadStudyPool({
+          starred: replay(events).starred,
+          includeKun: loadSettings().kunPercent > 0,
+          kanji: baseKanji,
+        })
+        if (!alive) return
+        const pairs = withRuntimePairs(basePairs, learn)
+        const byId = new Map(learn.map((p) => [p.idiomId, p]))
         // 저장된 유형을 그대로 세면 규칙 화면에서 빠진 오답이 여기서는 남는다 (2026-09-17).
         // 규칙 화면·다시보기와 **같은 함수**로 다시 매긴다
         const again = reclassifier(mistakeContextFromKanji(kanji), (id) => byId.get(id)?.headword)
@@ -126,7 +135,7 @@ export function Report({
         // 사다리는 **출제 범위와 같은 것**을 센다. 훈독을 빼 놓은 설정이면 예전에 푼
         // 훈독 기록도 빠진다 — `bandOf` 가 undefined 를 주면 `buildLevel` 이 그 이벤트도
         // 카드도 건너뛴다. level.ts 는 안 건드린다
-        const inPool = new Set(studyPool(pool, loadSettings().kunPercent > 0).map((p) => p.idiomId))
+        const inPool = new Set(learn.map((p) => p.idiomId))
         const level = buildLevel(
           events,
           (id) => (inPool.has(id) ? byId.get(id)?.band : undefined),
@@ -136,7 +145,6 @@ export function Report({
         // 미분류 중 답이 있는 몫만 「잘못 읽기」다. 넘김(빈 답)은 이름 이전에 답이 없다
         const passed = passedCount(events)
         // 음독 맵과 **같은 함수·같은 분모**로 센다. 따로 세면 두 화면이 또 갈라진다
-        const learn = pool.filter((p) => inPool.has(p.idiomId))
         const onyomi = summarize(pairRows(learn.flatMap((p) => p.pairIds), pairs, state))
         const next: Loaded = {
           report,

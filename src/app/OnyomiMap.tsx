@@ -11,7 +11,8 @@ import {
 } from '../core/onyomiMap.ts'
 import { LOCAL_USER_ID, listEvents } from '../db/events.ts'
 import { db } from '../db/schema.ts'
-import { loadBaseIdioms, loadPairs, studyPool } from '../dict/load.ts'
+import { loadKanji, loadPairs } from '../dict/load.ts'
+import { loadStudyPool, withRuntimePairs } from '../dict/pool.ts'
 import { READING_STABLE_DAYS, stableReadingCount } from '../core/level.ts'
 import { loadSettings } from './settings.ts'
 
@@ -39,14 +40,25 @@ export function OnyomiMap({ onBack }: { onBack: () => void }) {
     let alive = true
     ;(async () => {
       try {
-        const [pool, pairs, events] = await Promise.all([
-          loadBaseIdioms(),
+        const [basePairs, kanji, events] = await Promise.all([
           loadPairs(),
+          loadKanji(),
           listEvents(db(), LOCAL_USER_ID),
         ])
         if (!alive) return
-        const byId = new Map(pool.map((p) => [p.idiomId, p]))
+        // **세션과 같은 풀을 쓴다** (2026-09-26). 전에는 `base.json` 만 봐서 담아 둔
+        // 밴드 4 를 공부해도 여기엔 안 잡혔다 — 채점은 쌓이는데 분모에 없었다.
+        // 담은 것을 알아야 풀을 만들 수 있어 재생을 두 번 돈다 (두 번째가 집계용이다)
+        const { pool: learn } = await loadStudyPool({
+          starred: replay(events).starred,
+          includeKun: loadSettings().kunPercent > 0,
+          kanji,
+        })
+        if (!alive) return
+        const byId = new Map(learn.map((p) => [p.idiomId, p]))
         const state = replay(events, { pairsOf: (id) => byId.get(id)?.pairIds ?? [] })
+        // 들인 말의 쌍은 `pairs.json` 에 없다 — 런타임에 만들어진 것이라 채워 넣는다
+        const pairs = withRuntimePairs(basePairs, learn)
         // 분모는 **앞으로 출제될 범위와 같아야** 한다 (2026-09-23 사용자 보고). 훈독을 꺼
         // 놓으면(기본값 `kunPercent: 0`) 그 숙어는 안 나오는데, 여기만 `studyPool` 을 안 써서
         // 훈독에서만 오는 388쌍(전체의 13%, 실측)이 영영 「미학습」으로 분모에 앉아 있었다.
@@ -54,7 +66,6 @@ export function OnyomiMap({ onBack }: { onBack: () => void }) {
         //
         // **재생(`replay`)은 안 거른다.** 지난 기록은 그때 설정으로 쌓인 것이라 지우면 안
         // 되고, 걸러야 할 것은 「무엇을 셀 것인가」(분모)다
-        const learn = studyPool(pool, loadSettings().kunPercent > 0)
         const inPool = new Set(learn.map((p) => p.idiomId))
         setRows(pairRows(learn.flatMap((p) => p.pairIds), pairs, state))
         // 밴드 사다리와 **같은 함수**로 센다. 두 자리에서 따로 세면 언젠가 갈라진다

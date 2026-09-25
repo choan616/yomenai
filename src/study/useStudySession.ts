@@ -29,14 +29,8 @@ import { getDeviceId } from '../db/device.ts'
 import { db } from '../db/schema.ts'
 import { LOCAL_USER_ID } from '../db/events.ts'
 import { listEvents } from '../db/events.ts'
-import {
-  loadBand4Idioms,
-  loadBaseIdioms,
-  loadKanji,
-  studyPool,
-  type RuntimeIdiom,
-} from '../dict/load.ts'
-import { adopt, loadWideDict, withWideKanji } from '../dict/wide.ts'
+import { loadKanji, type RuntimeIdiom } from '../dict/load.ts'
+import { loadStudyPool } from '../dict/pool.ts'
 import { mistakeContextFromKanji } from '../dict/mistakeContext.ts'
 import { loadSettings, OBSERVE_GATE } from '../app/settings.ts'
 
@@ -272,8 +266,7 @@ export function useStudySession({
     let alive = true
     ;(async () => {
       try {
-        const [all, kanji, events] = await Promise.all([
-          loadBaseIdioms(),
+        const [kanji, events] = await Promise.all([
           loadKanji(),
           listEvents(db(), LOCAL_USER_ID),
         ])
@@ -282,56 +275,16 @@ export function useStudySession({
         // 훈독을 넣고 뺄 수 있는 자리가 여기뿐이다
         const { sessionLimit, ratio, kunPercent } = loadSettings()
         const state = replay(events)
-        let loaded = studyPool(all, kunPercent > 0)
-
-        /**
-         * **담아 둔 밴드 4 를 들인다** (2026-09-23 사용자 요청 「학습범위 밖 표현도
-         * 세션에 추가할 수 없나」).
-         *
-         * 자동 출제는 안 한다 — 85,418개가 저절로 섞이면 밀도가 확 떨어진다.
-         * 「내가 만난 말을 담는다」는 담기의 뜻 그대로, **담은 것만** 온다.
-         *
-         * 담긴 것이 전부 기본 사전 안에 있으면 20MB 를 아예 안 받는다. 담기 전에는
-         * 이 갈래가 돌 일이 없다
-         */
-        const missing = [...state.starred].filter((id) => !loaded.some((it) => it.idiomId === id))
-        let kanjiAll = kanji
-        if (missing.length > 0) {
-          const want = new Set(missing)
-          const extra = studyPool(await loadBand4Idioms(), kunPercent > 0).filter((it) =>
-            want.has(it.idiomId),
-          )
-          if (!alive) return
-          if (extra.length > 0) loaded = [...loaded, ...extra]
-          for (const it of extra) want.delete(it.idiomId)
-
-          /**
-           * **넓힌 사전에서 들인 것** (2026-09-25 사용자 제안). 밴드 4에도 없으면 학습 사전
-           * 밖에서 담은 것이다 — 상용한자 밖 글자가 섞여 임포트가 버렸던 표제어다.
-           *
-           * 15,114개를 통째로 들이면 음독 쌍이 2,532 → 4,794 가 되고 그 절반이 상용 밖
-           * 글자라 「숙지한 음독」이 재는 것이 달라진다 (실측). **담은 것만** 올리면
-           * 분모가 내가 넓힌 만큼만 늘어서 지표의 성격이 안 바뀐다.
-           */
-          if (want.size > 0) {
-            const dict = await loadWideDict().catch(() => null)
-            if (!alive) return
-            if (dict !== null) {
-              // 한자 자료를 **먼저** 합친다. `轟` 이 lookup 에 없으면 분해가 실패해
-              // 들이기도 안 되고 후리가나·오답 분류도 조용히 안 붙는다
-              kanjiAll = withWideKanji(kanji, dict)
-              const look = (k: string) => {
-                const r = kanjiAll.get(k)
-                return r ? { onyomi: r.on, kunyomi: r.kun } : undefined
-              }
-              const adopted = [...want]
-                .map((id) => dict.byId.get(id))
-                .map((it) => (it ? adopt(it, look) : null))
-                .filter((it) => it !== null)
-              if (adopted.length > 0) loaded = [...loaded, ...studyPool(adopted, kunPercent > 0)]
-            }
-          }
-        }
+        // 풀 조립은 `dict/pool.ts` 한 군데다 — 음독맵·리포트가 같은 함수를 쓴다.
+        // 따로 만들면 「공부는 했는데 화면엔 없는 것」이 생긴다 (2026-09-26)
+        const assembled = await loadStudyPool({
+          starred: state.starred,
+          includeKun: kunPercent > 0,
+          kanji,
+        })
+        if (!alive) return
+        const loaded = assembled.pool
+        const kanjiAll = assembled.kanji
 
         setPool(loaded)
         setPriorEvents(events)
