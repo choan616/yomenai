@@ -11,7 +11,7 @@ const T0 = Date.UTC(2026, 0, 1)
 const DAY = 86_400_000
 
 function emptyState(): ReplayState {
-  return { cards: new Map(), meaningKnown: new Map(), onyomi: new Map(), starred: new Set(), meaningVotes: new Map(), applied: 0 }
+  return { cards: new Map(), meaningKnown: new Map(), onyomi: new Map(), starred: new Set(), wordlist: new Map(), meaningVotes: new Map(), applied: 0 }
 }
 
 function put(state: ReplayState, idiomId: string, cardType: CardType, card: Card): void {

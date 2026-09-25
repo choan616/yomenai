@@ -89,7 +89,20 @@ export interface StarEvent extends EventBase {
   mistakeType: null
   /** true = 담기, false = 빼기 */
   on: boolean
+  /**
+   * 묶음 이름 (2026-09-25, 단어장). **선택 필드다** — 옛 이벤트에는 없고 그때는
+   * 기본 묶음으로 읽힌다. append-only 라 PK 도 스토어도 안 건드린다
+   * (`MeaningVoteEvent.fix` 를 더한 것과 같은 방식).
+   *
+   * 묶음을 옮기거나 메모를 고치는 것도 **새 `star` 이벤트**다. 마지막 것이 이긴다
+   */
+  list?: string
+  /** 왜 담았는지. 밖에서 공부하다 담을 때 출처를 적는 자리다 */
+  memo?: string
 }
+
+/** 기본 묶음. 이름을 안 준 옛 이벤트가 여기로 온다 */
+export const DEFAULT_LIST = '기본'
 
 /** 뜻 평가. `ok` = 맞다(엄지 위) · `bad` = 이상하다(엄지 아래) */
 export type MeaningVerdict = 'ok' | 'bad'

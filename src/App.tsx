@@ -15,6 +15,7 @@ import { Browse } from './app/Browse.tsx'
 import { Search } from './app/Search.tsx'
 import { CameraFind, type CameraFound } from './app/CameraFind.tsx'
 import { MeaningReview } from './app/MeaningReview.tsx'
+import { Wordlist } from './app/Wordlist.tsx'
 import { Backup } from './app/Backup.tsx'
 import { Feedback } from './app/Feedback.tsx'
 import { Rules } from './app/Rules.tsx'
@@ -43,6 +44,8 @@ export type Sub =
   | { kind: 'camera' }
   /** 뜻 검수. 설정에서 한 겹 들어간다 — 검수 모드를 켠 기기에서만 진입로가 보인다 (2026-09-24) */
   | { kind: 'review' }
+  /** 단어장. 찾기에서 한 겹 들어간다 — 담기가 일어나는 곳이다 (2026-09-25) */
+  | { kind: 'wordlist' }
 
 /**
  * 탭바를 덮는 전체화면 흐름. 끝나면 열었던 탭으로 돌아온다.
@@ -185,6 +188,7 @@ function TabRoot({
       return (
         <Search
           onCamera={() => onSub({ kind: 'camera' })}
+          onWordlist={() => onSub({ kind: 'wordlist' })}
           found={found}
           onUsedFound={onUsedFound}
         />
@@ -222,5 +226,7 @@ function SubScreen({
       return <CameraFind onBack={onBack} onFound={onFound} />
     case 'review':
       return <MeaningReview onBack={onBack} />
+    case 'wordlist':
+      return <Wordlist onBack={onBack} />
   }
 }

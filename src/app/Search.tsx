@@ -36,6 +36,7 @@ import {
   type ReadingIndex,
 } from '../dict/readingIndex.ts'
 import { loadWideDict, type WideDict, type WideIdiom } from '../dict/wide.ts'
+import { loadCurrentList } from './currentList.ts'
 
 /** 한 화면에 낼 묶음 수. 앞부분 일치는 금방 불어난다 (`こう` 로만 쳐도 수백 개) */
 const GROUP_LIMIT = 20
@@ -92,11 +93,14 @@ let cache: { version: number; loaded: Loaded; starred: Set<string> } | null = nu
 
 export function Search({
   onCamera,
+  onWordlist,
   found,
   onUsedFound,
 }: {
   /** 카메라로 찾기로 한 겹 들어간다 (2026-09-23) */
   onCamera: () => void
+  /** 단어장으로 한 겹 들어간다 (2026-09-25) */
+  onWordlist: () => void
   /** 카메라가 찾아낸 것. 없으면 `null` */
   found: CameraFound | null
   /** 받아서 썼다고 알린다 — 다시 들어올 때 옛 결과가 남아 있으면 안 된다 */
@@ -128,6 +132,9 @@ export function Search({
       recordStar({
         idiomId,
         on,
+        // 담을 때마다 묶음을 묻지 않는다 — 한 번 누를 일이 두 번이 된다.
+        // 어느 묶음인지는 단어장 화면에서 미리 정해 둔다 (2026-09-25)
+        ...(on ? { list: loadCurrentList() } : {}),
         ctx: { userId: LOCAL_USER_ID, deviceId: getDeviceId(), at: Date.now() },
       }),
     )
@@ -373,6 +380,11 @@ export function Search({
               />
             )}
             <Basket loaded={view} starred={starred} onToggle={toggleStar} />
+            {/* 담기 대기열(Basket)과 다른 물건이다 — 저쪽은 세션에 나오면 사라지고
+                단어장은 남는다. 담은 게 없어도 진입로는 늘 보인다 (2026-09-25) */}
+            <button type="button" className="btn wl-open" onClick={onWordlist}>
+              단어장{starred.size > 0 && ` · ${starred.size.toLocaleString('ko')}`}
+            </button>
             <Scope poolSize={view.poolSize} widening={widening} />
           </>
         ) : groups.length === 0 ? (

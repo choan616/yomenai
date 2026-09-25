@@ -14,6 +14,7 @@ import {
 } from './select.ts'
 import {
   cardKey,
+  DEFAULT_LIST,
   newEventId,
   type CardState,
   type KoreanCategory,
@@ -221,6 +222,10 @@ export function recordMeaningKnown(input: {
 export function recordStar(input: {
   idiomId: string
   on: boolean
+  /** 묶음 이름 (2026-09-25). 기본 묶음이면 안 남긴다 — 옛 이벤트와 같은 모양이 된다 */
+  list?: string
+  /** 왜 담았는지. 빈 문자열은 안 남긴다 */
+  memo?: string
   ctx: Omit<AnswerContext, 'elapsedMs'>
 }): StarEvent {
   return {
@@ -229,6 +234,8 @@ export function recordStar(input: {
     mistakeType: null,
     type: 'star',
     on: input.on,
+    ...(input.list && input.list !== DEFAULT_LIST ? { list: input.list } : {}),
+    ...(input.memo?.trim() ? { memo: input.memo.trim() } : {}),
   }
 }
 

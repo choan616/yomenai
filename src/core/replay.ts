@@ -3,6 +3,7 @@ import { applyGrade, newCard } from './scheduler.ts'
 import {
   cardKey,
   compareEvents,
+  DEFAULT_LIST,
   voteOf,
   type CardState,
   type LearningEvent,
@@ -51,6 +52,14 @@ export interface ReplayState {
     string,
     { verdict: MeaningVerdict; headword: string; definition: string; fix?: string }
   >
+  /**
+   * 담은 것의 묶음·메모 (2026-09-25, 단어장). `starred` 와 늘 같은 집합이다 —
+   * 한 군데(`star` 분기)에서 같이 갱신하므로 갈릴 수 없다.
+   *
+   * `starred` 를 Map 으로 바꾸지 않은 이유는 호출부가 `[...starred]` 를 id 배열로 쓰기
+   * 때문이다. 선택 로직·검수 화면·세션이 전부 그 모양에 기대고 있다
+   */
+  wordlist: Map<string, { list: string; memo?: string; at: number }>
   /** 재생에 쓴 이벤트 수 (삭제분 제외) */
   applied: number
 }
@@ -66,6 +75,7 @@ export function replay(events: LearningEvent[], options: ReplayOptions = {}): Re
     meaningKnown: new Map(),
     onyomi: new Map(),
     starred: new Set(),
+    wordlist: new Map(),
     meaningVotes: new Map(),
     applied: 0,
   }
@@ -79,8 +89,18 @@ export function replay(events: LearningEvent[], options: ReplayOptions = {}): Re
       continue
     }
     if (e.type === 'star') {
-      if (e.on) state.starred.add(e.idiomId)
-      else state.starred.delete(e.idiomId)
+      if (e.on) {
+        state.starred.add(e.idiomId)
+        // 묶음·메모도 마지막 이벤트가 이긴다 — 옮기기·고치기가 곧 새 `star` 이벤트다
+        state.wordlist.set(e.idiomId, {
+          list: e.list ?? DEFAULT_LIST,
+          ...(e.memo ? { memo: e.memo } : {}),
+          at: e.at,
+        })
+      } else {
+        state.starred.delete(e.idiomId)
+        state.wordlist.delete(e.idiomId)
+      }
       continue
     }
     if (e.type === 'flag') {

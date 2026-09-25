@@ -1789,3 +1789,60 @@ p.rule-record {
 .review-edit .search-input {
   width: 100%;
 }
+
+/* ── 단어장 (2026-09-25) ──
+   찾기의 「담아 둔 표현」과 다른 화면이다. 저쪽은 세션에 나오면 사라지는 대기열이고
+   여기는 남는 곳이라, 학습 중인 줄도 상태를 달고 그대로 있다 */
+.wl-open {
+  display: block;
+  width: 100%;
+  margin: 12px 0 4px;
+}
+.wl-current {
+  margin: 4px 0 18px;
+}
+.wl-current > .dim {
+  display: block;
+  margin-bottom: 8px;
+  font-size: calc(0.74rem * var(--ui-scale));
+}
+.wl-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+/* 고른 묶음은 테두리와 굵기로 같이 말한다 — 색만으로 구분하지 않는다 (PLAN §7) */
+.chip {
+  padding: 6px 12px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--text);
+  font-size: calc(0.8rem * var(--ui-scale));
+}
+.chip.on {
+  border-color: var(--text);
+  font-weight: 600;
+}
+.wl-group + .wl-group {
+  margin-top: 22px;
+}
+.wl-state {
+  margin-left: auto;
+  font-size: calc(0.72rem * var(--ui-scale));
+}
+.wl-memo {
+  margin: 6px 0 0;
+  font-size: calc(0.78rem * var(--ui-scale));
+  line-height: 1.6;
+  color: var(--text-faint);
+}
+.wl-move select {
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text);
+  font-size: calc(0.8rem * var(--ui-scale));
+  font-family: inherit;
+}

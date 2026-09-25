@@ -3,7 +3,13 @@ import { describe, expect, it } from 'vitest'
 import { State } from 'ts-fsrs'
 import { mistakeTotals, replay } from './replay.ts'
 import { newEventId } from '../db/events.ts'
-import { cardKey, type LearningEvent, type MistakeType, type ReviewEvent } from './types.ts'
+import {
+  cardKey,
+  DEFAULT_LIST,
+  type LearningEvent,
+  type MistakeType,
+  type ReviewEvent,
+} from './types.ts'
 
 const DAY = 86_400_000
 const T0 = Date.UTC(2026, 0, 1)
@@ -323,5 +329,67 @@ describe('replay — 뜻 평가 (엄지)', () => {
     const fwd = replay([...evs])
     const rev = replay([...evs].reverse())
     expect([...rev.meaningVotes.keys()]).toEqual([...fwd.meaningVotes.keys()])
+  })
+})
+
+describe('단어장 — 묶음과 메모 (2026-09-25)', () => {
+  const star = (
+    nextId: (at: number) => string,
+    at: number,
+    idiomId: string,
+    on: boolean,
+    extra: { list?: string; memo?: string } = {},
+  ): LearningEvent => ({
+    id: nextId(at), userId: 'local', deviceId: 'dev-a', at, idiomId,
+    cardType: 'reading', mistakeType: null, deletedAt: null, type: 'star', on,
+    ...extra,
+  })
+
+  it('묶음을 안 준 옛 이벤트는 기본 묶음이다', () => {
+    const nextId = idFactory()
+    const state = replay([star(nextId, T0, 'a', true)])
+    expect(state.wordlist.get('a')?.list).toBe(DEFAULT_LIST)
+    expect(state.wordlist.get('a')?.memo).toBeUndefined()
+  })
+
+  it('묶음 옮기기·메모 고치기는 새 star 이벤트다 — 마지막 것이 이긴다', () => {
+    const nextId = idFactory()
+    const state = replay([
+      star(nextId, T0, 'a', true, { list: '소설 A', memo: '1장' }),
+      star(nextId, T0 + DAY, 'a', true, { list: '소설 B' }),
+    ])
+    expect(state.wordlist.get('a')).toMatchObject({ list: '소설 B' })
+    // 새 이벤트에 메모가 없으면 메모도 지워진다 — 덮어쓰기지 병합이 아니다
+    expect(state.wordlist.get('a')?.memo).toBeUndefined()
+  })
+
+  it('빼면 묶음·메모도 같이 사라진다', () => {
+    const nextId = idFactory()
+    const state = replay([
+      star(nextId, T0, 'a', true, { list: '소설 A', memo: '1장' }),
+      star(nextId, T0 + DAY, 'a', false),
+    ])
+    expect(state.wordlist.has('a')).toBe(false)
+    expect(state.starred.has('a')).toBe(false)
+  })
+
+  it('**starred 와 늘 같은 집합이다** — 갈리면 화면과 세션이 서로 다른 걸 본다', () => {
+    const nextId = idFactory()
+    const state = replay([
+      star(nextId, T0, 'a', true, { list: '소설 A' }),
+      star(nextId, T0, 'b', true),
+      star(nextId, T0 + DAY, 'b', false),
+      star(nextId, T0 + 2 * DAY, 'c', true, { memo: '메모만' }),
+    ])
+    expect([...state.wordlist.keys()].sort()).toEqual([...state.starred].sort())
+  })
+
+  it('채점해도 단어장에 남는다 — 대기열이 아니라 모아 두는 곳이다', () => {
+    const nextId = idFactory()
+    const state = replay([
+      star(nextId, T0, 'a', true, { list: '소설 A' }),
+      review(nextId, T0 + DAY, 'a', true),
+    ])
+    expect(state.wordlist.get('a')?.list).toBe('소설 A')
   })
 })
