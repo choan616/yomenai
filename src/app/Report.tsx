@@ -5,6 +5,7 @@ import { onyomiSiblings } from '../core/contrast.ts'
 import {
   buildLevel,
   LEVEL_MIN_SEEN,
+  LEVEL_MAX_BAND,
   LEVEL_SOLID_RATE,
   LEVEL_WINDOW,
   READING_STABLE_DAYS,
@@ -387,6 +388,8 @@ function ReportBody({
 
 /** 아직 잴 것이 없는 칸. 0 으로 적으면 「0개를 숙지했다」로 읽혀 안 푼 것과 못 외운 것이 섞인다 */
 const NO_DATA = '—'
+/** 수준 지표가 안 세는 자리. `—`(안 푼 것)와 달리 **일부러 뺀** 것이라 말이 달라야 한다 */
+const OUT_OF_SCOPE = '범위 밖'
 
 const BAND_STATUS_LABEL: Record<BandRow['status'], string> = {
   solid: '안정',
@@ -414,7 +417,13 @@ function LevelSection({
   reviews: number
   accuracy: number
 }) {
-  const totalStable = level.bands.reduce((s, b) => s + b.stable, 0)
+  /**
+   * **수준 지표는 밴드 0~3 만 센다** (2026-09-26 사용자 판단). 밴드 4 는 출제 범위 밖이라
+   * 담은 것만 들어온다 — 곁가지를 진도에 더하면 총계가 무엇의 총계인지 흐려진다.
+   * 아래 표에는 그대로 둔다. 출제·정답률은 볼 값이 있다
+   */
+  const scored = level.bands.filter((b) => b.band <= LEVEL_MAX_BAND)
+  const totalStable = scored.reduce((s, b) => s + b.stable, 0)
   return (
     <section className="level">
       <p className="section-title">지금 수준</p>
@@ -430,7 +439,7 @@ function LevelSection({
         <p className="ladder-total">{totalStable}개</p>
       </div>
 
-      <StableMix bands={level.bands} total={totalStable} />
+      <StableMix bands={scored} total={totalStable} />
 
       {/* 표다 (2026-09-23 사용자 요청 "이 영역을 정리하고 싶다"). 한 밴드가 두 줄을 쓰고
           알약 배지가 밴드마다 같은 말을 되풀이해 여덟 줄을 먹고 있었다. 무엇보다 수치가
@@ -469,7 +478,9 @@ function LevelSection({
                   <span className="sr-only"> · {BAND_STATUS_LABEL[b.status]}</span>
                 </th>
                 <td>{b.met > 0 ? b.met : NO_DATA}</td>
-                <td>{b.met > 0 ? b.stable : NO_DATA}</td>
+                {/* 밴드 4 의 숙지는 **총계에 안 들어간다** — 칸에 숫자를 적으면 위
+                    합계와 안 맞는다. 세는 범위 밖임을 그 자리에 적는다 */}
+                <td>{b.band > LEVEL_MAX_BAND ? OUT_OF_SCOPE : b.met > 0 ? b.stable : NO_DATA}</td>
                 <td className="rate">{b.seen > 0 ? `${Math.round(b.rate * 100)}%` : NO_DATA}</td>
               </tr>
             </Fragment>
@@ -479,7 +490,8 @@ function LevelSection({
       <p className="ladder-caption">
         왼쪽 붉은 줄은 흔들리는 밴드, 점선은 표본이 모자란 밴드예요 · 숙지 ={' '}
         {READING_STABLE_DAYS}일 이상 안 잊는 상태 · 출제된 표현에는 틀린 것·넘긴 것도 들어가요
-        (소개만 본 건 빼요) · 앞의 두 칸은 표현 개수, 정답률은 최근 {LEVEL_WINDOW}회 채점
+        (소개만 본 건 빼요) · 수준은 밴드 0~{LEVEL_MAX_BAND} 으로 재요 — 밴드 4 는 출제 범위
+        밖이라 담은 것만 들어와요 · 앞의 두 칸은 표현 개수, 정답률은 최근 {LEVEL_WINDOW}회 채점
         기준이라 분모가 달라요 · 흔들림은 그 값이 {Math.round(LEVEL_SOLID_RATE * 100)}% 미만 ·{' '}
         {LEVEL_MIN_SEEN}회 미만은 표본 부족
       </p>

@@ -33,6 +33,12 @@ export const LEVEL_WINDOW = 30
 export const READING_STABLE_DAYS = 14
 
 /**
+ * 수준 지표가 재는 마지막 밴드. 밴드 4 는 출제 범위 밖이라 담은 것만 들어오므로
+ * 진도로 세지 않는다 (2026-09-26 사용자 판단). 표에는 남기되 총계·그래프·판정에서 뺀다
+ */
+export const LEVEL_MAX_BAND = 3
+
+/**
  * 이 읽기 카드를 「숙지」로 보는가 (2026-09-23).
  *
  * **판정이 두 자리에 있으면 언젠가 갈라진다.** 밴드 사다리와 음독 맵이 서로의 수치를
@@ -160,8 +166,18 @@ export function buildLevel(
     }
   })
 
+  /**
+   * **수준은 밴드 0~3 으로 잰다** (2026-09-26 사용자 판단 「그래프나 숙지율에는 밴드 4를
+   * 노출하지 않는 게 나을 것 같다」).
+   *
+   * 밴드 4 는 출제 범위 밖이라 **담은 것만** 들어온다. 내가 골라 넣은 열 개가 흔들린다고
+   * 「밴드 4 가 경계」라고 말하면 사다리의 뜻이 달라진다 — 그건 진도가 아니라 곁가지다.
+   * 표에는 그대로 두되(출제·정답률은 볼 값이 있다) 판정에서만 뺀다.
+   */
+  const inScope = rows.filter((r) => r.band <= LEVEL_MAX_BAND)
+
   let solidThrough: Band | null = null
-  for (const row of rows) {
+  for (const row of inScope) {
     if (row.status !== 'solid') break
     solidThrough = row.band
   }
@@ -169,7 +185,7 @@ export function buildLevel(
   return {
     bands: rows,
     solidThrough,
-    edge: rows.find((r) => r.status === 'shaky')?.band ?? null,
+    edge: inScope.find((r) => r.status === 'shaky')?.band ?? null,
     // 누적이다. 밴드 행의 `seen` 은 최근 `LEVEL_WINDOW` 로 잘려 있어 합과 다르다
     totalReadings,
   }

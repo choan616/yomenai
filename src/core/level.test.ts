@@ -190,3 +190,26 @@ describe('buildLevel — 붙은 숙어 (재고)', () => {
     expect(shaky.bands[0].stable).toBe(2)
   })
 })
+
+describe('수준은 밴드 0~3 으로 잰다 (2026-09-26)', () => {
+  // 밴드 4 는 출제 범위 밖이라 **담은 것만** 들어온다. 내가 골라 넣은 몇 개가 흔들린다고
+  // 「밴드 4 가 경계」라고 말하면 사다리의 뜻이 달라진다 — 진도가 아니라 곁가지다
+  it('밴드 4 가 흔들려도 경계로 안 잡는다', () => {
+    const level = buildLevel([...run('b1', 10, 0), ...run('b2', 10, 0), ...run('b3', 10, 0), ...run('b4', 5, 5)], bandOf)
+    expect(level.bands.find((b) => b.band === 4)?.status).toBe('shaky')
+    // 판정에서는 빠진다 — 밴드 3까지 안정이고 경계는 없다
+    expect(level.solidThrough).toBe(3)
+    expect(level.edge).toBeNull()
+  })
+
+  it('표에는 그대로 남는다 — 출제·정답률은 볼 값이 있다', () => {
+    const level = buildLevel(run('b4', 5, 5), bandOf)
+    expect(level.bands.map((b) => b.band)).toEqual([1, 2, 3, 4])
+    expect(level.bands.find((b) => b.band === 4)?.seen).toBe(10)
+  })
+
+  it('밴드 4 가 안정이어도 그것 때문에 「밴드 4까지 안정」이 되지 않는다', () => {
+    const level = buildLevel([...run('b1', 10, 0), ...run('b2', 10, 0), ...run('b3', 10, 0), ...run('b4', 10, 0)], bandOf)
+    expect(level.solidThrough).toBe(3)
+  })
+})
