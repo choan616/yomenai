@@ -39,6 +39,15 @@ interface Props {
    */
   locked?: boolean
   /**
+   * 카드가 끝나 더 칠 것이 없다 (2026-09-26 사용자 지적 「어떤 답을 넣을지 몰라서 비어
+   * 있는 경우가 있다」). 「두 읽기를 다 맞혔어요」 화면에 빈 입력창이 남아 있었다.
+   *
+   * **언마운트하지도, display:none 하지도 않는다.** 위 `locked` 주석과 같은 이유다 —
+   * iOS 에서 포커스된 입력이 blur 되면 다음 카드에서 제스처 밖 focus() 로 키보드를 다시
+   * 못 올린다. 자리와 포커스는 그대로 두고 보이지만 않게 한다
+   */
+  done?: boolean
+  /**
    * 오답이면 채워진다 (2026-09-18). input 자체는 글자별로 색을 못 칠해서, 입력값과
    * 똑같은 텍스트를 이 색으로 위에 덮어 그린다 — "입력창 안의 글자색이 바뀐" 것처럼 보인다.
    * 원래 글자는 투명(`has-diff`)으로 숨긴다.
@@ -46,7 +55,7 @@ interface Props {
   diff?: DiffChar[]
 }
 
-export function KanaInput({ onSubmit, resetKey, locked, diff }: Props) {
+export function KanaInput({ onSubmit, resetKey, locked, diff, done }: Props) {
   const ref = useRef<HTMLInputElement>(null)
   /**
    * 한글 답을 막았을 때 그 카드의 resetKey 를 담는다. 안내를 boolean 으로 들고 effect 에서
@@ -105,7 +114,7 @@ export function KanaInput({ onSubmit, resetKey, locked, diff }: Props) {
   return (
     <>
       <div className="answer-row input">
-        <div className="kana-input-shell">
+        <div className={`kana-input-shell${done ? ' done' : ''}`}>
           <input
             ref={ref}
             className={`kana-input${locked ? ' locked' : ''}${diff ? ' has-diff' : ''}`}

@@ -205,6 +205,9 @@ export function ReadingCard({
           onSubmit={onSubmit}
           resetKey={idiom.idiomId + ':' + (dualAsk?.given.length ?? 0)}
           locked={!!fb}
+          /* 맞혔고 이 카드에 더 물을 것이 없으면 입력창을 비워 둔다. 「읽기 둘」의 중간
+             단계(아직 하나 남음)에서는 그대로 둔다 — 바로 다시 칠 자리다 */
+          done={!!fb?.correct && !(dualAsk && dualAsk.given.length + 1 < dualAsk.total)}
           /* 오답이면 입력창 안의 글자색을 정답과 대조한 결과로 덮어 보여준다.
              채점(isCorrectReading)과 같은 정규화(toHiragana)를 거쳐야 표기 차이가
              거짓 오답처럼 보이지 않는다 */

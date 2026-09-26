@@ -318,6 +318,14 @@ button.tag {
 .kana-input.locked {
   opacity: 0.5;
 }
+/* 카드가 끝나면 입력창을 안 보이게 한다 (2026-09-26 사용자 지적). **자리는 남긴다** —
+   언마운트하거나 display:none 하면 iOS 에서 포커스가 풀리고, 다음 카드에서 제스처 밖
+   focus() 로는 키보드를 다시 못 올린다 (KanaInput 의 locked 주석과 같은 함정).
+   높이를 그대로 두니 아래 버튼이 위로 튀지도 않는다 */
+.kana-input-shell.done {
+  opacity: 0;
+  pointer-events: none;
+}
 /* 오답 대조 중엔 원래 글자를 지우고(투명) 위 오버레이만 보이게 한다.
    대조색이 잘 보여야 하는 자리라 위 .locked 의 흐림도 여기선 되돌린다 (2026-09-18).
    `.kana-input-shell` 로 한 겹 더 좁힌 이유 — 이 입력은 카드가 오답일 때

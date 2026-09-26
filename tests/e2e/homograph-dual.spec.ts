@@ -162,6 +162,12 @@ test('처음부터 둘 다 묻고, 쓴 읽기의 카드에만 정답이 남는�
   await expect(page.locator('.card.feedback.is-ok')).toBeVisible({ timeout: 5_000 })
   await expect(page.locator('.rule-hint')).toContainText('두 읽기를 다 맞혔어요')
 
+  // 다 맞힌 뒤에는 입력창을 안 보이게 한다 (2026-09-26 사용자 지적 — 무엇을 칠지 몰라
+  // 빈 칸이 남아 있었다). **자리와 포커스는 그대로 둔다** — 언마운트하거나 display:none
+  // 하면 iOS 에서 blur 되고 다음 카드에서 키보드를 다시 못 올린다
+  await expect(page.locator('.kana-input-shell.done')).toHaveCount(1)
+  expect(await page.evaluate(() => document.activeElement?.className ?? '')).toContain('kana-input')
+
   await page.getByRole('button', { name: '다음', exact: true }).click()
   await page.waitForTimeout(300)
 
