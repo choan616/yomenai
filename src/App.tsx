@@ -16,6 +16,7 @@ import { Search } from './app/Search.tsx'
 import { CameraFind, type CameraFound } from './app/CameraFind.tsx'
 import { MeaningReview } from './app/MeaningReview.tsx'
 import { Wordlist } from './app/Wordlist.tsx'
+import { useDocumentScrollGuard } from './app/useDocumentScrollGuard.ts'
 import { Backup } from './app/Backup.tsx'
 import { Feedback } from './app/Feedback.tsx'
 import { Rules } from './app/Rules.tsx'
@@ -77,6 +78,8 @@ export default function App() {
 }
 
 function Shell() {
+  // 셸 화면에서 문서가 밀려 올라가면 sticky 탭바가 같이 올라간다 (2026-09-26)
+  useDocumentScrollGuard()
   const [tab, setTab] = useState<Tab>('home')
   const [sub, setSub] = useState<Sub | null>(null)
   const [flow, setFlow] = useState<Flow | null>(null)
