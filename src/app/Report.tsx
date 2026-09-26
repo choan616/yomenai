@@ -439,9 +439,12 @@ function LevelSection({
         <thead>
           <tr>
             <th scope="col">밴드</th>
+            {/* 앞의 둘은 **표현 개수**, 마지막은 **채점 횟수의 비율**이다. 제목이 그걸
+                안 말하면 「출제 3 · 정답률 71%」 같은 줄이 산수가 틀린 것처럼 보인다
+                (2026-09-26 사용자 지적) */}
             <th scope="col">출제</th>
             <th scope="col">숙지</th>
-            <th scope="col">정답률</th>
+            <th scope="col">최근 정답률</th>
           </tr>
         </thead>
         <tbody>
@@ -476,8 +479,9 @@ function LevelSection({
       <p className="ladder-caption">
         왼쪽 붉은 줄은 흔들리는 밴드, 점선은 표본이 모자란 밴드예요 · 숙지 ={' '}
         {READING_STABLE_DAYS}일 이상 안 잊는 상태 · 출제된 표현에는 틀린 것·넘긴 것도 들어가요
-        (소개만 본 건 빼요) · 흔들림은 최근 {LEVEL_WINDOW}회 정답률{' '}
-        {Math.round(LEVEL_SOLID_RATE * 100)}% 미만 · {LEVEL_MIN_SEEN}회 미만은 표본 부족
+        (소개만 본 건 빼요) · 앞의 두 칸은 표현 개수, 정답률은 최근 {LEVEL_WINDOW}회 채점
+        기준이라 분모가 달라요 · 흔들림은 그 값이 {Math.round(LEVEL_SOLID_RATE * 100)}% 미만 ·{' '}
+        {LEVEL_MIN_SEEN}회 미만은 표본 부족
       </p>
     </section>
   )

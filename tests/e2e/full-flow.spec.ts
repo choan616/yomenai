@@ -64,7 +64,7 @@ test('진입 진단 → 세션 → 리포트 전체 흐름을 완주한다', asy
   await expect(page.locator('.level .stat-line')).toContainText('정답률')
   expect(await page.locator('.ladder tbody tr').count()).toBeGreaterThanOrEqual(3)
   // 표의 머리글이 무엇을 재는지 말한다 (2026-09-23) — 열이 맞아야 밴드끼리 비교가 된다
-  await expect(page.locator('.ladder thead th')).toHaveText(['밴드', '출제', '숙지', '정답률'])
+  await expect(page.locator('.ladder thead th')).toHaveText(['밴드', '출제', '숙지', '최근 정답률'])
   // 큰 숫자는 정답률이 아니라 붙은 숙어 개수다 (2026-09-19). 정답률은 표의 한 열이다
   await expect(page.locator('.ladder-title')).toHaveText('밴드별 숙지한 표현')
   await expect(page.locator('.ladder-caption')).toContainText('숙지')
