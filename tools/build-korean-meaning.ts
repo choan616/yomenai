@@ -110,7 +110,18 @@ const meta = (byId: Record<string, Entry>) => ({
   flagged: Object.values(byId).filter((e) => e.flags.length > 0).length,
 })
 
-const byId = collect(baseTargets)
+/**
+ * **있던 것을 지우지 않는다** (2026-09-26). 전에는 산출물을 「이번 대상」으로 다시 만들어,
+ * `--band=3` 으로 한 번 돌리면 밴드 4 몫 85,418개가 조용히 사라졌다 (실측 — `--wide` 를
+ * 돌리다 기본값 3 으로 날렸다). 캐시가 원본이라 되살릴 수는 있지만, 되살릴 일이 없어야 한다.
+ *
+ * 그래서 기존 파일을 읽어 얹는다. 대상에서 빠진 옛 항목은 남지만, 그건 캐시에도 있는 것이라
+ * 거짓이 아니다 — 지우는 쪽이 잃는 게 크다.
+ */
+const prev: Record<string, Entry> = existsSync(OUT)
+  ? ((JSON.parse(readFileSync(OUT, 'utf8')) as { byId?: Record<string, Entry> }).byId ?? {})
+  : {}
+const byId = { ...prev, ...collect(baseTargets) }
 writeFileSync(OUT, JSON.stringify({ _meta: meta(byId), byId }))
 
 /**
@@ -120,7 +131,10 @@ writeFileSync(OUT, JSON.stringify({ _meta: meta(byId), byId }))
  * 산출물을 「이번 대상」으로 다시 만들기 때문이다. 갈라 두면 서로를 안 지운다.
  */
 if (wideTargets.length > 0) {
-  const wideById = collect(wideTargets)
+  const prevWide: Record<string, Entry> = existsSync(OUT_WIDE)
+    ? ((JSON.parse(readFileSync(OUT_WIDE, 'utf8')) as { byId?: Record<string, Entry> }).byId ?? {})
+    : {}
+  const wideById = { ...prevWide, ...collect(wideTargets) }
   writeFileSync(OUT_WIDE, JSON.stringify({ _meta: meta(wideById), byId: wideById }))
   console.log(`→ ${OUT_WIDE}  (넓힌 사전 ${Object.keys(wideById).length}개)`)
 }
