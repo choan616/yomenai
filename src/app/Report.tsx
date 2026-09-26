@@ -507,7 +507,18 @@ function LevelSection({
 function StableMix({ bands, total }: { bands: readonly BandRow[]; total: number }) {
   // 숙지가 0이면 그릴 도형이 없다. 빈 막대는 "아직 없다"를 말해 주지 않는다
   if (total === 0) return null
+  /**
+   * **막대와 범례의 기준이 다르다** (2026-09-26 사용자 지적 「그래프에는 밴드 4가 빠져 있다」).
+   *
+   * 막대는 0폭을 못 그리니 숙지가 있는 밴드만 그린다. 범례는 글자라 0%도 말할 수 있고,
+   * **말해야 한다** — 아래 표에는 밴드 4 가 「출제 10 · 숙지 0」으로 있는데 범례에만
+   * 없으면 그래프가 그 밴드를 빠뜨린 것처럼 보인다.
+   *
+   * 한 번도 안 만난 밴드는 빼둔다. 안 푼 것을 0% 로 적으면 못 외운 것과 섞인다
+   * (표의 `NO_DATA` 와 같은 기준)
+   */
   const parts = bands.filter((b) => b.stable > 0)
+  const keys = bands.filter((b) => b.met > 0)
   return (
     <div className="mix">
       <div className="mix-bar" aria-hidden="true">
@@ -523,7 +534,7 @@ function StableMix({ bands, total }: { bands: readonly BandRow[]; total: number 
       {/* 범례가 막대의 값을 **글자로** 준다 — 막대는 aria-hidden 이라 읽어 주는 건 이 줄이다.
           개수는 아래 밴드 행에 이미 있으므로 여기선 비율만 말한다 */}
       <p className="mix-legend">
-        {parts.map((b) => (
+        {keys.map((b) => (
           <span key={b.band} className={`mix-key band-${b.status}`}>
             <span className="mix-dot" aria-hidden="true" data-band={b.band} />
             밴드 {b.band} {Math.round((b.stable / total) * 100)}%

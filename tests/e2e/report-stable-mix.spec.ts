@@ -94,11 +94,14 @@ test('요약 막대가 숙지한 표현을 밴드별로 나누고, 출제가 늘
 
   // 밴드마다 색이 다르고, 범례 점이 세그먼트와 같은 색이다 (2026-09-22 사용자 지시).
   // 둘이 갈리면 범례가 거짓말을 한다 — data-band 매핑이 깨지는 자리다
+  // **순번이 아니라 `data-band` 로 짝짓는다** (2026-09-26) — 범례는 숙지 0 인 밴드도
+  // 말하므로 세그먼트보다 길어질 수 있다. 순번으로 짝지으면 그때 거짓 통과·거짓 실패가 난다
   const paint = await page.evaluate(() =>
-    [...document.querySelectorAll('.mix-seg')].map((seg, i) => ({
-      seg: getComputedStyle(seg).backgroundColor,
-      dot: getComputedStyle(document.querySelectorAll('.mix-dot')[i]!).backgroundColor,
-    })),
+    [...document.querySelectorAll('.mix-seg')].map((seg) => {
+      const band = seg.getAttribute('data-band')
+      const dot = document.querySelector(`.mix-dot[data-band="${band}"]`)!
+      return { band, seg: getComputedStyle(seg).backgroundColor, dot: getComputedStyle(dot).backgroundColor }
+    }),
   )
   expect(paint).toHaveLength(2)
   for (const { seg, dot } of paint) expect(seg).toBe(dot)
@@ -122,6 +125,18 @@ test('요약 막대가 숙지한 표현을 밴드별로 나누고, 출제가 늘
   const after = await segments(page)
   expect(after[0]).toBeCloseTo(before[0], 2)
   expect(after[1]).toBeCloseTo(before[1], 2)
+
+  // **범례는 표와 같은 밴드를 말한다** (2026-09-26 사용자 지적 「그래프에는 밴드 4가
+  // 빠져 있다」). 막대는 0폭을 못 그리지만 범례는 글자라 0% 도 말할 수 있고, 안 말하면
+  // 그래프가 그 밴드를 빠뜨린 것처럼 보인다. 한 번도 안 만난 밴드는 양쪽 다 뺀다
+  const shown = await page.evaluate(() => {
+    const legend = [...document.querySelectorAll('.mix-dot')].map((d) => d.getAttribute('data-band'))
+    const rows = [...document.querySelectorAll('.ladder tbody tr')]
+      .filter((tr) => (tr.children[1]?.textContent ?? '').trim() !== '—')
+      .map((tr) => (tr.children[0]?.textContent ?? '').replace(/[^0-9]/g, '').slice(0, 1))
+    return { legend, rows }
+  })
+  expect(shown.legend).toEqual(shown.rows)
 })
 
 test('흔들리는 밴드는 밴드 색을 잃지 않고 사선만 덧입는다', async ({ page }) => {
