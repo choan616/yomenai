@@ -37,8 +37,9 @@ const AFTER_SOKUON_HEAD = new Set([...'かきくけこさしすせそたちつ�
  * 표제어 읽기는 융합형 いっかい 라 그대로는 안 맞는다. 現代仮名遣い(ぢ·づ)·連濁·半濁·促音便을
  * 지우고 비교한다 — 이 차이는 같은 단어 안의 음운 변형이지 다른 읽기가 아니다
  */
-function canonicalReading(reading: string): string {
-  const plain = unvoiceAll(toHiragana(reading).replace(/ぢ/g, 'じ').replace(/づ/g, 'ず'))
+function canonicalReading(reading: string, voicing = true): string {
+  const base = toHiragana(reading).replace(/ぢ/g, 'じ').replace(/づ/g, 'ず')
+  const plain = voicing ? unvoiceAll(base) : base
   let out = ''
   for (let i = 0; i < plain.length; i++) {
     const c = plain[i]
@@ -74,7 +75,30 @@ export function readingHolds(
     if (m.reading === undefined) return false
     joined += m.reading
   }
-  return canonicalReading(joined).includes(canonicalReading(reading))
+  /**
+   * **연탁을 지우는 것은 형태소 경계에 딱 맞을 때만이다** (2026-09-26 사용자 지적
+   * 「大家 의 예문으로 大家族 이 있다」).
+   *
+   * `大家族` 은 `大(ダイ)|家族(カゾク)` 로 갈리고 표제어 `大家` 의 오른쪽 끝이 `家族`
+   * 한가운데를 자른다. 그런데도 통과한 건 연탁을 지우면 `だいかぞく → たいかそく` 가 되어
+   * `たいか` 를 품기 때문이다. 그 자리에 `大家` 라는 단어는 없다.
+   *
+   * 연탁은 **단어 경계에서 일어나는 변형**이라, 끝이 경계에 맞을 때만 지울 근거가 있다
+   * (`雪|合戦` 의 `合戦`). 중간을 자르면 이어 붙인 읽기가 원래 발음 그대로 표제어 읽기를
+   * 품어야 한다. 촉음 융합은 양쪽 다 지운다 — `一(イチ)|回(カイ)` 의 `一回(いっかい)` 는
+   * 경계를 안 자르는데도 그 정규화가 필요하다
+   */
+  const flush = cover[0].position === at && last.position + last.surface.length === end
+  /**
+   * 형태소 하나 안이어도 **뒷부분이면** 연탁을 지운다. 연탁은 뒷요소의 첫소리에 일어나므로
+   * (`雪+合戦 → ゆきがっせん`, `和+菓子 → わがし`, `居+酒屋 → いざかや`) 표제어가 형태소의
+   * 꼬리를 이루면 그 탁음은 표제어 자신의 변형이다.
+   *
+   * 앞부분은 아니다 — `大家族` 의 `だ` 는 `大家` 가 연탁한 것이 아니라 `大` 의 제 음이다.
+   */
+  const tail = cover.length === 1 && last.position + last.surface.length === end
+  const voiced = flush || tail
+  return canonicalReading(joined, voiced).includes(canonicalReading(reading, voiced))
 }
 
 /**

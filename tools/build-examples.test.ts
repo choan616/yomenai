@@ -203,3 +203,72 @@ describe('blockedInName — 손으로 적어 둔 제외 (2026-09-21)', () => {
     expect(blockedInName(S, S.indexOf('協和'), '協和', {})).toBe(false)
   })
 })
+
+describe('연탁 지우기는 형태소 경계에 맞을 때만 (2026-09-26)', () => {
+  // 大家 의 예문으로 大家族 이 붙어 있었다 (사용자 지적). 大(ダイ)|家族(カゾク) 로 갈려
+  // 표제어 오른쪽 끝이 家族 한가운데를 자르는데, 연탁을 지우면 だいかぞく → たいかそく 가
+  // 되어 たいか 를 품는다. 그 자리에 大家 라는 단어는 없다
+  it('大家族 안의 大家 는 たいか 로 안 읽힌다', () => {
+    const ms = [
+      { position: 0, surface: '大', reading: 'ダイ' },
+      { position: 1, surface: '家族', reading: 'カゾク' },
+    ]
+    expect(readingHolds(ms, 0, '大家', 'たいか')).toBe(false)
+  })
+
+  it('裁判官 안의 判官 도 마찬가지다', () => {
+    const ms = [
+      { position: 0, surface: '裁判', reading: 'サイバン' },
+      { position: 2, surface: '官', reading: 'カン' },
+    ]
+    expect(readingHolds(ms, 1, '判官', 'はんがん')).toBe(false)
+  })
+
+  // 끝이 경계에 맞으면 연탁은 그 자리에서 일어나는 변형이라 지울 근거가 있다
+  it('雪合戦 의 合戦(がっせん) 은 かっせん 으로 살린다', () => {
+    const ms = [
+      { position: 0, surface: '雪', reading: 'ユキ' },
+      { position: 1, surface: '合戦', reading: 'ガッセン' },
+    ]
+    expect(readingHolds(ms, 1, '合戦', 'かっせん')).toBe(true)
+  })
+
+  // 촉음 융합은 경계를 안 자를 때도 필요하다 — 양쪽 다 지운다
+  it('一(イチ)|回(カイ) 의 一回(いっかい) 는 살린다', () => {
+    const ms = [
+      { position: 0, surface: '一', reading: 'イチ' },
+      { position: 1, surface: '回', reading: 'カイ' },
+    ]
+    expect(readingHolds(ms, 0, '一回', 'いっかい')).toBe(true)
+  })
+
+  it('論文|中 의 文中 은 그대로 살린다 — 왼쪽만 자르고 읽기가 보존된다', () => {
+    const ms = [
+      { position: 0, surface: '論文', reading: 'ロンブン' },
+      { position: 2, surface: '中', reading: 'チュウ' },
+    ]
+    expect(readingHolds(ms, 1, '文中', 'ぶんちゅう')).toBe(true)
+  })
+})
+
+describe('형태소 꼬리면 연탁을 지운다 (2026-09-26)', () => {
+  // 연탁은 뒷요소의 첫소리에 일어난다 — 표제어가 형태소의 꼬리면 그 탁음은 표제어 자신의 변형이다
+  it('雪合戦 한 덩이 안의 合戦(がっせん) 도 살린다', () => {
+    const ms = [{ position: 0, surface: '雪合戦', reading: 'ユキガッセン' }]
+    expect(readingHolds(ms, 1, '合戦', 'かっせん')).toBe(true)
+  })
+
+  it('和菓子 안의 菓子, 居酒屋 안의 酒屋 도 살린다', () => {
+    expect(
+      readingHolds([{ position: 0, surface: '和菓子', reading: 'ワガシ' }], 1, '菓子', 'かし'),
+    ).toBe(true)
+    expect(
+      readingHolds([{ position: 0, surface: '居酒屋', reading: 'イザカヤ' }], 1, '酒屋', 'さかや'),
+    ).toBe(true)
+  })
+
+  it('**앞부분은 아니다** — 大家族 의 だ 는 大家 가 연탁한 게 아니라 大 의 제 음이다', () => {
+    const ms = [{ position: 0, surface: '大家族', reading: 'ダイカゾク' }]
+    expect(readingHolds(ms, 0, '大家', 'たいか')).toBe(false)
+  })
+})
