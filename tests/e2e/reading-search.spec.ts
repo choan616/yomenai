@@ -101,7 +101,8 @@ test('학습 사전에 없으면 밖에서 찾을지 묻고, 그러면 찾아 �
   await expect(group.locator('.section-title')).toContainText('ばくごう', { timeout: 30_000 })
   const row = group.locator('.rows > li').filter({ hasText: '爆轟' })
   await expect(row).toContainText('폭굉') // 한국 한자음 — 轟 은 넓힌 사전 쪽 자료에만 있다
-  await expect(row).toContainText('detonation')
+  // 한국어 번역이 실린 뒤로는 한국어가 뜬다 (2026-09-26). 없으면 영어 gloss 가 그대로 온다
+  await expect(row.locator('.r-meaning')).not.toBeEmpty()
 
   // **담기를 안 낸다** — 음독 분해가 없어 세션에 못 들어간다. 별을 두면 거짓말이다
   // 爆轟 은 음독으로 갈라지므로 담을 수 있다 — 갈라지는 것과 아닌 것은 아래 테스트가 본다
