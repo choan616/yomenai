@@ -66,6 +66,11 @@ interface RuntimeIdiom {
    * 읽기 채점이 이걸 정답으로 받는다 — 아래 「같은 표기 정리」 주석 참조
    */
   altReadings?: string[]
+  /**
+   * 조회 전용 (2026-09-26). 읽기를 한자 단위로 못 가르는 숙어라 학습 장치가 하나도
+   * 안 붙는다. `lookup.json` 에만 실리고 학습 풀을 만드는 쪽은 그 파일을 안 읽는다
+   */
+  lookupOnly?: boolean
 }
 
 function read<T>(file: string): T {
@@ -127,13 +132,45 @@ function fallbackMeaning(id: string): RuntimeIdiom['koMeaning'] {
 
 const base: RuntimeIdiom[] = []
 const band4: RuntimeIdiom[] = []
+/** 조회 전용 — 읽기를 한자 단위로 못 가르는 숙어(熟字訓·当て字). 학습 풀은 이걸 안 읽는다 */
+const lookup: RuntimeIdiom[] = []
 const usedKanji = new Set<string>()
 
 for (const it of idioms) {
   const band = bands[it.id]
   const segs = byIdiom[it.id]
-  // 음독 분해가 없는 숙어(熟字訓·当て字)는 학습 대상이 아니다 — Phase 2 의 설계된 거부
-  if (band === undefined || segs === undefined) continue
+  if (band === undefined) continue
+  /**
+   * 음독 분해가 없는 숙어(熟字訓·当て字)는 **학습 대상이 아니다** — Phase 2 의 설계된
+   * 거부다. 음독 맵·형제 대조·연탁 오답 분류가 하나도 안 붙는다.
+   *
+   * 그런데 **찾을 수는 있어야 한다** (2026-09-26 사용자 지적 「昨日도 없는 것은 수상하다」).
+   * `昨日(きのう)`·`今日(きょう)`·`二人(ふたり)`·`日本人(にほんじん)` 이 전부 여기서
+   * 빠지고 있었다. 4,357개 중 258개가 빈도 순위를 가진 말이다 — 소설을 읽으면 반드시
+   * 만나는 것들이라 없는 쪽이 이상하다.
+   *
+   * 그래서 **조회 전용으로 따로 낸다.** 학습 풀을 만드는 쪽은 이 파일을 안 읽으므로
+   * 세션·음독맵·리포트에는 안 닿는다. 넓힌 사전에서 「읽기만」으로 막은 것과 같은 기준이다
+   */
+  if (segs === undefined) {
+    const ko = koClass[it.id]
+    lookup.push({
+      id: it.id,
+      headword: it.headword,
+      reading: it.reading,
+      pos: it.pos,
+      band,
+      common: it.common,
+      category: ko?.category ?? null,
+      classSource: ko?.classSource ?? null,
+      koMeaning: ko?.koMeaning ? slim(ko.koMeaning) : fallbackMeaning(it.id),
+      pairIds: [],
+      readingKind: 'kun',
+      lookupOnly: true,
+    })
+    for (const ch of it.headword) if (kanji[ch]) usedKanji.add(ch)
+    continue
+  }
 
   const ko = koClass[it.id]
   const rec: RuntimeIdiom = {
@@ -253,6 +290,10 @@ const emit = (file: string, body: unknown) => {
 console.log(`public/dict/ 에 씀:`)
 emit('base.json', { _meta: { ...meta, band: '0~3', count: base.length }, idioms: base })
 emit('band4.json', { _meta: { ...meta, band: '4', count: band4.length }, idioms: band4 })
+emit('lookup.json', {
+  _meta: { ...meta, count: lookup.length, note: '조회 전용 — 읽기를 한자 단위로 못 가른다. 학습 풀에 안 들어간다' },
+  idioms: lookup,
+})
 emit('pairs.json', { _meta: meta, pairs })
 emit('kanji.json', { _meta: meta, kanji: kanjiSlim })
 console.log(

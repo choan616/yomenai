@@ -18,6 +18,7 @@ import { join } from 'node:path'
 const DIST = 'dist'
 /** 오프라인에서 앱이 서려면 있어야 하는 것들. `vite.config.ts` 의 globPatterns 와 짝이다 */
 const REQUIRED = [
+  'dict/lookup.json',
   'index.html',
   'dict/base.json',
   'dict/pairs.json',

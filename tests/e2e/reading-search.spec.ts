@@ -152,3 +152,31 @@ test('넓힌 사전에서 담을 수 있는 것과 없는 것을 갈라 낸다',
   await expect(wl).toBeVisible({ timeout: 30_000 })
   await expect(wl.locator('.wl-state')).toHaveText('아직 안 나옴')
 })
+
+// 조회 전용 (2026-09-26 사용자 지적 「昨日도 없는 것은 수상하다」).
+// 昨日(きのう)·今日(きょう) 는 읽기를 한자 단위로 못 갈라 학습 대상이 아니다. 그런데
+// 소설을 읽으면 반드시 만나는 말이라 **찾기에서는 나와야 한다**. 4,357개 중 258개가
+// 빈도 순위를 가진 말이었다.
+test('숙자훈도 찾기에서는 나온다 — 다만 담기는 안 낸다', async ({ page }) => {
+  await page.goto('/')
+  const tab = page.getByRole('button', { name: '찾기', exact: true })
+  await expect(tab).toBeVisible({ timeout: 20_000 })
+  await tab.click()
+
+  const input = page.getByLabel('읽기 또는 한자 검색')
+  await input.fill('昨日')
+  const row = page.locator('.rows > li').filter({ has: page.locator('.r-main', { hasText: /^昨日$/ }) })
+  await expect(row.first()).toBeVisible({ timeout: 30_000 })
+  await expect(page.locator('.hit-group .section-title').first()).toContainText('きのう')
+  await expect(row.first()).toContainText('어제')
+
+  // 읽기를 한자 단위로 못 가르니 담아도 학습이 안 된다 — 별을 두면 거짓말이다
+  await expect(row.first().locator('.star-slot')).toHaveText('읽기만')
+  await expect(row.first().getByRole('button')).toHaveCount(0)
+
+  // 읽기로도 찾아진다
+  await input.fill('きょう')
+  await expect(
+    page.locator('.rows > li').filter({ has: page.locator('.r-main', { hasText: /^今日$/ }) }).first(),
+  ).toBeVisible()
+})

@@ -41,6 +41,9 @@ export default defineConfig(({ command, isPreview }) => ({
         globPatterns: [
           '**/*.{js,css,html,woff2}',
           'dict/base.json',
+          // 조회 전용(914KB) — 昨日·今日 처럼 읽기를 한자 단위로 못 가르는 말이다.
+          // 소설을 읽으면 반드시 만나므로 첫 실행부터 오프라인으로 찾아져야 한다
+          'dict/lookup.json',
           'dict/pairs.json',
           'dict/kanji.json',
           'dict/examples.json',

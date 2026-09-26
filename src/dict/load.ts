@@ -18,6 +18,8 @@ interface RawIdiom {
   readingKind: ReadingKind
   /** 같은 표기의 다른 읽기 (동형이독). 겹치는 표기가 없으면 필드 자체가 없다 */
   altReadings?: string[]
+  /** 조회 전용 — 읽기를 한자 단위로 못 가른다 (2026-09-26). `lookup.json` 에만 있다 */
+  lookupOnly?: boolean
 }
 
 /**
@@ -70,6 +72,13 @@ export interface RuntimeIdiom extends IdiomEntry {
   common: boolean
   koMeaning: KoMeaning | null
   readingKind: ReadingKind
+  /**
+   * 조회 전용 (2026-09-26). 읽기를 한자 단위로 못 가르는 숙어(熟字訓·当て字)다 —
+   * `昨日(きのう)`·`今日(きょう)`. 음독 맵도 형제 대조도 오답 분류도 안 붙어 세션에
+   * 못 들어가므로 화면이 담기를 안 낸다. `lookup.json` 에만 실리고 학습 풀은 그 파일을
+   * 안 읽으므로 세션·음독맵·리포트에는 애초에 안 닿는다
+   */
+  lookupOnly?: boolean
 }
 
 export interface OnyomiPair {
@@ -104,6 +113,7 @@ export function normalizeIdiom(r: RawIdiom): RuntimeIdiom {
     hasMeaning: (r.koMeaning?.definition ?? '').trim() !== '',
     readingKind: r.readingKind,
     altReadings: r.altReadings,
+    ...(r.lookupOnly ? { lookupOnly: true } : {}),
   }
 }
 
@@ -116,6 +126,7 @@ async function fetchDict<T>(name: string): Promise<T> {
 
 let basePromise: Promise<RuntimeIdiom[]> | null = null
 let band4Promise: Promise<RuntimeIdiom[]> | null = null
+let lookupPromise: Promise<RuntimeIdiom[]> | null = null
 let pairsPromise: Promise<Map<string, OnyomiPair>> | null = null
 let kanjiPromise: Promise<Map<string, KanjiInfo>> | null = null
 let examplesPromise: Promise<Map<string, string[]>> | null = null
@@ -126,6 +137,23 @@ export function loadBaseIdioms(): Promise<RuntimeIdiom[]> {
     d.idioms.map(normalizeIdiom),
   )
   return basePromise
+}
+
+/**
+ * 조회 전용 번들 (2026-09-26 사용자 지적 「昨日도 없는 것은 수상하다」).
+ *
+ * 읽기를 한자 단위로 못 가르는 숙어(熟字訓·当て字)다 — `昨日(きのう)`·`今日(きょう)`·
+ * `二人(ふたり)`. 학습 장치가 하나도 안 붙어 세션에는 못 내지만, 소설을 읽으면 반드시
+ * 만나는 말이라 **찾기에서는 나와야 한다.**
+ *
+ * 914KB 라 기본 번들과 같이 프리캐시한다 — 밴드 4(20MB)·넓힌 사전(3.4MB)과 달리
+ * 물어볼 만한 무게가 아니고, 첫 실행부터 오프라인으로 찾아져야 한다
+ */
+export function loadLookupIdioms(): Promise<RuntimeIdiom[]> {
+  lookupPromise ??= fetchDict<{ idioms: RawIdiom[] }>('lookup.json').then((d) =>
+    d.idioms.map(normalizeIdiom),
+  )
+  return lookupPromise
 }
 
 /** 밴드 4 (선택). 설정에서 켤 때만 부른다 */

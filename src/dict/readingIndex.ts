@@ -4,7 +4,7 @@
 // 묶이고("이 한자가 이 음을 갖는 다른 예"), 이쪽 키는 단어 전체 읽기라 光輝·好機 처럼
 // 한자가 하나도 안 겹치는 것이 묶인다("이 소리로 읽히는 다른 단어").
 import { toHiragana } from '../lib/readings.ts'
-import { loadBand4Idioms, loadBaseIdioms, type RuntimeIdiom } from './load.ts'
+import { loadBand4Idioms, loadBaseIdioms, loadLookupIdioms, type RuntimeIdiom } from './load.ts'
 
 /** 찾기에 필요한 최소 모양. 넓힌 사전 항목은 밴드·음독 쌍이 없어 RuntimeIdiom 이 아니다 */
 export interface Indexable {
@@ -153,7 +153,11 @@ let indexPromise: Promise<ReadingIndex> | null = null
 
 /** 밴드 0~3 풀의 읽기 역인덱스. 첫 호출에서 만들고 이후 캐시된 Promise 를 준다 */
 export function loadReadingIndex(): Promise<ReadingIndex> {
-  indexPromise ??= loadBaseIdioms().then(buildReadingIndex)
+  // 조회 전용도 **기본 색인에 같이 넣는다** — 昨日·今日 이 안 나오는 것이 이상하다
+  // (2026-09-26). 담기는 화면이 막는다 (`lookupOnly`)
+  indexPromise ??= Promise.all([loadBaseIdioms(), loadLookupIdioms()]).then(([base, lookup]) =>
+    buildReadingIndex([...base, ...lookup]),
+  )
   return indexPromise
 }
 
@@ -173,8 +177,8 @@ let band4Promise: Promise<ReadingIndex> | null = null
  * (`Search.tsx`). 한 번 받으면 서비스워커 런타임 캐시에 남는다.
  */
 export function loadBand4ReadingIndex(): Promise<ReadingIndex> {
-  band4Promise ??= Promise.all([loadBaseIdioms(), loadBand4Idioms()]).then(([base, band4]) =>
-    buildReadingIndex([...base, ...band4]),
+  band4Promise ??= Promise.all([loadBaseIdioms(), loadBand4Idioms(), loadLookupIdioms()]).then(
+    ([base, band4, lookup]) => buildReadingIndex([...base, ...band4, ...lookup]),
   )
   return band4Promise
 }

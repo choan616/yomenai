@@ -634,7 +634,13 @@ function Group({
             )}
             {/* 이미 카드가 생긴 숙어에는 담기를 안 낸다 — 담아도 아무 일이 안 일어난다.
                 빈칸으로 두면 "왜 이 줄만 없지"가 되므로 그 자리에 이유를 적는다 */}
-            {loaded.started.has(it.idiomId) ? (
+            {/* 조회 전용은 담기를 안 낸다 (2026-09-26) — 읽기를 한자 단위로 못 갈라
+                세션에 못 들어간다. 넓힌 사전의 「읽기만」과 같은 기준이다 */}
+            {it.lookupOnly ? (
+              <span className="star-slot dim" title="읽기를 한자 단위로 못 갈라요">
+                읽기만
+              </span>
+            ) : loaded.started.has(it.idiomId) ? (
               <span className="star-slot dim">학습 중</span>
             ) : (
               <StarButton
