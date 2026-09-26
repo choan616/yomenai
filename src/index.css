@@ -149,6 +149,14 @@ body,
 #root {
   height: 100%;
 }
+/* 문서는 스크롤하지 않는다 — 스크롤하는 것은 .screen(overflow-y: auto)이다 (2026-09-26).
+   탭바가 sticky 라 문서가 밀리면 같이 밀리는데, 밀린 뒤 되돌리면 손가락과 싸워 떨린다.
+   **애초에 못 밀리게 한다.** 화면 안 스크롤은 .screen 이 따로 가지고 있어 안 죽는다.
+   PC 는 아래 질의에서 도로 푼다 — 거기선 문서가 스크롤러다 */
+html,
+body {
+  overflow: hidden;
+}
 
 body {
   margin: 0;
@@ -167,6 +175,10 @@ body {
   #root {
     height: auto;
     min-height: 100%;
+  }
+  html,
+  body {
+    overflow: visible;
   }
 }
 

@@ -11,10 +11,12 @@
 // 적혀 있다 — 학습 화면은 그 처방을 쓰지만 셸 화면은 안 썼다). 단어장이 **자동 포커스
 // 입력을 가진 유일한 탭 화면**이라 거기서 먼저 드러났다.
 //
-// **높이도 `overflow` 도 안 건드린다.** `useViewportLock` 은 `body` 를 `overflow: hidden`
-// 으로 잠그고 높이를 `--vvh` 로 덮는데, 그건 3분할 고정 골격(학습·진단) 전용 처방이라
-// 셸에 걸면 화면 안 스크롤이 죽는다. 여기서는 **있으면 안 되는 스크롤을 0 으로 되돌리는
-// 것 하나만** 한다.
+// **막는 것은 CSS 가 한다.** `index.css` 가 모바일에서 `html, body` 를 `overflow: hidden`
+// 으로 둬 문서 자체를 못 움직이게 한다 — 화면 안 스크롤은 `.screen` 이 따로 가지고 있어
+// 안 죽는다. 이 훅은 그래도 밀린 경우를 **자판이 오르내릴 때 한 번씩** 되돌리는 자리다.
+//
+// 높이는 안 건드린다. `useViewportLock` 은 높이를 `--vvh` 로 덮는데 그건 3분할 고정
+// 골격(학습·진단) 전용 처방이다.
 import { useEffect } from 'react'
 
 /**
@@ -33,16 +35,18 @@ export function useDocumentScrollGuard(): void {
       if (window.scrollY !== 0) window.scrollTo(0, 0)
     }
 
+    /**
+     * **스크롤마다 되돌리지 않는다** (2026-09-26 사용자 보고 「떨리는 현상이 있다」).
+     * 매 `scroll` 에 0 으로 당기면 손가락과 싸워 화면이 떤다. 문서는 CSS 로 이미 못
+     * 움직이게 막았고(`index.css` 의 `html, body { overflow: hidden }`), 이 가드는 그래도
+     * 밀린 경우를 **한 번씩** 되돌리는 자리로만 남긴다 — 자판이 오르내릴 때다.
+     */
     const vv = window.visualViewport
     vv?.addEventListener('resize', reset)
-    vv?.addEventListener('scroll', reset)
-    window.addEventListener('scroll', reset, { passive: true })
     // 자판이 내려갈 때는 resize 가 늦거나 안 오는 기기가 있다 — 포커스가 빠질 때도 본다
     window.addEventListener('focusout', reset)
     return () => {
       vv?.removeEventListener('resize', reset)
-      vv?.removeEventListener('scroll', reset)
-      window.removeEventListener('scroll', reset)
       window.removeEventListener('focusout', reset)
     }
   }, [])
