@@ -1761,14 +1761,16 @@ p.rule-record {
   color: var(--band-0);
 }
 .review-acts,
-.review-edit .row {
+.review-edit .row,
+.wl-new .row {
   display: flex;
   gap: 8px;
   margin-top: 10px;
   flex-wrap: wrap;
 }
 .review-acts button,
-.review-edit .row button {
+.review-edit .row button,
+.wl-new .row button {
   min-height: 40px;
   padding: 6px 14px;
   border: 1px solid var(--border);
@@ -1786,7 +1788,8 @@ p.rule-record {
 .review-edit {
   margin-top: 10px;
 }
-.review-edit .search-input {
+.review-edit .search-input,
+.wl-new .search-input {
   width: 100%;
 }
 
@@ -1798,8 +1801,9 @@ p.rule-record {
   width: 100%;
   margin: 12px 0 4px;
 }
+/* 아래 여백은 `.screen-body` 의 flex gap(24px)이 이미 준다 — 더 주면 묶음 제목이 멀어진다 */
 .wl-current {
-  margin: 4px 0 18px;
+  margin: 4px 0 0;
 }
 .wl-current > .dim {
   display: block;

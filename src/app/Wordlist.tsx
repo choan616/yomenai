@@ -228,7 +228,7 @@ function CurrentPicker({
 
   if (adding) {
     return (
-      <div className="wl-current">
+      <div className="wl-current wl-new">
         <input
           className="search-input"
           value={draft}
