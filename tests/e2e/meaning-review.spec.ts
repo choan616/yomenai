@@ -22,7 +22,9 @@ async function seed(page: Page): Promise<void> {
           })
           st.put({
             id: 'rv-2', userId: 'local', deviceId: 'e2e', at: Date.now() - day,
-            idiomId: '1150680', on: true, deletedAt: null, type: 'star',
+            // 愛好(1150680) 는 2026-09-26/27 검수에서 verified 가 됐다 — 이 화면이
+            // 거르는 조건이라 더는 쓸 수 없다. 愛国(1150710) 으로 바꾼다
+            idiomId: '1150710', on: true, deletedAt: null, type: 'star',
           })
           tx.oncomplete = () => res()
           tx.onerror = () => rej(new Error('심기 실패'))
@@ -92,9 +94,9 @@ test('내가 만난 것만 올라오고, 고친 뜻이 fix 로 남는다', async
   const rows = page.locator('.review-row')
   const n = await rows.count()
   console.log('올라온 줄 ' + n)
-  // 만난 것(明白) + 담은 것(愛好) 둘뿐이다 — 미검수 10만 개를 늘어놓지 않는다
+  // 만난 것(明白) + 담은 것(愛国) 둘뿐이다 — 미검수 10만 개를 늘어놓지 않는다
   expect(n).toBe(2)
-  await expect(page.locator('.review-head .r-main').first()).toHaveText(/明白|愛好/)
+  await expect(page.locator('.review-head .r-main').first()).toHaveText(/明白|愛国/)
 
   // 고치기 → 입력 → 저장
   const row = rows.filter({ hasText: '明白' }).first()

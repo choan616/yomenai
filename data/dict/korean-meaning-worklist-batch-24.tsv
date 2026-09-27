@@ -1,225 +1,506 @@
 ﻿verdict	cat	fix	tier	flags	manual	headword	reading	glossEn	llm_ko	stdict_def	manual_reason	category	classSource	band	id
-o			4			陰湿	いんしつ	malicious; spiteful; vicious; wicked	음습함, 비열함	‘음습하다’의 어근.		2	default	3	1170360
-o			4			恩赦	おんしゃ	amnesty; pardon	사면	나라에 경사가 있을 때에, 죄과가 가벼운 죄인을 풀어 주던 일.		2	default	1	1183180
-o			4			温度	おんど	temperature	온도	따뜻함과 차가움의 정도. 또는 그것을 나타내는 수치. 물리적으로는 열평형을 특징짓고 열이 이동하는 경향을 나타내는 양이며, 미시적으로는 계(系)를 구성하는 입자가 가지는 에너지의 분포를 정하고 그 평균값의 표준이 되는 양이다.		2	default	0	1183510
-o			4			下敷	したじき	desk pad; sheet of plastic (or cardboard, felt, etc.) placed under writing paper; underlay; being pinned under	하단에 까는 판, 밑에 깔린 것	예전에, 관청에서 백성에게 증명·허가·인가·면허 따위를 내주던 일.		2	default	1	1186260
-o			4			佳作	かさく	fine (piece of) work; excellent work; work that receives an honourable mention	우수한 작품	매우 뛰어난 작품.		2	default	1	1189760
-o			4			加速度	かそくど	acceleration	가속도	일의 진행에 따라 점점 더해지는 속도. 또는 그렇게 변하는 속도.		2	default	3	1190390
-o			4			夏場	なつば	summertime; summer season	여름철	책 따위의 내용에서, 아랫장 또는 다음 장.		2	default	1	1191510
-o			4			家業	かぎょう	family business; family trade; one's occupation; one's trade	가업, 집안의 사업	대대로 물려받는 집안의 생업.		2	default	1	1191840
-o			4			家主	やぬし	landlord; landlady; house owner; home owner	집주인	한집안의 주인.		2	default	1	1191990
+o			4			哀悼	あいとう	condolence; regret; tribute; sorrow	애도, 추모	사람의 죽음을 슬퍼함.		2	default	1	1150350
+o			4			愛犬	あいけん	pet dog; beloved dog; love of dogs; fondness for dogs	애완견	개를 귀여워함. 또는 그 개.		2	default	1	1150640
+o			4			愛護	あいご	protection; tender care	보호, 애지중지함	사랑하고 소중히 보호함.		2	default	1	1150670
+o			4			愛好	あいこう	love; adoration; being fond of; having a passion for	애호, 취미	사랑하고 좋아함.		2	default	0	1150680
+x		애인, 정부	4			愛人	あいじん	lover; mistress	애인	서로 애정을 나누며 마음속 깊이 사랑하는 사람. 또는 몹시 그리며 사랑하는 사람.		2	default	1	1150870
+o			4			握手	あくしゅ	handshake; reconciliation; joining hands; cooperation	악수, 화해	인사, 감사, 친애, 화해 따위의 뜻을 나타내기 위하여 두 사람이 각자 한 손을 마주 내어 잡는 일. 보통 오른손을 내밀어 잡는다.		2	default	1	1152730
+o			4			安価	あんか	low-priced; cheap; inexpensive; shallow (e.g. sympathy)	저렴함, 값싼	값이 쌈. 또는 싼값.		2	default	1	1153740
+o			4			安全	あんぜん	safety; security	안전, 보안	위험이 생기거나 사고가 날 염려가 없음. 또는 그런 상태.		2	default	0	1153930
+o			4			安全地帯	あんぜんちたい	safety zone; traffic island	안전지대, 교통섬	교통이 복잡한 곳이나 정류소 따위에서 사람이 안전하게 피해 있도록 안전표지나 공작물로 표시한 도로 위의 부분.		2	default	3	1154020
+o			4			安全保障	あんぜんほしょう	(guarantee of) security	안전 보장	외부의 위협이나 침략으로부터 국가와 국민의 안전을 지키는 일. 군사 동맹, 경제 협력, 중립 따위의 방법이 있다.		2	default	0	1154030
+o			4			安否	あんぴ	safety; welfare; well-being	안녕, 무사함	어떤 사람이 편안하게 잘 지내고 있는지 그렇지 아니한지에 대한 소식. 또는 인사로 그것을 전하거나 묻는 일.		2	default	1	1154230
+o			4			暗雲	あんうん	dark clouds; threatening signs; ominous indications	암운, 불길한 징조	곧 비가 쏟아질 것같이 검은 구름.		2	default	1	1154390
+o			5			案外	あんがい	unexpectedly; surprisingly; unexpected; unanticipated	의외로, 예상외로			3	default	1	1154820
+o			4			案件	あんけん	matter (to discuss); item (on the agenda); issue; topic	안건, 사건, 일거리	토의하거나 조사하여야 할 사실.		2	default	1	1154830
+o			4			偉業	いぎょう	great achievement; great feat; great work; great undertaking	위대한 업적	위대한 사업이나 업적.		2	default	2	1155840
+o			4			偉大	いだい	great; grand; magnificent; outstanding	위대함, 웅장함	‘위대하다’의 어근.		2	default	0	1155920
+o			4			委員会	いいんかい	committee; commission; board; panel	위원회	일반 행정과는 달리 어느 정도 독립된 분야에서 기획, 조사, 입안, 권고, 쟁송의 판단, 규칙의 제정 따위를 담당하는 합의제 기관. 특수한 행정 분야에서 일반 행정청의 권한에 소속시키는 것이 적당하지 않은 행정 사무를 맡아보기 위하여 등장한 제도이다.		2	default	0	1156110
+o			4			威嚇	いかく	threat; intimidation; menace	위협, 겁주기	상대가 겁을 먹도록 무서운 말이나 행동으로 협박함.		2	default	1	1156220
+o			4			威勢	いせい	power; might; authority; influence	기세, 기세, 활기	사람을 두렵게 하여 복종하게 하는 힘.		2	default	1	1156300
+o			4			意気投合	いきとうごう	hit it off with (a person); find a kindred spirit in (a person); sympathy; mutual understanding	뜻을 같이함, 통함	마음이나 뜻이 서로 맞음.		2	default	3	1156510
+o			4			衣服	いふく	clothes	옷	몸을 싸서 가리거나 보호하기 위하여 피륙 따위로 만들어 입는 물건.		2	default	1	1158810
+o			4			遺言	ゆいごん	will; testament; one's dying wish; one's last words	유언	죽음에 이르러 말을 남김. 또는 그 말.		2	default	1	1159130
+x		유구, 옛 구조물의 흔적	4			遺構	いこう	(archaeological) remains; remnants (of ancient structures); ancient foundation	유적, 옛 구조물의 흔적	옛날 토목건축의 구조와 양식을 알 수 있는 실마리가 되는 자취.		2	default	1	1159180
+o			4			遺児	いじ	orphan; child left by the deceased; abandoned child	고아	부모가 죽고 남아 있는 아이.		2	default	1	1159310
+o			4			陰謀	いんぼう	plot; intrigue; scheme; conspiracy	음모, 계략	나쁜 목적으로 몰래 흉악한 일을 꾸밈. 또는 그런 꾀.		2	default	1	1170500
+o			4			右往左往	うおうさおう	moving about in confusion; going every which way; going this way and that	이리저리 헤맴, 우왕좌왕함	이리저리 왔다 갔다 하며 일이나 나아가는 방향을 종잡지 못함.		2	default	3	1171050
+o			4			右腕	みぎうで	right arm; right-hand man; right hand; right-hand person	오른팔	오른쪽에 달린 팔.		2	default	1	1171290
+x		배드민턴 라켓처럼 생긴 일본의 놀이 기구	5			羽子板	はごいた	battledore (early form of badminton racket)	배드민턴 라켓 (옛 형태)			3	default	3	1171760
+o			4			運動会	うんどうかい	athletic meet (esp. at a school); sports day; field day; sports festival	운동회	여러 사람이 모여 여러 가지 운동 경기를 하는 모임.		2	default	1	1172940
+o			4			英文学	えいぶんがく	English(-language) literature; British literature	영문학	영국의 문학.		2	default	2	1174630
+o			4			越境	えっきょう	crossing a border (illegally); border violation; border transgression	국경을 넘음, 국경 위반	국경이나 경계선을 넘는 일.		2	default	1	1175310
+o			4			円陣	えんじん	(forming a) circle; huddle; circular (battle) formation	원형진, 원을 그리며 모임	둥글게 진을 침. 또는 그런 진.		2	default	3	1175910
+o			4			園遊会	えんゆうかい	garden party	원예회, 정원 파티	여러 사람이 산이나 들 또는 정원에 나가서 노는 모임.		2	default	3	1176290
+o			4			宴会	えんかい	party; banquet; reception; feast	연회, 잔치	축하, 위로, 환영, 석별 따위를 위하여 여러 사람이 모여 베푸는 잔치.		2	default	1	1176320
+o			4			延滞	えんたい	arrears; (being) overdue; delay (e.g. in payment); procrastination	지연, 연체	정한 기한에 약속을 지키지 못하고 지체함.		2	default	1	1176490
+o			4			沿道	えんどう	roadside; wayside; route	도로변, 길가	큰 도로 좌우에 연하여 있는 곳.		2	default	1	1176760
+o			4			遠大	えんだい	grand; far-reaching; ambitious	크다, 원대함	‘원대하다’의 어근.		2	default	3	1178290
+o			4			鉛筆	えんぴつ	(wooden) pencil	연필	필기도구의 하나. 흑연과 점토의 혼합물을 구워 만든 가느다란 심을 속에 넣고, 겉은 나무로 둘러싸서 만든다. 1565년에 영국에서 처음으로 만들었다.		2	default	1	1178590
+o			4			塩素	えんそ	chlorine (Cl)	염소	할로젠 원소의 하나. 자극성 냄새가 나는 황록색 기체로, 산화제·표백제·소독제로 쓰이며, 물감·의약·폭발물·표백분 따위를 만드는 데 쓰인다. 녹는점은 영하 100.98℃이고, 끓는점은 영하 34.07℃이다. 원자 기호는 Cl, 원자 번호는 17, 원자량은 35.453.		2	default	1	1178750
+o			4			汚濁	おだく	pollution; contamination; corruption; graft	오염, 탁함	더럽고 흐림.		2	default	1	1179090
+o			4			往還	おうかん	traffic; coming and going; highway	왕래, 통행	갔다가 돌아옴.		2	default	3	1179660
+o			4			往時	おうじ	the past; old times; bygone times; days of yore	옛날, 지나간 시절	이미 많은 세월이 지난 오래전 때.		2	default	3	1179690
+o			4			往診	おうしん	doctor's visit; house call	방문 진료	의사가 병원 밖의 환자가 있는 곳으로 가서 진료함.		2	default	3	1179710
+o			4			往生	おうじょう	passing on to the next life; death; giving up a struggle; submission	왕생, 죽음, 항복	목숨이 다하여 다른 세계에 가서 태어남.		2	default	3	1179720
+o			4			往年	おうねん	years gone by; earlier years; former years; the past	지난해, 이전 해	지나간 해.		2	default	1	1179750
+o			4			往復	おうふく	making a round trip; going and returning; coming and going; round-trip ticket	왕복, 오가며 함	갔다가 돌아옴.		2	default	0	1179760
+o			4			往来	おうらい	coming and going; traffic; road; street	왕래, 통행, 교류	가고 오고 함.		2	default	1	1179790
+o			4			往路	おうろ	outward journey	나가는 길	가는 길.		2	default	3	1179800
+o			4			王道	おうどう	righteous government; just rule; kingship; rule of right	정석, 정통 방식	임금으로서 마땅히 지켜야 할 도리.		2	default	3	1181660
+o			4			音速	おんそく	speed of sound	음속	소리가 매질(媒質)을 통하여 전파되는 속도. 공기 중의 음속은 0℃, 1기압일 때 초당 331.5미터인데, 온도가 1℃ 오를 때마다 초당 약 0.6미터씩 증가하며 물속에서는 초당 약 1,500미터씩 증가한다.		2	default	3	1183950
+o			4			音頭	おんど	lead (in a cheer, toast, song, etc.); (someone's) lead; folk song and dance performed by a group; leader of a group of wind instruments (in gagaku)	선창, 무리(악기)의 주도	글자의 음과 구두법.		2	default	1	1183980
+o			4			我慢	がまん	endurance; patience; perseverance; bearing (with something)	참음, 인내, 자제력	사만(四慢)의 하나. 스스로를 높여서 잘난 체하고, 남을 업신여기는 마음이다.		2	default	1	1196970
+o			4			垣根	かきね	hedge; fence; border; limit	울타리, 경계	본디의 근본.		2	default	1	1204800
+o			5			額縁	がくぶち	(picture) frame; architrave (of a door, window, etc.)	액자, 틀			3	default	3	1207530
+o			1		Y(2)	額面	がくめん	face value; par	액면가	그림, 글씨, 사진 따위를 끼우는 틀.	일본어의 '額面'은 증권 등의 명목 가치를 뜻하는 반면, 한국 표준국어대사전의 '액면 (2)'은 그림이나 글씨를 끼우는 틀이라는 전혀 다른 의미를 지니므로 동형이의에 해당합니다.	2	manual	0	1207540
+o			4			完全	かんぜん	perfect; complete	완전함, 완벽함	필요한 것이 모두 갖추어져 모자람이나 흠이 없음.		2	default	0	1211510
+o			5			岩間	いわま	among rocks	바위 사이			3	default	1	1217310
+o			4			頑固	がんこ	stubborn; obstinate; pigheaded	완고함, 고집	‘완고하다’의 어근.		2	default	1	1217680
+o			4			企業	きぎょう	enterprise; business; company; corporation	기업, 회사	영리(營利)를 얻기 위하여 재화나 용역을 생산하고 판매하는 조직체. 출자(出資) 형태에 따라 사기업(私企業), 공기업(公企業), 공사 합동 기업(公私合同企業)으로 나눈다.		2	default	0	1218190
+o			4			企業家	きぎょうか	industrialist; entrepreneur	기업가	기업에 자본을 대고 기업의 경영을 담당하는 사람.		2	default	1	1218220
+o			4			寄港	きこう	calling at a port; making an intermediate stop at an airport	기항, (공항에) 잠시 들름	배가 항해 중에 목적지가 아닌 항구에 잠시 들름.		2	default	1	1219700
+o			4			岐路	きろ	forked road; crossroads	갈림길, 기로	여러 갈래로 갈린 길.		2	default	1	1219840
+o			4			棄却	ききゃく	rejection; dismissal; turning down; abandoning	기각, 거절	물품을 내버림.		2	default	1	1220660
+o			5			機密保護	きみつほご	security (e.g. data, password, etc.)	기밀 보호			3	default	3	1221200
+o			4			祈念	きねん	prayer	기원, 기도	비는 마음.		2	default	1	1222800
+o			4			紀行	きこう	traveller's journal; traveler's journal; travelogue	여행기	여행하는 동안에 보고, 듣고, 느끼고, 겪은 것을 적은 것.		2	default	1	1222940
+o			4			起業	きぎょう	starting a business; promotion of enterprise	창업, 기업 활동	새로 사업을 일으킴.		2	default	3	1223750
+o			4			軌道	きどう	orbit; trajectory; (railroad) track; (right) track	궤도, 경로, (철로) 선로	수레가 지나간 바큇자국이 난 길.		2	default	0	1223980
+o			4			騎士道	きしどう	chivalry	기사도	중세 유럽에서, 기사로서 지켜야 했던 도덕. 기독교의 윤리를 바탕으로 용기, 경신(敬神), 인협(仁俠), 예의, 염치, 명예 따위의 덕목을 이상으로 삼았다.		2	default	3	1224120
+o			4			騎乗	きじょう	riding (on horseback); mounting (a horse)	기마, 탑승	말을 탐.		2	default	3	1224150
+o			4			逆行	ぎゃっこう	backward movement; reverse movement; going backwards; retrogression	역행, 거슬러 올라감	보통의 방향과 반대 방향으로 거슬러 나아감.		2	default	3	1227030
+o			4			逆風	ぎゃくふう	headwind; adverse wind	역풍	배가 가는 반대쪽으로 부는 바람.		2	default	1	1227190
+o			4			急速	きゅうそく	rapid (e.g. progress)	급속함	급하고 빠름.		2	default	0	1228890
+o			4			糾合	きゅうごう	rally; muster	모이다, 집결하다	어떤 일을 꾸미려고 세력이나 사람을 모음.		2	default	3	1230170
+o			4			漁業	ぎょぎょう	fishing industry; fishery	어업	영리를 목적으로 물고기, 조개, 김, 미역 따위를 잡거나 기르는 산업. 또는 그런 직업.		2	default	0	1232990
+o			4			漁師	りょうし	fisherman	어부	‘어부’를 높여 이르는 말.		2	default	1	1233010
+o			4			業界	ぎょうかい	business world; business circles; (the) industry	업계, 산업	같은 산업이나 상업에 종사하는 사람들의 활동 분야.		2	default	0	1239380
+o			4			業界紙	ぎょうかいし	trade journal	업계지	어떤 특정한 업계를 대상으로 그 업계에 대한 정보만을 취급하여 발행하는 신문. 의사 시보, 경제 시보 따위를 이른다.		2	default	3	1239400
+o			4			業者	ぎょうしゃ	trader; dealer; businessperson; company	업자, 상인	그 사업을 직접 경영하는 사람.		2	default	0	1239440
+o			4			業種	ぎょうしゅ	type of industry	업종	직업이나 영업의 종류.		2	default	0	1239450
+o			4			業績	ぎょうせき	achievement; performance; results; work	실적, 성과	어떤 사업이나 연구 따위에서 세운 공적.		2	default	0	1239460
+o			4			極度	きょくど	maximum; extreme; utmost	극도, 최대	더할 수 없는 정도.		2	default	2	1240440
+o			4			極秘	ごくひ	absolute secrecy	극비	절대 알려져서는 안 되는 중요한 일.		2	default	1	1240470
+o			4			勤勉	きんべん	diligent; hard-working; industrious	근면함, 부지런함	부지런히 일하며 힘씀.		2	default	1	1241060
+o			4			均一	きんいつ	uniformity; equality	균일함, 평등	한결같이 고름.		2	default	1	1241250
+o			4			禁錮	きんこ	imprisonment (without forced labour); incarceration; confinement	금고, 감금	자유형의 하나. 교도소에 가두어 두기만 하고 노역은 시키지 않는다.		2	default	1	1241540
+o			4			筋力	きんりょく	physical strength; muscle strength	근력	근육의 힘. 또는 그 힘의 지속성.		2	default	1	1241840
+o			4			近親	きんしん	near relative	근친	촌수가 가까운 일가(一家).		2	default	1	1242360
+o			4			金額	きんがく	amount of money; sum	금액	돈의 액수.		2	default	0	1242700
+o			4			銀河	ぎんが	Milky Way; galaxy	은하	천구(天球) 위에 구름 띠 모양으로 길게 분포되어 있는 수많은 천체의 무리.		2	default	1	1243440
+o			4			桑田	そうでん	mulberry plantation	뽕나무 밭	뽕나무를 심어 기르는 밭.		2	default	1	1247120
+o			4			迎合	げいごう	ingratiation; pandering; catering (to); going along with (someone or something)	아첨, 비위 맞추기	사사로운 이익을 위하여 아첨하며 좇음.		2	default	3	1253250
+o			4			劇薬	げきやく	powerful medicine; strong poison	강력한 약, 독극물	독약보다는 약하나 적은 분량으로 사람이나 동물에게 위험을 줄 수 있는 약품. 산토닌, 카페인 따위가 있다.		2	default	3	1253540
+o			4			月額	げつがく	monthly sum; monthly amount	월액	달을 단위로 정한 금액.		2	default	0	1255520
+o			4			元祖	がんそ	originator; pioneer; inventor; founder	원조, 시조	첫 대의 조상.		2	default	1	1260940
+o			4			原形	げんけい	original form; base form	원형, 기본 형태	본디의 꼴.		2	default	1	1261310
+o			4			源泉	げんせん	source (of a spring, etc.); source (of payment, energy, knowledge, etc.); origin; wellspring	샘물, 근원	물이 흘러나오는 근원.		2	default	1	1263380
+o			4			言及	げんきゅう	reference; allusion	언급, 언급	어떤 문제에 대하여 말함.		2	default	1	1264410
+o			4			言語道断	ごんごどうだん	outrageous; preposterous; scandalous; inexcusable	말도 안 됨, 터무니없음	말할 길이 끊어졌다는 뜻으로, 어이가 없어서 말하려 해도 말할 수 없음을 이르는 말.		2	default	3	1264450
+o			4			五感	ごかん	the five senses	오감	시각, 청각, 후각, 미각, 촉각의 다섯 가지 감각.		2	default	3	1268130
+o			4			御所	ごしょ	imperial palace (esp. Kyoto Imperial Palace); imperial residence; residence of a shogun, minister, etc.; emperor	궁궐, 황실 거처	임금이 계시는 곳을 이르던 말.		2	default	1	1270410
+o			4			今晩	こんばん	tonight; this evening	오늘 저녁	오늘 저녁.		2	default	3	1289470
+o			4			根絶	こんぜつ	eradication; extermination; rooting out; stamping out	근절	다시 살아날 수 없도록 아주 뿌리째 없애 버림.		2	default	1	1290240
+o			4			削減	さくげん	cut; reduction; curtailment	삭감, 줄임	깎아서 줄임.		2	default	0	1298110
+o			4			削除	さくじょ	deletion; elimination; erasure; striking out	삭제, 제거	깎아 없애거나 지워 버림.		2	default	1	1298120
+o			4			殺生	せっしょう	killing; destruction of life; cruel; heartless	살생, 생명 파괴	사람이나 짐승 따위의 생물을 죽임.		2	default	3	1299160
+o			4			司令	しれい	command; commander; commandant	지휘, 명령	군대나 함대 따위를 지휘하고 감독하는 일.		2	default	1	1306710
+o			4			始発	しはつ	first departure (of the day); first train; first bus; departing from the starting station (of a bus, train, etc.)	첫차	차 따위가 맨 처음 떠남.		2	default	1	1307610
+o			4			師範学校	しはんがっこう	normal school (Japan; 1872-1947); teachers' training college	사범학교	예전에, 초등학교 교원 양성을 목적으로 두었던 고등학교 정도의 학교. 1963년에 이를 폐지하고 새로 2년제 교육 대학을 창설하였다.		2	default	3	1309000
+o			4			私有	しゆう	private ownership	사유	개인이 사사로이 소유함. 또는 그런 소유물.		2	default	1	1311390
+o			4			失脚	しっきゃく	losing one's position; losing one's standing; downfall; fall (from power)	실각, 몰락	발을 헛디딤.		2	default	1	1319850
+o			4			失業保険	しつぎょうほけん	unemployment insurance	실업 보험	실업의 결과로 생기는 근로자의 경제상의 손실을 보상하는 사회 보험의 하나. 정부 또는 공공 단체, 고용주, 근로자가 일정한 비례로 기금을 적립하여 놓고 근로자가 실업하였을 경우에 일정한 기한 동안 일정한 금액을 주어 생활을 구제하는 것을 목적으로 한다.		2	default	3	1319890
+o			4			射撃	しゃげき	firing; shooting; fire; gunshot	사격	총, 대포, 활 따위를 쏨.		2	default	1	1322210
+o			4			社宅	しゃたく	company housing; housing provided by one's company	사택	회사가 사원의 살림집으로 쓰기 위하여 마련한 주택.		2	default	1	1322900
+o			4			邪道	じゃどう	improper way (of doing); wrong way; unorthodox method; evil course	사악한 길, 이단적인 방법	올바르지 못한 길이나 사악한 도리.		2	default	3	1323490
+o			5			若葉	わかば	new leaves; young leaves; fresh verdure	새싹, 어린 잎			3	default	1	1324460
+o			4			弱気	よわき	timid; weak-kneed; fainthearted; bearish	겁먹음, 비관적	허약한 기질.		2	default	1	1324710
+o			5			手加減	てかげん	measuring by feel; adjusting by feel; doing by feel; knack	적당히 함, 봐줌, 재량			3	default	3	1327350
+o			4			手首	てくび	wrist	손목	손과 팔이 잇닿은 부분.		2	default	1	1327770
+o			4			手袋	てぶくろ	glove; mitten; mitt	장갑	손에 들고 다니는 작은 주머니.		2	default	1	1328090
+o			4			受精卵	じゅせいらん	fertilized egg; fertilised egg	수정란	수정이 이루어진 난자. 보통 개체 발육을 시작한다.		2	default	1	1329880
+o			4			受諾	じゅだく	acceptance	수락	요구를 받아들임.		2	default	1	1329960
+o			4			樹脂	じゅし	resin; rosin	수지	소나무나 전나무 따위의 나무에서 분비하는 점도가 높은 액체. 또는 그것이 공기에 닿아 산화하여 굳어진 것.		2	default	1	1330370
+o			4			樹皮	じゅひ	bark (of a tree, etc.)	나무껍질	나무의 껍질. 줄기의 코르크 형성층 바깥쪽에 있는 조직이다.		2	default	3	1330380
+o			4			樹氷	じゅひょう	frost on trees; hoarfrost (on trees); snow monsters (frost-covered trees)	상고대	나무나 풀에 내려 눈처럼 된 서리.		2	default	3	1330390
+o			4			樹木	じゅもく	tree; trees and shrubs	나무, 수목	살아 있는 나무.		2	default	0	1330400
+o			4			樹立	じゅりつ	establishment; founding; setting (a record)	설립, 세움	국가나 정부, 제도, 계획 따위를 이룩하여 세움.		2	default	0	1330410
+o			4			樹齢	じゅれい	age of a tree	나무의 나이	나무의 나이.		2	default	1	1330420
+o			4			修身	しゅうしん	morals; ethics; moral training	수양, 도덕 교육	악을 물리치고 선을 북돋아서 마음과 행실을 바르게 닦아 수양함.		2	default	3	1332100
+o			4			修了	しゅうりょう	completion (of a course)	수료	일정한 학과를 다 배워 끝냄.		2	default	1	1332450
+o			4			十字路	じゅうじろ	crossroads; intersection	십자로, 교차로	한 지점에서 길이 네 방향으로 갈라져 나간 곳.		2	default	3	1334750
+o			4			十種競技	じっしゅきょうぎ	decathlon	십종 경기	한 선수가 이틀 동안 열 가지 종목을 겨루어 얻은 점수의 합계로 승부를 가리는 육상 경기. 남자 선수들만이 하며 첫날은 100미터 달리기, 멀리뛰기, 포환던지기, 높이뛰기, 400미터 달리기를 하고 둘째 날은 110미터 허들, 원반던지기, 장대높이뛰기, 창던지기, 1,500미터 달리기를 한다.		2	default	3	1334770
+o			4			所在地	しょざいち	location; address	소재지, 위치	주요 건물이나 기관 따위가 자리 잡고 있는 곳.		2	default	1	1343220
+o			4			女神	めがみ	goddess	여신	여성인 신(神).		2	default	1	1345210
+o			4			傷害保険	しょうがいほけん	accident insurance	상해 보험	외부적인 원인으로 발생한 우발적인 사고에 의하여 피보험자가 입게 된 신체의 상해에 대하여 보험금을 지급하는 인보험(人保險). 사망을 보험 사고로 하지 않는 점에서 생명 보험과 구별된다.		2	default	3	1345850
+o			4			勝訴	しょうそ	winning a (legal) case; victory (in a legal case)	승소	소송에서 이기는 일. 소송 당사자의 한 편이 자기에게 유리한 판결을 받는 일이다.		2	default	1	1346210
+o			4			商事会社	しょうじがいしゃ	commercial company	상사 회사	상행위 및 영리를 목적으로 설립된 사단 법인. 합명 회사, 합자 회사, 주식회사, 유한 회사 따위가 있다.		2	default	3	1347070
+o			4			小雨	こさめ	light rain; drizzle	가랑비	잠시 동안 조금 내리는 비.		2	default	1	1347810
+o			4			小学校	しょうがっこう	primary school; elementary school; grade school	초등학교	‘초등학교’의 전 용어.		2	default	0	1347870
+o			4			小鳥	ことり	small bird; little bird	작은 새	참새, 제비, 종달새 따위의 작은 새를 통틀어 이르는 말.		2	default	1	1348530
+o			4			小麦	こむぎ	wheat	밀	볏과의 한해살이풀 또는 두해살이풀. 높이는 0.9~1.5미터로 마디가 있고 속은 비어 있다. 꽃이삭은 6~12cm이고 줄기 끝에 달리는데 방추형이다. 중요한 농산물의 하나로 기원전 3~4천 년부터 재배하여 왔으며, 현재 세계의 농작물 가운데 가장 넓은 재배 면적을 차지하고 있다. 간장, 된장, 빵, 과자 따위의 원료로 쓴다. 아프가니스탄에서 카스피해 지역이 원산지이다.		2	default	1	1348630
+o			4			小麦粉	こむぎこ	wheat flour	밀가루	밀을 빻아 만든 가루.		2	default	1	1348650
+o			4			少額	しょうがく	small sum (of money); small amount; small denomination (banknote, coin, etc.)	소액	적은 액수.		2	default	2	1348960
+o			4			承諾	しょうだく	consent; approval; acceptance; agreement	승낙, 동의	청하는 바를 들어줌.		2	default	1	1349470
+o			4			上層	じょうそう	upper stratum (classes, stories, storeys); upper layer; layer above	상층, 윗부분	이 층 또는 여러 층 가운데 위쪽의 층.		2	default	1	1353710
+o			4			植樹	しょくじゅ	tree-planting	나무 심기	나무를 심음. 또는 심은 나무.		2	default	1	1357280
+o			4			色調	しきちょう	color tone; colour tone	색조	빛깔의 조화.		2	default	2	1357860
+o			4			信号機	しんごうき	traffic light; traffic signal; signal (mechanism); semaphore (apparatus)	신호기	도로 교통에서, 문자나 기호 또는 등화로써 진행, 정지, 방향 전환, 주의 따위의 신호를 표시하는 장치를 통틀어 이르는 말. 일반적으로 사람이나 전기의 힘에 의하여 조작된다.		2	default	2	1359260
+o			5			信販会社	しんぱんがいしゃ	credit company	신용판매회사			3	default	2	1359570
+o			4			心不全	しんふぜん	heart failure	심부전	심장의 수축 운동이 비정상적이어서 신체의 각 부위로 피를 충분히 보내지 못하는 병적인 상태. 호흡 곤란, 부기 따위의 증상이 나타난다.		2	default	0	1360950
+o			4			新参	しんざん	newcomer; tyro	신참, 초심자	단체나 부류에 새로 참가하거나 들어옴. 또는 그런 사람.		2	default	3	1361870
+o			4			腎不全	じんふぜん	kidney failure; renal failure	신부전	콩팥의 기능이 제대로 되지 않아 노폐물이 혈액에 축적되는 상태.		2	default	3	1370120
+o			4			水路	すいろ	waterway; canal; channel; watercourse	수로, 수로 시설	물이 흐르거나 물을 보내는 통로.		2	default	1	1372290
+o			4			世界大戦	せかいたいせん	world war	세계 대전	세계 여러 나라가 관여하는 큰 규모의 전쟁.		2	default	2	1373930
+o			4			成熟	せいじゅく	maturity; ripeness	성숙, 익음	생물의 발육이 완전히 이루어짐.		2	default	1	1375730
+o			4			成層圏	せいそうけん	stratosphere	성층권	대류권과 중간권 사이에 있는 대기층. 질소가 대부분이며, 온도나 기압의 변화가 없고 습도가 낮으며, 바람과 구름도 거의 없다. 높이는 11~50km이며, 기온은 영하 50℃ 정도이다.		2	default	2	1375780
+o			4			成年	せいねん	adult age; majority	성년, 성인	민법에서, 법정 대리인의 동의 없이 법률 행위를 행사할 수 있는 나이. 만 19세 이상이다.		2	default	1	1375830
+o			4			生涯	しょうがい	life; lifetime; career; for life	평생, 일생	살아 있는 한평생의 기간.		2	default	0	1378840
+o			4			生涯教育	しょうがいきょういく	lifelong education; continuing education; further education	평생 교육	인간의 교육은 가정, 학교, 사회에서 전 생애에 걸쳐 이루어져야 한다는 교육관. 인간은 사회 문물이 크게 변화해 감에 따라 그에 적응하기 위하여 끊임없이 교육을 받아야 한다는 취지에서, 1967년에 유네스코 성인 교육 회의에서 제창되었다.		2	default	3	1378850
+o			4			生成	せいせい	creation; generation; formation; derivation	생성, 생성함	사물이 생겨남. 또는 사물이 생겨 이루어지게 함.		2	default	1	1379180
+o			4			生地	きじ	cloth; fabric; material; texture	천, 재질, 본래의 성질	한 번도 파헤친 적이 없는 원래 그대로의 굳은 땅.		2	default	1	1379330
+o			4			生命保険	せいめいほけん	life insurance	생명보험	피보험자가 사망하였을 때나 일정 연령 이상 생존하였을 때 보험금을 지불하는 보험.		2	default	0	1379550
+o			4			染色	せんしょく	dyeing; staining (a sample); dyed colour (color)	염색	염료를 사용하여 실이나 천 따위에 물을 들임. 또는 그런 일.		2	default	1	1391210
+o			4			線路	せんろ	railway track; railway line; railroad; railway	선로	기차나 전차의 바퀴가 굴러가도록 레일을 깔아 놓은 길.		2	default	0	1391880
+o			4			喪失	そうしつ	loss; forfeit	상실	어떤 사람과 관계가 끊어지거나 헤어지게 됨.		2	default	1	1399290
+o			4			相乗	そうじょう	multiplication; synergism	상승, 시너지	두 개 이상의 수를 서로 곱하는 일. 또는 그 곱.		2	default	2	1401050
+o			4			速記	そっき	shorthand; stenography	속기	꽤 빨리 적음.		2	default	3	1405010
+o			4			損害保険	そんがいほけん	non-life insurance; general insurance; property and casualty insurance	손해 보험	보험자가 보험 사고로 인하여 생기는 피보험자의 재산상의 손해를 보상할 것을 목적으로 하는 보험. 화재 보험, 운송 보험, 해상 보험 따위가 있다.		2	default	1	1406740
+o			4			多額	たがく	large (amount of money); huge; hefty; expensive	거액, 막대한 양	많은 액수.		2	default	0	1407520
+o			4			多種	たしゅ	many kinds; many types	여러 종류	종류가 많음. 또는 그 종류.		2	default	3	1407750
+o			4			多種多様	たしゅたよう	a great variety of; diversity	다양함, 여러 종류	가짓수나 양식, 모양이 여러 가지로 많음.		2	default	3	1407760
+o			4			耐久	たいきゅう	endurance; persistence	내구성, 지속력	오래 견딤.		2	default	1	1410360
+o			4			待機	たいき	standing by; awaiting an opportunity; being on alert; quarantine	대기, 대기 상태	때나 기회를 기다림.		2	default	1	1410600
+o			4			大安	たいあん	day that is lucky the whole day (in the traditional calendar); auspicious day	대길일	신라 진평왕 때의 승려(571~644). 원효의 스승이었다고 한다.		2	default	3	1413010
+o			4			大尉	たいい	captain (Army, US Marine Corps, USAF); lieutenant (Navy); flight lieutenant (RAF, RAAF, RNZAF, etc.)	대위	위관 계급의 하나. 소령의 아래, 중위의 위로 위관 계급에서 가장 높은 계급이다.		2	default	1	1413030
+o			4			大家	おおや	landlord; landlady	집주인	전문 분야에서 뛰어나 권위를 인정받는 사람.		2	default	3	1413140
+o			4			大家	たいか	master; expert; authority; leading figure	주인, 대가, 큰 집	전문 분야에서 뛰어나 권위를 인정받는 사람.		2	default	1	1413150
+o			4			大火	たいか	large fire	큰불	큰 재해를 일으킬 만큼 크게 난 불.		2	default	1	1413170
+o			4			大会	たいかい	mass meeting; convention; rally; conference	대회, 모임	큰 모임이나 회의.		2	default	0	1413180
+o			4			大海	たいかい	ocean; large sea; fabric pattern	큰 바다, 바다 무늬	넓고 큰 바다.		2	default	3	1413200
+x		대기, 공기	3		Y(1)	大気	たいき	atmosphere; air; magnanimous; generous	대기	‘공기’를 달리 이르는 말.	일본어의 '大気'는 물리적 대기권을 뜻하는 반면 한국 표준국어대사전의 '대기 (4)'는 주로 '공포', '기다림', '잠재력' 등 추상적 의미를 지닌 다른 용법들을 포함하므로 핵심 의미가 갈린다.	1	manual	0	1413330
+o			4			大義名分	たいぎめいぶん	just cause; good reason; pretext; justification	대의명분, 정당한 이유	사람으로서 마땅히 지키고 행하여야 할 도리나 본분.		2	default	1	1413380
+o			4			大局	たいきょく	general situation; whole situation; larger picture; main point	전반적인 상황, 큰 그림	일이 벌어져 있는 대체적인 형편이나 사정. 또는 큰 판국.		2	default	3	1413480
+o			4			大金	たいきん	large amount of money; great cost	큰돈, 거액	많은 돈.		2	default	1	1413500
+o			4			大群	たいぐん	large crowd; large herd; large flock; large school	큰 무리	큰 무리.		2	default	3	1413520
+o			4			大公	たいこう	archduke	대공	유럽에서, 왕가의 황태자나 여왕의 부군(夫君)을 이르는 말.		2	default	3	1413650
+o			4			大国	たいこく	large country; major nation; great power; province of the highest rank (ritsuryō system)	대국, 강대국	국력이 강하거나 국토가 넓은 나라.		2	default	0	1413710
+o			4			大佐	たいさ	colonel; (navy) captain	대령	제이 차 세계 대전 때까지 일본에서 ‘대령’(大領)을 이르던 말.		2	default	1	1413740
+o			4			大差	たいさ	great difference; big difference; wide margin	큰 차이	큰 차이.		2	default	0	1413750
+o			4			大祭	たいさい	grand festival	대축제	큰 제사.		2	default	3	1413770
+o			4			大樹	たいじゅ	large tree; big tree; huge tree	큰 나무	큰 나무.		2	default	3	1414020
+o			4			大抵	たいてい	mostly; ordinarily; usually; generally	대체로, 보통	대체로 보아서.		2	default	2	1414580
+o			4			男前	おとこまえ	handsome man; man's looks; good looks; manliness	남자다운 외모, 남자다움	조선 시대에, 태조·세조·숙종·영조·순조의 영정(影幀)을 모신 전각(殿閣). 뒤에 ‘영희전’으로 이름이 바뀌었으며 지금의 서울 남부에 있었다.		2	default	2	1420180
+o			4			挑発	ちょうはつ	provocation; stirring up; arousal; excitement	도발, 자극	남을 집적거려 일이 일어나게 함.		2	default	1	1428260
+o			4			東邦	とうほう	Oriental country; the Orient	동방	동쪽에 있는 나라.		2	default	1	1448150
+o			4			同好	どうこう	similar tastes	취미가 같음	어떤 일이나 물건을 함께 좋아함.		2	default	2	1452280
+o			4			同種	どうしゅ	same kind; same sort; same species; same race	같은 종류, 동종	같은 종류.		2	default	1	1452590
+o			4			同乗	どうじょう	riding together; riding with	동승	차, 배, 비행기 따위를 같이 탐.		2	default	1	1452710
+o			5			突如	とつじょ	suddenly; all of a sudden; unexpectedly	갑자기, 돌연히			3	default	3	1457090
+o			4			難解	なんかい	difficult to understand; unintelligible; abstruse	난해함, 이해하기 어려움	‘난해하다’의 어근.		2	default	1	1460890
+o			4			排除	はいじょ	exclusion; removal; elimination; clearing away	제거, 배제	받아들이지 아니하고 물리쳐 제외함.		2	default	0	1472370
+o			4			配電	はいでん	distribution of electricity	배전	발전소에서 보내온 전력을 수용자에게 분배하거나 공급하는 일.		2	default	2	1473160
+x		배액,두배의 금액	4			倍額	ばいがく	double amount	배액	두 배의 값. 또는 그런 금액.		2	default	3	1473270
+o			4			白子	しらこ	soft roe; milt; albino	흰 알, 흰색	‘백지’의 원말.		2	default	3	1475180
+o			4			鼻歌	はなうた	humming; crooning	콧노래	다른 물건과 비교한 값.		2	default	3	1486850
+o			4			百科全書	ひゃっかぜんしょ	encyclopedia	백과사전	학문, 예술, 문화, 사회, 경제 따위의 과학과 자연 및 인간의 활동에 관련된 모든 지식을 압축하여 부문별 또는 자모순으로 배열하고 풀이한 책.		2	default	3	1488040
+o			4			病苦	びょうく	pain of sickness	병고	병으로 인한 괴로움.		2	default	3	1490260
+o			4			苗木	なえぎ	seedling; sapling; young tree	묘목	옮겨 심는 어린나무.		2	default	1	1490500
+o			4			不能	ふのう	impossible; incapable (of doing); unable (to do); incompetence	불가능, 능력이 없음	할 수 없음.		2	default	1	1494540
+x		나누어 탐	4			分乗	ぶんじょう	riding separately	분승	일행이 둘 이상의 탈것에 나누어 탐.		2	default	2	1503750
+o			4			文房具	ぶんぼうぐ	stationery	문방구	학용품과 사무용품 따위를 통틀어 이르는 말.		2	default	2	1505620
+o			5			米屋	こめや	rice shop; rice dealer	쌀가게			3	default	3	1508800
+o			4			別種	べっしゅ	another kind; different kind; distinct species	다른 종류, 다른 종	다른 종류.		2	default	3	1509870
+o			4			保安	ほあん	peace preservation; security; safety	안전, 보안	안전을 유지함.		2	default	0	1513260
+o			4			保育	ほいく	nurturing; rearing; childcare; day care	보육, 양육	어린아이들을 돌보아 기름.		2	default	0	1513290
+o			4			保温	ほおん	retaining warmth; keeping heat in; heat insulation	보온, 열을 유지함	주위의 온도에 관계없이 일정한 온도를 유지함.		2	default	2	1513310
+o			4			保管	ほかん	charge; custody; safekeeping; deposit	보관, 맡김	물건을 맡아서 간직하고 관리함.		2	default	0	1513320
+o			4			補修	ほしゅう	repair; mending	보수, 수리	건물이나 시설 따위의 낡거나 부서진 것을 손보아 고침.		2	default	1	1514560
+o			4			奉行	ぶぎょう	magistrate; shogunate administrator	부교, 막부의 관리	뜻을 받들어 행함.		2	default	1	1515940
+o			4			望月	もちづき	full moon; moon on the 15th day of the month (by the lunar calendar); full moon of the eighth lunar month	보름달	달을 바라봄.		2	default	1	1519680
+o			4			防除	ぼうじょ	prevention (of plant disease and insect damage); (pest) control; extermination (of harmful insects); protection (against natural disasters)	방제, 예방	재앙을 미리 막아 없앰.		2	default	3	1520440
+o			4			本線	ほんせん	main line; trunk line	본선	도로, 철도, 전신 따위에서 원줄기가 되는 주된 선(線)을 지선(支線)에 상대하여 이르는 말.		2	default	1	1522830
+o			4			未納	みのう	payment default; overdue on a payment	미납	내야 할 것을 아직 내지 않았거나 내지 못함.		2	default	3	1527910
+o			4			無言	むごん	silence (not speaking); muteness	무언, 침묵	말이 없음.		2	default	1	1529860
+o			5			無造作	むぞうさ	easy; simple; ready; casual	꾸밈없음, 자연스러움			3	default	2	1530500
+o			4			名木	めいぼく	old tree of historical interest; excellent wood; precious woods; choice wood	명목, 좋은 나무	어떤 유래가 있어 이름난 나무.		2	default	3	1531840
+o			4			免除	めんじょ	exemption; exoneration; discharge	면제, 사면	책임이나 의무 따위를 면하여 줌.		2	default	1	1533200
+x		면모, 자취, 모습	4			面影	おもかげ	face; looks; countenance; vestige	자취, 모습	얼굴 모습.		2	default	1	1533410
+o			4			毛皮	けがわ	fur; skin; pelt; kanji "fur" radical	가죽, 모피	털이 그대로 붙어 있는 짐승의 가죽.		2	default	1	1533930
+o			4			網戸	あみど	window screen; insect screen; mosquito screen; screen	방충망	예전에, 매사냥을 할 때 매를 잘 알아볼 수 있도록 매의 꼬리에 달던 흰 털. 흔히 두루미의 깃으로 만든다.		2	default	3	1534390
+o			4			木戸	きど	wicket gate; wooden door; entrance to an entertainment venue (i.e. sumo arena, etc.); barrier gate	나무 문, 입구	애끼찌나 산뽕나무로 만든 활. 모양이 극히 단순하며, 전쟁 때나 사냥을 할 때 썼다.		2	default	2	1534630
+o			4			木炭	もくたん	charcoal	목탄	땔감으로 쓰기 위하여 나무를 가마 속에 넣어서 구워 낸 검은 덩어리.		2	default	2	1534750
+o			5			夜明	よあけ	dawn; daybreak	새벽, 여명			3	default	1	1537150
+o			4			友好	ゆうこう	friendship	우호	개인끼리나 나라끼리 서로 사이가 좋음.		2	default	0	1540080
+o			4			有限会社	ゆうげんがいしゃ	limited company (company structure for small businesses; abolished in 2006); YK	유한회사	50인 이하의 유한 책임 사원으로 조직되는 회사. 사원들은 자본에 대한 출자 의무를 부담하며 회사 채무에 대하여서는 출자액의 한도 내에서만 책임을 진다.		2	default	3	1541260
+o			4			有償	ゆうしょう	(involving) payment; (involving) compensation; paying a fee	유상	어떤 행위에 대하여 보상이 있음.		2	default	1	1541390
+o			4			有毒	ゆうどく	poisonous; toxic	유독한, 독성	독성이 있음.		2	default	1	1541550
+o			4			予後	よご	prognosis; recuperation; convalescence	예후, 회복	중국 한고조의 황후(?~B.C.180). 성은 여(呂). 이름은 치(雉). 고조를 보좌하여 진(秦)나라 말기·한(漢)나라 초기의 국난을 수습하였으나, 고조가 죽은 뒤 실권을 장악하여 유씨 일족을 압박하여 그의 사후에 여씨(呂氏)의 난을 초래하였다.		2	default	3	1542950
+o			4			予行	よこう	rehearsal	예행연습	여자로서의 행실.		2	default	3	1542970
+o			4			予告	よこく	(advance) notice; preliminary announcement; warning; trailer (for a film, TV show, etc.)	예고, 예고편	‘여자 고등학교’를 줄여 이르는 말.		2	default	1	1542990
+o			4			予習	よしゅう	preparation for a lesson	예습	마소의 나이에서, 여섯 살을 이르는 말.		2	default	3	1543070
+o			4			予審	よしん	preliminary examination; pretrial hearing	예심, 예비 심리	여자의 마음.		2	default	3	1543080
+o			5			予想外	よそうがい	unexpected; unforeseen; strange	예상 밖의, 뜻밖의			3	default	1	1543150
+o			5			予備知識	よびちしき	background knowledge; prerequisite knowledge	사전 지식, 배경지식			3	default	3	1543520
+o			5			予備費	よびひ	reserve funds; emergency funds	예비비, 비상금			3	default	2	1543560
+o			5			予防接種	よぼうせっしゅ	vaccination; inoculation; immunization; immunisation	예방 접종			3	default	1	1543690
+o			5			予防線	よぼうせん	defensive perimeter; defence line; defense line; defensive measures	방어선, 예방 조치			3	default	3	1543710
+o			4			幼子	おさなご	infant; baby; little child	어린 아이	어린 자식.		2	default	3	1545150
+o			4			妖怪	ようかい	ghost; apparition; phantom; spectre	요괴	요사스러운 귀신.		2	default	1	1545300
+o			4			溶接	ようせつ	welding	용접	찾아온 손님을 만나 봄.		2	default	1	1546150
+o			4			要求	ようきゅう	demand; firm request; requisition; requirement	요구, 요구함	받아야 할 것을 필요에 의하여 달라고 청함. 또는 그 청.		2	default	0	1546680
+o			4			踊子	おどりこ	dancer (usu. female)	무용수	용감한 모습.		2	default	2	1546900
+o			4			陽光	ようこう	sunshine; sunlight	햇빛	태양의 빛. 또는 따뜻한 햇빛.		2	default	2	1547010
+x		양생, 건강 관리, 요양	4			養生	ようじょう	taking care of one's health; recuperation; covering (with a protective material); coating	건강 관리, 요양	병에 걸리지 아니하도록 건강 관리를 잘하여 오래 살기를 꾀함.		2	default	3	1547200
+o			4			欲求	よっきゅう	desire; want; will; wish	욕구, 갈망	무엇을 얻거나 무슨 일을 하고자 바라는 일.		2	default	1	1547350
+o			5			裏木戸	うらきど	back door	뒷문			3	default	3	1550700
+o			4			曖昧	あいまい	vague; ambiguous; unclear; shady	애매함, 모호함	희미하여 분명하지 아니함.		2	default	3	1567920
+o			4			雨水	あまみず	rain water; "rain water" solar term (approx. February 19)	빗물	비가 와서 고이거나 모인 물.		2	default	1	1576440
+o			4			永久	えいきゅう	eternity; permanence; perpetuity; Eikyū era (1113.7.13-1118.4.3)	영원함, 영구함	어떤 상태가 시간상으로 무한히 이어짐.		2	default	1	1576520
+o			4			外側	そとがわ	exterior; outside; outer; external	바깥쪽, 외부	바깥으로 향하는 쪽.		2	default	1	1577440
+o			4			元凶	げんきょう	ringleader; main culprit; main cause; source	원흉, 근원	못된 짓을 한 사람들의 우두머리.		2	default	1	1578360
+o			4			三方	さんぼう	three sides; small offering stand	세 방향, 작은 제단	낳은 아이의 태를 묻기 전에 보관해 두는 방.		2	default	2	1579440
+o			4			消耗	しょうもう	exhaustion; consumption; using up; dissipation	소모, 소진	써서 없앰.		2	default	2	1580310
+o			4			乳房	ちぶさ	breast; udder	유방, 젖꼭지	포유류의 가슴 또는 배의 좌우에 쌍을 이루고 있는, 젖을 분비하기 위한 기관. 암컷은 젖샘이나 피하 조직이 발달하여 융기하고, 분만 후 일정한 기간 동안 젖을 분비한다.		2	default	1	1582760
+o			4			往々	おうおう	sometimes; often	종종, 때때로	시간의 간격을 두고 이따금.		2	default	3	1588820
+~			4			沖合	おきあい	off the coast; offshore; out at sea	근해, 바다 한가운데	부딪쳐 하나가 됨. 또는 그렇게 되게 함.		2	default	1	1588990
+o			4			小売	こうり	retail	소매	물건을 생산자나 도매상에게서 사들여 직접 소비자에게 팖.		2	default	1	1593050
+o			4			不漁	ふりょう	poor catch (fishing)	어획량 부족	물고기가 잘 잡히지 아니함.		2	default	3	1603000
+o			4			我家	わがや	one's house; one's home; one's family	우리 집, 우리 가족	어린아이의 말로, ‘아기’를 이르는 말.		2	default	1	1606650
+o			5			離縁	りえん	divorce; dissolution of adoption	이혼, 입양 취소			3	default	3	1618620
+o			4			木刀	ぼくとう	wooden sword	목검	도자기를 만들 때에, 흙으로 그릇 모양을 만들어 매끈하게 다듬을 때 쓰는 나무칼.		2	default	3	1622000
+o			4			樹海	じゅかい	sea of trees; broad expanse of dense woodland; abundant leafage	나무 숲	나무의 바다라는 뜻으로, 울창한 삼림의 광대함을 이르는 말.		2	default	3	1628370
+o			4			漁民	ぎょみん	fishermen	어민	물고기 잡는 일을 직업으로 하는 사람.		2	default	1	1630120
+o			4			目頭	めがしら	inner canthus; inner corner of the eye	눈안구	제사 때 쓰는 굽이 높은 나무 접시.		2	default	2	1641220
+x		창고, 옷장, 옷방	5			納戸	なんど	storage room; storeroom; closet; grayish blue	창고, 옷장			3	default	3	1642650
+o			5			老木	ろうぼく	old tree	오래된 나무			3	default	3	1644530
+o			5			流木	りゅうぼく	driftwood	유목			3	default	3	1645040
+o			4			背筋	せすじ	spine; line of the backbone; seam down the back (of clothing)	등뼈, 등줄기	‘등살’을 전문적으로 이르는 말.		2	default	1	1646310
+o			4			試乗	しじょう	test drive; test ride; trial ride	시승, 시험 운행	차나 배, 말 따위를 시험적으로 타 봄.		2	default	3	1646590
+o			4			船橋	ふなばし	pontoon bridge; floating bridge; bridge (of a ship)	선교, 배다리	작은 배를 한 줄로 여러 척 띄워 놓고 그 위에 널판을 건너질러 깐 다리.		2	default	1	1649900
+o			4			水辺	みずべ	water's edge; waterside; shore	물가, 강가	바다, 강, 못 따위와 같이 물이 있는 곳의 가장자리.		2	default	1	1649910
+o			4			漁期	ぎょき	fishing season	어획 기간	고기를 잡는 시기. 또는 어떤 특정한 구역에서 어떤 종류의 고기가 많이 잡히는 시기.		2	default	3	1650600
+o			4			速攻	そっこう	swift attack; quick attack; fast break; breakaway	속공, 즉시	농구·배구·축구 따위의 구기 경기에서, 지체함이 없이 재빠른 동작으로 공격함. 또는 그런 공격.		2	default	1	1654850
+o			4			速球	そっきゅう	fastball	빠른 공	야구에서, 투수가 빠르게 던지는 공.		2	default	0	1654870
+o			5			預貯金	よちょきん	deposits and savings; bank account	예금, 저축금			3	default	1	1655170
+o			4			死傷	ししょう	death and injury; being killed or injured	사상, 사상자	죽거나 다침.		2	default	3	1658260
+o			4			所蔵	しょぞう	(in one's) possession	소장	자기의 것으로 지니어 간직함. 또는 그 물건.		2	default	1	1660540
+o			4			多人数	たにんずう	large number of people	다수 인원	많은 사람.		2	default	3	1663750
+o			5			無利子	むりし	(earning or paying) no interest	무이자			3	default	2	1672240
+o			4			樹上	じゅじょう	up in a tree; in the trees	나무 위	나무의 위.		2	default	3	1692490
+o			4			樹林	じゅりん	forest; woodland; woods; area of dense woody vegetation	수림, 숲	나무가 우거진 숲.		2	default	3	1692500
+o			4			樹脂加工	じゅしかこう	resin treatment	수지 가공	천연 섬유나 인조견 따위의 직물에 합성수지의 성분을 써서 가공하는 방법. 이 방법으로 가공을 하면 직물이 쭈그러들지 않고 탄력성이 생겨 주름이 잡히지 않게 된다.		2	default	3	1692510
+o			4			樹液	じゅえき	sap	수액	땅속에서 나무의 줄기를 통하여 잎으로 올라가는 액.		2	default	3	1692520
+o			4			御霊	みたま	spirit of a deceased person; the Holy Ghost; the Holy Spirit	영혼, 신령	죄인을 가두어 두는 곳. 한때 형무소라고 부르다가 현재 ‘교도소’로 고쳤다.		2	default	3	1694870
+o			4			速記録	そっきろく	stenographic record; shorthand notes	속기 기록, 필기	속기술로 적은 기록.		2	default	3	1709150
+o			4			密漁	みつりょう	poaching (fish or seafood)	밀렵, 불법 어로	허가 없이 몰래 고기를 잡음.		2	default	3	1731580
+o			5			郵便切手	ゆうびんきって	postage stamp	우표			3	default	3	1746970
+o			4			買入	かいいれ	buying; purchasing; laying in	매입, 구매	물건 따위를 사들임.		2	default	1	1752840
+o			4			基礎控除	きそこうじょ	basic or standard deduction	기본 공제	세금을 물리는 소득 금액을 산정할 때 총소득 금액에서 일정한 금액을 빼는 것. 납세 의무자의 조세 부담을 덜고 최저 생활을 보호하기 위한 것이다.		2	default	3	1756800
+o			4			神木	しんぼく	sacred tree; support pillars of the traditional fire festival bonfires	신목, 축제 장식의 기둥	은산 별신제를 할 때, 베어다 쓰는 일종의 서낭대.		2	default	3	1764910
+o			4			大往生	だいおうじょう	peaceful death	평온한 죽음	조금도 괴로움이 없는 왕생. 평안하게 죽는 일을 이른다.		2	default	3	1785970
+o			4			大乗	だいじょう	Mahayana (Buddhism); the Great Vehicle; large passenger vehicle	대승(불교), 큰 수레	중생을 제도하여 부처의 경지에 이르게 하는 것을 이상으로 하는 불교. 그 교리, 이상, 목적이 모두 크고 깊으며 그것을 받아들이는 중생의 능력도 큰 그릇이라 하여 이렇게 이른다. 소승을 비판하면서 일어난 유파로 한국, 중국, 일본의 불교가 이에 속한다.		2	default	3	1786090
+o			4			常識的	じょうしきてき	ordinary; sensible; commonplace	상식적인, 통념적인	사람들이 보통 알고 있거나 알아야 하는 지식이 되는 것.		2	default	1	1798310
+o			4			漁具	ぎょぐ	fishing tackle; fishing gear	어구, 낚시 도구	고기잡이에 쓰는 여러 가지 도구.		2	default	3	1811010
+o			4			杉戸	すぎど	door made of cedar	삼나무 문	중국 전설에 나오는 봉래산, 방장산(方丈山), 영주산을 통틀어 이르는 말. 진시황과 한무제가 불로불사약을 구하기 위하여 동남동녀 수천 명을 보냈다고 한다. 이 이름을 본떠 우리나라의 금강산을 봉래산, 지리산을 방장산, 한라산을 영주산이라 이르기도 한다.		2	default	3	1814410
+o			4			岩戸	いわと	rock door (to a cave)	암굴	비밀을 유지하기 위하여 당사자끼리만 알 수 있도록 꾸민 약속 기호.		2	default	3	1839010
+o			4			生薬	しょうやく	crude drug; natural drug; galenical	생약	식물성의 초재(草材).		2	default	3	1853870
+o			4			美術展	びじゅつてん	art exhibition	미술전	미술 작품을 모아서 하는 전시.		2	default	1	1945820
+o			5			船会社	ふながいしゃ	steamship (shipping) company	선사			3	default	3	1953230
+o			4			砂子	すなご	gold dust; silver dust; sand; grit	금가루, 은가루, 모래	→ 쇄자.		2	default	3	2846366
+o			4			陰鬱	いんうつ	gloomy; melancholy; dreary; depressed	음울함, 우울함			2	default	4	1170550
+o			4			首肯	しゅこう	assent; consent	승낙, 긍정			2	default	4	1329270
+o			4			深緑	しんりょく	dark (deep) green	짙은 녹색			2	default	4	1646960
+o			4			人畜無害	じんちくむがい	harmless to humans and animals; having no influence; unimportant; insignificant	인간과 동물에게 해롭지 않은			2	default	4	1615480
+o			4			節介	せっかい	meddling; meddlesomeness; nosiness; interference	간섭, 참견			2	default	4	1386200
+o			4			浅知恵	あさぢえ	shallow thinking; superficial view; insufficient consideration	얕은 지혜, 피상적인 생각			2	default	4	1754030
+o			4			素面	すめん	not wearing a mask (in kendo, noh, etc.); sober face; sobriety; face with no make-up	가면을 쓰지 않음, 맨 얼굴			2	default	4	1397400
+o			4			懲戒免職	ちょうかいめんしょく	disciplinary dismissal (discharge)	징계로 인한 직위 해제			2	default	4	1623030
+x		말투, 발음, 발성	4			呂律	ろれつ	articulation	발음, 발성			2	default	4	1644650
+o			4			加速	かそく	acceleration; speeding up	가속, 속도를 높임	점점 속도를 더함. 또는 그 속도.		2	default	0	1190370
+o			4			刊行	かんこう	publication; issue	간행, 출판	책 따위를 인쇄하여 발행함.		2	default	0	1210570
+o			4			減少	げんしょう	decrease; reduction; decline	감소, 감소함	양이나 수치가 줆. 또는 양이나 수치를 줄임.		2	default	0	1263210
+o			4			減速	げんそく	deceleration	감속	속도를 줄임. 또는 그 속도.		2	default	0	1263270
+o			4			減額	げんがく	reduction (esp. in price or cost); diminution; abatement	삭감, 감액	액수를 줄임. 또는 줄인 액수.		2	default	0	1263160
+o			3		Y(1)	減収	げんしゅう	fall; decrease (in income)	감소한 수입	거두어들이는 것이 줆.	일본어의 '減収'은 소득이 줄어드는 경제 용어이지만, 한국 표준국어대사전의 '감수'는 곡식 등을 거두어들임이라는 농업적/일반적 의미를 지니며 뜻이 갈린다.	1	manual	0	1263200
+o			4			減税	げんぜい	tax reduction	감세	세금의 액수를 줄이거나 세율을 낮추는 일.		2	default	0	1263260
+o			4			江戸	えど	Edo (shogunate capital; former name of Tokyo); Yedo	에도 (도쿄의 옛 이름)	→ 에도.		2	default	0	1279870
+o			4			巨大	きょだい	huge; gigantic; enormous	거대함, 막대함	엄청나게 큼.		2	default	0	1232180
+o			4			巨額	きょがく	huge sum (esp. of money); enormous sum; massive amount	거액	아주 많은 액수의 돈.		2	default	0	1231950
+o			4			巨人	きょじん	giant; great man; Tokyo Giants (baseball team)	거인, 거장	몸이 아주 큰 사람.		2	default	0	1232090
+o			4			健全	けんぜん	healthy; sound; wholesome	건강함, 온전함	병이나 탈이 없이 건강하고 온전함.		2	default	0	1256360
+o			1		Y(1)	高官	こうかん	high official	고위 관료	지위가 높은 벼슬이나 관리.		2	default	0	1283330
+o			4			高級	こうきゅう	high-class; high-grade; high-quality; high-end	고급, 높은 등급	내용, 품질, 등급, 수준 따위가 높음.		2	default	0	1283400
+o			4			高速道路	こうそくどうろ	highway; freeway; expressway; motorway	고속도로	차의 빠른 통행을 위하여 만든 차 전용의 도로.		2	default	0	1283720
+o			4			高額	こうがく	large sum (of money); large amount; large denomination (banknote, etc.)	고액	많은 액수.		2	default	0	1283320
+o			4			公開	こうかい	opening to the public; making available to the public; exhibiting; unveiling	공개, 발표	어떤 사실이나 사물, 내용 따위를 여러 사람에게 널리 터놓음.		2	default	0	1273370
+o			4			公共	こうきょう	public (facilities, service, etc.); communal	공공의, 공공의 시설	국가나 사회의 구성원에게 두루 관계되는 것.		2	default	0	1273510
+o			4			公安	こうあん	public peace; public safety; public security; peace and order	공안, 치안	공공의 안녕과 질서가 편안히 유지되는 상태. 또는 그런 상태를 지키는 사람.		2	default	0	1273180
+o			4			公演	こうえん	public performance; exhibition in a foreign country	공연, 해외 순회	음악, 무용, 연극 따위를 많은 사람 앞에서 보이는 일.		2	default	0	1273280
+o			4			公園	こうえん	(public) park	공원	국가나 지방 공공 단체가 공중의 보건·휴양·놀이 따위를 위하여 마련한 정원, 유원지, 동산 등의 사회 시설.		2	default	0	1273270
+o			1		Y(1)	公害	こうがい	pollution; public nuisance; contamination	공해	산업이나 교통의 발달에 따라 사람이나 생물이 입게 되는 여러 가지 피해. 자동차의 매연, 공장의 폐수, 여러 종류의 쓰레기 따위로 인하여 공기와 물이 더럽혀지고 자연환경이 파괴되는 문제 따위를 이른다.		2	default	0	1273420
+o			1		Y(1)	慣行	かんこう	customary practice; habit; traditional event	관례, 관습	오래전부터 해 오는 대로 함. 또는 관례에 따라서 함.		2	default	0	1212680
 o			4			科学	かがく	science; to think about scientifically; to think in terms of science	과학	보편적인 진리나 법칙의 발견을 목적으로 한 체계적인 지식. 넓은 뜻으로는 학(學)을 이르고, 좁은 뜻으로는 자연 과학을 이른다.		2	default	0	1192700
 o			4			科学者	かがくしゃ	scientist	과학자	과학을 전문으로 연구하는 사람. 주로 자연 과학을 연구하는 사람을 이른다.		2	default	0	1192750
-o			4			果樹	かじゅ	fruit tree	과수	열매를 얻기 위하여 가꾸는 나무를 통틀어 이르는 말.		2	default	2	1192970
-o			4			果樹園	かじゅえん	orchard; fruit farm	과수원	과실나무를 심은 밭. 흔히 먹을 수 있는 열매를 얻기 위하여 배나무, 감나무, 밤나무, 대추나무 따위를 가꾼다.		2	default	3	1192980
-o			4			歌会	うたかい	poetry party; tanka competition; gathering of tanka poets	노래 모임, 시회	노래를 들으며 비평하는 모임.		2	default	3	1193220
-o			4			歌心	うたごころ	(waka) poetic sentiment; waka-composing mood; solid grounding in waka; meaning of a waka poem	시적 감성, 노래의 정서	시가의 내용에 들어 있는 뜻.		2	default	3	1193330
-o			4			歌姫	うたひめ	songstress; diva	가수, 디바	젊고 아리따운 여자.		2	default	3	1193410
+o			4			武装	ぶそう	arms; armament; taking up arms; arming oneself	무장, 무기	전투에 필요한 장비를 갖춤. 또는 그 장비.		2	default	0	1498740
+o			4			幼児	ようじ	young child; toddler; child over 1 but not yet of school age	유아	나이가 적은 아이.		2	default	0	1545160
+o			4			懲戒	ちょうかい	discipline; punishment; reprimand	징계, 처벌	허물이나 잘못을 뉘우치도록 나무라며 경계함.		2	default	0	1428200
+o			4			温度	おんど	temperature	온도	따뜻함과 차가움의 정도. 또는 그것을 나타내는 수치. 물리적으로는 열평형을 특징짓고 열이 이동하는 경향을 나타내는 양이며, 미시적으로는 계(系)를 구성하는 입자가 가지는 에너지의 분포를 정하고 그 평균값의 표준이 되는 양이다.		2	default	0	1183510
+o			4			発作	ほっさ	fit; attack; spasm; ictus	발작, 경련	어떤 병의 증세나 격한 감정, 부정적인 움직임 따위가 갑자기 세차게 일어남.		2	default	0	1477470
+o			4			街角	まちかど	street corner	거리 모퉁이	거리의 한 모서리.		2	default	1	1204580
+o			4			街道	かいどう	highway (esp. one existing from the Edo period); main road; highway (e.g. to success); path (to becoming ...)	가도, 주요 도로	큰 길거리.		2	default	1	1204650
+o			4			家業	かぎょう	family business; family trade; one's occupation; one's trade	가업, 집안의 사업	대대로 물려받는 집안의 생업.		2	default	1	1191840
+o			4			佳作	かさく	fine (piece of) work; excellent work; work that receives an honourable mention	우수한 작품	매우 뛰어난 작품.		2	default	1	1189760
+o			4			家主	やぬし	landlord; landlady; house owner; home owner	집주인	한집안의 주인.		2	default	1	1191990
+o			4			間隔	かんかく	space; interval; space character; whitespace	간격, 사이	공간적으로 벌어진 사이.		2	default	1	1215380
+o			4			干潟	ひがた	tidal flat; tideland	갯벌	밀물 때는 물에 잠기고 썰물 때는 물 밖으로 드러나는 모래 점토질의 평탄한 땅. 펄 갯벌, 혼성 갯벌, 모래 갯벌 따위가 있으며 생물상이 다양하게 분포한다.		2	default	1	1212030
+o			4			間接	かんせつ	indirection; indirectness	간접	중간에 매개(媒介)가 되는 사람이나 사물 따위를 통하여 맺어지는 관계.		2	default	1	1215520
+o			4			葛藤	かっとう	conflict; complication; troubles; discord	갈등, 충돌	칡과 등나무가 서로 얽히는 것과 같이, 개인이나 집단 사이에 목표나 이해관계가 달라 서로 적대시하거나 충돌함. 또는 그런 상태.		2	default	1	1208780
+o			4			減量	げんりょう	loss in weight (esp. body weight); weight reduction; loss in quantity; reduction of quantity	감량, 양의 감소	수량이나 무게를 줄임.		2	default	1	1263350
+o			4			減免	げんめん	reduction and exemption (e.g. taxes); mitigation and remission (e.g. in criminal law)	감면, 면제	매겨야 할 부담 따위를 덜어 주거나 면제함.		2	default	1	1263340
+o			4			減産	げんさん	decrease in production	생산 감소	생산이 줆. 또는 생산을 줄임.		2	default	1	1263180
+o			4			鑑賞	かんしょう	appreciation (of art, music, poetry, etc.)	감상	주로 예술 작품을 이해하여 즐기고 평가함.		2	default	1	1215200
+o			4			監修	かんしゅう	(editorial) supervision; general editorship; supervising director	감수	책의 저술이나 편찬 따위를 지도하고 감독함.		2	default	1	1213710
+o			4			講談	こうだん	storytelling (of war chronicles, revenge tales, etc.) with highly dramatic delivery; story	이야기, 설화	강연이나 강의식의 말투로 이야기함. 또는 그런 이야기.		2	default	1	1282320
+o			4			歌声	うたごえ	singing voice; (sound of) singing	노래 소리	노래를 부르는 소리.		2	default	1	1607440
 o			4			歌謡	かよう	song; ballad	가요	널리 대중이 즐겨 부르는 노래.		2	default	1	1193450
-o			4			稼業	かぎょう	trade; business; occupation; profession	생업, 직업	광산 운영에서, 광물을 캐는 작업을 진행하는 일.		2	default	3	1194470
-o			4			過言	かごん	exaggeration; overstatement; saying too much; misstatement	과장, 지나친 말	지나치게 말을 함. 또는 그 말.		2	default	1	1196080
-o			4			過大	かだい	excessive; too much; unreasonable	지나침, 과도함	정도가 지나치게 큼.		2	default	1	1196250
-o			4			過保護	かほご	overprotective; excessive care; overprotection; overprotectiveness	과보호	부모가 어린아이를 지나치게 보호함.		2	default	3	1196440
-o			4			怪獣	かいじゅう	monster	괴수	괴상하게 생긴 짐승.		2	default	1	1200280
-o			4			戒告	かいこく	admonition; warning; caution	경고, 훈계	일정한 기간 안에 행정상의 의무를 이행하지 않을 경우에, 강제 집행 한다는 내용을 문서로 알리는 일.		2	default	2	1200680
+o			4			箇所	かしょ	place; point; part; spot	곳, 장소, 부분	여러 곳 가운데 한 곳.		2	default	1	1590250
 o			4			改修	かいしゅう	repair; improvement	개수, 보수	고쳐서 바로잡거나 다시 만듦.		2	default	1	1200880
 o			4			開業	かいぎょう	opening a business; opening a practice	개업	영업을 처음 시작함.		2	default	1	1202600
 o			4			開業医	かいぎょうい	private clinician; physician in private practice	개업의	자신의 병원이나 의원을 경영하며 진료하는 의사.		2	default	1	1202610
-o			4			階層	かいそう	class; level; stratum; layer	층, 단계, 계층	사회적 지위가 비슷한 사람들의 층.		2	default	1	1203080
-o			4			街角	まちかど	street corner	거리 모퉁이	거리의 한 모서리.		2	default	1	1204580
-o			4			街道	かいどう	highway (esp. one existing from the Edo period); main road; highway (e.g. to success); path (to becoming ...)	가도, 주요 도로	큰 길거리.		2	default	1	1204650
-o			4			街路	がいろ	road; street; avenue	가로, 거리	시가지의 넓은 도로. 일반적으로 교통안전을 위하여 차도(車道)와 보도(步道)로 구분되어 있다.		2	default	2	1204660
-o			4			街路樹	がいろじゅ	roadside trees	가로수	거리의 미관(美觀)과 국민 보건 따위를 위하여 길을 따라 줄지어 심은 나무.		2	default	2	1204680
-o			4			隔絶	かくぜつ	isolation; separation; remoteness; seclusion	격리, 단절	서로 사이가 떨어져서 연락이 끊어짐.		2	default	3	1206390
-o			4			葛藤	かっとう	conflict; complication; troubles; discord	갈등, 충돌	칡과 등나무가 서로 얽히는 것과 같이, 개인이나 집단 사이에 목표나 이해관계가 달라 서로 적대시하거나 충돌함. 또는 그런 상태.		2	default	1	1208780
-o			4			乾燥	かんそう	dryness; aridity; drying (e.g. clothes); dehydration	건조함, 마름	‘건조’의 원말.		2	default	1	1209920
-o			4			官公庁	かんこうちょう	government and municipal offices; public agencies	관공서, 공공기관	관청과 공청을 아울러 이르는 말.		2	default	1	1211680
-o			4			干潟	ひがた	tidal flat; tideland	갯벌	밀물 때는 물에 잠기고 썰물 때는 물 밖으로 드러나는 모래 점토질의 평탄한 땅. 펄 갯벌, 혼성 갯벌, 모래 갯벌 따위가 있으며 생물상이 다양하게 분포한다.		2	default	1	1212030
-o			4			感嘆	かんたん	admiration; wonder; astonishment	감탄, 경탄	마음속 깊이 느끼어 탄복함.		2	default	3	1212490
-o			1	cat-mismatch	Y(1)	慣行	かんこう	customary practice; habit; traditional event	관례, 관습	오래전부터 해 오는 대로 함. 또는 관례에 따라서 함.		2	default	0	1212680
-o			4			敢行	かんこう	decisive action; going through with; daring to do; carrying out	감행, 실행	과감하게 실행함.		2	default	2	1212880
-o			4			監修	かんしゅう	(editorial) supervision; general editorship; supervising director	감수	책의 저술이나 편찬 따위를 지도하고 감독함.		2	default	1	1213710
-o			4			鑑賞	かんしょう	appreciation (of art, music, poetry, etc.)	감상	주로 예술 작품을 이해하여 즐기고 평가함.		2	default	1	1215200
-o			4			間隔	かんかく	space; interval; space character; whitespace	간격, 사이	공간적으로 벌어진 사이.		2	default	1	1215380
-o			4			間接	かんせつ	indirection; indirectness	간접	중간에 매개(媒介)가 되는 사람이나 사물 따위를 통하여 맺어지는 관계.		2	default	1	1215520
-o			4			陥没	かんぼつ	cave-in; collapse; sinking; depression (e.g. of the skull)	함몰, 붕괴	사물이나 신체의 일부가 아래나 안쪽으로 빠지거나 꺼져 내려앉음.		2	default	2	1216140
-o			4			疑念	ぎねん	doubt; suspicion; misgivings; scruples	의심, 의혹	의심스러운 생각.		2	default	1	1225620
-o			4			丘陵	きゅうりょう	hill; hillock; rolling hills; foothills	구릉지	땅이 비탈지고 조금 높은 곳.		2	default	1	1227320
-o			4			宮廷	きゅうてい	imperial court; royal court	궁정, 황실	임금이 거처하는 집.		2	default	1	1228460
-o			4			弓道	きゅうどう	kyūdō; kyudo; Japanese archery	궁도	활을 쏘는 기술을 닦는 일.		2	default	3	1228540
-o			4			求道	きゅうどう	seeking after truth	진리를 구함	진리나 종교적인 깨달음의 경지를 구함.		2	default	3	1229560
-o			4			去就	きょしゅう	leaving or staying; (one's) course of action; (one's) position; (one's) attitude	처지, 태도	사람이 어디로 가거나 다니거나 하는 움직임.		2	default	1	1231670
-o			4			巨額	きょがく	huge sum (esp. of money); enormous sum; massive amount	거액	아주 많은 액수의 돈.		2	default	0	1231950
-o			4			巨漢	きょかん	giant	거대한 체격	몸집이 매우 큰 사내.		2	default	3	1231960
 o			4			巨匠	きょしょう	master; masterhand; maestro	거장	예술, 과학 따위의 어느 일정 분야에서 특히 뛰어난 사람.		2	default	1	1232060
-o			4			巨人	きょじん	giant; great man; Tokyo Giants (baseball team)	거인, 거장	몸이 아주 큰 사람.		2	default	0	1232090
-o			4			巨星	きょせい	giant star; great person; giant; superstar	거성, 거물	에이치아르도에서 오른편 위쪽에 자리하는 항성. 지름과 절대 광도가 주계열(主系列)의 별보다 크다. 안타레스, 알데바란, 카펠라 따위가 있다.		2	default	3	1232110
-o			4			巨体	きょたい	huge body; large build	거대한 몸집	거대한 몸집.		2	default	2	1232170
-o			4			巨大	きょだい	huge; gigantic; enormous	거대함, 막대함	엄청나게 큼.		2	default	0	1232180
-o			4			巨費	きょひ	enormous expenditure; huge expense; huge outlay; great cost	막대한 비용	많은 비용.		2	default	3	1232270
-o			4			巨利	きょり	huge profit	큰 이익	큰 이익.		2	default	3	1232330
-o			4			拒絶	きょぜつ	refusal; rejection	거절, 거부	상대편의 요구, 제안, 선물, 부탁 따위를 받아들이지 않고 물리침.		2	default	3	1232390
 o			4			拒絶反応	きょぜつはんのう	(transplant) rejection; strong reaction (against)	거부 반응	조직이 잘 맞지 않는 장기를 이식하였을 때, 그것을 배제하려고 일어나는 생체 반응. 이식 후 처음 7~10일은 문제가 없어 보이나 곧 염증이나 괴사를 일으키게 된다.		2	default	1	1232400
-o			4			競合	きょうごう	contention; competition; rivalry; quarrel	경쟁, 다툼	서로 맞서 겨룸.		2	default	1	1234100
-o			4			競輪	けいりん	keirin; cycle racing event, usu. 2 km with a paced start and sprint finish	경륜	일정한 거리를 자전거를 타고 달려 빠르기를 겨루는 경기.		2	default	1	1234240
-o			4			境内	けいだい	grounds (esp. of shrines and temples); compound; churchyard; precincts	사찰 경내, 신사 경내	일정한 지역의 안.		2	default	1	1236020
-o			4			恐喝	きょうかつ	blackmail; extortion; threat (to extort money)	협박, 갈취	공포를 느끼도록 윽박지르며 을러댐.		2	default	1	1236700
-o			4			局員	きょくいん	clerk; (bureau, post-office) staff	기관 직원, 공무원	한 국(局)의 사무를 맡아보는 직원.		2	default	1	1239580
-o			4			空手	からて	karate; being empty-handed; having nothing in one's hands	가라테, 맨손	아무것도 가진 것이 없는 손.		2	default	1	1245620
-o			4			空路	くうろ	air route; air lane; by air; by plane	항공로	일정하게 운항하는 항공기의 지정된 공중 통로.		2	default	1	1246140
-o			4			屈辱	くつじょく	disgrace; humiliation	굴욕, 치욕	남에게 억눌리어 업신여김을 받음.		2	default	1	1246600
-o			4			君主	くんしゅ	monarch; sovereign; ruler; liege (lord)	군주, 지배자	세습적으로 나라를 다스리는 최고 지위에 있는 사람.		2	default	1	1247290
-o			4			君臨	くんりん	reigning (over a country); dominating; controlling; dictating	군림, 지배	임금으로서 나라를 거느려 다스림.		2	default	1	1247320
-o			4			係争	けいそう	dispute; contention; conflict; controversy	다툼, 분쟁	문제를 해결하거나 목적물에 대한 권리를 얻기 위하여 당사자끼리 법적인 방법으로 다툼. 또는 그런 다툼.		2	default	1	1249330
-o			4			傾斜	けいしゃ	inclination; slant; slope; bevel	기울기, 경사	비스듬히 기울어짐. 또는 그런 상태나 정도.		2	default	1	1249500
-o			4			警察署	けいさつしょ	police station	경찰서	경찰 사무를 맡아보는 관청. 대도시의 각 구(區), 중소 도시, 군 단위에 설치되어 있다.		2	default	1	1252410
-o			4			警鐘	けいしょう	alarm bell; fire bell; warning; wake-up call	경고, 경종	위급한 일이나 비상사태를 알리는, 종이나 사이렌 따위의 신호.		2	default	1	1252470
-o			4			激励	げきれい	encouragement; spurring (on); cheering (on)	격려, 자극	용기나 의욕이 솟아나도록 북돋워 줌.		2	default	1	1253760
-o			4			傑作	けっさく	masterpiece; masterwork; chef d'oeuvre; fine piece of work	걸작, 명작	매우 훌륭한 작품.		2	default	1	1253840
-o			4			決闘	けっとう	duel; shoot-out	결투	승패를 결정하기 위하여 벌이는 싸움.		2	default	3	1254410
-o			4			結合	けつごう	combination; union; joining; linking	결합, 합체	둘 이상의 사물이나 사람이 서로 관계를 맺어 하나가 됨.		2	default	1	1254770
-o			4			健脚	けんきゃく	good walker	건강한 다리, 걸음걸이	튼튼하여 잘 걷거나 잘 뛰는 다리. 또는 그런 다리를 가진 사람.		2	default	3	1256150
+o			4			去就	きょしゅう	leaving or staying; (one's) course of action; (one's) position; (one's) attitude	처지, 태도	사람이 어디로 가거나 다니거나 하는 움직임.		2	default	1	1231670
 o			4			健康保険	けんこうほけん	health insurance	건강보험	질병, 상해, 사망, 해산 따위의 경우에 의료를 위하여 든 비용이나 그로 인한 수입 감소를 보상하는 보험들을 통틀어 이르는 말. 의료 보험, 질병 보험, 상해 보험 따위가 있다.		2	default	1	1256270
-o			4			健全	けんぜん	healthy; sound; wholesome	건강함, 온전함	병이나 탈이 없이 건강하고 온전함.		2	default	0	1256360
-o			4			減額	げんがく	reduction (esp. in price or cost); diminution; abatement	삭감, 감액	액수를 줄임. 또는 줄인 액수.		2	default	0	1263160
-o			4			減産	げんさん	decrease in production	생산 감소	생산이 줆. 또는 생산을 줄임.		2	default	1	1263180
-o			3		Y(1)	減収	げんしゅう	fall; decrease (in income)	감소한 수입	거두어들이는 것이 줆.	일본어의 '減収'은 소득이 줄어드는 경제 용어이지만, 한국 표준국어대사전의 '감수'는 곡식 등을 거두어들임이라는 농업적/일반적 의미를 지니며 뜻이 갈린다.	1	manual	0	1263200
-o			4			減少	げんしょう	decrease; reduction; decline	감소, 감소함	양이나 수치가 줆. 또는 양이나 수치를 줄임.		2	default	0	1263210
-o			4			減食	げんしょく	cutting down on food intake; reducing rations; reducing allowance of food	식사량 줄임	음식의 먹는 양이나 횟수를 줄임.		2	default	3	1263220
-o			4			減衰	げんすい	attenuation; damping; decay	감쇠, 약해짐	힘이나 세력 따위가 줄어서 약하여짐.		2	default	3	1263230
-o			4			減税	げんぜい	tax reduction	감세	세금의 액수를 줄이거나 세율을 낮추는 일.		2	default	0	1263260
-o			4			減速	げんそく	deceleration	감속	속도를 줄임. 또는 그 속도.		2	default	0	1263270
-o			4			減退	げんたい	decline; ebb; failure; decay	감퇴, 쇠퇴	기운이나 세력 따위가 줄어 쇠퇴함.		2	default	2	1263280
-o			4			減点	げんてん	subtracting points; deducting points; points deducted	감점	점수가 깎임. 또는 그 점수.		2	default	3	1263290
-o			4			減配	げんぱい	reduction in a dividend; smaller ration	배당금 삭감, 감량	배당이나 배급을 줄임.		2	default	3	1263300
-o			4			減俸	げんぽう	salary reduction; salary cut	감봉	봉급을 줄임.		2	default	3	1263320
-o			4			減免	げんめん	reduction and exemption (e.g. taxes); mitigation and remission (e.g. in criminal law)	감면, 면제	매겨야 할 부담 따위를 덜어 주거나 면제함.		2	default	1	1263340
-o			4			減量	げんりょう	loss in weight (esp. body weight); weight reduction; loss in quantity; reduction of quantity	감량, 양의 감소	수량이나 무게를 줄임.		2	default	1	1263350
-o			4			古参	こさん	senior; veteran; old-timer	오래된 사람, 원로	오래전부터 한 직위나 직장 따위에 머물러 있는 사람.		2	default	2	1265410
+o			4			乾燥	かんそう	dryness; aridity; drying (e.g. clothes); dehydration	건조함, 마름	‘건조’의 원말.		2	default	1	1209920
+o			4			傑作	けっさく	masterpiece; masterwork; chef d'oeuvre; fine piece of work	걸작, 명작	매우 훌륭한 작품.		2	default	1	1253840
+o			4			激励	げきれい	encouragement; spurring (on); cheering (on)	격려, 자극	용기나 의욕이 솟아나도록 북돋워 줌.		2	default	1	1253760
+o			4			結合	けつごう	combination; union; joining; linking	결합, 합체	둘 이상의 사물이나 사람이 서로 관계를 맺어 하나가 됨.		2	default	1	1254770
+o			4			競輪	けいりん	keirin; cycle racing event, usu. 2 km with a paced start and sprint finish	경륜	일정한 거리를 자전거를 타고 달려 빠르기를 겨루는 경기.		2	default	1	1234240
+o			4			傾斜	けいしゃ	inclination; slant; slope; bevel	기울기, 경사	비스듬히 기울어짐. 또는 그런 상태나 정도.		2	default	1	1249500
+o			4			更生	こうせい	rehabilitation; remaking one's life; starting life anew; rebirth	재생, 회복, 재건	거의 죽을 지경에서 다시 살아남.		2	default	1	1279390
+o			4			耕作	こうさく	cultivation; farming	경작, 농사	땅을 갈아서 농사를 지음.		2	default	1	1280970
+o			4			警鐘	けいしょう	alarm bell; fire bell; warning; wake-up call	경고, 경종	위급한 일이나 비상사태를 알리는, 종이나 사이렌 따위의 신호.		2	default	1	1252470
+o			4			硬直	こうちょく	stiffening; rigidity; rigor; stiffness	경직, 굳어짐	몸 따위가 굳어서 뻣뻣하게 됨.		2	default	1	1280610
+o			4			更迭	こうてつ	change (of personnel); reshuffle (e.g. of a cabinet); shake-up; dismissal (e.g. of a minister)	교체, 개편	→ 경질.		2	default	1	1279430
+o			4			警察署	けいさつしょ	police station	경찰서	경찰 사무를 맡아보는 관청. 대도시의 각 구(區), 중소 도시, 군 단위에 설치되어 있다.		2	default	1	1252410
+o			4			競合	きょうごう	contention; competition; rivalry; quarrel	경쟁, 다툼	서로 맞서 겨룸.		2	default	1	1234100
+o			4			境内	けいだい	grounds (esp. of shrines and temples); compound; churchyard; precincts	사찰 경내, 신사 경내	일정한 지역의 안.		2	default	1	1236020
+o			4			階層	かいそう	class; level; stratum; layer	층, 단계, 계층	사회적 지위가 비슷한 사람들의 층.		2	default	1	1203080
+o			4			係争	けいそう	dispute; contention; conflict; controversy	다툼, 분쟁	문제를 해결하거나 목적물에 대한 권리를 얻기 위하여 당사자끼리 법적인 방법으로 다툼. 또는 그런 다툼.		2	default	1	1249330
+x		의견, 뛰어난 의견	4			高見	こうけん	your views; your opinion; great idea; excellent idea	견해, 의견	뛰어난 의견이나 생각.		2	default	1	1283470
 o			4			古都	こと	ancient city; former capital	옛 수도	옛 도읍.		2	default	1	1265960
-o			4			誇大	こだい	exaggeration; hyperbole	과장, 허풍	작은 것을 큰 것처럼 과장함.		2	default	3	1267790
-o			4			光合成	こうごうせい	photosynthesis	광합성	광화학 반응에 의하여 유기물을 합성하는 작용.		2	default	3	1272970
-o			4			公安	こうあん	public peace; public safety; public security; peace and order	공안, 치안	공공의 안녕과 질서가 편안히 유지되는 상태. 또는 그런 상태를 지키는 사람.		2	default	0	1273180
-o			4			公営	こうえい	public management	공영	주로 공적인 기관에서 공공의 이익을 위하여 경영하거나 관리함. 또는 그렇게 하는 사업.		2	default	1	1273210
+o			4			高等学校	こうとうがっこう	senior high school; high school	고등학교	중학교를 졸업한 사람에게 고등 보통 교육과 실업 교육을 실시하는 학교. 인문계와 실업계의 두 종류가 있고 수업 연한은 3년이다.		2	default	1	1283860
+o			4			考慮	こうりょ	consideration; taking into account	고려	생각하고 헤아려 봄.		2	default	1	1281170
+o			4			高血圧	こうけつあつ	high blood pressure; hypertension	고혈압	혈압이 정상 수치보다 높은 증상. 최고 혈압이 150~160mmHg 이상이거나 최저 혈압이 90~95mmHg 이상인 경우인데, 콩팥이 나쁘거나 갑상샘 또는 부신 호르몬에 이상이 있어 발생하기도 하고 유전적인 원인으로 발생하기도 한다.		2	default	1	1283450
+o			4			恐喝	きょうかつ	blackmail; extortion; threat (to extort money)	협박, 갈취	공포를 느끼도록 윽박지르며 을러댐.		2	default	1	1236700
+o			4			公館	こうかん	official residence	공관	정부의 고위 관리가 공적으로 쓰는 저택.		2	default	1	1273430
+o			4			公金	こうきん	public funds	공금	국가나 공공 단체가 소유하는 돈.		2	default	1	1273630
+o			4			空路	くうろ	air route; air lane; by air; by plane	항공로	일정하게 운항하는 항공기의 지정된 공중 통로.		2	default	1	1246140
+o			4			空手	からて	karate; being empty-handed; having nothing in one's hands	가라테, 맨손	아무것도 가진 것이 없는 손.		2	default	1	1245620
 o			4			公益	こうえき	public interest; public benefit; public good	공익	사회 전체의 이익.		2	default	1	1273220
 o			4			公益法人	こうえきほうじん	public-service corporation; charitable corporation; juridical (legal) person working for the public good	공익법인	자체의 이익을 추구하지 아니하고 공익을 목적으로 사업을 하는 법인.		2	default	1	1273250
-o			4			公園	こうえん	(public) park	공원	국가나 지방 공공 단체가 공중의 보건·휴양·놀이 따위를 위하여 마련한 정원, 유원지, 동산 등의 사회 시설.		2	default	0	1273270
-o			4			公演	こうえん	public performance; exhibition in a foreign country	공연, 해외 순회	음악, 무용, 연극 따위를 많은 사람 앞에서 보이는 일.		2	default	0	1273280
-o			4			公会	こうかい	public meeting	공회, 모임	공적인 문제를 의논하기 위하여 열리는 모임.		2	default	3	1273320
-o			4			公会堂	こうかいどう	town hall; public hall	공회당, 공공회관	일반 대중이 모임 따위를 할 때 사용하기 위하여 지은 집.		2	default	1	1273330
 o			4			公海	こうかい	high seas; international waters	공해	어느 나라의 주권에도 속하지 않으며, 모든 나라가 공통으로 사용할 수 있는 바다.		2	default	1	1273350
-o			4			公開	こうかい	opening to the public; making available to the public; exhibiting; unveiling	공개, 발표	어떤 사실이나 사물, 내용 따위를 여러 사람에게 널리 터놓음.		2	default	0	1273370
-o			1	cat-mismatch	Y(1)	公害	こうがい	pollution; public nuisance; contamination	공해	산업이나 교통의 발달에 따라 사람이나 생물이 입게 되는 여러 가지 피해. 자동차의 매연, 공장의 폐수, 여러 종류의 쓰레기 따위로 인하여 공기와 물이 더럽혀지고 자연환경이 파괴되는 문제 따위를 이른다.		2	default	0	1273420
-o			4			公館	こうかん	official residence	공관	정부의 고위 관리가 공적으로 쓰는 저택.		2	default	1	1273430
-o			4			公器	こうき	public institution	공공기관	사회의 구성원 전체가 이용하는 도구.		2	default	3	1273440
-o			4			公共	こうきょう	public (facilities, service, etc.); communal	공공의, 공공의 시설	국가나 사회의 구성원에게 두루 관계되는 것.		2	default	0	1273510
+o			4			公会堂	こうかいどう	town hall; public hall	공회당, 공공회관	일반 대중이 모임 따위를 할 때 사용하기 위하여 지은 집.		2	default	1	1273330
+o			4			公営	こうえい	public management	공영	주로 공적인 기관에서 공공의 이익을 위하여 경영하거나 관리함. 또는 그렇게 하는 사업.		2	default	1	1273210
+o			4			高価	こうか	highly priced; expensive; valuable; costly	비싼, 고가	높은 가격.		2	default	1	1283300
+o			4			高圧	こうあつ	high voltage; high pressure	고압	높은 압력.		2	default	1	1283250
+o			4			高気圧	こうきあつ	high (atmospheric) pressure; high-pressure system; high-pressure zone; anticyclone	고기압	대기 중에서 높이가 같은 주위보다 기압이 높은 영역. 하강 기류가 생겨 날씨가 맑다.		2	default	1	1283370
+o			4			高温	こうおん	high temperature	고온	높은 온도.		2	default	1	1283280
+o			4			過大	かだい	excessive; too much; unreasonable	지나침, 과도함	정도가 지나치게 큼.		2	default	1	1196250
+o			4			過言	かごん	exaggeration; overstatement; saying too much; misstatement	과장, 지나친 말	지나치게 말을 함. 또는 그 말.		2	default	1	1196080
+o			4			官公庁	かんこうちょう	government and municipal offices; public agencies	관공서, 공공기관	관청과 공청을 아울러 이르는 말.		2	default	1	1211680
+o			4			怪獣	かいじゅう	monster	괴수	괴상하게 생긴 짐승.		2	default	1	1200280
+o			4			口論	こうろん	quarrel; argument; row; (verbal) dispute	말다툼, 논쟁	구두로 논쟁함.		2	default	1	1277000
+o			4			丘陵	きゅうりょう	hill; hillock; rolling hills; foothills	구릉지	땅이 비탈지고 조금 높은 곳.		2	default	1	1227320
+o			4			口癖	くちぐせ	pet saying; favorite phrase; stock phrase; catchphrase	버릇말, 습관적인 말	입에 배어 굳은 말버릇.		2	default	1	1276890
+o			4			拘置所	こうちしょ	prison; detention house; detention center; jail	구금 시설, 구치소	형사 피의자 또는 형사 피고인으로서, 구속 영장에 의하여 구속된 사람을 판결이 내려질 때까지 수용하는 시설.		2	default	1	1279020
+o			4			局員	きょくいん	clerk; (bureau, post-office) staff	기관 직원, 공무원	한 국(局)의 사무를 맡아보는 직원.		2	default	1	1239580
+o			4			君臨	くんりん	reigning (over a country); dominating; controlling; dictating	군림, 지배	임금으로서 나라를 거느려 다스림.		2	default	1	1247320
+o			4			君主	くんしゅ	monarch; sovereign; ruler; liege (lord)	군주, 지배자	세습적으로 나라를 다스리는 최고 지위에 있는 사람.		2	default	1	1247290
+o			4			掘削	くっさく	digging out; excavation	굴착, 파냄	땅을 파는 것.		2	default	1	1614980
+o			4			屈辱	くつじょく	disgrace; humiliation	굴욕, 치욕	남에게 억눌리어 업신여김을 받음.		2	default	1	1246600
+o			4			宮廷	きゅうてい	imperial court; royal court	궁정, 황실	임금이 거처하는 집.		2	default	1	1228460
+o			4			多大	ただい	great (quantity, amount, etc.); huge; enormous; serious	매우 큼, 막대함	‘다대하다’의 어근.		2	default	1	1407900
+o			4			埋立	うめたて	land reclamation; land fill	매립, 간척	우묵한 땅이나 하천, 바다 등을 돌이나 흙 따위로 채움.		2	default	1	1610610
+o			4			免職	めんしょく	dismissal; sacking; discharge	면직, 해고	일정한 직위나 직무에서 물러나게 함.		2	default	1	1533220
+o			4			病状	びょうじょう	condition of a patient; state of a disease; pathology	병세, 병의 상태	병으로 일을 쉰다는 뜻을 적어 윗사람에게 올리던 일. 또는 그런 글.		2	default	1	1490350
+o			4			飼主	かいぬし	(pet) owner; keeper	반려동물 주인	가축 따위를 먹여 기르는 주인.		2	default	1	1589720
+o			4			御門	みかど	emperor (of Japan); mikado; (the gates of an) imperial residence	천황, 황궁의 문	싫증이 나도록 들음.		2	default	1	1435810
+o			4			恩赦	おんしゃ	amnesty; pardon	사면	나라에 경사가 있을 때에, 죄과가 가벼운 죄인을 풀어 주던 일.		2	default	1	1183180
+o			4			疑念	ぎねん	doubt; suspicion; misgivings; scruples	의심, 의혹	의심스러운 생각.		2	default	1	1225620
+o			4			繰上	くりあげ	upward move; advance	앞당김, 진척	남의 죽음에 대하여 슬퍼하는 뜻을 드러내어 상주(喪主)를 위문함. 또는 그 위문.		2	default	1	1630450
+o			4			走幅跳	はしりはばとび	long jump	멀리뛰기	제자리에 서서 또는 일정한 지점까지 도움닫기를 하여 최대한 멀리 뛰어 그 거리를 겨루는 육상 경기.		2	default	1	1402530
+o			4			重荷	おもに	heavy load; heavy luggage; heavy freight; heavy burden	무거운 짐, 부담	무거운 짐.		2	default	1	1579940
+o			4			締付	しめつけ	pressure; clamping; tightening; fastening	조임, 압박	‘우편집배원’의 전 용어.		2	default	1	1594620
+o			4			下敷	したじき	desk pad; sheet of plastic (or cardboard, felt, etc.) placed under writing paper; underlay; being pinned under	하단에 까는 판, 밑에 깔린 것	예전에, 관청에서 백성에게 증명·허가·인가·면허 따위를 내주던 일.		2	default	1	1186260
+o			4			夏場	なつば	summertime; summer season	여름철	책 따위의 내용에서, 아랫장 또는 다음 장.		2	default	1	1191510
+o			4			吸殻	すいがら	cigarette end; cigarette butt	담배꽁초	입안이나 기도에 있는 분비물, 혈액 따위를 빨아내어 숨을 제대로 쉴 수 있도록 하는 기구.		2	default	1	1595510
+o			4			録画	ろくが	(video) recording	녹화	실례를 들어 하는 이야기.		2	default	1	1561610
+o			4			街路	がいろ	road; street; avenue	가로, 거리	시가지의 넓은 도로. 일반적으로 교통안전을 위하여 차도(車道)와 보도(步道)로 구분되어 있다.		2	default	2	1204660
+o			4			街路樹	がいろじゅ	roadside trees	가로수	거리의 미관(美觀)과 국민 보건 따위를 위하여 길을 따라 줄지어 심은 나무.		2	default	2	1204680
+o			4			歌合	うたあわせ	poetry contest	시합, 노래 대회	더하여 합침.		2	default	2	1588110
+o			4			減退	げんたい	decline; ebb; failure; decay	감퇴, 쇠퇴	기운이나 세력 따위가 줄어 쇠퇴함.		2	default	2	1263280
+o			4			敢行	かんこう	decisive action; going through with; daring to do; carrying out	감행, 실행	과감하게 실행함.		2	default	2	1212880
+o			4			巨体	きょたい	huge body; large build	거대한 몸집	거대한 몸집.		2	default	2	1232170
+o			4			隔週	かくしゅう	every other week; every two weeks	격주	일주일을 거름. 또는 일주일씩 거름.		2	default	2	1607110
+o			4			戒告	かいこく	admonition; warning; caution	경고, 훈계	일정한 기간 안에 행정상의 의무를 이행하지 않을 경우에, 강제 집행 한다는 내용을 문서로 알리는 일.		2	default	2	1200680
+o			4			高架	こうか	elevated (structure); overhead	고가(구조물), 높은 곳	높이 건너질러 가설하는 것.		2	default	2	1283310
+o			4			高給	こうきゅう	high salary	고액의 급여	높은 등급의 봉급.		2	default	2	1283420
+o			4			高位	こうい	dignity; eminent; high ranking; high-order (digit, bit, etc.)	높은 지위, 고위	높고 귀한 지위.		2	default	2	1283270
+o			4			古参	こさん	senior; veteran; old-timer	오래된 사람, 원로	오래전부터 한 직위나 직장 따위에 머물러 있는 사람.		2	default	2	1265410
+o			4			果樹	かじゅ	fruit tree	과수	열매를 얻기 위하여 가꾸는 나무를 통틀어 이르는 말.		2	default	2	1192970
+o			4			仕業	しわざ	deed (esp. negative); act; action; one's doing	짓, 행위	통일 신라 시대에 둔 국학(國學)의 으뜸 벼슬. 경덕왕 때 경(卿)을 고친 것으로, 아찬 이하의 관등을 가진 자로 임명하였다.		2	default	2	1304870
+o			4			陥没	かんぼつ	cave-in; collapse; sinking; depression (e.g. of the skull)	함몰, 붕괴	사물이나 신체의 일부가 아래나 안쪽으로 빠지거나 꺼져 내려앉음.		2	default	2	1216140
+o			4			加速度	かそくど	acceleration	가속도	일의 진행에 따라 점점 더해지는 속도. 또는 그렇게 변하는 속도.		2	default	3	1190390
+o			4			歌心	うたごころ	(waka) poetic sentiment; waka-composing mood; solid grounding in waka; meaning of a waka poem	시적 감성, 노래의 정서	시가의 내용에 들어 있는 뜻.		2	default	3	1193330
+o			4			稼業	かぎょう	trade; business; occupation; profession	생업, 직업	광산 운영에서, 광물을 캐는 작업을 진행하는 일.		2	default	3	1194470
+o			4			減配	げんぱい	reduction in a dividend; smaller ration	배당금 삭감, 감량	배당이나 배급을 줄임.		2	default	3	1263300
+o			4			減俸	げんぽう	salary reduction; salary cut	감봉	봉급을 줄임.		2	default	3	1263320
+o			4			減衰	げんすい	attenuation; damping; decay	감쇠, 약해짐	힘이나 세력 따위가 줄어서 약하여짐.		2	default	3	1263230
+o			4			減食	げんしょく	cutting down on food intake; reducing rations; reducing allowance of food	식사량 줄임	음식의 먹는 양이나 횟수를 줄임.		2	default	3	1263220
+o			4			減点	げんてん	subtracting points; deducting points; points deducted	감점	점수가 깎임. 또는 그 점수.		2	default	3	1263290
+o			4			感嘆	かんたん	admiration; wonder; astonishment	감탄, 경탄	마음속 깊이 느끼어 탄복함.		2	default	3	1212490
+o			4			甲種	こうしゅ	A-grade; first-class	갑급, 1급	갑, 을, 병 따위로 차례를 매길 때에 그 첫째 종류.		2	default	3	1280150
+o			4			降参	こうさん	surrender; submission; capitulation; being defeated (e.g. by a problem)	항복, 굴복	강원도에서 나는 인삼.		2	default	3	1282860
+o			5			江戸前	えどまえ	Tokyo style	도쿄식			3	default	3	1675110
+o			4			歌会	うたかい	poetry party; tanka competition; gathering of tanka poets	노래 모임, 시회	노래를 들으며 비평하는 모임.		2	default	3	1193220
+o			5			歌会始	うたかいはじめ	Imperial New Year's Poetry Reading; annual New Year's tanka-reading party held at the Imperial Palace	궁중 신년 시 낭독회			3	default	3	1778740
+o			4			歌姫	うたひめ	songstress; diva	가수, 디바	젊고 아리따운 여자.		2	default	3	1193410
+o			4			坑道	こうどう	tunnel; (mining) gallery; level; shaft	갱도, 터널	광산에서, 갱 안에 뚫어 놓은 길. 사람이 드나들며, 광석이나 자재를 나르거나 바람을 통하게 하는 데 쓴다.		2	default	3	1277390
+o			4			巨利	きょり	huge profit	큰 이익	큰 이익.		2	default	3	1232330
+o			4			巨木	きょぼく	big tree	큰 나무	굵고 큰 나무.		2	default	3	1630100
+o			4			巨費	きょひ	enormous expenditure; huge expense; huge outlay; great cost	막대한 비용	많은 비용.		2	default	3	1232270
+o			4			巨星	きょせい	giant star; great person; giant; superstar	거성, 거물	에이치아르도에서 오른편 위쪽에 자리하는 항성. 지름과 절대 광도가 주계열(主系列)의 별보다 크다. 안타레스, 알데바란, 카펠라 따위가 있다.		2	default	3	1232110
+o			4			拒絶	きょぜつ	refusal; rejection	거절, 거부	상대편의 요구, 제안, 선물, 부탁 따위를 받아들이지 않고 물리침.		2	default	3	1232390
+o			4			巨漢	きょかん	giant	거대한 체격	몸집이 매우 큰 사내.		2	default	3	1231960
+o			4			健脚	けんきゃく	good walker	건강한 다리, 걸음걸이	튼튼하여 잘 걷거나 잘 뛰는 다리. 또는 그런 다리를 가진 사람.		2	default	3	1256150
+o			4			巨悪	きょあく	great evil; scum of the earth; monster; fiend	큰 악, 사악함	크게 행해지는 범죄.		2	default	3	1776050
+o			4			隔世	かくせい	separation of ages; being of a different age	세대를 달리함	세대를 거름.		2	default	3	1801410
+o			4			隔絶	かくぜつ	isolation; separation; remoteness; seclusion	격리, 단절	서로 사이가 떨어져서 연락이 끊어짐.		2	default	3	1206390
+o			4			決闘	けっとう	duel; shoot-out	결투	승패를 결정하기 위하여 벌이는 싸움.		2	default	3	1254410
+o			4			高感度	こうかんど	high sensitivity; highly sensitive (e.g. film, radio receiver); high speed (film); discerning	고감도, 예민함	감도가 매우 뛰어남.		2	default	3	1283340
+o			4			高見	たかみ	height; elevated place	높은 곳	뛰어난 의견이나 생각.		2	default	3	1283230
+o			4			高潔	こうけつ	noble; lofty; high-minded; virtuous	고결함, 숭고함	성품이 고상하고 순결함.		2	default	3	1283440
+o			4			高空	こうくう	high altitude	고공	높은 공중. 흔히 높이 1,500~2,000미터 위의 하늘을 이른다.		2	default	3	1283430
+o			4			高貴	こうき	noble; high and noble; exalted; noble (character)	고귀함, 높은 품격	훌륭하고 귀중함.		2	default	3	1283380
+o			4			高機能	こうきのう	high-functioning; high-performance; sophisticated	고성능, 고기능	기술적인 면에서 성능이나 재능이 매우 뛰어남.		2	default	3	1283360
+o			4			高音	こうおん	high-pitched tone; soprano	고음, 높은 음	높은 소리.		2	default	3	1283290
+o			4			高血圧症	こうけつあつしょう	high blood pressure (as an illness); hypertension	고혈압증	혈압이 정상 수치보다 높은 증상. 최고 혈압이 150~160mmHg 이상이거나 최저 혈압이 90~95mmHg 이상인 경우인데, 콩팥이 나쁘거나 갑상샘 또는 부신 호르몬에 이상이 있어 발생하기도 하고 유전적인 원인으로 발생하기도 한다.		2	default	3	1283460
 o			4			公共団体	こうきょうだんたい	public organization; public organisation	공공 단체	국가로부터 사무를 위임받아 국가의 감독 아래 공공의 행정을 맡아보는 기관. 법령의 규정에 의하여 존립 목적을 부여하고 그 목적 달성을 위한 공권력을 인정하는 것으로 지방 자치 단체, 공공 조합, 영조물 법인 따위가 있다.		2	default	3	1273570
-o			4			公金	こうきん	public funds	공금	국가나 공공 단체가 소유하는 돈.		2	default	1	1273630
+o			4			公器	こうき	public institution	공공기관	사회의 구성원 전체가 이용하는 도구.		2	default	3	1273440
 o			4			公道	こうどう	public road; highway; righteousness; justice	공도, 공로, 올바른 길	사회 일반에 통용되는 공평하고 바른 도리.		2	default	3	1274420
 o			4			公明正大	こうめいせいだい	fair; just and upright; open and honest; aboveboard	공명정대, 공정하고 바름	하는 일이나 태도가 사사로움이나 그릇됨이 없이 아주 정당하고 떳떳함.		2	default	3	1274860
-o			4			口癖	くちぐせ	pet saying; favorite phrase; stock phrase; catchphrase	버릇말, 습관적인 말	입에 배어 굳은 말버릇.		2	default	1	1276890
-o			4			口論	こうろん	quarrel; argument; row; (verbal) dispute	말다툼, 논쟁	구두로 논쟁함.		2	default	1	1277000
-o			4			坑道	こうどう	tunnel; (mining) gallery; level; shaft	갱도, 터널	광산에서, 갱 안에 뚫어 놓은 길. 사람이 드나들며, 광석이나 자재를 나르거나 바람을 통하게 하는 데 쓴다.		2	default	3	1277390
-o			4			拘置所	こうちしょ	prison; detention house; detention center; jail	구금 시설, 구치소	형사 피의자 또는 형사 피고인으로서, 구속 영장에 의하여 구속된 사람을 판결이 내려질 때까지 수용하는 시설.		2	default	1	1279020
-o			4			更生	こうせい	rehabilitation; remaking one's life; starting life anew; rebirth	재생, 회복, 재건	거의 죽을 지경에서 다시 살아남.		2	default	1	1279390
-o			4			更迭	こうてつ	change (of personnel); reshuffle (e.g. of a cabinet); shake-up; dismissal (e.g. of a minister)	교체, 개편	→ 경질.		2	default	1	1279430
+o			4			公会	こうかい	public meeting	공회, 모임	공적인 문제를 의논하기 위하여 열리는 모임.		2	default	3	1273320
+o			4			誇大	こだい	exaggeration; hyperbole	과장, 허풍	작은 것을 큰 것처럼 과장함.		2	default	3	1267790
+o			4			過保護	かほご	overprotective; excessive care; overprotection; overprotectiveness	과보호	부모가 어린아이를 지나치게 보호함.		2	default	3	1196440
+o			4			果樹園	かじゅえん	orchard; fruit farm	과수원	과실나무를 심은 밭. 흔히 먹을 수 있는 열매를 얻기 위하여 배나무, 감나무, 밤나무, 대추나무 따위를 가꾼다.		2	default	3	1192980
+o			4			光合成	こうごうせい	photosynthesis	광합성	광화학 반응에 의하여 유기물을 합성하는 작용.		2	default	3	1272970
 o			4			校正	こうせい	proofreading; calibration	교정, 보정	교정쇄와 원고를 대조하여 오자, 오식, 배열, 색 따위를 바르게 고침.		2	default	3	1279560
-o			4			江戸	えど	Edo (shogunate capital; former name of Tokyo); Yedo	에도 (도쿄의 옛 이름)	→ 에도.		2	default	0	1279870
-o			4			甲種	こうしゅ	A-grade; first-class	갑급, 1급	갑, 을, 병 따위로 차례를 매길 때에 그 첫째 종류.		2	default	3	1280150
-o			4			硬直	こうちょく	stiffening; rigidity; rigor; stiffness	경직, 굳어짐	몸 따위가 굳어서 뻣뻣하게 됨.		2	default	1	1280610
-o			4			耕作	こうさく	cultivation; farming	경작, 농사	땅을 갈아서 농사를 지음.		2	default	1	1280970
-o			4			考慮	こうりょ	consideration; taking into account	고려	생각하고 헤아려 봄.		2	default	1	1281170
-o			4			講談	こうだん	storytelling (of war chronicles, revenge tales, etc.) with highly dramatic delivery; story	이야기, 설화	강연이나 강의식의 말투로 이야기함. 또는 그런 이야기.		2	default	1	1282320
-o			4			降参	こうさん	surrender; submission; capitulation; being defeated (e.g. by a problem)	항복, 굴복	강원도에서 나는 인삼.		2	default	3	1282860
-o			4			高見	たかみ	height; elevated place	높은 곳	뛰어난 의견이나 생각.		2	default	3	1283230
-o			4			高圧	こうあつ	high voltage; high pressure	고압	높은 압력.		2	default	1	1283250
-o			4			高位	こうい	dignity; eminent; high ranking; high-order (digit, bit, etc.)	높은 지위, 고위	높고 귀한 지위.		2	default	2	1283270
-o			4			高温	こうおん	high temperature	고온	높은 온도.		2	default	1	1283280
-o			4			高音	こうおん	high-pitched tone; soprano	고음, 높은 음	높은 소리.		2	default	3	1283290
-o			4			高価	こうか	highly priced; expensive; valuable; costly	비싼, 고가	높은 가격.		2	default	1	1283300
-o			4			高架	こうか	elevated (structure); overhead	고가(구조물), 높은 곳	높이 건너질러 가설하는 것.		2	default	2	1283310
-o			4			高額	こうがく	large sum (of money); large amount; large denomination (banknote, etc.)	고액	많은 액수.		2	default	0	1283320
-o			1	cat-mismatch	Y(1)	高官	こうかん	high official	고위 관료	지위가 높은 벼슬이나 관리.		2	default	0	1283330
-o			4			高感度	こうかんど	high sensitivity; highly sensitive (e.g. film, radio receiver); high speed (film); discerning	고감도, 예민함	감도가 매우 뛰어남.		2	default	3	1283340
-o			4			高機能	こうきのう	high-functioning; high-performance; sophisticated	고성능, 고기능	기술적인 면에서 성능이나 재능이 매우 뛰어남.		2	default	3	1283360
-o			4			高気圧	こうきあつ	high (atmospheric) pressure; high-pressure system; high-pressure zone; anticyclone	고기압	대기 중에서 높이가 같은 주위보다 기압이 높은 영역. 하강 기류가 생겨 날씨가 맑다.		2	default	1	1283370
-o			4			高貴	こうき	noble; high and noble; exalted; noble (character)	고귀함, 높은 품격	훌륭하고 귀중함.		2	default	3	1283380
-o			4			高級	こうきゅう	high-class; high-grade; high-quality; high-end	고급, 높은 등급	내용, 품질, 등급, 수준 따위가 높음.		2	default	0	1283400
-o			4			高給	こうきゅう	high salary	고액의 급여	높은 등급의 봉급.		2	default	2	1283420
-o			4			高空	こうくう	high altitude	고공	높은 공중. 흔히 높이 1,500~2,000미터 위의 하늘을 이른다.		2	default	3	1283430
-o			4			高潔	こうけつ	noble; lofty; high-minded; virtuous	고결함, 숭고함	성품이 고상하고 순결함.		2	default	3	1283440
-o			4			高血圧	こうけつあつ	high blood pressure; hypertension	고혈압	혈압이 정상 수치보다 높은 증상. 최고 혈압이 150~160mmHg 이상이거나 최저 혈압이 90~95mmHg 이상인 경우인데, 콩팥이 나쁘거나 갑상샘 또는 부신 호르몬에 이상이 있어 발생하기도 하고 유전적인 원인으로 발생하기도 한다.		2	default	1	1283450
-o			4			高血圧症	こうけつあつしょう	high blood pressure (as an illness); hypertension	고혈압증	혈압이 정상 수치보다 높은 증상. 최고 혈압이 150~160mmHg 이상이거나 최저 혈압이 90~95mmHg 이상인 경우인데, 콩팥이 나쁘거나 갑상샘 또는 부신 호르몬에 이상이 있어 발생하기도 하고 유전적인 원인으로 발생하기도 한다.		2	default	3	1283460
-x		의견, 뛰어난 의견	4			高見	こうけん	your views; your opinion; great idea; excellent idea	견해, 의견	뛰어난 의견이나 생각.		2	default	1	1283470
-o			4			高速道路	こうそくどうろ	highway; freeway; expressway; motorway	고속도로	차의 빠른 통행을 위하여 만든 차 전용의 도로.		2	default	0	1283720
-o			4			高等学校	こうとうがっこう	senior high school; high school	고등학교	중학교를 졸업한 사람에게 고등 보통 교육과 실업 교육을 실시하는 학교. 인문계와 실업계의 두 종류가 있고 수업 연한은 3년이다.		2	default	1	1283860
-o			4			仕業	しわざ	deed (esp. negative); act; action; one's doing	짓, 행위	통일 신라 시대에 둔 국학(國學)의 으뜸 벼슬. 경덕왕 때 경(卿)을 고친 것으로, 아찬 이하의 관등을 가진 자로 임명하였다.		2	default	2	1304870
-o			4			柔和	にゅうわ	gentle; mild; meek; tender	부드러움, 온화함	‘유화하다’의 어근.		2	default	3	1335510
+o			4			求道	きゅうどう	seeking after truth	진리를 구함	진리나 종교적인 깨달음의 경지를 구함.		2	default	3	1229560
+o			4			弓道	きゅうどう	kyūdō; kyudo; Japanese archery	궁도	활을 쏘는 기술을 닦는 일.		2	default	3	1228540
 o			4			小言	こごと	scolding; telling-off; rebuke; lecture	잔소리, 훈계	잠깐 동안.		2	default	3	1348050
+o			4			柔和	にゅうわ	gentle; mild; meek; tender	부드러움, 온화함	‘유화하다’의 어근.		2	default	3	1335510
+o			4			陰湿	いんしつ	malicious; spiteful; vicious; wicked	음습함, 비열함	‘음습하다’의 어근.		2	default	3	1170360
 o			4			人畜	じんちく	men and animals	인간과 가축	사람과 가축을 통틀어 이르는 말.		2	default	3	1368790
-o			4			走幅跳	はしりはばとび	long jump	멀리뛰기	제자리에 서서 또는 일정한 지점까지 도움닫기를 하여 최대한 멀리 뛰어 그 거리를 겨루는 육상 경기.		2	default	1	1402530
-o			4			多大	ただい	great (quantity, amount, etc.); huge; enormous; serious	매우 큼, 막대함	‘다대하다’의 어근.		2	default	1	1407900
-o			4			懲戒	ちょうかい	discipline; punishment; reprimand	징계, 처벌	허물이나 잘못을 뉘우치도록 나무라며 경계함.		2	default	0	1428200
-o			4			御門	みかど	emperor (of Japan); mikado; (the gates of an) imperial residence	천황, 황궁의 문	싫증이 나도록 들음.		2	default	1	1435810
-o			4			発作	ほっさ	fit; attack; spasm; ictus	발작, 경련	어떤 병의 증세나 격한 감정, 부정적인 움직임 따위가 갑자기 세차게 일어남.		2	default	0	1477470
-o			4			病状	びょうじょう	condition of a patient; state of a disease; pathology	병세, 병의 상태	병으로 일을 쉰다는 뜻을 적어 윗사람에게 올리던 일. 또는 그런 글.		2	default	1	1490350
-o			4			武装	ぶそう	arms; armament; taking up arms; arming oneself	무장, 무기	전투에 필요한 장비를 갖춤. 또는 그 장비.		2	default	0	1498740
-o			4			免職	めんしょく	dismissal; sacking; discharge	면직, 해고	일정한 직위나 직무에서 물러나게 함.		2	default	1	1533220
-o			4			幼児	ようじ	young child; toddler; child over 1 but not yet of school age	유아	나이가 적은 아이.		2	default	0	1545160
-o			4			録画	ろくが	(video) recording	녹화	실례를 들어 하는 이야기.		2	default	1	1561610
-o			4			重荷	おもに	heavy load; heavy luggage; heavy freight; heavy burden	무거운 짐, 부담	무거운 짐.		2	default	1	1579940
-o			4			歌合	うたあわせ	poetry contest	시합, 노래 대회	더하여 합침.		2	default	2	1588110
-o			4			飼主	かいぬし	(pet) owner; keeper	반려동물 주인	가축 따위를 먹여 기르는 주인.		2	default	1	1589720
-o			4			箇所	かしょ	place; point; part; spot	곳, 장소, 부분	여러 곳 가운데 한 곳.		2	default	1	1590250
-o			4			締付	しめつけ	pressure; clamping; tightening; fastening	조임, 압박	‘우편집배원’의 전 용어.		2	default	1	1594620
-o			4			吸殻	すいがら	cigarette end; cigarette butt	담배꽁초	입안이나 기도에 있는 분비물, 혈액 따위를 빨아내어 숨을 제대로 쉴 수 있도록 하는 기구.		2	default	1	1595510
-o			4			隔週	かくしゅう	every other week; every two weeks	격주	일주일을 거름. 또는 일주일씩 거름.		2	default	2	1607110
-o			4			歌声	うたごえ	singing voice; (sound of) singing	노래 소리	노래를 부르는 소리.		2	default	1	1607440
-o			4			埋立	うめたて	land reclamation; land fill	매립, 간척	우묵한 땅이나 하천, 바다 등을 돌이나 흙 따위로 채움.		2	default	1	1610610
-o			4			掘削	くっさく	digging out; excavation	굴착, 파냄	땅을 파는 것.		2	default	1	1614980
-o			4			巨木	きょぼく	big tree	큰 나무	굵고 큰 나무.		2	default	3	1630100
-o			4			繰上	くりあげ	upward move; advance	앞당김, 진척	남의 죽음에 대하여 슬퍼하는 뜻을 드러내어 상주(喪主)를 위문함. 또는 그 위문.		2	default	1	1630450
-o			5			江戸前	えどまえ	Tokyo style	도쿄식			3	default	3	1675110
-o			4			巨悪	きょあく	great evil; scum of the earth; monster; fiend	큰 악, 사악함	크게 행해지는 범죄.		2	default	3	1776050
-o			5			歌会始	うたかいはじめ	Imperial New Year's Poetry Reading; annual New Year's tanka-reading party held at the Imperial Palace	궁중 신년 시 낭독회			3	default	3	1778740
-o			4			隔世	かくせい	separation of ages; being of a different age	세대를 달리함	세대를 거름.		2	default	3	1801410
-?			4			家計	かけい	household economy; family finances	가계 경제, 가정 재정	한집안 살림의 수입과 지출의 상태.		2	default	0	1191910
-?			4			加工	かこう	manufacturing; processing; treatment; machining	가공, 처리	원자재나 반제품을 인공적으로 처리하여 새로운 제품을 만들거나 제품의 질을 높임.		2	default	0	1190120
-?			1		Y(2)	架空	かくう	fictitious; imaginary; fanciful; fabricated	가상의, 허구의	어떤 시설물을 공중에 가설함.	일본어의 '架空'은 '가상의'라는 추상적 의미를 지닌 반면, 한국 표준국어대사전의 표제어는 '공중에 가설하다'라는 구체적인 물리적 행위를 뜻하므로 핵심 의미가 갈린다.	2	manual	0	1193130
-?			1	cat-mismatch	Y(1)	家具	かぐ	furniture	가구	집안 살림에 쓰는 기구. 주로 장롱·책장·탁자 따위와 같이 비교적 큰 제품을 이른다.		2	default	0	1191870
-?			4			歌劇	かげき	opera	오페라	음악을 중심으로 한 종합 무대 예술. 대사는 독창, 중창, 합창 따위로 부르며, 서곡이나 간주곡 따위의 기악곡도 덧붙인다.		2	default	0	1193260
-?			4			可能	かのう	possible; potential; practicable; feasible	가능함, 잠재력	할 수 있거나 될 수 있음.		2	default	0	1191060
-?			4			可能性	かのうせい	possibility; chance; likelihood; probability	가능성	앞으로 실현될 수 있는 성질이나 정도.		2	default	0	1191080
-?			4			家宅	かたく	domicile; premises	집, 거주지	사람이 살고 있는 집. 또는 살림하는 집.		2	default	0	1192210
-?			4			街頭	がいとう	(on the) street	거리	도시의 길거리.		2	default	0	1204640
-?			4			加盟	かめい	joining (an association, agreement, etc.); participation; affiliation; accession	가입, 제휴	동맹이나 연맹, 단체에 가입함.		2	default	0	1190580
-?			4			家事	かじ	housework; domestic chores; family affairs; household matters	가사, 집안일	살림살이에 관한 일.		2	default	0	1191980
-?			4			歌詞	かし	song lyrics; words of a song; libretto	가사	가곡, 가요, 오페라 따위로 불릴 것을 전제로 하여 쓰인 글.		2	default	0	1193280
-o			4			加速	かそく	acceleration; speeding up	가속, 속도를 높임	점점 속도를 더함. 또는 그 속도.		2	default	0	1190370
-?			4			歌手	かしゅ	singer	가수	노래 부르는 것이 직업인 사람.		2	default	0	1193290
-?			4			家賃	やちん	rent	월세	남의 집을 빌려 사는 대가로 내는 돈.		2	default	0	1192270
-?			4			加入	かにゅう	joining (a club, organization, etc.); becoming a member; entry; admission	가입, 참여	조직이나 단체 따위에 들어가거나, 서비스를 제공하는 상품 따위를 신청함.		2	default	0	1190430
-?			4			家電	かでん	household (electrical) appliances; home appliances; consumer electronics	가전제품	가정에서 사용하는 세탁기, 냉장고, 텔레비전 따위의 전기 기기 제품.		2	default	0	1192380
-?			4			家庭	かてい	home; household; family; hearth	가정, 집안	한 가족이 생활하는 집.		2	default	0	1192280
-?			4			家族	かぞく	family	가족	주로 부부를 중심으로 한, 친족 관계에 있는 사람들의 집단. 또는 그 구성원. 혼인, 혈연, 입양 등으로 이루어진다.		2	default	0	1192150
-?			4			歌集	かしゅう	collection of waka poems; anthology; songbook	가요집, 시집	시가를 모아 엮은 책.		2	default	0	1193300
-?			4			閣僚	かくりょう	cabinet ministers	각료	한 나라의 내각을 구성하는 각 장관.		2	default	0	1206310
-?			1	cat-mismatch	Y(1)	脚本	きゃくほん	script; screenplay; scenario	각본, 대본	연극이나 영화를 만들기 위하여 쓴 글. 배우의 동작이나 대사, 무대 장치 따위가 구체적으로 적혀 있다.		2	default	0	1226880
-?			1	cat-mismatch	Y(1)	閣議	かくぎ	cabinet meeting	각의	‘내각 회의’를 줄여 이르는 말.		2	default	0	1206300
-?			4			懇談	こんだん	friendly chat; relaxed conversation; informal meeting	간담회, 편안한 대화	서로 정답게 이야기를 주고받음. 또는 그 이야기.		2	default	0	1289900
-?			4			幹部	かんぶ	management; (executive) staff; leaders; leadership	간부, 지도층	기관이나 조직체 따위의 중심이 되는 자리에서 책임을 맡거나 지도하는 사람.		2	default	0	1212170
-?			4			幹事	かんじ	executive secretary; coordinator; organizer; person in charge of making arrangements	진행, 주관	일을 맡아 주선하고 처리함.		2	default	0	1212110
-?			4			簡素	かんそ	simple; plain; modest	간단함, 소박함	‘간소하다’의 어근.		2	default	0	1214300
-?			1	cat-mismatch	Y(1)	簡易	かんい	simple; simplified; easy; plain	간단함, 간이한	간단하고 편리함. 물건의 내용, 형식이나 시설 따위를 줄이거나 간편하게 하여 이용하기 쉽게 한 상태를 이른다.		2	default	0	1214270
-?			4			看板	かんばん	signboard; sign; billboard; hoarding	간판, 표지판	기관, 상점, 영업소 따위에서 이름이나 판매 상품, 업종 따위를 써서 사람들의 눈에 잘 뜨이게 걸거나 붙이는 표지(標識).		2	default	0	1213990
-o			4			刊行	かんこう	publication; issue	간행, 출판	책 따위를 인쇄하여 발행함.		2	default	0	1210570
-?			4			看護	かんご	nursing; (army) nurse	간호	다쳤거나 앓고 있는 환자나 노약자를 보살피고 돌봄.		2	default	0	1213810
-?			4			看護婦	かんごふ	(female) nurse	간호사	‘간호사’의 전 용어.		2	default	0	1213870
-?			3		Y(1)	簡単	かんたん	simple; easy; uncomplicated; brief	간단함, 쉬움	‘간단하다’의 어근.	일본어의 '簡単'은 '쉬운'이라는 형용사적 의미를 가지지만, 한국어 표준국어대사전의 표제어 '간단 (2)'은 명사형 어근으로 정의되어 있어 핵심 쓰임과 품사가 다릅니다.	1	manual	0	1214330
-?			3		Y(1)	干渉	かんしょう	interference; intervention; meddling	간섭, 참견	직접 관계가 없는 남의 일에 부당하게 참견함.	일본어의 '간섭'은 중립적 개입을 포함하는 반면, 한국 표준국어대사전의 '간섭 (干涉)'은 부당하게 참견한다는 부정적 뉘앙스가 핵심 정의에 명시되어 있어 뜻이 갈린다.	1	manual	0	1212050
-?			4			肝臓	かんぞう	liver	간	가로막 바로 밑의 오른쪽에 있는 기관. 탄수화물을 저장하고, 단백질이나 당의 대사를 조절하며, 해독 작용을 한다.		2	default	0	1214660
-?			4			監督	かんとく	supervision; control; superintendence; direction	감독, 관리	일이나 사람 따위가 잘못되지 아니하도록 살피어 단속함. 또는 일의 전체를 지휘함.		2	default	0	1213720
-?			4			感動	かんどう	being deeply moved emotionally; excitement; passion; inspiration	감동, 깊은 감정	크게 느끼어 마음이 움직임.		2	default	0	1212570
-?			4			感謝	かんしゃ	thanks; gratitude; appreciation; thankfulness	감사	고마움을 나타내는 인사.		2	default	0	1212380
-?			4			監査	かんさ	inspection; audit; judgement; judgment	감사, 검사	감독하고 검사함.		2	default	0	1590860
-?			4			監査役	かんさやく	auditor; inspector	감사역	‘감사’의 전 용어.		2	default	0	1213650
