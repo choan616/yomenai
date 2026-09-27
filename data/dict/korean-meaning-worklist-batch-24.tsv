@@ -264,7 +264,7 @@ o			4			三方	さんぼう	three sides; small offering stand	세 방향, 작은
 o			4			消耗	しょうもう	exhaustion; consumption; using up; dissipation	소모, 소진	써서 없앰.		2	default	2	1580310
 o			4			乳房	ちぶさ	breast; udder	유방, 젖꼭지	포유류의 가슴 또는 배의 좌우에 쌍을 이루고 있는, 젖을 분비하기 위한 기관. 암컷은 젖샘이나 피하 조직이 발달하여 융기하고, 분만 후 일정한 기간 동안 젖을 분비한다.		2	default	1	1582760
 o			4			往々	おうおう	sometimes; often	종종, 때때로	시간의 간격을 두고 이따금.		2	default	3	1588820
-~			4			沖合	おきあい	off the coast; offshore; out at sea	근해, 바다 한가운데	부딪쳐 하나가 됨. 또는 그렇게 되게 함.		2	default	1	1588990
+x		먼바다, 바다 한가운데	4			沖合	おきあい	off the coast; offshore; out at sea	근해, 바다 한가운데	부딪쳐 하나가 됨. 또는 그렇게 되게 함.		2	default	1	1588990
 o			4			小売	こうり	retail	소매	물건을 생산자나 도매상에게서 사들여 직접 소비자에게 팖.		2	default	1	1593050
 o			4			不漁	ふりょう	poor catch (fishing)	어획량 부족	물고기가 잘 잡히지 아니함.		2	default	3	1603000
 o			4			我家	わがや	one's house; one's home; one's family	우리 집, 우리 가족	어린아이의 말로, ‘아기’를 이르는 말.		2	default	1	1606650
