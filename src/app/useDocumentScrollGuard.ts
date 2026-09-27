@@ -11,6 +11,12 @@
 // 적혀 있다 — 학습 화면은 그 처방을 쓰지만 셸 화면은 안 썼다). 단어장이 **자동 포커스
 // 입력을 가진 유일한 탭 화면**이라 거기서 먼저 드러났다.
 //
+// **뜻 검수의 「고치기」는 또 다른 경로다** (2026-09-27 사용자 보고). 목록 중간 행에서
+// 입력창이 생기고 `ref.focus()` 를 부르는데, 여긴 키보드가 올라와도 **뷰포트 높이가 이미
+// 정해져 있어 `visualViewport resize` 가 안 뜨거나 늦을 수 있다** — 그 화면에 처음 뜨는
+// 입력이 아니라 목록 스크롤 위치에 딸린 입력이라, 미는 폭이 높이 변화가 아니라 위치
+// 변화로만 나타나는 경우가 있다. 그래서 **포커스 자체**도 계기로 삼는다.
+//
 // **막는 것은 CSS 가 한다.** `index.css` 가 모바일에서 `html, body` 를 `overflow: hidden`
 // 으로 둬 문서 자체를 못 움직이게 한다 — 화면 안 스크롤은 `.screen` 이 따로 가지고 있어
 // 안 죽는다. 이 훅은 그래도 밀린 경우를 **자판이 오르내릴 때 한 번씩** 되돌리는 자리다.
@@ -45,9 +51,24 @@ export function useDocumentScrollGuard(): void {
     vv?.addEventListener('resize', reset)
     // 자판이 내려갈 때는 resize 가 늦거나 안 오는 기기가 있다 — 포커스가 빠질 때도 본다
     window.addEventListener('focusout', reset)
+
+    /**
+     * **포커스가 걸리는 순간도 계기로 삼는다.** iOS 가 입력을 보이려고 미는 것은 focus
+     * 직후 다음 프레임(또는 키보드 애니메이션 중)에 일어나서, focus 이벤트 그 자리에서
+     * 되돌리면 아직 안 밀린 상태를 0으로 덮어써 봐야 소용없다. 한 프레임 뒤와 조금 더
+     * 늦게(키보드 애니메이션이 끝날 즈음) 두 번 본다 — 둘 다 한 번씩이라 연속 되돌리기가
+     * 아니다. 떨림의 원인이었던 건 "계속" 되돌리는 것이었지 "가끔" 되돌리는 게 아니다
+     */
+    const onFocusIn = () => {
+      requestAnimationFrame(reset)
+      setTimeout(reset, 350)
+    }
+    document.addEventListener('focusin', onFocusIn)
+
     return () => {
       vv?.removeEventListener('resize', reset)
       window.removeEventListener('focusout', reset)
+      document.removeEventListener('focusin', onFocusIn)
     }
   }, [])
 }

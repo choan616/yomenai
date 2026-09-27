@@ -59,6 +59,27 @@ test('그래도 밀렸으면 자판이 내려갈 때 되돌린다', async ({ pag
   await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0)
 })
 
+test('목록 중간 행에서 포커스가 걸려도 되돌린다 — 뜻 검수의 「고치기」', async ({ page }) => {
+  test.setTimeout(120_000)
+  await openWordlist(page)
+
+  // 뷰포트 높이는 안 바뀌고(3분할 화면이 아니라 목록 중간에서 입력이 생기는 자리라
+  // visualViewport resize 가 안 뜨거나 늦을 수 있다) **포커스만** 걸리는 상황을 흉내 낸다.
+  // rAF 로 다음 프레임에 바로 되돌리므로, 밀린 값을 확인하는 시점을 따로 안 둔다 —
+  // 라운드트립 사이에 이미 되돌아가 있을 수 있어 그 확인 자체가 들쭉날쭉하다
+  await page.evaluate(() => {
+    document.documentElement.style.minHeight = '3000px'
+    window.scrollTo(0, 400)
+    const el = document.createElement('input')
+    document.body.append(el)
+    el.focus()
+    el.dispatchEvent(new FocusEvent('focusin', { bubbles: true }))
+  })
+
+  // rAF 뒤 한 번, 350ms 뒤 한 번 — 둘 다 한 번씩이라 연속 되돌리기(떨림)가 아니다
+  await expect.poll(() => page.evaluate(() => window.scrollY), { timeout: 1000 }).toBe(0)
+})
+
 // PC 회귀는 따로 안 둔다 — 나머지 e2e 전부가 PC 크기로 돌아서, 문서 스크롤이 죽으면
 // scrollIntoViewIfNeeded 를 쓰는 스펙들이 먼저 깨진다. CSS 와 가드가 같은 미디어 질의로
 // PC 를 제외한다
