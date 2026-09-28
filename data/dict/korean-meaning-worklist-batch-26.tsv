@@ -1,0 +1,41 @@
+﻿verdict	cat	fix	tier	flags	manual	headword	reading	glossEn	llm_ko	stdict_def	manual_reason	category	classSource	band	id
+o			4			家計	かけい	household economy; family finances	가계 경제, 가정 재정	한집안 살림의 수입과 지출의 상태.		2	default	0	1191910
+o			4			加工	かこう	manufacturing; processing; treatment; machining	가공, 처리	원자재나 반제품을 인공적으로 처리하여 새로운 제품을 만들거나 제품의 질을 높임.		2	default	0	1190120
+o			1		Y(2)	架空	かくう	fictitious; imaginary; fanciful; fabricated	가상의, 허구의	어떤 시설물을 공중에 가설함.	일본어의 '架空'은 '가상의'라는 추상적 의미를 지닌 반면, 한국 표준국어대사전의 표제어는 '공중에 가설하다'라는 구체적인 물리적 행위를 뜻하므로 핵심 의미가 갈린다.	2	manual	0	1193130
+o			1	cat-mismatch	Y(1)	家具	かぐ	furniture	가구	집안 살림에 쓰는 기구. 주로 장롱·책장·탁자 따위와 같이 비교적 큰 제품을 이른다.		2	default	0	1191870
+o			4			歌劇	かげき	opera	가극, 오페라	음악을 중심으로 한 종합 무대 예술. 대사는 독창, 중창, 합창 따위로 부르며, 서곡이나 간주곡 따위의 기악곡도 덧붙인다.		2	default	0	1193260
+o			4			可能	かのう	possible; potential; practicable; feasible	가능함, 잠재력	할 수 있거나 될 수 있음.		2	default	0	1191060
+o			4			可能性	かのうせい	possibility; chance; likelihood; probability	가능성	앞으로 실현될 수 있는 성질이나 정도.		2	default	0	1191080
+o			4			家宅	かたく	domicile; premises	집, 거주지	사람이 살고 있는 집. 또는 살림하는 집.		2	default	0	1192210
+o			4			街頭	がいとう	(on the) street	길거리	도시의 길거리.		2	default	0	1204640
+o			4			加盟	かめい	joining (an association, agreement, etc.); participation; affiliation; accession	가맹, 가입, 제휴	동맹이나 연맹, 단체에 가입함.		2	default	0	1190580
+o			4			家事	かじ	housework; domestic chores; family affairs; household matters	가사, 집안일	살림살이에 관한 일.		2	default	0	1191980
+o			4			歌詞	かし	song lyrics; words of a song; libretto	가사	가곡, 가요, 오페라 따위로 불릴 것을 전제로 하여 쓰인 글.		2	default	0	1193280
+o			4			歌手	かしゅ	singer	가수	노래 부르는 것이 직업인 사람.		2	default	0	1193290
+o			4			家賃	やちん	rent	월세	남의 집을 빌려 사는 대가로 내는 돈.		2	default	0	1192270
+o			4			加入	かにゅう	joining (a club, organization, etc.); becoming a member; entry; admission	가입, 참여	조직이나 단체 따위에 들어가거나, 서비스를 제공하는 상품 따위를 신청함.		2	default	0	1190430
+o			4			家電	かでん	household (electrical) appliances; home appliances; consumer electronics	가전제품	가정에서 사용하는 세탁기, 냉장고, 텔레비전 따위의 전기 기기 제품.		2	default	0	1192380
+o			4			家庭	かてい	home; household; family; hearth	가정, 집안	한 가족이 생활하는 집.		2	default	0	1192280
+o			4			家族	かぞく	family	가족	주로 부부를 중심으로 한, 친족 관계에 있는 사람들의 집단. 또는 그 구성원. 혼인, 혈연, 입양 등으로 이루어진다.		2	default	0	1192150
+o			4			歌集	かしゅう	collection of waka poems; anthology; songbook	시집, 和歌를 모아놓은 책	시가를 모아 엮은 책.		2	default	0	1193300
+o			4			閣僚	かくりょう	cabinet ministers	각료	한 나라의 내각을 구성하는 각 장관.		2	default	0	1206310
+o			1	cat-mismatch	Y(1)	脚本	きゃくほん	script; screenplay; scenario	각본, 대본	연극이나 영화를 만들기 위하여 쓴 글. 배우의 동작이나 대사, 무대 장치 따위가 구체적으로 적혀 있다.		2	default	0	1226880
+o			1	cat-mismatch	Y(1)	閣議	かくぎ	cabinet meeting	내각회의	‘내각 회의’를 줄여 이르는 말.		2	default	0	1206300
+o			4			懇談	こんだん	friendly chat; relaxed conversation; informal meeting	간담회, 편안한 대화	서로 정답게 이야기를 주고받음. 또는 그 이야기.		2	default	0	1289900
+o			4			幹部	かんぶ	management; (executive) staff; leaders; leadership	간부, 지도층	기관이나 조직체 따위의 중심이 되는 자리에서 책임을 맡거나 지도하는 사람.		2	default	0	1212170
+o			4			幹事	かんじ	executive secretary; coordinator; organizer; person in charge of making arrangements	진행, 주관, 진행이나 주관을 하는 사람	일을 맡아 주선하고 처리함.		2	default	0	1212110
+o			4			簡素	かんそ	simple; plain; modest	간단함, 소박함	‘간소하다’의 어근.		2	default	0	1214300
+o			1	cat-mismatch	Y(1)	簡易	かんい	simple; simplified; easy; plain	간단함, 간이한	간단하고 편리함. 물건의 내용, 형식이나 시설 따위를 줄이거나 간편하게 하여 이용하기 쉽게 한 상태를 이른다.		2	default	0	1214270
+o			4			看板	かんばん	signboard; sign; billboard; hoarding	간판, 표지판	기관, 상점, 영업소 따위에서 이름이나 판매 상품, 업종 따위를 써서 사람들의 눈에 잘 뜨이게 걸거나 붙이는 표지(標識).		2	default	0	1213990
+o			4			看護	かんご	nursing; (army) nurse	간호	다쳤거나 앓고 있는 환자나 노약자를 보살피고 돌봄.		2	default	0	1213810
+o			4			看護婦	かんごふ	(female) nurse	간호사	‘간호사’의 전 용어.		2	default	0	1213870
+o			3		Y(1)	簡単	かんたん	simple; easy; uncomplicated; brief	간단함, 쉬움	‘간단하다’의 어근.	일본어의 '簡単'은 '쉬운'이라는 형용사적 의미를 가지지만, 한국어 표준국어대사전의 표제어 '간단 (2)'은 명사형 어근으로 정의되어 있어 핵심 쓰임과 품사가 다릅니다.	1	manual	0	1214330
+o			3		Y(1)	干渉	かんしょう	interference; intervention; meddling	간섭, 참견	직접 관계가 없는 남의 일에 부당하게 참견함.	일본어의 '간섭'은 중립적 개입을 포함하는 반면, 한국 표준국어대사전의 '간섭 (干涉)'은 부당하게 참견한다는 부정적 뉘앙스가 핵심 정의에 명시되어 있어 뜻이 갈린다.	1	manual	0	1212050
+o			4			肝臓	かんぞう	liver	간, liver	가로막 바로 밑의 오른쪽에 있는 기관. 탄수화물을 저장하고, 단백질이나 당의 대사를 조절하며, 해독 작용을 한다.		2	default	0	1214660
+o			4			監督	かんとく	supervision; control; superintendence; direction	감독, 관리	일이나 사람 따위가 잘못되지 아니하도록 살피어 단속함. 또는 일의 전체를 지휘함.		2	default	0	1213720
+o			4			感動	かんどう	being deeply moved emotionally; excitement; passion; inspiration	감동, 깊은 감정	크게 느끼어 마음이 움직임.		2	default	0	1212570
+o			4			感謝	かんしゃ	thanks; gratitude; appreciation; thankfulness	감사	고마움을 나타내는 인사.		2	default	0	1212380
+o			4			監査	かんさ	inspection; audit; judgement; judgment	감사, 검사	감독하고 검사함.		2	default	0	1590860
+o			4			監査役	かんさやく	auditor; inspector	감사관	‘감사’의 전 용어.		2	default	0	1213650
+o			4			感想	かんそう	impressions; thoughts; feelings; reactions	감상, 느낌	마음속에서 일어나는 느낌이나 생각.		2	default	0	1212480
+o			4			感性	かんせい	sensitivity; sensitiveness; sense (of ...)	감성, 감각	자극이나 자극의 변화를 느끼는 성질.		2	default	0	1212460
