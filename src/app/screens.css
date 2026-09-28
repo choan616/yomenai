@@ -1844,6 +1844,7 @@ p.rule-record {
   display: flex;
   gap: 6px;
   flex-shrink: 0;
+  margin: 0 0 10px;
 }
 .wl-group-acts button {
   padding: 2px 8px;
