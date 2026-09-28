@@ -15,6 +15,14 @@
 //   verdict null            → 취소. 이 도구는 **안 건드린다** — 이미 찍힌 사람 판정을
 //                             앱의 취소가 지우면 안 된다
 //
+// **기본은 이미 찍힌 칸을 안 덮는다** — 앱 판정은 초벌이고 TSV 가 최종이라는 원칙이다.
+// 그런데 그 초벌 자체를 고쳐서 다시 내보낸 경우(오타를 고쳤다든가)는 **그 앱 판정이
+// 최신이고 맞는 것**인데도 이 규칙에 막혀 안 들어간다(沖合·取下 에서 실제로 겪었다).
+// `--force` 를 주면 이번 내보내기와 값이 다른 칸만 덮어 쓴다 — 값이 같으면(재수출일
+// 뿐이면) 그대로 둔다. **취소(null)는 force 여도 안 건드린다** — 판정을 지우는 것은
+// 다른 종류의 행동이라 이 스위치가 대신 결정하면 안 된다. CLI 에 직접 치는 플래그라
+// 그 자체가 확인이다 — 자동으로는 절대 안 켠다
+//
 // 입력은 둘이고, **앞의 것이 원본이다.**
 //   1. data/dict/korean-meaning-app-review.tsv — 앱의 「판정 내보내기」가 낸 파일.
 //      판정 네 칸뿐이라 저장소에 커밋된다 (`.gitignore` 의 `*-review.tsv` 예외).
@@ -34,6 +42,7 @@ const EXPORT_PATH =
   process.argv.find((a) => a.startsWith('--export='))?.split('=')[1] ??
   join(DICT_DIR, 'korean-meaning-app-review.tsv')
 const DRY = process.argv.includes('--dry')
+const FORCE = process.argv.includes('--force')
 
 type Mark = 'o' | 'x' | '~'
 interface Vote {
@@ -147,7 +156,8 @@ if (files.length === 0) {
   process.exit(1)
 }
 
-const tally = { o: 0, x: 0, '~': 0, skipCancel: 0, kept: 0, notInList: new Set<string>() }
+const tally = { o: 0, x: 0, '~': 0, skipCancel: 0, kept: 0, forced: 0, notInList: new Set<string>() }
+const forcedLog: string[] = []
 const touched = new Set(votes.keys())
 
 for (const file of files) {
@@ -177,12 +187,22 @@ for (const file of files) {
       tally.skipCancel++
       continue
     }
-    // **이미 사람이 찍은 칸은 덮지 않는다.** 앱 판정은 초벌이고 TSV 가 최종이다.
+    // **이미 사람이 찍은 칸은 기본으로 안 덮는다.** 앱 판정은 초벌이고 TSV 가 최종이다.
     // `?` 는 워크리스트의 「미기입」 표시라 빈 칸으로 본다
     const already = (r[col.verdict] ?? '').trim()
     if (already !== '' && already !== '?') {
-      tally.kept++
-      continue
+      const alreadyFix = (r[col.fix] ?? '').trim()
+      const sameAsNow = already === v.mark && alreadyFix === (v.fix ?? '')
+      if (sameAsNow || !FORCE) {
+        tally.kept++
+        continue
+      }
+      // --force 고, 값이 달라졌다 — 무엇을 무엇으로 바꾸는지 남긴다. 이 스위치가
+      // 「TSV 가 최종」을 뒤집는 자리라 되짚을 수 있어야 한다
+      forcedLog.push(
+        `${v.headword}(${id}) ${already}${alreadyFix ? '+' + alreadyFix : ''} → ${v.mark}${v.fix ? '+' + v.fix : ''}`,
+      )
+      tally.forced++
     }
 
     r[col.verdict] = v.mark
@@ -201,8 +221,13 @@ for (const id of touched) tally.notInList.add(`${votes.get(id)?.headword ?? ''}(
 
 console.log('\n=== 앱 검수 반영 ===')
 console.log(
-  `  o ${tally.o} · x ${tally.x} · ~ ${tally['~']} · 취소 건너뜀 ${tally.skipCancel} · 이미 찍힌 칸 유지 ${tally.kept}`,
+  `  o ${tally.o} · x ${tally.x} · ~ ${tally['~']} · 취소 건너뜀 ${tally.skipCancel} · ` +
+    `이미 찍힌 칸 유지 ${tally.kept}${FORCE ? ` · --force 로 덮어씀 ${tally.forced}` : ''}`,
 )
+if (forcedLog.length > 0) {
+  console.log('  덮어쓴 칸:')
+  for (const line of forcedLog) console.log(`    ${line}`)
+}
 if (tally.notInList.size > 0) {
   console.log(
     `  작업 파일에 없는 판정 ${tally.notInList.size}개 — ${[...tally.notInList].slice(0, 8).join(' ')}`,
