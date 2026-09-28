@@ -18,7 +18,7 @@ import { LOCAL_USER_ID, appendEvent, listEvents } from '../db/events.ts'
 import { db } from '../db/schema.ts'
 import { loadCurrentList, saveCurrentList } from './currentList.ts'
 import { adopt, loadWideDict, withWideKanji } from '../dict/wide.ts'
-import { loadBand4Idioms, loadBaseIdioms, loadKanji, type KanjiInfo, type RuntimeIdiom } from '../dict/load.ts'
+import { loadBand4Idioms, loadBaseIdioms, loadKanji, type RuntimeIdiom } from '../dict/load.ts'
 
 interface Row {
   it: RuntimeIdiom
@@ -32,7 +32,6 @@ interface Row {
 
 export function Wordlist({ onBack }: { onBack: () => void }) {
   const [rows, setRows] = useState<Row[] | null>(null)
-  const [kanji, setKanji] = useState<Map<string, KanjiInfo>>(new Map())
   const [error, setError] = useState<string | null>(null)
   const [current, setCurrent] = useState(loadCurrentList)
 
@@ -51,7 +50,6 @@ export function Wordlist({ onBack }: { onBack: () => void }) {
 
         // 담은 것 중 기본 사전 밖(밴드 4)이 있으면 그때만 20MB 를 받는다 — 검수 화면과 같은 관례
         const missing = [...state.wordlist.keys()].filter((id) => !byId.has(id))
-        let kanjiAll = kj
         if (missing.length > 0) {
           const want = new Set(missing)
           for (const it of await loadBand4Idioms()) if (want.has(it.idiomId)) byId.set(it.idiomId, it)
@@ -64,9 +62,9 @@ export function Wordlist({ onBack }: { onBack: () => void }) {
             const dict = await loadWideDict().catch(() => null)
             if (!alive) return
             if (dict !== null) {
-              kanjiAll = withWideKanji(kj, dict)
+              const merged = withWideKanji(kj, dict)
               const look = (k: string) => {
-                const r = kanjiAll.get(k)
+                const r = merged.get(k)
                 return r ? { onyomi: r.on, kunyomi: r.kun } : undefined
               }
               for (const id of want) {
@@ -94,7 +92,6 @@ export function Wordlist({ onBack }: { onBack: () => void }) {
         }
         // 묶음 안에서는 담은 순서 그대로 — 책을 읽어 내려간 순서다
         out.sort((a, b) => a.list.localeCompare(b.list, 'ko') || a.at - b.at)
-        setKanji(kanjiAll)
         setRows(out)
       } catch (e) {
         if (alive) setError(e instanceof Error ? e.message : String(e))
@@ -163,6 +160,38 @@ export function Wordlist({ onBack }: { onBack: () => void }) {
     saveCurrentList(name)
   }
 
+  /**
+   * 묶음 전체를 다른 이름으로 옮긴다 — 이름 바꾸기(`nextName` = 새 이름)와 삭제
+   * (`nextName` = `DEFAULT_LIST`)가 같은 동작이다. 단어는 안 지워지고 이름만 바뀐다 —
+   * 단어장의 1차 가치는 없어지지 않는 것이라 삭제가 데이터를 지우면 안 된다
+   * (context-notes 2026-09-25 절). 옮기기와 똑같은 새 `star` 이벤트만 단어별로 쌓는다
+   */
+  const retag = useCallback(
+    (name: string, nextName: string) => {
+      const targets = (rows ?? []).filter((r) => r.list === name)
+      setRows((prev) =>
+        prev === null ? prev : prev.map((r) => (r.list === name ? { ...r, list: nextName } : r)),
+      )
+      if (current === name) {
+        setCurrent(nextName)
+        saveCurrentList(nextName)
+      }
+      for (const r of targets) {
+        void appendEvent(
+          db(),
+          recordStar({
+            idiomId: r.it.idiomId,
+            on: true,
+            list: nextName,
+            ...(r.memo ? { memo: r.memo } : {}),
+            ctx: { userId: LOCAL_USER_ID, deviceId: getDeviceId(), at: Date.now() },
+          }),
+        )
+      }
+    },
+    [rows, current],
+  )
+
   return (
     <section className="screen">
       <div className="screen-bar">
@@ -188,16 +217,17 @@ export function Wordlist({ onBack }: { onBack: () => void }) {
             ) : (
               grouped.map(([name, items]) => (
                 <div key={name} className="wl-group">
-                  <p className="section-title">
-                    {name}
-                    <span className="dim"> · {items.length}</span>
-                  </p>
+                  <GroupHeader
+                    name={name}
+                    count={items.length}
+                    onRename={(next) => retag(name, next)}
+                    onDelete={() => retag(name, DEFAULT_LIST)}
+                  />
                   <ul className="review-list">
                     {items.map((r) => (
                       <WordRow
                         key={r.it.idiomId}
                         row={r}
-                        kanji={kanji}
                         lists={lists}
                         onWrite={(next) => write(r, next)}
                       />
@@ -281,20 +311,105 @@ function CurrentPicker({
   )
 }
 
+/** 묶음 제목 + 이름 바꾸기·삭제. `기본`은 늘 있어야 하는 자리라 대상에서 뺀다 */
+function GroupHeader({
+  name,
+  count,
+  onRename,
+  onDelete,
+}: {
+  name: string
+  count: number
+  onRename: (next: string) => void
+  onDelete: () => void
+}) {
+  const [mode, setMode] = useState<'view' | 'rename' | 'delete'>('view')
+  const [draft, setDraft] = useState(name)
+
+  if (mode === 'rename') {
+    return (
+      <div className="wl-group-head wl-group-edit">
+        <input
+          className="search-input"
+          value={draft}
+          autoFocus
+          aria-label={`${name} 묶음 이름`}
+          onChange={(e) => setDraft(e.target.value)}
+        />
+        <div className="row">
+          <button
+            type="button"
+            className="btn-primary"
+            disabled={draft.trim() === ''}
+            onClick={() => {
+              const next = draft.trim()
+              if (next !== name) onRename(next)
+              setMode('view')
+            }}
+          >
+            저장
+          </button>
+          <button
+            type="button"
+            className="btn"
+            onClick={() => {
+              setDraft(name)
+              setMode('view')
+            }}
+          >
+            취소
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <>
+      <div className="wl-group-head">
+        <p className="section-title">
+          {name}
+          <span className="dim"> · {count}</span>
+        </p>
+        {name !== DEFAULT_LIST &&
+          (mode === 'delete' ? (
+            <div className="seg" role="group" aria-label={`${name} 묶음 삭제 확인`}>
+              <button type="button" className="danger" onClick={onDelete}>
+                정말 삭제
+              </button>
+              <button type="button" onClick={() => setMode('view')}>
+                취소
+              </button>
+            </div>
+          ) : (
+            <div className="wl-group-acts">
+              <button type="button" onClick={() => setMode('rename')}>
+                이름 고치기
+              </button>
+              <button type="button" onClick={() => setMode('delete')}>
+                삭제
+              </button>
+            </div>
+          ))}
+      </div>
+      {mode === 'delete' && (
+        <p className="wl-memo">묶음만 없어져요. 담아 둔 단어는 기본 묶음으로 옮겨가요.</p>
+      )}
+    </>
+  )
+}
+
 function WordRow({
   row,
-  kanji,
   lists,
   onWrite,
 }: {
   row: Row
-  kanji: Map<string, KanjiInfo>
   lists: string[]
   onWrite: (next: { on: boolean; list?: string; memo?: string }) => void
 }) {
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState(row.memo ?? '')
-  const ko = [...row.it.headword].map((c) => kanji.get(c)?.kr[0] ?? '—').join('')
 
   return (
     <li className="review-row">
@@ -305,7 +420,6 @@ function WordRow({
         <span className="r-sub" lang="ja">
           {row.it.reading}
         </span>
-        <span className="dim"> {ko}</span>
         {/* 학습 중인 것도 남는다 — 여기가 대기열이 아니라는 표시이기도 하다 */}
         <span className="wl-state dim">
           {row.started ? (row.wrong > 0 ? `학습 중 · ✗ ${row.wrong}회` : '학습 중') : '아직 안 나옴'}

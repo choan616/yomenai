@@ -1831,6 +1831,31 @@ p.rule-record {
 .wl-group + .wl-group {
   margin-top: 22px;
 }
+.wl-group-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+.wl-group-head .section-title {
+  margin: 0;
+}
+.wl-group-acts {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.wl-group-acts button {
+  padding: 2px 8px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text-faint);
+  font-size: calc(0.72rem * var(--ui-scale));
+}
+.wl-group-edit {
+  margin: 0 0 10px;
+}
 .wl-state {
   margin-left: auto;
   font-size: calc(0.72rem * var(--ui-scale));

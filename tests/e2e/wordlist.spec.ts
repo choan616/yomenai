@@ -96,3 +96,35 @@ test('묶음을 만들어 옮기고, 메모를 남긴다', async ({ page }) => {
   await expect(again.locator('.wl-memo')).toContainText('3장 첫 문단', { timeout: 60_000 })
   await expect(page.locator('.wl-group .section-title')).toHaveCount(2)
 })
+
+test('묶음 이름을 고치고, 삭제하면 단어는 기본으로 돌아간다', async ({ page }) => {
+  test.setTimeout(120_000)
+  await open(page)
+  await expect(page.locator('.review-row').first()).toBeVisible({ timeout: 60_000 })
+
+  await page.getByRole('button', { name: '+ 새 묶음' }).click()
+  await page.getByLabel('새 묶음 이름').fill('소설 A')
+  await page.getByRole('button', { name: '만들기' }).click()
+
+  const row = page.locator('.review-row').filter({ hasText: '明白' })
+  await row.locator('select').selectOption('소설 A')
+  await expect(page.locator('.wl-group .section-title')).toHaveCount(2)
+
+  // 이름 고치기 — 단어는 그대로, 묶음 이름·지금 담는 묶음 표시만 바뀐다.
+  // 고치는 중에는 제목 자체가 입력창으로 바뀌어 텍스트로 못 찾으니 페이지 전역에서 찾는다
+  // (이 시점엔 「기본」묶음엔 이름 고치기 버튼이 없어 유일하다)
+  await page.getByRole('button', { name: '이름 고치기' }).click()
+  await page.getByLabel('소설 A 묶음 이름').fill('소설 B')
+  await page.getByRole('button', { name: '저장' }).click()
+  await expect(page.getByText('소설 B ·')).toBeVisible()
+  await expect(page.getByText('소설 A ·')).toHaveCount(0)
+  await expect(page.locator('.chip.on')).toHaveText('소설 B')
+
+  // 삭제 — 확인을 거쳐야 하고, 단어는 지워지지 않고 기본 묶음으로 돌아간다
+  const groupB = page.locator('.wl-group').filter({ has: page.getByText('소설 B ·') })
+  await groupB.getByRole('button', { name: '삭제', exact: true }).click()
+  await groupB.getByRole('button', { name: '정말 삭제' }).click()
+  await expect(page.locator('.wl-group .section-title')).toHaveCount(1)
+  await expect(page.locator('.wl-group .section-title')).toContainText('기본')
+  await expect(page.locator('.review-row').filter({ hasText: '明白' })).toBeVisible()
+})
