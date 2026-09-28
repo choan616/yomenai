@@ -104,3 +104,30 @@ describe('옛 이벤트 호환', () => {
     expect(rows(buildReviewExport([old]))[1]).toEqual(['i1', '明白', '~', ''])
   })
 })
+
+describe('이미 검수 완료된 것은 뺀다 (2026-09-28)', () => {
+  // 예전엔 이런 것도 넣었다 — 「매번 이전 검수 내용까지 함께 반영되는 게 부담」이라는
+  // 지적으로 뒤집었다. 이벤트는 append-only 라 안 빼면 판정이 몇 달 전 것이든 계속 남는다
+  it('isVerified 가 true 를 주는 id 는 안 나간다', () => {
+    const tsv = buildReviewExport(
+      [flag('i1', '明白', 'ok'), flag('i2', '愛好', 'ok')],
+      (id) => id === 'i1',
+    )
+    expect(rows(tsv).slice(1)).toEqual([['i2', '愛好', 'o', '']])
+  })
+
+  it('isVerified 를 안 주면 예전과 같다 — 전량이 나간다', () => {
+    const tsv = buildReviewExport([flag('i1', '明白', 'ok'), flag('i2', '愛好', 'ok')])
+    expect(rows(tsv).slice(1)).toHaveLength(2)
+  })
+
+  it('id 를 모르면(false) 포함하는 쪽으로 기운다 — 판정을 잃는 게 중복 한 줄보다 나쁘다', () => {
+    const tsv = buildReviewExport([flag('i1', '明白', 'ok')], () => false)
+    expect(rows(tsv).slice(1)).toEqual([['i1', '明白', 'o', '']])
+  })
+
+  it('취소(-)도 검수 완료면 같이 빠진다', () => {
+    const tsv = buildReviewExport([flag('i1', '明白', null)], (id) => id === 'i1')
+    expect(rows(tsv).slice(1)).toEqual([])
+  })
+})

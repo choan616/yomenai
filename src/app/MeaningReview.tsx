@@ -53,6 +53,12 @@ export function MeaningReview({ onBack }: { onBack: () => void }) {
   )
   /** 방금 내보낸 결과 한 줄. 파일이 어디로 갔는지 안 보이는 기기가 있어 숫자로라도 알린다 */
   const [note, setNote] = useState<string | null>(null)
+  /**
+   * 검수 완료(`verified: true`) 표제어 id (2026-09-28). 내보내기가 이걸로 이미 반영된
+   * 옛 판정을 거른다 — `rows` 를 만들 때 쓰는 `byId` 를 그대로 재사용한다.
+   * 없는 id 는 모르는 것으로 두고 내보내기 쪽이 포함시킨다(안전한 쪽으로 기운다)
+   */
+  const verifiedIds = useRef<Set<string>>(new Set())
 
   useEffect(() => {
     let alive = true
@@ -76,6 +82,11 @@ export function MeaningReview({ onBack }: { onBack: () => void }) {
 
         const seen = new Set<string>()
         for (const c of state.cards.values()) seen.add(c.idiomId)
+
+        // 여기서 훑는 김에 검수 완료 id 도 같이 모은다 — 내보내기가 옛 판정을 거르는 기준
+        verifiedIds.current = new Set(
+          [...byId.values()].filter((it) => it.koMeaning?.verified).map((it) => it.idiomId),
+        )
 
         const rows: Row[] = []
         let unseen = 0
@@ -134,11 +145,16 @@ export function MeaningReview({ onBack }: { onBack: () => void }) {
    * 있어 공개 저장소에 못 올린다 — 여기서 나가는 네 칸은 검수 TSV 옆에 그대로 커밋된다
    * (`core/reviewExport.ts` 머리말).
    *
-   * 화면에 뜬 줄이 아니라 **이벤트를 다시 읽어** 만든다. 방금 찍은 판정까지 들어가야 하고,
-   * 지금 목록에 없는(이미 검수된) 옛 판정도 파일에는 남아 있어야 한다
+   * 화면에 뜬 줄이 아니라 **이벤트를 다시 읽어** 만든다. 방금 찍은 판정까지 들어가야 한다.
+   *
+   * **이미 검수 완료(`verified`)된 옛 판정은 뺀다** (2026-09-28 — 예전엔 넣었는데,
+   * 「매번 이전 검수 내용까지 함께 반영되는 게 부담」이라는 지적으로 뒤집었다). 판정이
+   * 사전에 닿았는지는 `verifiedIds`(= `rows` 를 만들 때 쓴 것과 같은 `byId`)로 안다 —
+   * 새 상태를 안 만들어서 「내보냈는데 반영이 안 됐다」가 그냥 다음 내보내기에 또 실리는
+   * 식으로 저절로 복구된다 (`core/reviewExport.ts` 의 `isVerified` 주석 참조)
    */
   const exportVerdicts = useCallback(async () => {
-    const tsv = buildReviewExport(await listEvents(db(), LOCAL_USER_ID))
+    const tsv = buildReviewExport(await listEvents(db(), LOCAL_USER_ID), (id) => verifiedIds.current.has(id))
     // 엑셀이 더블클릭으로 열 때 UTF-8 로 읽게 BOM 을 붙인다 (tools/lib/tsv.ts 와 같은 관례)
     const url = URL.createObjectURL(new Blob(['﻿' + tsv], { type: 'text/tab-separated-values' }))
     const a = document.createElement('a')
@@ -158,7 +174,7 @@ export function MeaningReview({ onBack }: { onBack: () => void }) {
    * BOM 은 안 붙인다. 엑셀로 열 일이 없고, 붙여넣은 첫 칸에 보이지 않는 글자가 끼면 안 된다
    */
   const copyVerdicts = useCallback(async () => {
-    const tsv = buildReviewExport(await listEvents(db(), LOCAL_USER_ID))
+    const tsv = buildReviewExport(await listEvents(db(), LOCAL_USER_ID), (id) => verifiedIds.current.has(id))
     try {
       await navigator.clipboard.writeText(tsv)
       setNote(`${rowsOf(tsv)}개를 복사했어요. 붙여넣으면 돼요.`)

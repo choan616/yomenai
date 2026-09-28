@@ -35,9 +35,22 @@ function oneLine(s: string): string {
 /**
  * 마지막 `flag` 이벤트가 이긴다 — `replay` 와 같은 규칙.
  * 다만 취소를 버리지 않는다: `replay` 는 화면에 띄울 판정만 들고 있으면 되지만,
- * 여기서는 「한 번이라도 본 줄」이 작업 파일에 실려야 한다
+ * 여기서는 「한 번이라도 본 줄」이 작업 파일에 실려야 한다.
+ *
+ * **이미 사전에 반영된 것은 뺀다** (2026-09-28 사용자 지적 「매번 이전에 검수한 내용까지
+ * 함께 반영되는 것은 부담」). 이벤트는 append-only 라 판정이 몇 달 전 것이든 계속 남고,
+ * 그걸 빼지 않으면 내보내기가 매번 그때까지의 전량을 다시 들고 나온다.
+ *
+ * 기준은 **화면이 이미 쓰는 것과 같다** — `koMeaning.verified`. 새 상태를 안 만든다.
+ * 사전이 재배포돼 그 판정이 반영된 걸 알게 되면 자연히 빠지고, 아직 안 닿았으면(내보냈는데
+ * 적용을 못 받았거나 이번에 처음 찍은 것) 계속 남는다 — 「내보냈는데 유실됐다」가 저절로
+ * 복구된다. `isVerified` 를 안 주거나 id 를 모르면(밴드 4 를 아직 안 불러온 경우 등)
+ * **포함하는 쪽으로 기운다** — 판정을 잃는 것이 중복 한 줄보다 훨씬 나쁘다
  */
-export function buildReviewExport(events: LearningEvent[]): string {
+export function buildReviewExport(
+  events: LearningEvent[],
+  isVerified?: (idiomId: string) => boolean,
+): string {
   const last = new Map<string, MeaningVoteEvent>()
   for (const e of events) {
     if (e.type !== 'flag' || e.deletedAt !== null) continue
@@ -47,6 +60,7 @@ export function buildReviewExport(events: LearningEvent[]): string {
   }
 
   const rows = [...last.values()]
+    .filter((e) => !isVerified?.(e.idiomId))
     .map((e): [string, string, string, string] => {
       const verdict = voteOf(e)
       const fix = oneLine(e.fix ?? '')
