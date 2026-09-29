@@ -1,7 +1,7 @@
 ﻿verdict	cat	fix	tier	flags	manual	headword	reading	glossEn	llm_ko	stdict_def	manual_reason	category	classSource	band	id
 o			5			両替	りょうがえ	change; money exchange	환전			3	default	1	1553820
 o			5			両側	りょうがわ	both sides	양쪽			3	default	1	1585140
-x			5			乱立	らんりつ	standing close together in a disorderly way (of buildings, etc.); standing side by side; standing (for election) in (excessively) large numbers; (too many candidates) competing with each other	무질서하게 빽빽하게 서 있음, 난립			3	default	1	1549130
+o			5			乱立	らんりつ	standing close together in a disorderly way (of buildings, etc.); standing side by side; standing (for election) in (excessively) large numbers; (too many candidates) competing with each other	무질서하게 빽빽하게 서 있음, 난립			3	default	1	1549130
 o			5			乱用	らんよう	abuse; misuse; misappropriation; using to excess	남용, 오용			3	default	1	1549120
 o			5			乱調	らんちょう	confusion	혼란, 난조			3	default	1	1822120
 o			5			乱暴	らんぼう	violence; assault; rowdiness; wildness	난폭함, 거칠고 무례함			3	default	1	1549100
