@@ -2798,3 +2798,25 @@ Phase 2 의 설계된 거부다.
   - 검증: 스크래치 워크리스트로 왕복 — 기본은 그대로 유지, `--force`+다른 값은 덮어씀
     + 로그, `--force`+같은 값은 무해(재실행해도 0건), 취소는 force 여도 안 건드림.
     전부 dry-run 으로 먼저 본 뒤 실제 쓰기까지 확인했다. 실 데이터는 안 건드렸다
+
+---
+
+## 앱 검수 반영 4단계를 한 명령으로 (2026-09-29, 「한 번에 실행하는 건 위험한가」)
+
+- [x] **체이닝 자체는 위험하지 않다고 판단** — 오히려 순서 실수(문서에 반영 순서가 뒤바뀌어
+      있던 것)를 원천 차단한다. 위험한 건 ① 중간 실패를 무시하고 계속 진행하는 것 ②
+      `--force` 를 기본으로 끼워 넣는 것, 이 둘뿐이다
+- [x] **`tools/apply-app-review-full.ts`** — `build:korean-meaning-worklist --batch` →
+      `apply:app-review` → `apply:korean-meaning` → `build:runtime-dict` 를 고정 순서로
+      이어 돈다. `npm run apply:app-review-full`
+- [x] **한 단계라도 실패하면 그 자리에서 멈춘다** — 뒤 단계는 안 돈다. 실측: 존재하지 않는
+      `--export=` 를 줘서 2단계를 일부러 실패시켰더니 종료 코드 1, 3·4단계는 안 돌았다
+- [x] **`--force` 는 기본에 안 낀다** — 켜려면 `npm run apply:app-review-full -- --force`
+      로 명시해야 한다. 자동화가 대신 결정하지 않는다
+- [x] **Windows 함정 — `npx` shell 없이 못 찾음** — `execFileSync('npx', …)` 가 ENOENT.
+      `tsx/cli` 를 `require.resolve` 로 직접 찾아 `node` 로 돌려서 npx·shell 둘 다 필요
+      없게 했다(Node 의 `shell:true` 인자 이스케이프 경고도 같이 피한다)
+- [x] **실측** — 실 데이터로 두 번 돌려 둘 다 무해한 것(이미 반영된 상태)을 확인했다.
+      `public/dict/*.json` 은 `generatedAt` 만 바뀌어 되돌렸다 — 커밋할 실질 변화가 없었다
+- [x] **검증 실행** — `npm test` 725 · tsc·oxlint·build 클린 (앱 런타임 코드는 안 건드려
+      e2e 는 안 돌렸다)

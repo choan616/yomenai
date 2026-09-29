@@ -44,7 +44,8 @@
     "e2e": "playwright test",
     "check:update": "node tools/check-update-banner.mjs",
     "apply:app-review": "tsx tools/apply-app-review.ts",
-    "build:wide-dict": "tsx tools/build-wide-dict.ts"
+    "build:wide-dict": "tsx tools/build-wide-dict.ts",
+    "apply:app-review-full": "tsx tools/apply-app-review-full.ts"
   },
   "dependencies": {
     "dexie": "^4.2.0",
