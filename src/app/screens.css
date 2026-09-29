@@ -1026,45 +1026,94 @@
 }
 
 /* ── 매일 학습 달력 (2026-09-29) ──
-   포인트·배지·스트릭은 기각했다(PLAN §7 무채색). 새 색을 안 들인다 — 채움 정도(명도)만
-   셋으로 가른다. 빈 칸(--surface, 테두리만)이 그대로 "쉰 날"을 말해 배지가 따로 없다 */
-/* 칸을 1fr 로 두면 화면 폭만큼 늘어나 정사각형이 거대해진다(실측 46px, 사용자 지적
-   "너무 크다") — 고정 크기로 바꾸고 격자 자체를 가운데 둔다 */
-.attendance-dow {
+   사용자가 준 참고 이미지(월 달력 + 이전/다음 탐색 + 초록 표시)를 그대로 따른다.
+   `--attend`(index.css) 하나만 새로 들였다 — "했다/안했다/많이 했다"를 색으로 구분하라는
+   명시적 지시라 PLAN §7 "색은 오답에만"의 의도적 예외다. 옅음/짙음은 오답 분포 막대
+   (`.sev-low`/`.sev-mid`)와 같은 기법 — 새 색상 단계를 더 안 만들고 opacity 만 오간다 */
+.cal-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+.cal-title {
+  margin: 0;
+}
+.cal-nav {
+  display: flex;
+  gap: 4px;
+}
+.cal-nav button {
+  background: none;
+  border: 0;
+  width: 28px;
+  height: 28px;
+  font-size: calc(16px * var(--ui-scale));
+  color: var(--text-dim);
+}
+.cal-nav button:disabled {
+  color: var(--text-faint);
+  opacity: 0.4;
+}
+.cal-dow {
   display: grid;
-  grid-template-columns: repeat(7, 28px);
-  justify-content: center;
+  grid-template-columns: repeat(7, 1fr);
   margin-top: 10px;
   font-size: calc(11px * var(--ui-scale));
   color: var(--text-faint);
   text-align: center;
 }
-.attendance-grid {
+.cal-grid {
   display: grid;
-  grid-template-columns: repeat(7, 28px);
+  grid-template-columns: repeat(7, 1fr);
+  margin-top: 4px;
+}
+.cal-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   justify-content: center;
-  gap: 5px;
-  margin-top: 6px;
+  gap: 3px;
+  padding: 5px 0;
 }
-.attendance-cell {
-  display: block;
-  width: 28px;
-  aspect-ratio: 1;
-  border-radius: 5px;
-  border: 1px solid var(--border);
-  background: var(--surface);
+.cal-num {
+  font-size: calc(14px * var(--ui-scale));
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
 }
-.attendance-cell[data-state='touched'] {
-  background: var(--border);
+.cal-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 999px;
+  background: transparent;
 }
-.attendance-cell[data-state='full'] {
-  background: var(--text-dim);
-  border-color: var(--text-dim);
+/* 학습한 날 — 옅음(3장 이상)·짙음(기준 세션 이상) 둘 다 같은 색(--attend)이고
+   opacity 만 다르다. 쉰 날은 숫자·점 색을 안 건드려 원래 무채 그대로 지나간다 */
+.cal-cell[data-tier='touched'],
+.cal-cell[data-tier='full'] {
+  --tier-opacity: 0.55;
 }
-/* 아직 안 온 날 — `none`(쉰 날)과 헷갈리면 이번 주 남은 요일이 전부 "구멍"으로 읽힌다 */
-.attendance-cell[data-state='future'] {
-  border-style: dashed;
-  opacity: 0.5;
+.cal-cell[data-tier='full'] {
+  --tier-opacity: 1;
+}
+.cal-cell[data-tier='touched'] .cal-num,
+.cal-cell[data-tier='full'] .cal-num {
+  color: var(--attend);
+  opacity: var(--tier-opacity);
+}
+.cal-cell[data-tier='touched'] .cal-dot,
+.cal-cell[data-tier='full'] .cal-dot {
+  background: var(--attend);
+  opacity: var(--tier-opacity);
+}
+.cal-cell[data-tier='full'] .cal-num {
+  font-weight: 700;
+}
+/* 오늘 — 참고 이미지의 파란 원 대신 무채 테두리다. 새 색을 하나 더 늘리지 않는다 */
+.cal-cell[data-today] .cal-num {
+  box-shadow: 0 0 0 1.5px var(--text);
+  border-radius: 999px;
+  padding: 1px 6px;
 }
 .cal-caption {
   margin: 12px 0 0;

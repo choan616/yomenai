@@ -1,12 +1,12 @@
 // 매일 학습 달력의 데이터 층 (2026-09-29)
 import { describe, expect, it } from 'vitest'
-import { buildAttendance, calendarGrid, type DayRecord } from './attendance.ts'
+import { buildAttendance, monthGrid, type DayRecord } from './attendance.ts'
 import type { LearningEvent, ReviewEvent } from './types.ts'
 
 const T = { quick: 3, full: 20 }
 
 let n = 0
-/** `at`을 로컬 날짜·시각 구성요소로 직접 짓는다 — localDateKey가 로컬 getter로 읽으므로
+/** `at`을 로컬 날짜·시각 구성요소로 직접 짓는다 — dateKey가 로컬 getter로 읽으므로
  *  실행 환경의 시간대와 무관하게 같은 날짜로 떨어진다 */
 function ev(y: number, m: number, d: number, overrides: Partial<ReviewEvent> = {}): ReviewEvent {
   return {
@@ -75,40 +75,50 @@ describe('buildAttendance', () => {
   })
 })
 
-describe('calendarGrid', () => {
-  // 2026-09-29(오늘, 시스템 기준일)는 화요일이다 — 이번 주 토요일 10-03이 격자 끝,
-  // 4주 전 일요일 09-06이 격자 시작이다.
-  const today = new Date(2026, 8, 29, 15, 0)
+describe('monthGrid', () => {
+  // 2026-09-01은 화요일이다(사용자가 준 참고 이미지와 일치 — 일·월이 빈 칸, 1이 화 밑).
+  // 9월은 30일이라 앞 2칸 + 30일 = 32칸, 7의 배수로 올리면 35칸(5주) — 뒤 3칸이 빈 칸이다.
 
-  it('4주(28일)를 7일씩 묶어 낸다', () => {
-    const weeks = calendarGrid(today, new Map())
-    expect(weeks).toHaveLength(4)
+  it('앞은 달 밖이라 null, 1일부터 실제 칸이 시작된다', () => {
+    const weeks = monthGrid(2026, 9, new Map())
+    expect(weeks[0][0]).toBeNull()
+    expect(weeks[0][1]).toBeNull()
+    expect(weeks[0][2]).toEqual({ date: '2026-09-01', day: 1, tier: 'none' })
+  })
+
+  it('주 단위(7칸)로 묶고, 이번 달 날수만큼 실제 칸을 낸다', () => {
+    const weeks = monthGrid(2026, 9, new Map())
     expect(weeks.every((w) => w.length === 7)).toBe(true)
+    const real = weeks.flat().filter((c) => c !== null)
+    expect(real).toHaveLength(30)
+    expect(real[0]!.date).toBe('2026-09-01')
+    expect(real[29]!.date).toBe('2026-09-30')
   })
 
-  it('시작은 일요일 09-06, 끝은 토요일 10-03이다', () => {
-    const weeks = calendarGrid(today, new Map())
-    expect(weeks[0][0].date).toBe('2026-09-06')
-    expect(weeks[3][6].date).toBe('2026-10-03')
+  it('달 끝 뒤의 남는 칸도 null이다', () => {
+    const weeks = monthGrid(2026, 9, new Map())
+    const last = weeks[weeks.length - 1]
+    // 30일이 5번째 주의 4번째 칸(수요일) — 그 뒤 사흘은 10월이라 null
+    expect(last.filter((c) => c === null)).toHaveLength(3)
   })
 
-  it('오늘 이후는 future, 오늘과 그 이전은 attendance를 따른다', () => {
+  it('attendance에 있는 날짜는 그 등급을, 없는 날짜는 none을 낸다', () => {
     const attendance = new Map<string, DayRecord>([
-      ['2026-09-29', { date: '2026-09-29', count: 20, tier: 'full' }],
+      ['2026-09-10', { date: '2026-09-10', count: 3, tier: 'touched' }],
+      ['2026-09-15', { date: '2026-09-15', count: 25, tier: 'full' }],
     ])
-    const weeks = calendarGrid(today, attendance)
-    const flat = weeks.flat()
-    const sep29 = flat.find((d) => d.date === '2026-09-29')
-    const sep30 = flat.find((d) => d.date === '2026-09-30')
-    const oct03 = flat.find((d) => d.date === '2026-10-03')
-    expect(sep29?.state).toBe('full')
-    expect(sep30?.state).toBe('future')
-    expect(oct03?.state).toBe('future')
+    const flat = monthGrid(2026, 9, attendance).flat()
+    expect(flat.find((c) => c?.date === '2026-09-10')?.tier).toBe('touched')
+    expect(flat.find((c) => c?.date === '2026-09-15')?.tier).toBe('full')
+    expect(flat.find((c) => c?.date === '2026-09-11')?.tier).toBe('none')
   })
 
-  it('기록이 없는 과거 날짜는 none이다', () => {
-    const weeks = calendarGrid(today, new Map())
-    const sep10 = weeks.flat().find((d) => d.date === '2026-09-10')
-    expect(sep10?.state).toBe('none')
+  it('일수가 다른 달·요일이 다르게 시작하는 달도 맞게 짠다 (2월, 일요일 시작)', () => {
+    // 2026-02-01은 일요일이라 앞에 빈 칸이 없다
+    const weeks = monthGrid(2026, 2, new Map())
+    expect(weeks[0][0]).toEqual({ date: '2026-02-01', day: 1, tier: 'none' })
+    const real = weeks.flat().filter((c) => c !== null)
+    expect(real).toHaveLength(28)
+    expect(real[27]!.date).toBe('2026-02-28')
   })
 })

@@ -6,6 +6,11 @@
 // "3장만"(QUICK_SESSION_LIMIT)만 채워도 구멍이 안 생긴다. 기준 세션(`sessionLimit`)을
 // 넘긴 날은 `full`로 갈라 "많이 한 날"을 따로 보여준다 — 처벌 한 축에 보상 한 축을 더한다.
 //
+// 세 등급(`none`/`touched`/`full`) 판정은 여기서 끝난다. 이걸 색으로 보여줄지 명도로
+// 보여줄지는 UI(Report.tsx) 몫이다 — 등급 판정 자체는 표현 방식과 무관해서 core 에는
+// 안 새긴다. (참고: 화면 쪽 그 판단은 2026-09-29 안에 색 쪽으로 뒤집혔다 — "정답에 색을
+// 주면 정답도 이벤트가 된다"는 PLAN §7 원칙에 대한 사용자의 명시적 예외 지시다)
+//
 // 문턱을 인자로 받는 이유 — core 는 app 층(`settings.ts`)을 모른다 (기존 관례, 다른
 // core 파일 어디도 `../app`을 안 부른다). 호출부(Report.tsx)가 QUICK_SESSION_LIMIT과
 // 사용자 설정의 sessionLimit을 읽어 넘긴다.
@@ -29,7 +34,7 @@ export interface AttendanceThresholds {
 }
 
 /** epoch ms를 기기 로컬 자정 기준 날짜 키로. 이벤트 `at`도 이 키도 같은 기준(로컬)이라야 갈린다 */
-function localDateKey(at: number): string {
+export function dateKey(at: number): string {
   const d = new Date(at)
   const y = d.getFullYear()
   const m = String(d.getMonth() + 1).padStart(2, '0')
@@ -46,7 +51,7 @@ function tierOf(count: number, t: AttendanceThresholds): DayTier {
  * 전체 이벤트 로그에서 하루 단위 채점 수를 접는다.
  *
  * 기록이 없는 날은 맵에 안 들어간다 — 호출부가 그 부재를 `none`으로 읽는다
- * (`calendarGrid` 참고). append-only 로그라 언제든 다시 세면 되므로 따로 저장하지 않는다
+ * (`monthGrid` 참고). append-only 로그라 언제든 다시 세면 되므로 따로 저장하지 않는다
  * (`buildLevel`과 같은 원칙, PLAN §5).
  */
 export function buildAttendance(
@@ -56,7 +61,7 @@ export function buildAttendance(
   const counts = new Map<string, number>()
   for (const e of events) {
     if (e.type !== 'review' || e.deletedAt !== null) continue
-    const key = localDateKey(e.at)
+    const key = dateKey(e.at)
     counts.set(key, (counts.get(key) ?? 0) + 1)
   }
   const out = new Map<string, DayRecord>()
@@ -66,53 +71,39 @@ export function buildAttendance(
   return out
 }
 
-/** 격자에 보여줄 주 수 */
-export const CALENDAR_WEEKS = 4
-
-export type GridDayState = DayTier | 'future'
-
-export interface GridDay {
+export interface MonthCell {
   date: string
   /** 1~31 */
   day: number
-  state: GridDayState
+  tier: DayTier
 }
 
 /**
- * 오늘이 속한 주의 토요일까지, 최근 `CALENDAR_WEEKS`주를 꽉 채운 격자를 만든다.
+ * 진짜 월 달력 격자를 만든다 (2026-09-29, 사용자가 "롤링 4주"보다 "월 달력이 자극이
+ * 더 클 것 같다"고 판단해 교체). `month`는 1~12.
  *
- * 월 경계(1일 시작)로 자르는 안은 안 썼다 — 월초엔 대부분 빈 칸이라 달력이 늘 허전해
- * 보인다. 오늘이 속한 주까지 롤링해서 언제 열어도 최근 4주가 꽉 차 있게 한다.
- *
- * 오늘 이후 날짜는 `future`로 갈라 `none`(쉰 날)과 다르게 표시한다 — 안 그러면 이번 주
- * 나머지 요일이 전부 "구멍"으로 보여, 아직 오지도 않은 날을 쉰 것처럼 말하게 된다.
+ * 달 밖 칸은 `null` — 참고 이미지(사용자 제공)가 그 칸을 완전히 비워 두는 방식을
+ * 그대로 따른다. 미래 날짜를 따로 가를 필요가 없다 — 채점 이벤트가 없으니 `attendance`
+ * 맵에 없고, 그러면 `tier`가 자연히 `none`이 된다. 달력 UI(Report.tsx)가 "다음 달"
+ * 버튼을 이번 달까지만 열어 두면 텅 빈 미래 달을 보여줄 일 자체가 없다.
  */
-export function calendarGrid(
-  today: Date,
+export function monthGrid(
+  year: number,
+  month: number,
   attendance: ReadonlyMap<string, DayRecord>,
-): GridDay[][] {
-  const midnight = new Date(today.getFullYear(), today.getMonth(), today.getDate())
-  const todayKey = localDateKey(midnight.getTime())
+): (MonthCell | null)[][] {
+  const first = new Date(year, month - 1, 1)
+  const daysInMonth = new Date(year, month, 0).getDate()
+  const leading = first.getDay()
 
-  const end = new Date(midnight)
-  end.setDate(end.getDate() + (6 - end.getDay()))
-  const start = new Date(end)
-  start.setDate(start.getDate() - (CALENDAR_WEEKS * 7 - 1))
-
-  const days: GridDay[] = []
-  const cursor = new Date(start)
-  while (cursor <= end) {
-    const key = localDateKey(cursor.getTime())
-    const rec = attendance.get(key)
-    days.push({
-      date: key,
-      day: cursor.getDate(),
-      state: key > todayKey ? 'future' : (rec?.tier ?? 'none'),
-    })
-    cursor.setDate(cursor.getDate() + 1)
+  const cells: (MonthCell | null)[] = Array.from({ length: leading }, () => null)
+  for (let day = 1; day <= daysInMonth; day++) {
+    const key = dateKey(new Date(year, month - 1, day).getTime())
+    cells.push({ date: key, day, tier: attendance.get(key)?.tier ?? 'none' })
   }
+  while (cells.length % 7 !== 0) cells.push(null)
 
-  const weeks: GridDay[][] = []
-  for (let i = 0; i < days.length; i += 7) weeks.push(days.slice(i, i + 7))
+  const weeks: (MonthCell | null)[][] = []
+  for (let i = 0; i < cells.length; i += 7) weeks.push(cells.slice(i, i + 7))
   return weeks
 }

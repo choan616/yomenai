@@ -2,7 +2,7 @@
 import { Fragment, useEffect, useState } from 'react'
 import { dataVersion } from '../core/dataVersion.ts'
 import { onyomiSiblings } from '../core/contrast.ts'
-import { buildAttendance, calendarGrid, CALENDAR_WEEKS, type DayRecord } from '../core/attendance.ts'
+import { buildAttendance, dateKey, monthGrid, type DayRecord } from '../core/attendance.ts'
 import {
   buildLevel,
   LEVEL_MIN_SEEN,
@@ -575,7 +575,14 @@ function StableMix({ bands, total }: { bands: readonly BandRow[]; total: number 
    (2026-09-06/07 절 — 손실 회피가 의욕 없는 날 죄책감으로 번져 완전 이탈로 간다) 빈 칸이
    "쉰 날"로 보이는 것 자체는 남긴다(사용자 판단). 대신 문턱을 낮춰 무디게 만든다 —
    "3장만"(QUICK_SESSION_LIMIT)만 채워도 구멍이 안 생기고, 기준 세션(sessionLimit)을
-   넘긴 날은 따로(짙게) 표시해 처벌 한 축에 보상 한 축을 더한다. */
+   넘긴 날은 따로 표시해 처벌 한 축에 보상 한 축을 더한다.
+
+   레이아웃은 두 번 바뀌었다 — 처음엔 롤링 4주(요일 열 4행)였는데 사용자가 참고 이미지로
+   진짜 월 달력(1일 시작, 이전/다음 탐색)을 보여주며 "자극이 더 클 것 같다"고 했다.
+   표시도 처음엔 명도 3단(회색조)이었는데, 그 참고 이미지가 초록 점으로 표시하는 걸 보고
+   사용자가 "했다/안했다/좀 많이 했다 만 색으로 구분하면 된다"고 명시적으로 정했다 —
+   `--attend`(index.css)는 그 지시를 반영한 새 색 토큰이고, "정답에 색을 주면 정답도
+   이벤트가 된다"는 PLAN §7 원칙에 대한 의도적 예외다. */
 const CALENDAR_DOW = ['일', '월', '화', '수', '목', '금', '토']
 
 function CalendarSection({
@@ -585,27 +592,69 @@ function CalendarSection({
   attendance: Map<string, DayRecord>
   sessionLimit: number
 }) {
-  // 28칸짜리 가벼운 계산이라 매 렌더 다시 짜도 된다 — useMemo 를 들일 이유가 없다
-  const weeks = calendarGrid(new Date(), attendance)
+  const now = new Date()
+  const [view, setView] = useState({ y: now.getFullYear(), m: now.getMonth() + 1 })
+  const todayKey = dateKey(now.getTime())
+  // 이번 달을 넘어서는 못 간다 — 텅 빈 미래 달을 보여줄 이유가 없다(attendance.ts 주석)
+  const atCurrentMonth = view.y === now.getFullYear() && view.m === now.getMonth() + 1
+
+  const shiftMonth = (delta: number) =>
+    setView(({ y, m }) => {
+      const d = new Date(y, m - 1 + delta, 1)
+      return { y: d.getFullYear(), m: d.getMonth() + 1 }
+    })
+
+  const weeks = monthGrid(view.y, view.m, attendance)
+
   return (
     <section className="attendance">
       <p className="section-title">얼마나 꾸준히</p>
-      <p className="report-lead">최근 {CALENDAR_WEEKS}주</p>
-      <div className="attendance-dow" aria-hidden="true">
+      <div className="cal-header">
+        <p className="report-lead cal-title">
+          {view.y}년 {view.m}월
+        </p>
+        <div className="cal-nav">
+          <button type="button" onClick={() => shiftMonth(-1)} aria-label="이전 달">
+            ‹
+          </button>
+          <button
+            type="button"
+            onClick={() => shiftMonth(1)}
+            disabled={atCurrentMonth}
+            aria-label="다음 달"
+          >
+            ›
+          </button>
+        </div>
+      </div>
+      <div className="cal-dow" aria-hidden="true">
         {CALENDAR_DOW.map((d) => (
           <span key={d}>{d}</span>
         ))}
       </div>
-      <div className="attendance-grid">
-        {weeks.flatMap((week) =>
-          week.map((d) => (
-            <span key={d.date} className="attendance-cell" data-state={d.state} title={d.date} />
-          )),
+      <div className="cal-grid">
+        {weeks.flatMap((week, wi) =>
+          week.map((cell, di) =>
+            cell === null ? (
+              <span key={`pad-${wi}-${di}`} className="cal-cell cal-cell-pad" aria-hidden="true" />
+            ) : (
+              <span
+                key={cell.date}
+                className="cal-cell"
+                data-tier={cell.tier}
+                data-today={cell.date === todayKey || undefined}
+                title={cell.date}
+              >
+                <span className="cal-num">{cell.day}</span>
+                <span className="cal-dot" aria-hidden="true" />
+              </span>
+            ),
+          ),
         )}
       </div>
       <p className="cal-caption">
-        빈칸 = 쉰 날 · 옅음 = {QUICK_SESSION_LIMIT}장 이상 · 짙음 = 오늘 설정한 한 세션(
-        {sessionLimit}장) 이상 · 옅은 점선 = 아직 안 온 날
+        초록 = 그날 학습 · 옅음 = {QUICK_SESSION_LIMIT}장 이상 · 짙음 = 오늘 설정한 한 세션(
+        {sessionLimit}장) 이상 · 무채색 = 쉰 날
       </p>
     </section>
   )
