@@ -76,14 +76,6 @@ interface Loaded {
 }
 
 /**
- * 표기의 한국 한자음. 한자마다 대표음 하나씩 이어 붙인다.
- * 자료에 음이 없는 글자(々, 일부 신자체)는 `—` 로 둔다 — 오답 상세와 같은 표기다.
- */
-function koreanOf(headword: string, kanji: Map<string, KanjiInfo>): string {
-  return [...headword].map((c) => kanji.get(c)?.kr[0] ?? '—').join('')
-}
-
-/**
  * 마지막으로 만든 인덱스·집계 (2026-09-21). 탭을 옮기면 언마운트되는데, 다시 들어올 때마다
  * `listEvents` → `replay` 를 처음부터 돌면 검색창 아래 글자가 한 박자 늦게 뜬다
  * (사용자 지적). `Home`·`Report` 와 같은 관례다 — 담기/빼기도 이벤트라 버전이 올라
@@ -302,7 +294,8 @@ export function Search({
     [outside, raw, byHead, typed],
   )
 
-  /** 한국 한자음은 두 자료를 합쳐 본다 — `轟` 은 넓힌 사전 쪽에만 있다 */
+  /** 음독·훈독 판정은 두 자료를 합쳐 본다 — `轟` 은 넓힌 사전 쪽에만 있다.
+   *  담을 수 있는지(`OutsideGroup`의 `canAdopt`)를 가르는 데 쓰인다 */
   const outsideKanji = useMemo(
     () => (outside === null || loaded === null ? null : new Map([...loaded.kanji, ...outside.kanji])),
     [outside, loaded],
@@ -471,8 +464,8 @@ function Basket({
  * 표기·읽기·뜻·담기 한 줄씩. **담아 둔 목록과 카메라 후보가 같은 모양을 쓴다** —
  * 카메라는 입력 수단이 하나 느는 것이지 새 카드 계통이 아니다 (2026-09-23 결정 9).
  *
- * 읽기를 같이 내는 게 핵심이다. 검색 결과(`Group`)는 읽기로 찾은 것이라 한국 한자음을
- * 내는데, 여기 오는 사람은 **읽는 법을 몰라서** 왔다
+ * 읽기를 같이 내는 게 핵심이다. 검색 결과(`Group`)는 읽기로 찾아 들어온 것이지만,
+ * 여기 오는 사람은 **읽는 법을 몰라서** 왔다 — 표기만 봐서는 안 되고 읽기를 봐야 한다
  */
 function IdiomRows({
   ids,
@@ -602,9 +595,6 @@ function Group({
   onToggle: (idiomId: string) => void
 }) {
   const { reading, items } = group
-  const ko = items.map((it) => koreanOf(it.headword, loaded.kanji))
-  // 한국 한자음까지 겹치는 줄 — 한국어 지식으로는 못 가르는 구간이라 그 자체가 정보다
-  const dup = new Set(ko.filter((k, i) => ko.indexOf(k) !== i))
 
   return (
     <div className="hit-group">
@@ -614,19 +604,10 @@ function Group({
         <span className="dim"> · {items.length}</span>
       </p>
       <ul className="rows">
-        {items.map((it, i) => (
+        {items.map((it) => (
           <li key={it.idiomId}>
             <span className="r-main" lang="ja">
               {it.headword}
-            </span>
-            <span className="r-sub">
-              {ko[i]}
-              {dup.has(ko[i]!) && (
-                <span className="kr-dup" title="한국 한자음이 같아요">
-                  {' '}
-                  ⚠
-                </span>
-              )}
             </span>
             <span className="r-sub r-meaning">{it.koMeaning?.definition ?? ''}</span>
             {loaded.wrong.has(it.idiomId) && (
@@ -754,7 +735,6 @@ function OutsideGroup({
             <span className="r-main" lang="ja">
               {it.headword}
             </span>
-            <span className="r-sub">{koreanOf(it.headword, kanji)}</span>
             {/* 한국어 번역이 있으면 그것을, 없으면 영어 gloss 를 그대로 —
                 없는 것을 있는 척하지 않는다 */}
             <span className="r-sub r-meaning">

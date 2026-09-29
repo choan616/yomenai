@@ -1,5 +1,6 @@
-// 읽기로 찾기 검증 — 로마자 입력이 가나로 바뀌고, 동음 묶음이 한국 한자음과 함께 뜬다 (2026-09-16).
+// 읽기로 찾기 검증 — 로마자 입력이 가나로 바뀌고, 같은 읽기끼리 묶여 뜬다 (2026-09-16).
 // 보기만 하는 화면이라 채점 요소가 없어야 한다는 것도 같이 본다.
+// 한국 한자음 표시·중복 경고(⚠)는 뺐다 (2026-09-29, 단어장과 같은 이유).
 import { expect, test } from '@playwright/test'
 
 test('히라가나로 한자 표기를 찾는다', async ({ page }) => {
@@ -21,14 +22,9 @@ test('히라가나로 한자 표기를 찾는다', async ({ page }) => {
   const group = page.locator('.hit-group').first()
   await expect(group.locator('.section-title')).toContainText('こうき')
 
-  // 표기·한국 한자음·뜻이 한 줄에
+  // 표기·뜻이 한 줄에
   const kouki = group.locator('.rows > li').filter({ hasText: '光輝' })
-  await expect(kouki).toContainText('광휘')
-  await expect(kouki).toContainText('광채')
-
-  // 한국 한자음까지 겹치는 줄(後期/후기 · 後記/후기)에 표식이 붙는다
-  await expect(group.locator('.rows > li').filter({ hasText: '後期' }).locator('.kr-dup')).toBeVisible()
-  await expect(kouki.locator('.kr-dup')).toHaveCount(0)
+  await expect(kouki.locator('.r-meaning')).not.toBeEmpty()
 
   // 앞부분 일치 — 다 치기 전에도 후보가 나온다
   await input.fill('こうしょう')
@@ -36,8 +32,8 @@ test('히라가나로 한자 표기를 찾는다', async ({ page }) => {
   // **표기가 정확히 그것인 줄**을 집는다. 부분 일치로 잡으면 交渉人·団体交渉 까지
   // 걸린다 — 밴드 4 를 열면서 9줄이 됐다 (2026-09-23)
   await expect(
-    page.locator('.rows > li').filter({ has: page.locator('.r-main', { hasText: /^交渉$/ }) }),
-  ).toContainText('교섭')
+    page.locator('.rows > li').filter({ has: page.locator('.r-main', { hasText: /^交渉$/ }) }).locator('.r-meaning'),
+  ).not.toBeEmpty()
 
   // 채점하는 화면이 아니다
   await expect(page.locator('.kana-input')).toHaveCount(0)
@@ -72,8 +68,8 @@ test('한자를 붙여넣으면 표기로 찾고 읽기를 알려 준다', async
   const group = page.locator('.hit-group').first()
   await expect(group.locator('.section-title')).toContainText('こうしょう')
   await expect(
-    group.locator('.rows > li').filter({ has: page.locator('.r-main', { hasText: /^交渉$/ }) }),
-  ).toContainText('교섭')
+    group.locator('.rows > li').filter({ has: page.locator('.r-main', { hasText: /^交渉$/ }) }).locator('.r-meaning'),
+  ).not.toBeEmpty()
 
   // 사전에 없는 표기는 읽기 쪽과 다른 문구로 답한다
   await input.fill('爆轟')
@@ -100,7 +96,6 @@ test('학습 사전에 없으면 밖에서 찾을지 묻고, 그러면 찾아 �
   const group = page.locator('.hit-group.outside').first()
   await expect(group.locator('.section-title')).toContainText('ばくごう', { timeout: 30_000 })
   const row = group.locator('.rows > li').filter({ hasText: '爆轟' })
-  await expect(row).toContainText('폭굉') // 한국 한자음 — 轟 은 넓힌 사전 쪽 자료에만 있다
   // 한국어 번역이 실린 뒤로는 한국어가 뜬다 (2026-09-26). 없으면 영어 gloss 가 그대로 온다
   await expect(row.locator('.r-meaning')).not.toBeEmpty()
 

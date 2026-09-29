@@ -1371,10 +1371,6 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-/* 한국 한자음까지 겹치는 줄 (後期/후기 · 後記/후기) — 색만으로 구분하지 않는다 (PLAN §7) */
-.kr-dup {
-  color: var(--ng);
-}
 .section-title.exact {
   color: var(--text);
 }
