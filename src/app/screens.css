@@ -1870,9 +1870,10 @@ p.rule-record {
 .wl-move select {
   padding: 6px 10px;
   border: 1px solid var(--border);
-  border-radius: var(--radius);
+  border-radius: 10px;
   background: var(--surface);
   color: var(--text);
   font-size: calc(0.8rem * var(--ui-scale));
   font-family: inherit;
+  min-height: 40px;
 }
