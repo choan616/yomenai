@@ -73,23 +73,32 @@ TSV 를 직접 편집할 거면 **VS Code** 나 **LibreOffice Calc** 로. Excel 
 「내보내기」로 받은 내용을 `data/dict/korean-meaning-app-review.tsv` 에 저장한 뒤:
 
 ```
+npm run apply:app-review-full            # 4단계(워크리스트→반영→사전) 를 순서대로 잇는다
+npm run apply:app-review-full -- --force # 이미 값이 찍힌 칸도 앱 값이 다르면 덮어쓴다
+```
+
+`tools/apply-app-review-full.ts` 가 `build:korean-meaning-worklist --batch` →
+`apply:app-review` → `apply:korean-meaning` → `build:runtime-dict` 를 순서 고정으로 돈다.
+**한 단계라도 실패하면 그 자리에서 멈춘다** — 뒤 단계로 안 넘어간다.
+
+네 단계를 나눠 돌리고 싶으면(각 단계 출력을 하나씩 보며 확인하고 싶을 때):
+
+```
 npm run build:korean-meaning-worklist -- --batch   # 새로 담거나 판정한 id 에 워크리스트 줄을 만든다
 npm run apply:app-review                            # 그 줄의 verdict·fix 칸을 채운다
 ```
 
 **순서가 고정이다.** `apply:app-review` 는 워크리스트 TSV 만 고치고 `korean-class.json` 은
 안 건드린다 — 뒤이어 아래 「3. 반영」의 `apply:korean-meaning` 을 돌려야 사전에 닿는다.
-**`build:korean-meaning-worklist -- --batch` 를 앞에 꼭 둔다** — 안 그러면 이번에 새로
-담거나 판정한 id 는 워크리스트에 줄 자체가 없어 `apply:app-review` 가 「작업 파일에 없는
-판정」으로 건너뛴다.
+`build:korean-meaning-worklist -- --batch` 를 앞에 안 두면 이번에 새로 담거나 판정한 id 는
+워크리스트에 줄 자체가 없어 `apply:app-review` 가 「작업 파일에 없는 판정」으로 건너뛴다.
 
-기본(옵션 없음)은 **이미 찍힌 칸을 안 건드린다** — 한 번도 사람이 안 본 새 판정만 채운다.
-같은 표제어를 앱에서 다시 고쳐 또 내보낸 경우(오타를 고쳤다든가)는 그 칸이 이미 옛 값으로
-채워져 있어 그냥 돌리면 무시된다 — 이때 `-- --force` 를 붙이면 이번 앱 값이 다른 칸만
-덮어쓴다(같으면 그대로 둔다). **취소(앱에서 판정을 되돌린 것)는 force 여도 안 건드린다** —
-판정을 지우는 것은 최신 판정이 이기는 것과는 다른 행동이다. 둘을 이어 돌릴 필요는 없다 —
-옵션 없이 먼저 돌려 보고 「이미 찍힌 칸 유지」에 고친 게 섞여 있으면 그때 `--force` 로
-다시 돌린다.
+`--force` — 기본(옵션 없음)은 **이미 찍힌 칸을 안 건드린다**. 같은 표제어를 앱에서 다시
+고쳐 또 내보낸 경우(오타를 고쳤다든가)는 그 칸이 이미 옛 값으로 채워져 있어 그냥 돌리면
+무시된다 — `--force` 를 붙이면 이번 앱 값이 다른 칸만 덮어쓴다(같으면 그대로 둔다).
+**취소(앱에서 판정을 되돌린 것)는 force 여도 안 건드린다** — 판정을 지우는 것은 최신
+판정이 이기는 것과는 다른 행동이다. 자동화(`apply:app-review-full`)에도 기본으로 안 낀다
+— 켜려면 매번 명시해야 한다.
 
 ### 3. 반영
 
