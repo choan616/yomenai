@@ -459,6 +459,9 @@ function WordRow({
           <button type="button" onClick={() => setEditing(true)}>
             {row.memo ? '메모 고치기' : '메모'}
           </button>
+          <button type="button" onClick={() => onWrite({ on: false })}>
+            빼기
+          </button>
           <label className="wl-move">
             <span className="sr-only">{row.it.headword} 묶음 옮기기</span>
             <select
@@ -472,9 +475,6 @@ function WordRow({
               ))}
             </select>
           </label>
-          <button type="button" onClick={() => onWrite({ on: false })}>
-            빼기
-          </button>
         </div>
       )}
     </li>
