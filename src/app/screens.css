@@ -1028,9 +1028,12 @@
 /* ── 매일 학습 달력 (2026-09-29) ──
    포인트·배지·스트릭은 기각했다(PLAN §7 무채색). 새 색을 안 들인다 — 채움 정도(명도)만
    셋으로 가른다. 빈 칸(--surface, 테두리만)이 그대로 "쉰 날"을 말해 배지가 따로 없다 */
+/* 칸을 1fr 로 두면 화면 폭만큼 늘어나 정사각형이 거대해진다(실측 46px, 사용자 지적
+   "너무 크다") — 고정 크기로 바꾸고 격자 자체를 가운데 둔다 */
 .attendance-dow {
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
+  grid-template-columns: repeat(7, 28px);
+  justify-content: center;
   margin-top: 10px;
   font-size: calc(11px * var(--ui-scale));
   color: var(--text-faint);
@@ -1038,14 +1041,16 @@
 }
 .attendance-grid {
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 6px;
+  grid-template-columns: repeat(7, 28px);
+  justify-content: center;
+  gap: 5px;
   margin-top: 6px;
 }
 .attendance-cell {
   display: block;
+  width: 28px;
   aspect-ratio: 1;
-  border-radius: 6px;
+  border-radius: 5px;
   border: 1px solid var(--border);
   background: var(--surface);
 }
