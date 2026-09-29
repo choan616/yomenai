@@ -1,0 +1,41 @@
+﻿verdict	cat	fix	tier	flags	manual	headword	reading	glossEn	llm_ko	stdict_def	manual_reason	category	classSource	band	id
+o			5			修士課程	しゅうしかてい	master's course	석사 과정			3	default	1	1659170
+o			5			修学旅行	しゅうがくりょこう	excursion; field trip; school trip	견학 여행, 수학여행			3	default	1	1331960
+o			5			新聞記事	しんぶんきじ	newspaper story (article, account)	신문 기사			3	default	1	1939070
+o			5			身体障害者	しんたいしょうがいしゃ	(physically) disabled person; person with a physical disability	신체 장애인			3	default	1	1365750
+o			5			身障者	しんしょうしゃ	(physically) disabled person; person with a physical disability	장애인			3	default	1	1883950
+o			5			十代	じゅうだい	the teens (10-19); teenage; the tenth generation	십대, 10대			3	default	1	1595380
+o			5			十六	じゅうろく	sixteen; 16	열여섯			3	default	1	1335180
+o			5			安楽死	あんらくし	euthanasia	안락사			3	default	1	1153770
+o			5			魚介類	ぎょかいるい	marine products; seafood; fish and shellfish	어패류			3	default	1	1233120
+o			5			御存知	ごぞんじ	knowing; being aware (of); (an) acquaintance	알고 있음, 아는 사람			3	default	1	1593570
+o			5			玉虫色	たまむしいろ	iridescent colour; equivocal (reply, statement, etc.); ambiguous; vague	무지갯빛, 애매한 색			3	default	1	1240650
+o			5			宇宙開発事業団	うちゅうかいはつじぎょうだん	National Space Development Agency; NASDA	우주 개발 사업단			3	default	1	1613500
+o			5			宇宙空間	うちゅうくうかん	(outer) space	우주 공간			3	default	1	1171340
+o			5			宇宙飛行士	うちゅうひこうし	astronaut	우주비행사			3	default	1	1171400
+o			5			意思決定	いしけってい	decision-making	의사결정			3	default	1	1156620
+o			5			議院運営委員会	ぎいんうんえいいいんかい	Committee on Rules and Administration (Diet); House Steering Committee; Standing Committee for House Management	의원 운영위원회			3	default	1	1614660
+o			5			二枚目	にまいめ	handsome man; actor in a love scene	미남, 연기자, 스모의 두 번째 지위			3	default	1	1463210
+o			5			人事院	じんじいん	National Personnel Authority	인사원, 일본 공무원 인사 관리청			3	default	1	1367900
+o			5			人一倍	ひといちばい	(much) more than others; exceedingly; extremely; unusually	남보다 훨씬, 매우			3	default	1	1366560
+o			5			引取	ひきとり	taking; accepting; receipt; collection	가져감, 수령, 회수			3	default	1	1613380
+o			5			人気者	にんきもの	popular person; favorite; favourite	인기 있는 사람			3	default	1	1367030
+o			5			一枚岩	いちまいいわ	monolith; large slab of rock; unity (of a group, organization, etc.); unanimity	하나의 덩어리, 단결			3	default	1	1166750
+o			5			一杯	いっぱい	one cup (of); one glass (of); one bowl (of); cupful	한 잔, 가득			3	default	1	1165670
+o			5			一時期	いちじき	a period (of time)	일시, 한때			3	default	1	1613320
+o			5			一人前	いちにんまえ	one portion; one serving; one person; adult	한 사람 몫, 성인			3	default	1	1163770
+o			5			一戸建	いっこだて	detached house; stand-alone house; single-family home	단독 주택			3	default	1	1162320
+o			5			入館料	にゅうかんりょう	admission fee (for a museum, etc.)	입장료			3	default	1	1944860
+o			5			入念	にゅうねん	careful; elaborate; scrupulous	신중함, 꼼꼼함			3	default	1	1466670
+o			5			入国管理局	にゅうこくかんりきょく	Immigration Bureau; Immigration Office	출입국 관리국			3	default	1	1466140
+o			5			自律	じりつ	autonomy; self-control; self-discipline; autonomy (in Kantian ethics)	자율, 자제력			3	default	1	1318860
+o			5			字詰	じづめ	number of characters per line, page, etc.	줄당 글자 수			3	default	1	1772170
+o			5			昨年来	さくねんらい	since last year	작년부터			3	default	1	1657900
+o			5			低水準	ていすいじゅん	substandard; low-level	낮은 수준			3	default	1	1434510
+o			5			正念場	しょうねんば	critical moment; do-or-die situation; critical juncture	결정적인 순간, 위기			3	default	1	1735290
+o			5			情報部	じょうほうぶ	information bureau; intelligence department	정보통신부			3	default	1	1750510
+o			5			精神障害	せいしんしょうがい	mental disorder; mental disability; mental illness	정신 장애			3	default	1	1751230
+o			5			町役場	まちやくば	town hall	읍사무소, 면사무소			3	default	1	1776840
+o			5			町議会	ちょうぎかい	town council	읍/면 의회			3	default	1	1776890
+o			5			町村	ちょうそん	towns and villages	마을과 촌락, 도시와 시골			3	default	1	1428780
+o			5			証取法	しょうとりほう	Securities and Exchange Act	증권거래법			3	default	1	1608820

@@ -1,0 +1,41 @@
+﻿verdict	cat	fix	tier	flags	manual	headword	reading	glossEn	llm_ko	stdict_def	manual_reason	category	classSource	band	id
+o			5			両替	りょうがえ	change; money exchange	환전			3	default	1	1553820
+o			5			両側	りょうがわ	both sides	양쪽			3	default	1	1585140
+x			5			乱立	らんりつ	standing close together in a disorderly way (of buildings, etc.); standing side by side; standing (for election) in (excessively) large numbers; (too many candidates) competing with each other	무질서하게 빽빽하게 서 있음, 난립			3	default	1	1549130
+o			5			乱用	らんよう	abuse; misuse; misappropriation; using to excess	남용, 오용			3	default	1	1549120
+o			5			乱調	らんちょう	confusion	혼란, 난조			3	default	1	1822120
+o			5			乱暴	らんぼう	violence; assault; rowdiness; wildness	난폭함, 거칠고 무례함			3	default	1	1549100
+o			5			乱売	らんばい	selling at a fire-sale price; clearance sale; dumping	떨이 판매, 대량 판매			3	default	1	1821870
+o			5			会計検査院	かいけいけんさいん	Board of Audit	회계검사원			3	default	1	1613830
+o			5			内閣官房	ないかくかんぼう	Cabinet Secretariat	일본 내각관방			3	default	1	1980250
+o			5			内閣法制局	ないかくほうせいきょく	Cabinet Legislation Bureau	일본 내각법제국			3	default	1	1792100
+o			5			労災	ろうさい	work-related injury; work-related illness; work-related death; on-the-job accident	산업재해			3	default	1	1560290
+o			5			労働基準法	ろうどうきじゅんほう	Labor Standards Act	노동기준법			3	default	1	1948960
+o			5			労働運動	ろうどううんどう	labour movement; labor movement	노동 운동			3	default	1	1560380
+o			5			労働条件	ろうどうじょうけん	working conditions	노동 조건			3	default	1	1560500
+o			5			効率的	こうりつてき	efficient	효율적인			3	default	1	1275240
+o			5			区役所	くやくしょ	ward office; council (regional)	구청			3	default	1	1244270
+o			5			双葉	ふたば	seed leaves (of a dicot); cotyledons; bud; sprout	떡잎, 새싹, 초기 단계			3	default	1	1602730
+o			5			国民年金	こくみんねんきん	national pension; government pension system	국민연금			3	default	1	1657530
+o			5			国分寺	こくぶんじ	state-supported provincial temple (Nara period)	일본의 나라 시대에 지어진 관에서 세운 절			3	default	1	1657460
+o			5			国際人	こくさいじん	internationally minded person; cosmopolitan; cosmopolite; citizen of the world	국제적인 사람, 세계적인 사람			3	default	1	1657360
+o			5			国際協力事業団	こくさいきょうりょくじぎょうだん	Japan International Cooperation Agency (1974); JICA	국제협력사업단			3	default	1	1657350
+o			5			壊滅	かいめつ	(complete) destruction; annihilation; devastation	괴멸, 파괴, 황폐			3	default	1	1199930
+o			5			学卒	がくそつ	college graduate	대학 졸업생			3	default	1	1206980
+o			5			専守防衛	せんしゅぼうえい	nonaggressive defense (policy) (defence)	공격에 대응하는 방어			3	default	1	1703710
+o			5			将来像	しょうらいぞう	vision of the future	장래상			3	default	1	1347730
+o			5			強行採決	きょうこうさいけつ	forced passage (of a bill, measure, resolution, etc.); railroading; steamrolling; steamrollering	강행 채결			3	default	1	1630210
+o			5			戦列	せんれつ	line of battle	전열			3	default	1	1390680
+o			5			戸別訪問	こべつほうもん	door-to-door visit; door-to-door canvassing (canvasing)	가정 방문			3	default	1	1631050
+o			5			挿絵	さしえ	illustration (in a book, newspaper, etc.); picture	삽화			3	default	1	1593750
+o			5			数億年	すうおくねん	several hundred million years	수억 년			3	default	1	1372960
+o			5			来客	らいきゃく	visitor; caller	손님			3	default	1	1585030
+o			5			来賓	らいひん	guest; visitor; visitor's arrival	내빈, 손님			3	default	1	1548230
+o			5			楽観的	らっかんてき	optimistic; hopeful	낙관적인			3	default	1	1207320
+o			5			歯科医師	しかいし	dentist	치과 의사			3	default	1	1313140
+o			5			毎晩	まいばん	every night	매일 밤			3	default	1	1524730
+o			5			炉心	ろしん	nuclear reactor core	원자로 노심			3	default	1	1644670
+o			5			礼儀	れいぎ	manners; courtesy; etiquette	예의, 예절			3	default	1	1557470
+o			5			礼拝	れいはい	worship (esp. Christian); (church) service	예배			3	default	1	1557560
+o			5			税理士	ぜいりし	tax counsellor; tax counselor; licensed tax accountant	세무사			3	default	1	1382200
+o			5			竜王	りゅうおう	Dragon King; promoted rook	용왕			3	default	1	1823650
