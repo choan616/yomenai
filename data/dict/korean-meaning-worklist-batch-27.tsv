@@ -1,4 +1,14 @@
 ﻿verdict	cat	fix	tier	flags	manual	headword	reading	glossEn	llm_ko	stdict_def	manual_reason	category	classSource	band	id
+o			4			共感	きょうかん	sympathy; empathy; response; identification (with someone)	공감, 감정 이입	남의 감정, 의견, 주장 따위에 대하여 자기도 그렇다고 느낌. 또는 그렇게 느끼는 기분.		2	default	0	1234370
+o			4			護身	ごしん	self-protection; self-defence	호신, 자기 방어	몸을 보호함.		2	default	3	1271560
+o			4			合法	ごうほう	legal; lawful; legitimate	합법적, 합법	법령이나 규범에 적합함.		2	default	0	1285270
+o			4			人脈	じんみゃく	personal connections	인맥	정계, 재계, 학계 따위에서 형성된 사람들의 유대 관계.		2	default	0	1369270
+o			4			訴訟	そしょう	lawsuit; suit; (legal) action; litigation	소송	재판에 의하여 원고와 피고 사이의 권리나 의무 따위의 법률관계를 확정하여 줄 것을 법원에 요구함. 또는 그런 절차. 민사 소송, 형사 소송, 행정 소송, 선거 소송 따위가 있다.		2	default	0	1397740
+o			4			窒息	ちっそく	suffocation; choking; asphyxia	질식, 숨 막힘	숨통이 막히거나 산소가 부족하여 숨을 쉴 수 없게 됨.		2	default	1	1422540
+o			4			報酬	ほうしゅう	remuneration; recompense; reward; toll	보상, 대가	고맙게 해 준 데 대하여 보답을 함. 또는 그 보답.		2	default	0	1515700
+o			4			貯蓄	ちょちく	savings	저축	절약하여 모아 둠.		2	default	0	1597700
+o			4			思案顔	しあんがお	pensive (or worried) look on one's face	생각에 잠긴 얼굴, 근심 어린 표정			2	default	4	2258050
+o			4			無課金	むかきん	not paying for virtual goods or premium features (in a video game, on a social networking service, etc.); free-to-play player; F2P player	무과금			2	default	4	2833918
 ?			4			監視	かんし	monitoring; watching; observation; surveillance	감시, 관찰	단속하기 위하여 주의 깊게 살핌.		2	default	0	1213680
 ?			4			感心	かんしん	admiration; being impressed; admirable; praiseworthy	감탄, 감명	마음속 깊이 느낌. 또는 그렇게 감동되어 마음이 움직임.		2	default	0	1212450
 ?			4			感染	かんせん	infection; contagion; becoming infected; being infected (e.g. with harmful ideas)	감염, 전염	나쁜 버릇이나 풍습, 사상 따위가 영향을 주어 물이 들게 함.		2	default	0	1212470
