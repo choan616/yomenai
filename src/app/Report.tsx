@@ -2,6 +2,7 @@
 import { Fragment, useEffect, useState } from 'react'
 import { dataVersion } from '../core/dataVersion.ts'
 import { onyomiSiblings } from '../core/contrast.ts'
+import { buildAttendance, calendarGrid, CALENDAR_WEEKS, type DayRecord } from '../core/attendance.ts'
 import {
   buildLevel,
   LEVEL_MIN_SEEN,
@@ -29,7 +30,7 @@ import { LOCAL_USER_ID, listEvents } from '../db/events.ts'
 import { db } from '../db/schema.ts'
 import { loadKanji, loadPairs } from '../dict/load.ts'
 import { loadStudyPool, withRuntimePairs } from '../dict/pool.ts'
-import { loadSettings } from './settings.ts'
+import { loadSettings, QUICK_SESSION_LIMIT } from './settings.ts'
 import { mistakeContextFromKanji } from '../dict/mistakeContext.ts'
 import { loadPairIndex } from '../dict/pairIndex.ts'
 import { BAND_NOTE } from '../lib/bands.ts'
@@ -66,6 +67,10 @@ interface Loaded {
    * 두 화면이 서로의 자를 밝히기로 했다 — 여기서는 음독 맵으로 들어가는 행이 그 수를 든다
    */
   onyomi: OnyomiMasterySummary
+  /** 매일 학습 달력의 하루 단위 참여 등급 (2026-09-29) */
+  attendance: Map<string, DayRecord>
+  /** 「많이 한 날」의 기준선 — 사용자 설정의 세션 길이 */
+  sessionLimit: number
 }
 
 /**
@@ -112,11 +117,12 @@ export function Report({
           listEvents(db(), LOCAL_USER_ID),
         ])
         if (!alive) return
+        const settings = loadSettings()
         // **세션·음독맵과 같은 풀을 쓴다** (2026-09-26). 전에는 `base.json` 만 봐서
         // 담아 둔 밴드 4 와 들인 말이 사다리·음독 집계에서 통째로 빠져 있었다
         const { pool: learn, kanji } = await loadStudyPool({
           starred: replay(events).starred,
-          includeKun: loadSettings().kunPercent > 0,
+          includeKun: settings.kunPercent > 0,
           kanji: baseKanji,
         })
         if (!alive) return
@@ -147,12 +153,18 @@ export function Report({
         const passed = passedCount(events)
         // 음독 맵과 **같은 함수·같은 분모**로 센다. 따로 세면 두 화면이 또 갈라진다
         const onyomi = summarize(pairRows(learn.flatMap((p) => p.pairIds), pairs, state))
+        const attendance = buildAttendance(events, {
+          quick: QUICK_SESSION_LIMIT,
+          full: settings.sessionLimit,
+        })
         const next: Loaded = {
           report,
           onyomi,
           level,
           voicing,
           passed,
+          attendance,
+          sessionLimit: settings.sessionLimit,
           rows: mistakeRows(report.mistakes, voicing, Math.max(0, report.unclassified - passed)),
           prescriptions: prescribe({
             report,
@@ -232,7 +244,7 @@ function ReportBody({
   onFocus: (pairIds: string[]) => void
   onRule: (id: RuleId | null) => void
 }) {
-  const { report, level, prescriptions, voicing, rows, passed } = data
+  const { report, level, prescriptions, voicing, rows, passed, attendance, sessionLimit } = data
   // 정답률은 *실제* 오답으로 센다. 분류된 오답만 쓰면 미분류분이 정답으로 둔갑한다
   const accuracy =
     report.totalReviews > 0
@@ -249,6 +261,8 @@ function ReportBody({
   return (
     <>
       <LevelSection level={level} reviews={report.totalReviews} accuracy={accuracy} />
+
+      <CalendarSection attendance={attendance} sessionLimit={sessionLimit} />
 
       <section className="rx">
         <p className="section-title">다음에 볼 것</p>
@@ -553,6 +567,47 @@ function StableMix({ bands, total }: { bands: readonly BandRow[]; total: number 
         ))}
       </p>
     </div>
+  )
+}
+
+/* ── 매일 학습 달력 (2026-09-29, 사용자 제안) ──
+   "내가 어디쯤인가" 다음은 "얼마나 꾸준히 왔나"다. 포인트·배지·스트릭은 기각했지만
+   (2026-09-06/07 절 — 손실 회피가 의욕 없는 날 죄책감으로 번져 완전 이탈로 간다) 빈 칸이
+   "쉰 날"로 보이는 것 자체는 남긴다(사용자 판단). 대신 문턱을 낮춰 무디게 만든다 —
+   "3장만"(QUICK_SESSION_LIMIT)만 채워도 구멍이 안 생기고, 기준 세션(sessionLimit)을
+   넘긴 날은 따로(짙게) 표시해 처벌 한 축에 보상 한 축을 더한다. */
+const CALENDAR_DOW = ['일', '월', '화', '수', '목', '금', '토']
+
+function CalendarSection({
+  attendance,
+  sessionLimit,
+}: {
+  attendance: Map<string, DayRecord>
+  sessionLimit: number
+}) {
+  // 28칸짜리 가벼운 계산이라 매 렌더 다시 짜도 된다 — useMemo 를 들일 이유가 없다
+  const weeks = calendarGrid(new Date(), attendance)
+  return (
+    <section className="attendance">
+      <p className="section-title">얼마나 꾸준히</p>
+      <p className="report-lead">최근 {CALENDAR_WEEKS}주</p>
+      <div className="attendance-dow" aria-hidden="true">
+        {CALENDAR_DOW.map((d) => (
+          <span key={d}>{d}</span>
+        ))}
+      </div>
+      <div className="attendance-grid">
+        {weeks.flatMap((week) =>
+          week.map((d) => (
+            <span key={d.date} className="attendance-cell" data-state={d.state} title={d.date} />
+          )),
+        )}
+      </div>
+      <p className="cal-caption">
+        빈칸 = 쉰 날 · 옅음 = {QUICK_SESSION_LIMIT}장 이상 · 짙음 = 오늘 설정한 한 세션(
+        {sessionLimit}장) 이상 · 옅은 점선 = 아직 안 온 날
+      </p>
+    </section>
   )
 }
 

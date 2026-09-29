@@ -2820,3 +2820,29 @@ Phase 2 의 설계된 거부다.
       `public/dict/*.json` 은 `generatedAt` 만 바뀌어 되돌렸다 — 커밋할 실질 변화가 없었다
 - [x] **검증 실행** — `npm test` 725 · tsc·oxlint·build 클린 (앱 런타임 코드는 안 건드려
       e2e 는 안 돌렸다)
+
+## 매일 학습 달력 (2026-09-29, 「구멍이 생기도록 하는 방법이 자극이 된다」)
+
+포인트·배지·스트릭은 2026-09-06/07 절에서 이미 기각했다(손실 회피가 의욕 없는 날
+죄책감으로 번져 완전 이탈로 간다). 이번 제안은 그 손실 회피 자체는 남기되 문턱을 낮춰
+무디게 만드는 절충안 — 사용자가 "3세션만이라도 참여했다면 구멍을 채우고, 기준 세션보다
+많이 한 날은 다르게 표현하자"로 구체화했다.
+
+- [x] **`src/core/attendance.ts`** — `buildAttendance(events, {quick, full})` 로 이벤트
+      로그를 로컬 날짜별 채점 수로 접고 `none`/`touched`/`full` 세 등급을 매긴다. 문턱을
+      인자로 받는다 — core 는 app 층(`settings.ts`)을 모른다는 기존 관례를 그대로 따른다
+- [x] **문턱** — `quick`(3, `QUICK_SESSION_LIMIT`) 미만은 `none`(구멍), `full`(사용자
+      설정 `sessionLimit`, 기본 20) 이상은 `full`, 그 사이는 `touched`
+- [x] **`calendarGrid(today, attendance)`** — 오늘이 속한 주의 토요일까지 최근 4주를
+      롤링한 7×4 격자. 월 1일 시작으로 자르는 안은 기각 — 월초엔 대부분 빈 칸이라 달력이
+      허전해 보인다. 오늘 이후 날짜는 `future`로 갈라 `none`과 구분한다 — 안 그러면 이번
+      주 남은 요일이 전부 "쉰 날"로 보인다
+- [x] **`Report.tsx` `CalendarSection`** — `LevelSection` 바로 아래("내가 어디쯤인가"
+      다음은 "얼마나 꾸준히 왔나"). 새 색을 안 들인다(PLAN §7) — `none`은 `--surface`
+      테두리만, `touched`는 `--border`, `full`은 `--text-dim` 채움. 아직 안 온 날은
+      점선 테두리 + 낮은 불투명도
+- [x] **검증 실행** — `npm test` 736(+11) · e2e 97(+1, `report-attendance.spec.ts`) ·
+      tsc·oxlint·build 클린. Playwright로 라이트·다크 두 테마 스크린샷 확인 — 오늘(20장)
+      full, 어제(3장) touched, 그제(1장) none, 내일 이후 future로 실측대로 갈린다
+- [ ] **11-F 와 같은 자리** — 실기기 체감 대기. 구멍이 실제로 자극이 되는지, `touched`·
+      `full` 두 명도 단계가 실물에서 구분되는지는 며칠 써 봐야 안다

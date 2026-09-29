@@ -1025,6 +1025,49 @@
   color: var(--text-faint);
 }
 
+/* ── 매일 학습 달력 (2026-09-29) ──
+   포인트·배지·스트릭은 기각했다(PLAN §7 무채색). 새 색을 안 들인다 — 채움 정도(명도)만
+   셋으로 가른다. 빈 칸(--surface, 테두리만)이 그대로 "쉰 날"을 말해 배지가 따로 없다 */
+.attendance-dow {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  margin-top: 10px;
+  font-size: calc(11px * var(--ui-scale));
+  color: var(--text-faint);
+  text-align: center;
+}
+.attendance-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+  margin-top: 6px;
+}
+.attendance-cell {
+  display: block;
+  aspect-ratio: 1;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+}
+.attendance-cell[data-state='touched'] {
+  background: var(--border);
+}
+.attendance-cell[data-state='full'] {
+  background: var(--text-dim);
+  border-color: var(--text-dim);
+}
+/* 아직 안 온 날 — `none`(쉰 날)과 헷갈리면 이번 주 남은 요일이 전부 "구멍"으로 읽힌다 */
+.attendance-cell[data-state='future'] {
+  border-style: dashed;
+  opacity: 0.5;
+}
+.cal-caption {
+  margin: 12px 0 0;
+  font-size: calc(0.72rem * var(--ui-scale));
+  line-height: 1.6;
+  color: var(--text-faint);
+}
+
 /* ── 홈 헤더의 설정 (2026-09-14) ── */
 /* 하단 메뉴에서 설정을 빼 다시보기 자리를 만들었다. 첫 진입에서도 닿아야 한다 */
 .home-top {
