@@ -736,10 +736,18 @@ function CalendarSection({
         />
       )}
       <p className="cal-caption">
-        <span className="cal-key" data-tier="touched" /> {QUICK_SESSION_LIMIT}장 이상
-        <span className="cal-key" data-tier="full" /> {sessionLimit}장 이상
-        <span className="cal-key" data-milestone /> 연속 달성
-        <span className="cal-key-reach">↑</span> 밴드 안정 도달
+        <span>
+          <span className="cal-key" data-tier="touched" /> {QUICK_SESSION_LIMIT}장 이상
+        </span>
+        <span>
+          <span className="cal-key" data-tier="full" /> {sessionLimit}장 이상
+        </span>
+        <span>
+          <span className="cal-key" data-milestone /> 연속 달성
+        </span>
+        <span>
+          <span className="cal-key-reach">↑</span> 밴드 안정 도달
+        </span>
       </p>
     </section>
   )

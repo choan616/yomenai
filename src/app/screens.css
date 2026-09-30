@@ -1030,9 +1030,12 @@
    `--attend`(index.css) 하나만 새로 들였다 — "했다/안했다/많이 했다"를 색으로 구분하라는
    명시적 지시라 PLAN §7 "색은 오답에만"의 의도적 예외다. 옅음/짙음은 오답 분포 막대
    (`.sev-low`/`.sev-mid`)와 같은 기법 — 새 색상 단계를 더 안 만들고 opacity 만 오간다 */
+/* 2026-10-01 모던하게 다듬었다(사용자 요청) — 숫자 색 + 아래 점 대신 **원형 칩의 채움**으로
+   등급을 보여준다. 옅음 = `--attend` 28% 틴트(22%는 다크에서 배경에 묻혔다), 짙음 = `--attend` 채움 + 흰 글씨.
+   오늘은 원형 테두리(안쪽), 이정표는 바깥 고리 — 둘이 겹쳐도 box-shadow 두 겹으로 같이 선다 */
 .cal-header {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
   gap: 10px;
 }
@@ -1041,82 +1044,119 @@
 }
 .cal-nav {
   display: flex;
-  gap: 4px;
+  gap: 2px;
 }
 .cal-nav button {
+  display: grid;
+  place-items: center;
   background: none;
   border: 0;
-  width: 28px;
-  height: 28px;
-  font-size: calc(16px * var(--ui-scale));
+  border-radius: 999px;
+  width: 32px;
+  height: 32px;
+  font-size: calc(18px * var(--ui-scale));
+  line-height: 1;
   color: var(--text-dim);
+}
+.cal-nav button:not(:disabled):active {
+  background: var(--surface-2);
 }
 .cal-nav button:disabled {
   color: var(--text-faint);
-  opacity: 0.4;
+  opacity: 0.35;
 }
 .cal-dow {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  margin-top: 10px;
+  margin-top: 14px;
   font-size: calc(11px * var(--ui-scale));
+  font-weight: 600;
+  letter-spacing: 0.04em;
   color: var(--text-faint);
   text-align: center;
 }
 .cal-grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  margin-top: 4px;
+  row-gap: 4px;
+  margin-top: 6px;
 }
 .cal-cell {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
   gap: 3px;
-  padding: 5px 0;
+  padding: 2px 0 3px;
 }
 .cal-num {
+  --ring-out: 0 0 0 0 transparent;
+  --ring-in: 0 0 0 0 transparent;
+  display: grid;
+  place-items: center;
+  width: calc(34px * var(--ui-scale));
+  height: calc(34px * var(--ui-scale));
+  border-radius: 999px;
   font-size: calc(14px * var(--ui-scale));
   font-variant-numeric: tabular-nums;
   color: var(--text);
+  box-shadow: var(--ring-out), var(--ring-in);
+  transition: background-color 120ms ease-out;
 }
+/* 학습한 날 — 옅음(3장 이상)은 틴트, 짙음(기준 세션 이상)은 채움. 쉰 날은 아무것도 안 얹는다 */
+.cal-cell[data-tier='touched'] .cal-num {
+  background: color-mix(in oklab, var(--attend) 28%, transparent);
+  color: var(--text);
+}
+.cal-cell[data-tier='full'] .cal-num {
+  background: var(--attend);
+  color: #fff;
+  font-weight: 700;
+}
+/* 오늘 — 원형 안쪽 테두리. 채움 위에서도 보이게 inset 이다 */
+.cal-cell[data-today] .cal-num {
+  --ring-in: inset 0 0 0 1.5px var(--text);
+  font-weight: 700;
+}
+.cal-cell[data-today][data-tier='full'] .cal-num {
+  --ring-in: inset 0 0 0 2px var(--bg);
+}
+/* 이정표 달성일 — 바깥 고리. 배경색 틈 한 겹을 두어 칩과 떨어져 보이게 */
+.cal-cell[data-milestone] .cal-num {
+  --ring-out: 0 0 0 2px var(--bg), 0 0 0 3.5px var(--attend);
+}
+/* 칩 아래 점은 **선택 표시**로만 쓴다 (전에는 등급 표시였다) */
 .cal-dot {
   width: 4px;
   height: 4px;
   border-radius: 999px;
   background: transparent;
 }
-/* 학습한 날 — 옅음(3장 이상)·짙음(기준 세션 이상) 둘 다 같은 색(--attend)이고
-   opacity 만 다르다. 쉰 날은 숫자·점 색을 안 건드려 원래 무채 그대로 지나간다 */
-.cal-cell[data-tier='touched'],
-.cal-cell[data-tier='full'] {
-  --tier-opacity: 0.55;
+button.cal-cell {
+  background: none;
+  border: 0;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
 }
-.cal-cell[data-tier='full'] {
-  --tier-opacity: 1;
+button.cal-cell[aria-pressed='true'] .cal-dot {
+  background: var(--text);
 }
-.cal-cell[data-tier='touched'] .cal-num,
-.cal-cell[data-tier='full'] .cal-num {
-  color: var(--attend);
-  opacity: var(--tier-opacity);
-}
-.cal-cell[data-tier='touched'] .cal-dot,
-.cal-cell[data-tier='full'] .cal-dot {
-  background: var(--attend);
-  opacity: var(--tier-opacity);
-}
-.cal-cell[data-tier='full'] .cal-num {
+.cal-reach {
+  position: absolute;
+  top: 0;
+  right: calc(50% - 22px * var(--ui-scale));
+  font-size: calc(10px * var(--ui-scale));
   font-weight: 700;
-}
-/* 오늘 — 참고 이미지의 파란 원 대신 무채 테두리다. 새 색을 하나 더 늘리지 않는다 */
-.cal-cell[data-today] .cal-num {
-  box-shadow: 0 0 0 1.5px var(--text);
-  border-radius: 999px;
-  padding: 1px 6px;
+  line-height: 1;
+  color: var(--text-dim);
 }
 .cal-caption {
-  margin: 12px 0 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 12px;
+  margin: 14px 0 0;
   font-size: calc(0.72rem * var(--ui-scale));
   line-height: 1.6;
   color: var(--text-faint);
@@ -1134,37 +1174,11 @@
   font-weight: 400;
   color: var(--text-faint);
 }
-.cal-cell {
-  position: relative;
-}
-button.cal-cell {
-  background: none;
-  border: 0;
-  border-radius: var(--radius);
-  font: inherit;
-  color: inherit;
-  cursor: pointer;
-}
-button.cal-cell[aria-pressed='true'] {
-  background: var(--surface-2);
-}
-/* 이정표 달성일 — 점 둘레에 고리. 점과 같은 색이라 "그날 채운 칸"의 연장으로 읽힌다 */
-.cal-cell[data-milestone] .cal-dot {
-  box-shadow: 0 0 0 2px var(--bg), 0 0 0 3.5px var(--attend);
-}
-.cal-reach {
-  position: absolute;
-  top: 1px;
-  right: 3px;
-  font-size: calc(9px * var(--ui-scale));
-  line-height: 1;
-  color: var(--text-dim);
-}
 .cal-detail {
-  margin-top: 8px;
-  padding: 10px 12px;
-  border: 1px solid var(--border);
+  margin-top: 10px;
+  padding: 12px 14px;
   border-radius: var(--radius);
+  background: var(--surface-2);
 }
 .cal-detail-head {
   margin: 0;
@@ -1178,38 +1192,40 @@ button.cal-cell[aria-pressed='true'] {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-  margin: 6px 0 0;
+  margin: 8px 0 0;
   font-size: calc(12px * var(--ui-scale));
   color: var(--text);
 }
 .cal-detail-tags span {
-  padding: 1px 8px;
-  border: 1px solid var(--attend);
+  padding: 2px 10px;
   border-radius: 999px;
+  background: color-mix(in oklab, var(--attend) 28%, transparent);
 }
-/* 범례 견본 — 달력 칸의 점과 같은 규칙으로 그린다 */
+/* 범례 견본 — 달력 칩과 같은 규칙으로 그린다. 항목끼리 간격은 `.cal-caption` 의 gap 이 맡는다 */
+.cal-caption > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
 .cal-key {
   display: inline-block;
-  width: 6px;
-  height: 6px;
-  margin: 0 3px 1px 8px;
+  width: 10px;
+  height: 10px;
   border-radius: 999px;
   background: var(--attend);
-  vertical-align: middle;
-}
-.cal-key:first-child {
-  margin-left: 0;
 }
 .cal-key[data-tier='touched'] {
-  opacity: 0.55;
+  background: color-mix(in oklab, var(--attend) 28%, transparent);
 }
 .cal-key[data-milestone] {
-  box-shadow: 0 0 0 1.5px var(--bg), 0 0 0 3px var(--attend);
+  background: transparent;
+  box-shadow: inset 0 0 0 1.5px var(--attend);
 }
 .cal-key-reach {
-  margin: 0 2px 0 8px;
+  font-weight: 700;
   color: var(--text-dim);
 }
+
 
 /* ── 이번 주 띠 — 홈·세션 요약 (2026-09-30) ──
    리포트 달력과 같은 `--attend` 한 색에 opacity 두 단(옅음/짙음). 과거 빈 날은 무채
