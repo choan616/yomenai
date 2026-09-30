@@ -2,8 +2,11 @@
 <html lang="ko">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <!-- 앱 아이콘 세트 (2026-10-01, 사용자 제작 public/icons/). 탭 크기(16px)용 파비콘은
+         물방울만 그린 단순형이다 — 「読」는 그 크기에서 뭉개진다. .ico 는 SVG 를 못 읽는 곳의 폴백 -->
+    <link rel="icon" href="/icons/favicon.ico" sizes="any" />
+    <link rel="icon" type="image/svg+xml" href="/icons/svg/favicon.svg" />
+    <link rel="apple-touch-icon" href="/icons/png/apple-touch-icon.png" />
     <!-- 폰트를 먼저 받는다 (2026-09-21). 프리로드가 없으면 CSS 를 파싱하고 글자를 그린 뒤에야
          @font-face 를 발견해서, 1.6Mbps 실측 기준 시작이 1.25초 늦고 그만큼 시스템 글꼴로
          그려졌다가 다시 그려진다(font-display: swap) — 화면이 덜컥거리는 원인 하나.

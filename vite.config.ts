@@ -18,7 +18,13 @@ export default defineConfig(({ command, isPreview }) => ({
       // 누를 때까지 대기시킨다 (src/app/UpdateBanner.tsx)
       registerType: 'prompt',
       injectRegister: null, // 등록은 UpdateBanner 가 한다. script 주입과 겹치면 이중 등록이다
-      includeAssets: ['favicon.svg', 'apple-touch-icon.png', 'icons.svg'],
+      // 앱 아이콘은 icons/ 한 폴더다 (2026-10-01). icon-1024 는 원본 보관용이라 캐시에 안 싣는다
+      includeAssets: [
+        'icons/favicon.ico',
+        'icons/svg/favicon.svg',
+        'icons/png/apple-touch-icon.png',
+        'icons.svg',
+      ],
       manifest: {
         name: 'yomenai — 読めない',
         short_name: 'yomenai',
@@ -30,8 +36,9 @@ export default defineConfig(({ command, isPreview }) => ({
         background_color: '#141210',
         theme_color: '#141210',
         icons: [
-          { src: 'favicon.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any' },
-          { src: 'apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
+          { src: 'icons/svg/icon.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any' },
+          { src: 'icons/png/icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
+          { src: 'icons/png/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
         ],
       },
       workbox: {
