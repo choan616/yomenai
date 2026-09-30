@@ -7,7 +7,7 @@
 //
 // 시스템 키보드를 안 띄우니 자동 완성 후보도, Safari 악세서리 바(44px)도, 지구본도 없다.
 // 변환은 그대로 wanakana 가 한다 — 이 자판은 로마자를 넣어 줄 뿐이다.
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { loadSettings } from '../app/settings.ts'
 import { playKeyClick, vibrateKey } from './keyFeedback.ts'
 import { KEYPAD_ROWS } from './keypadLayouts.ts'
@@ -76,6 +76,28 @@ export function RomajiKeypad({
   const hold = (e: React.PointerEvent) => e.preventDefault()
 
   /**
+   * click 만 오는 누름도 받는다 (2026-09-30). 스위치 제어·TalkBack 같은 보조 기술은
+   * pointerdown 없이 click 만 보낼 수 있다 — 그러면 pointerdown 에만 걸린 키가 안 눌린다.
+   *
+   * 보통 손가락 누름은 pointerdown 에서 이미 처리했으니 뒤따르는 click 은 건너뛴다.
+   * 키마다 **누름 번호**를 둔다. 같은 키를 빠르게 두 번(tt → っ) 누르면 첫 누름의 뒷정리가
+   * 둘째 누름 표시를 지우면 안 되기 때문이다. click 이 끝내 안 오는 경우(손가락을 끌어
+   * 나감)는 손을 뗀 뒤 잠깐 두고 걷는다 — `swallowGhostClick` 과 같은 창
+   */
+  const pending = useRef(new Map<string, number>())
+  const seq = useRef(0)
+  const markDown = (id: string) => pending.current.set(id, ++seq.current)
+  const markUp = (id: string) => {
+    const n = pending.current.get(id)
+    window.setTimeout(() => {
+      if (pending.current.get(id) === n) pending.current.delete(id)
+    }, 500)
+  }
+  const markCancel = (id: string) => pending.current.delete(id)
+  /** click 이 pointerdown 으로 이미 처리한 누름의 꼬리면 true (그리고 표시를 걷는다) */
+  const handled = (id: string) => pending.current.delete(id)
+
+  /**
    * 글자 키. **누르는 순간 넣는다** — click 은 손을 뗄 때 와서 한 박자 늦게 느껴진다
    * (사용자 실기기 지적 2026-09-19 "반응속도가 느리다"). 시스템 키보드도 눌림에 글자를 낸다.
    * 확대 표시는 글자 키에만 붙인다 — 시스템 키보드도 지우기·확인 같은 기능 키는 확대하지 않는다
@@ -83,13 +105,25 @@ export function RomajiKeypad({
   const charKey = (ch: string) => ({
     onPointerDown: (e: React.PointerEvent) => {
       hold(e)
+      markDown(ch)
       setPressed(ch)
       tick()
       onKey(ch)
     },
-    onPointerUp: () => setPressed(null),
-    onPointerCancel: () => setPressed(null),
+    onPointerUp: () => {
+      markUp(ch)
+      setPressed(null)
+    },
+    onPointerCancel: () => {
+      markCancel(ch)
+      setPressed(null)
+    },
     onPointerLeave: () => setPressed(null),
+    onClick: () => {
+      if (handled(ch)) return
+      tick()
+      onKey(ch)
+    },
   })
 
   const pop = (ch: string) =>
@@ -129,6 +163,14 @@ export function RomajiKeypad({
               className="key key-wide"
               onPointerDown={(e) => {
                 hold(e)
+                markDown('⌫')
+                tick()
+                onBackspace()
+              }}
+              onPointerUp={() => markUp('⌫')}
+              onPointerCancel={() => markCancel('⌫')}
+              onClick={() => {
+                if (handled('⌫')) return
                 tick()
                 onBackspace()
               }}
@@ -145,9 +187,19 @@ export function RomajiKeypad({
           className="key key-submit"
           onPointerDown={(e) => {
             hold(e)
+            markDown('submit')
             tick()
             // 자판이 사라지며 이 자리에 올라오는 버튼이 대신 눌리지 않게 (위 주석)
             swallowGhostClick()
+            onSubmit()
+          }}
+          onPointerUp={() => markUp('submit')}
+          onPointerCancel={() => markCancel('submit')}
+          /* click 만 온 누름에는 유령 클릭을 삼키지 않는다 — 뒤따를 손가락이 없고,
+             삼키면 보조 기술이 곧이어 누른 「다음」이 먹힌다 */
+          onClick={() => {
+            if (handled('submit')) return
+            tick()
             onSubmit()
           }}
         >

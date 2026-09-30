@@ -79,3 +79,31 @@ test('장음 키는 없다 — 밴드 0~3 읽기에 ー 가 한 건도 없다', 
   await reachReadingCard(page)
   await expect(page.locator('.keypad').getByRole('button', { name: 'ー', exact: true })).toHaveCount(0)
 })
+
+// 보조 기술(스위치 제어·TalkBack 등)은 pointerdown 없이 click 만 보낼 수 있다 (2026-09-30)
+test('click 만 와도 키가 눌리고 확인이 채점까지 간다', async ({ page }) => {
+  await page.goto('/')
+  await reachReadingCard(page)
+  const keypad = page.locator('.keypad')
+  const input = page.locator('.kana-input')
+  const key = (ch: string) => keypad.getByRole('button', { name: ch, exact: true })
+
+  for (const ch of ['k', 'a', 'k']) await key(ch).dispatchEvent('click')
+  await expect(input).toHaveValue('かk')
+  await keypad.getByRole('button', { name: '지우기' }).dispatchEvent('click')
+  await expect(input).toHaveValue('か')
+
+  await keypad.getByRole('button', { name: '확인' }).dispatchEvent('click')
+  await expect(page.locator('.card.feedback')).toBeVisible()
+})
+
+test('손가락 누름은 click 이 뒤따라도 한 번만 들어간다 — 같은 키 연타(tt)도', async ({ page }) => {
+  await page.goto('/')
+  await reachReadingCard(page)
+  const keypad = page.locator('.keypad')
+  const key = (ch: string) => keypad.getByRole('button', { name: ch, exact: true })
+
+  // tap 은 터치 pointerdown → pointerup → click 을 다 낸다
+  for (const ch of ['k', 'a', 't', 't', 'a']) await key(ch).tap()
+  await expect(page.locator('.kana-input')).toHaveValue('かった')
+})
