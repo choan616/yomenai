@@ -40,6 +40,7 @@ import { loadKanji, loadPairs } from '../dict/load.ts'
 import { loadStudyPool, withRuntimePairs } from '../dict/pool.ts'
 import { loadSettings, QUICK_SESSION_LIMIT } from './settings.ts'
 import { mistakeContextFromKanji } from '../dict/mistakeContext.ts'
+import { isCalendarOpen, setCalendarOpen } from './calendarOpen.ts'
 import { loadPairIndex } from '../dict/pairIndex.ts'
 import { BAND_NOTE, type Band } from '../lib/bands.ts'
 import {
@@ -296,10 +297,18 @@ function ReportBody({
   return (
     <>
       {/* 배치는 중요도 순이다 (2026-10-01 사용자 지적 「다시 조금 산만해졌다」).
-          어디쯤인가(수준) → 무엇을 할까(처방) → 왜(분포, 바로 다시보기로) → 얼마나 꾸준히 →
-          도구 → 취약 음독(접힘). 취약 음독은 처방이 파급력 큰 것을 이미 골라 올리므로
+          어디쯤인가(수준) → 학습한 날(접힘, 연속 기록 문구만) → 무엇을 할까(처방) →
+          왜(분포, 바로 다시보기로) → 도구 → 취약 음독(접힘). 학습한 날은 사용자 지시로
+          수준 바로 아래 — 접혀 있어 한 줄만 차지한다. 취약 음독은 처방이 파급력 큰 것을 이미 골라 올리므로
           원본 목록은 접어 둔다 — 「눈이 가지 않는다」 */}
       <LevelSection level={level} reviews={report.totalReviews} accuracy={accuracy} />
+
+      <CalendarSection
+        attendance={attendance}
+        sessionLimit={sessionLimit}
+        streak={streak}
+        reach={reach}
+      />
 
       <section className="rx">
         <p className="section-title">다음에 볼 것</p>
@@ -402,13 +411,6 @@ function ReportBody({
           </div>
         )}
       </section>
-
-      <CalendarSection
-        attendance={attendance}
-        sessionLimit={sessionLimit}
-        streak={streak}
-        reach={reach}
-      />
 
       <ToolsSection onyomi={onyomi} onOnyomi={onOnyomi} onRules={() => onRule(null)} />
 
@@ -650,6 +652,7 @@ function CalendarSection({
   reach: Map<string, Band>
 }) {
   const now = new Date()
+  const [open, setOpen] = useState(isCalendarOpen)
   const [view, setView] = useState({ y: now.getFullYear(), m: now.getMonth() + 1 })
   const todayKey = dateKey(now.getTime())
   // 처음엔 오늘을 펼쳐 둔다 — 오늘 기록이 없으면 아무것도 안 펼친다
@@ -671,108 +674,139 @@ function CalendarSection({
   const month = monthSummary(view.y, view.m, attendance)
   const milestoneOn = new Map(streak.milestones.map((m) => [m.date, m]))
   const records = streakRecords(streak)
+  // 연속 기록이 아직 없으면(2일 미만·이정표 없음) 이번 달 학습일로 대신 말한다
+  const thisMonth = monthSummary(now.getFullYear(), now.getMonth() + 1, attendance)
+  const lead =
+    records ?? (thisMonth.cards > 0 ? `이번 달 ${thisMonth.days}일 · ${thisMonth.cards}장` : null)
+
+  const toggle = () => {
+    setCalendarOpen(!open)
+    setOpen(!open)
+  }
 
   return (
     <section className="attendance">
-      <p className="section-title">얼마나 꾸준히</p>
-      {records && <p className="cal-records">{records}</p>}
-      <div className="cal-header">
-        <p className="report-lead cal-title">
-          {view.y}년 {view.m}월
-          {month.cards > 0 && (
-            <span className="cal-month-sum">
-              {' '}
-              {month.days}일 · {month.cards}장
-            </span>
-          )}
-        </p>
-        <div className="cal-nav">
-          <button type="button" onClick={() => shiftMonth(-1)} aria-label="이전 달">
-            ‹
-          </button>
-          <button
-            type="button"
-            onClick={() => shiftMonth(1)}
-            disabled={atCurrentMonth}
-            aria-label="다음 달"
-          >
+      {/* 제목·접힘 (2026-10-01 사용자 제안). 「얼마나 꾸준히」는 아니라고 했다 — 칸이
+          말하는 건 "배운 날"이라 「학습한 날」. 접힌 채로 연속 기록 문구만 먼저 보이고,
+          달력은 토글로 연다. 연 상태는 기기에 기억한다(calendarOpen.ts) */}
+      <p className="section-title cal-section-title">
+        학습한 날
+        <button
+          type="button"
+          className="cal-toggle"
+          aria-expanded={open}
+          aria-controls="cal-body"
+          onClick={toggle}
+        >
+          달력
+          {/* 화살표는 이름에 안 섞는다 — ::after 로 두면 버튼 이름이 「달력 ›」가 된다 */}
+          <span className="cal-chev" aria-hidden="true">
             ›
-          </button>
-        </div>
-      </div>
-      <div className="cal-dow" aria-hidden="true">
-        {CALENDAR_DOW.map((d) => (
-          <span key={d}>{d}</span>
-        ))}
-      </div>
-      <div className="cal-grid">
-        {weeks.flatMap((week, wi) =>
-          week.map((cell, di) => {
-            if (cell === null) {
-              return (
-                <span key={`pad-${wi}-${di}`} className="cal-cell cal-cell-pad" aria-hidden="true" />
-              )
-            }
-            const props = {
-              className: 'cal-cell',
-              'data-tier': cell.tier,
-              'data-today': cell.date === todayKey || undefined,
-              'data-milestone': milestoneOn.has(cell.date) || undefined,
-              'data-reach': reach.has(cell.date) || undefined,
-              title: cell.date,
-            }
-            const body = (
-              <>
-                <span className="cal-num">{cell.day}</span>
-                <span className="cal-dot" aria-hidden="true" />
-                {reach.has(cell.date) && (
-                  <span className="cal-reach" aria-hidden="true">
-                    ↑
-                  </span>
-                )}
-              </>
-            )
-            // 채점이 하나라도 있는 날만 누를 수 있다. 빈 날에는 할 말이 없다 — 「기록 없음」도
-            // 안 띄운다(네거티브 표시 금지)
-            return attendance.has(cell.date) ? (
-              <button
-                key={cell.date}
-                type="button"
-                {...props}
-                aria-pressed={picked === cell.date}
-                onClick={() => setPicked((p) => (p === cell.date ? null : cell.date))}
-              >
-                {body}
-              </button>
-            ) : (
-              <span key={cell.date} {...props}>
-                {body}
-              </span>
-            )
-          }),
-        )}
-      </div>
-      {picked && attendance.has(picked) && (
-        <DayDetail
-          record={attendance.get(picked)!}
-          milestone={milestoneOn.get(picked)}
-          band={reach.get(picked)}
-        />
-      )}
-      <p className="cal-caption">
-        <span>
-          <span className="cal-key" data-tier="touched" /> {QUICK_SESSION_LIMIT}장 이상
-        </span>
-        <span>
-          <span className="cal-key" data-tier="full" /> {sessionLimit}장 이상
-        </span>
-        <span>
-          <span className="cal-key" data-milestone /> 연속 달성
-        </span>
-        <span>
-          <span className="cal-key-reach">↑</span> 밴드 안정 도달
-        </span>
+          </span>
+        </button>
       </p>
+      {lead && <p className="cal-records">{lead}</p>}
+      {open && (
+        <div id="cal-body">
+        <div className="cal-header">
+          <p className="report-lead cal-title">
+            {view.y}년 {view.m}월
+            {month.cards > 0 && (
+              <span className="cal-month-sum">
+                {' '}
+                {month.days}일 · {month.cards}장
+              </span>
+            )}
+          </p>
+          <div className="cal-nav">
+            <button type="button" onClick={() => shiftMonth(-1)} aria-label="이전 달">
+              ‹
+            </button>
+            <button
+              type="button"
+              onClick={() => shiftMonth(1)}
+              disabled={atCurrentMonth}
+              aria-label="다음 달"
+            >
+              ›
+            </button>
+          </div>
+        </div>
+        <div className="cal-dow" aria-hidden="true">
+          {CALENDAR_DOW.map((d) => (
+            <span key={d}>{d}</span>
+          ))}
+        </div>
+        <div className="cal-grid">
+          {weeks.flatMap((week, wi) =>
+            week.map((cell, di) => {
+              if (cell === null) {
+                return (
+                  <span key={`pad-${wi}-${di}`} className="cal-cell cal-cell-pad" aria-hidden="true" />
+                )
+              }
+              const props = {
+                className: 'cal-cell',
+                'data-tier': cell.tier,
+                'data-today': cell.date === todayKey || undefined,
+                'data-milestone': milestoneOn.has(cell.date) || undefined,
+                'data-reach': reach.has(cell.date) || undefined,
+                title: cell.date,
+              }
+              const body = (
+                <>
+                  <span className="cal-num">{cell.day}</span>
+                  <span className="cal-dot" aria-hidden="true" />
+                  {reach.has(cell.date) && (
+                    <span className="cal-reach" aria-hidden="true">
+                      ↑
+                    </span>
+                  )}
+                </>
+              )
+              // 채점이 하나라도 있는 날만 누를 수 있다. 빈 날에는 할 말이 없다 — 「기록 없음」도
+              // 안 띄운다(네거티브 표시 금지)
+              return attendance.has(cell.date) ? (
+                <button
+                  key={cell.date}
+                  type="button"
+                  {...props}
+                  aria-pressed={picked === cell.date}
+                  onClick={() => setPicked((p) => (p === cell.date ? null : cell.date))}
+                >
+                  {body}
+                </button>
+              ) : (
+                <span key={cell.date} {...props}>
+                  {body}
+                </span>
+              )
+            }),
+          )}
+        </div>
+        {picked && attendance.has(picked) && (
+          <DayDetail
+            record={attendance.get(picked)!}
+            milestone={milestoneOn.get(picked)}
+            band={reach.get(picked)}
+          />
+        )}
+        <p className="cal-caption">
+          <span>
+            <span className="cal-key" data-tier="touched" /> {QUICK_SESSION_LIMIT}장 이상
+          </span>
+          <span>
+            <span className="cal-key" data-tier="full" /> {sessionLimit}장 이상
+          </span>
+          <span>
+            <span className="cal-key" data-milestone /> 연속 달성
+          </span>
+          <span>
+            <span className="cal-key-reach">↑</span> 밴드 안정 도달
+          </span>
+        </p>
+        </div>
+      )}
     </section>
   )
 }

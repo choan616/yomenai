@@ -118,6 +118,7 @@ test('리포트 — 연속 기록·달 요약·날짜 상세', async ({ page }) 
   for (let d = 0; d <= 6; d++) await seedDay(page, d, 4, d === 0 ? 1 : 0)
   await page.reload()
   await page.getByRole('button', { name: '리포트' }).click()
+  await page.getByRole('button', { name: '달력', exact: true }).click()
   await expect(page.locator('.cal-grid')).toBeVisible()
 
   await expect(page.locator('.cal-records')).toHaveText('지금 7일째 · 1주 연속 1번')
@@ -139,7 +140,29 @@ test('리포트 — 기록 없는 날은 누를 수 없다', async ({ page }) =>
   await seedDay(page, 0, 3)
   await page.reload()
   await page.getByRole('button', { name: '리포트' }).click()
+  await page.getByRole('button', { name: '달력', exact: true }).click()
   await expect(page.locator('.cal-grid')).toBeVisible()
   // 누를 수 있는 칸은 기록이 있는 오늘 하나뿐이다
   await expect(page.locator('.cal-grid button.cal-cell')).toHaveCount(1)
+})
+
+test('리포트 — 학습한 날은 접힌 채로 문구만, 토글로 연 상태는 다시 들어와도 기억한다', async ({ page }) => {
+  await boot(page)
+  for (let d = 0; d <= 2; d++) await seedDay(page, d, 3)
+  await page.reload()
+  await page.getByRole('button', { name: '리포트' }).click()
+
+  const toggle = page.getByRole('button', { name: '달력', exact: true })
+  await expect(page.locator('.attendance .section-title')).toContainText('학습한 날')
+  await expect(page.locator('.cal-records')).toHaveText('지금 3일째')
+  await expect(toggle).toHaveAttribute('aria-expanded', 'false')
+  await expect(page.locator('.cal-grid')).toHaveCount(0)
+  // 수준 바로 아래다
+  await expect(page.locator('.report .screen-body > section').nth(1)).toHaveClass(/attendance/)
+
+  await toggle.click()
+  await expect(page.locator('.cal-grid')).toBeVisible()
+  await page.reload()
+  await page.getByRole('button', { name: '리포트' }).click()
+  await expect(page.locator('.cal-grid')).toBeVisible()
 })

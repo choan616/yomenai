@@ -77,6 +77,7 @@ test('매일 학습 달력 — 문턱에 따라 none/touched/full로 갈린다',
 
   await page.reload()
   await page.getByRole('button', { name: '리포트' }).click()
+  await page.getByRole('button', { name: '달력', exact: true }).click()
   await expect(page.locator('.cal-grid')).toBeVisible()
 
   const today = await dateKeyForDaysAgo(page, 0)
@@ -103,6 +104,7 @@ test('이전 달로 넘어가면 그 달 기록을, 다음 달 버튼은 이번 
 
   await page.reload()
   await page.getByRole('button', { name: '리포트' }).click()
+  await page.getByRole('button', { name: '달력', exact: true }).click()
   await expect(page.locator('.cal-grid')).toBeVisible()
 
   // 이번 달에서는 다음 달로 못 간다 — 텅 빈 미래 달을 보여줄 이유가 없다
