@@ -1,6 +1,13 @@
 // 매일 학습 달력의 데이터 층 (2026-09-29)
 import { describe, expect, it } from 'vitest'
-import { buildAttendance, monthGrid, type DayRecord } from './attendance.ts'
+import {
+  buildAttendance,
+  monthGrid,
+  monthSummary,
+  shiftDateKey,
+  weekStrip,
+  type DayRecord,
+} from './attendance.ts'
 import type { LearningEvent, ReviewEvent } from './types.ts'
 
 const T = { quick: 3, full: 20 }
@@ -39,7 +46,7 @@ describe('buildAttendance', () => {
 
   it('문턱(quick) 미만인 날은 count는 쌓이되 tier는 none', () => {
     const map = buildAttendance(repeat(2026, 9, 10, 2), T)
-    expect(map.get('2026-09-10')).toEqual({ date: '2026-09-10', count: 2, tier: 'none' })
+    expect(map.get('2026-09-10')).toEqual({ date: '2026-09-10', count: 2, correct: 2, tier: 'none' })
   })
 
   it('quick 이상 full 미만이면 touched', () => {
@@ -104,8 +111,8 @@ describe('monthGrid', () => {
 
   it('attendance에 있는 날짜는 그 등급을, 없는 날짜는 none을 낸다', () => {
     const attendance = new Map<string, DayRecord>([
-      ['2026-09-10', { date: '2026-09-10', count: 3, tier: 'touched' }],
-      ['2026-09-15', { date: '2026-09-15', count: 25, tier: 'full' }],
+      ['2026-09-10', { date: '2026-09-10', count: 3, correct: 3, tier: 'touched' }],
+      ['2026-09-15', { date: '2026-09-15', count: 25, correct: 25, tier: 'full' }],
     ])
     const flat = monthGrid(2026, 9, attendance).flat()
     expect(flat.find((c) => c?.date === '2026-09-10')?.tier).toBe('touched')
@@ -120,5 +127,63 @@ describe('monthGrid', () => {
     const real = weeks.flat().filter((c) => c !== null)
     expect(real).toHaveLength(28)
     expect(real[27]!.date).toBe('2026-02-28')
+  })
+})
+
+function rec(date: string, count: number, tier: DayRecord['tier']): [string, DayRecord] {
+  return [date, { date, count, correct: count, tier }]
+}
+
+describe('buildAttendance — 정답 수', () => {
+  it('맞힌 채점만 correct 로 센다', () => {
+    const map = buildAttendance(
+      [ev(2026, 9, 10), ev(2026, 9, 10, { correct: false }), ev(2026, 9, 10)],
+      T,
+    )
+    expect(map.get('2026-09-10')?.correct).toBe(2)
+  })
+})
+
+describe('shiftDateKey', () => {
+  it('달·해 경계를 넘는다', () => {
+    expect(shiftDateKey('2026-09-30', 1)).toBe('2026-10-01')
+    expect(shiftDateKey('2026-01-01', -1)).toBe('2025-12-31')
+  })
+})
+
+describe('weekStrip', () => {
+  it('오늘이 속한 주의 일~토 7칸, 오늘 뒤는 future', () => {
+    // 2026-09-30 은 수요일 — 일요일은 27일
+    const cells = weekStrip('2026-09-30', new Map([rec('2026-09-28', 5, 'touched')]))
+    expect(cells.map((c) => c.date)).toEqual([
+      '2026-09-27',
+      '2026-09-28',
+      '2026-09-29',
+      '2026-09-30',
+      '2026-10-01',
+      '2026-10-02',
+      '2026-10-03',
+    ])
+    expect(cells[1].tier).toBe('touched')
+    expect(cells[3].today).toBe(true)
+    expect(cells.filter((c) => c.future)).toHaveLength(3)
+  })
+
+  it('일요일이면 오늘이 첫 칸이다', () => {
+    const cells = weekStrip('2026-09-27', new Map())
+    expect(cells[0].today).toBe(true)
+    expect(cells.filter((c) => c.future)).toHaveLength(6)
+  })
+})
+
+describe('monthSummary', () => {
+  it('그 달의 touched 이상 일수와 채점 합 — 문턱 미만인 날은 장수에만 든다', () => {
+    const attendance = new Map([
+      rec('2026-09-01', 2, 'none'),
+      rec('2026-09-02', 3, 'touched'),
+      rec('2026-09-03', 20, 'full'),
+      rec('2026-10-01', 9, 'touched'),
+    ])
+    expect(monthSummary(2026, 9, attendance)).toEqual({ days: 2, cards: 25 })
   })
 })

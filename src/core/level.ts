@@ -1,6 +1,7 @@
 // 읽기 수준 — 밴드별 "숙지한 표현"과 "경계선". 리포트 최상단이 답해야 할 질문은 "내가 어디쯤인가"다 (PLAN §4/§7)
 import { State } from 'ts-fsrs'
 import { DIAGNOSTIC_BANDS } from './diagnostic.ts'
+import { dateKey } from './attendance.ts'
 import type { Band } from '../lib/bands.ts'
 import { cardKey, compareEvents, type CardState, type LearningEvent } from './types.ts'
 
@@ -189,4 +190,53 @@ export function buildLevel(
     // 누적이다. 밴드 행의 `seen` 은 최근 `LEVEL_WINDOW` 로 잘려 있어 합과 다르다
     totalReadings,
   }
+}
+
+/**
+ * 밴드 안정(`solidThrough`)이 **지금까지의 최고치를 새로 넘긴 날** → 그날 닿은 밴드
+ * (2026-09-30, 리포트 달력의 도달 표식). 출석을 진전과 잇는 자리다.
+ *
+ * 판정은 `buildLevel` 과 같다 — 같은 `statusOf`·같은 밴드 목록·같은 최근 창. 날마다
+ * `buildLevel` 을 처음부터 돌리면 O(일수 × 이벤트)라 한 번 훑으며 하루 끝마다 판정한다.
+ * 최근 창 때문에 판정이 내려갔다 되찾을 수 있는데, 내려간 건 안 남기고(네거티브 표시 금지)
+ * 되찾은 것도 새 높이가 아니면 다시 안 센다.
+ */
+export function solidReachDays(
+  events: readonly LearningEvent[],
+  bandOf: (idiomId: string) => Band | undefined,
+): Map<string, Band> {
+  const history = new Map<Band, boolean[]>()
+  const out = new Map<string, Band>()
+  let best: Band | null = null
+
+  const settle = (date: string) => {
+    const bands = [...new Set<Band>([...DIAGNOSTIC_BANDS, ...history.keys()])]
+      .filter((b) => b <= LEVEL_MAX_BAND)
+      .sort((a, b) => a - b)
+    let through: Band | null = null
+    for (const band of bands) {
+      const recent = (history.get(band) ?? []).slice(-LEVEL_WINDOW)
+      if (statusOf(recent.length, recent.filter(Boolean).length) !== 'solid') break
+      through = band
+    }
+    if (through !== null && (best === null || through > best)) {
+      best = through
+      out.set(date, through)
+    }
+  }
+
+  let day: string | null = null
+  for (const e of [...events].sort(compareEvents)) {
+    if (e.type !== 'review' || e.cardType !== 'reading' || e.deletedAt !== null) continue
+    const band = bandOf(e.idiomId)
+    if (band === undefined) continue
+    const key = dateKey(e.at)
+    if (day !== null && key !== day) settle(day)
+    day = key
+    const row = history.get(band)
+    if (row) row.push(e.correct)
+    else history.set(band, [e.correct])
+  }
+  if (day !== null) settle(day)
+  return out
 }

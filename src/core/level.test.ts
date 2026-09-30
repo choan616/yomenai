@@ -1,7 +1,13 @@
 // 읽기 수준 — 밴드별 판정과 경계선 위치 (Phase 10)
 import { describe, expect, it } from 'vitest'
 import { State } from 'ts-fsrs'
-import { buildLevel, LEVEL_MIN_SEEN, LEVEL_WINDOW, READING_STABLE_DAYS } from './level.ts'
+import {
+  buildLevel,
+  LEVEL_MIN_SEEN,
+  LEVEL_WINDOW,
+  READING_STABLE_DAYS,
+  solidReachDays,
+} from './level.ts'
 import { newCard } from './scheduler.ts'
 import type { Band } from '../lib/bands.ts'
 import { cardKey, type CardState, type LearningEvent } from './types.ts'
@@ -211,5 +217,39 @@ describe('수준은 밴드 0~3 으로 잰다 (2026-09-26)', () => {
   it('밴드 4 가 안정이어도 그것 때문에 「밴드 4까지 안정」이 되지 않는다', () => {
     const level = buildLevel([...run('b1', 10, 0), ...run('b2', 10, 0), ...run('b3', 10, 0), ...run('b4', 10, 0)], bandOf)
     expect(level.solidThrough).toBe(3)
+  })
+})
+
+describe('solidReachDays', () => {
+  /** 로컬 날짜 `d`(2026-09) 정오에 찍은 이벤트들 */
+  const on = (d: number, evs: LearningEvent[]): LearningEvent[] =>
+    evs.map((e, i) => ({ ...e, at: new Date(2026, 8, d, 12, 0, i).getTime() }))
+
+  it('밴드 1 이 안정에 닿은 날을 낸다', () => {
+    const days = solidReachDays(on(3, run('b1', LEVEL_MIN_SEEN, 0)), bandOf)
+    expect([...days]).toEqual([['2026-09-03', 1]])
+  })
+
+  it('새 높이에 닿은 날만 — 판정이 내려갔다 되찾은 날은 다시 안 센다', () => {
+    const events = [
+      ...on(1, run('b1', 5, 0)), // 밴드 1 도달
+      ...on(2, run('b1', 0, 5)), // 5/10 — 흔들림으로 내려감
+      ...on(3, run('b1', 20, 0)), // 25/30 되찾음 — 새 높이 아님
+      ...on(4, [...run('b2', 5, 0), ...run('b3', 5, 0)]), // 밴드 3 까지
+    ]
+    expect([...solidReachDays(events, bandOf)]).toEqual([
+      ['2026-09-01', 1],
+      ['2026-09-04', 3],
+    ])
+  })
+
+  it('마지막 날의 도달 높이는 buildLevel 의 solidThrough 와 같다', () => {
+    const events = [...on(5, run('b1', 8, 1)), ...on(6, run('b2', 6, 0))]
+    const days = solidReachDays(events, bandOf)
+    expect([...days.values()].at(-1)).toBe(buildLevel(events, bandOf).solidThrough)
+  })
+
+  it('밴드 4 는 판정에서 빠진다', () => {
+    expect(solidReachDays(on(1, run('b4', 10, 0)), bandOf).size).toBe(0)
   })
 })

@@ -23,6 +23,8 @@ export interface DayRecord {
   date: string
   /** 그 날의 채점 수 (읽기·뜻 카드 합) */
   count: number
+  /** 그중 맞힌 수 — 리포트 달력의 날짜 상세가 정답률로 보여준다 (2026-09-30) */
+  correct: number
   tier: DayTier
 }
 
@@ -58,15 +60,18 @@ export function buildAttendance(
   events: readonly LearningEvent[],
   thresholds: AttendanceThresholds,
 ): Map<string, DayRecord> {
-  const counts = new Map<string, number>()
+  const counts = new Map<string, { count: number; correct: number }>()
   for (const e of events) {
     if (e.type !== 'review' || e.deletedAt !== null) continue
     const key = dateKey(e.at)
-    counts.set(key, (counts.get(key) ?? 0) + 1)
+    const c = counts.get(key) ?? { count: 0, correct: 0 }
+    c.count++
+    if (e.correct) c.correct++
+    counts.set(key, c)
   }
   const out = new Map<string, DayRecord>()
-  for (const [date, count] of counts) {
-    out.set(date, { date, count, tier: tierOf(count, thresholds) })
+  for (const [date, { count, correct }] of counts) {
+    out.set(date, { date, count, correct, tier: tierOf(count, thresholds) })
   }
   return out
 }
@@ -106,4 +111,54 @@ export function monthGrid(
   const weeks: (MonthCell | null)[][] = []
   for (let i = 0; i < cells.length; i += 7) weeks.push(cells.slice(i, i + 7))
   return weeks
+}
+
+/** 날짜 키를 `delta`일 옮긴다. 로컬 달력으로 계산해 서머타임이 있는 시간대에서도 안 밀린다 */
+export function shiftDateKey(key: string, delta: number): string {
+  const [y, m, d] = key.split('-').map(Number)
+  return dateKey(new Date(y, m - 1, d + delta).getTime())
+}
+
+/** 홈·요약의 이번 주 띠 한 칸 (2026-09-30) */
+export interface WeekCell {
+  date: string
+  tier: DayTier
+  /** 오늘보다 뒤 — 아직 판정할 수 없어 흐리게 그린다 */
+  future: boolean
+  today: boolean
+}
+
+/**
+ * 오늘이 속한 주(일~토) 7칸. 롤링이 아니라 달력 주로 자른다 — "이번 주를 채운다"는
+ * 단위가 서야 하고, 리포트 월 달력과 요일 열이 같다.
+ */
+export function weekStrip(todayKey: string, attendance: ReadonlyMap<string, DayRecord>): WeekCell[] {
+  const [y, m, d] = todayKey.split('-').map(Number)
+  const sunday = shiftDateKey(todayKey, -new Date(y, m - 1, d).getDay())
+  return Array.from({ length: 7 }, (_, i) => {
+    const date = shiftDateKey(sunday, i)
+    return {
+      date,
+      tier: attendance.get(date)?.tier ?? 'none',
+      future: date > todayKey,
+      today: date === todayKey,
+    }
+  })
+}
+
+/** 한 달의 학습일 수(`touched` 이상)와 채점 수 합. `month`는 1~12 */
+export function monthSummary(
+  year: number,
+  month: number,
+  attendance: ReadonlyMap<string, DayRecord>,
+): { days: number; cards: number } {
+  const prefix = `${year}-${String(month).padStart(2, '0')}-`
+  let days = 0
+  let cards = 0
+  for (const r of attendance.values()) {
+    if (!r.date.startsWith(prefix)) continue
+    cards += r.count
+    if (r.tier !== 'none') days++
+  }
+  return { days, cards }
 }
