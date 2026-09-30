@@ -11,6 +11,8 @@ import { replay } from '../core/replay.ts'
 import { loadKanji } from '../dict/load.ts'
 import { loadStudyPool } from '../dict/pool.ts'
 import { buildLevel } from '../core/level.ts'
+import { buildAttendance, dateKey, weekStrip, type WeekCell } from '../core/attendance.ts'
+import { buildStreak, type StreakRecord } from '../core/streak.ts'
 import {
   isDiagnosticDone,
   markDiagnosticDone,
@@ -20,6 +22,8 @@ import { loadSettings, QUICK_SESSION_LIMIT } from './settings.ts'
 import type { Flow } from '../App.tsx'
 import { openGuide } from './guide.ts'
 import { isWelcomeSeen, markWelcomeSeen } from './welcome.ts'
+import { WeekStrip } from './WeekStrip.tsx'
+import { homeLine } from './weekLine.tsx'
 
 interface Preview {
   ready: number
@@ -33,6 +37,11 @@ interface Preview {
   rematch: number
   /** 한 번이라도 틀린 읽기 카드 수 — 다시보기 대상. 재대결보다 넓다 */
   browse: number
+  /** 이번 주 띠 (2026-09-30) */
+  week: WeekCell[]
+  streak: StreakRecord
+  /** 이 미리보기를 계산한 날. 앱을 켜 둔 채 자정을 넘기면 띠가 어제에 머물지 않게 캐시를 버린다 */
+  day: string
 }
 
 /**
@@ -45,10 +54,18 @@ interface Preview {
  */
 let cache: { version: number; preview: Preview } | null = null
 
+/** 계산 전 자리 잡기용 띠. 숨겨 두는 칸이라 날짜는 아무 주나 된다 — 높이만 같으면 된다 */
+const SLOT_WEEK = weekStrip('2026-09-27', new Map())
+
+/** 캐시가 지금도 유효한가 — 기록·설정이 그대로이고 날짜도 그대로여야 한다 */
+function cacheValid(): boolean {
+  return cache?.version === dataVersion() && cache.preview.day === dateKey(Date.now())
+}
+
 export function Home({ onFlow }: { onFlow: (flow: Flow) => void }) {
   // 초기화 함수에서 캐시를 꺼낸다 — effect 로 넣으면 로딩 화면이 한 번 그려진 뒤에 바뀐다
   const [preview, setPreview] = useState<Preview | null>(
-    () => (cache?.version === dataVersion() ? cache.preview : null),
+    () => (cacheValid() ? cache!.preview : null),
   )
   const [error, setError] = useState<string | null>(null)
   // 로그를 읽기 전엔 플래그만 보고, 읽고 나면 수준까지 보고 다시 정한다
@@ -58,7 +75,7 @@ export function Home({ onFlow }: { onFlow: (flow: Flow) => void }) {
 
   useEffect(() => {
     // 캐시가 유효하면 다시 계산하지 않는다. 진단 판정은 아래 플래그로 이미 끝나 있다
-    if (cache?.version === dataVersion()) return
+    if (cacheValid()) return
     let alive = true
     ;(async () => {
       try {
@@ -83,11 +100,17 @@ export function Home({ onFlow }: { onFlow: (flow: Flow) => void }) {
           ratio,
           kunShare: kunPercent / 100,
         })
+        const day = dateKey(Date.now())
+        // 리포트 달력과 같은 문턱. 연속은 `touched`(3장) 문턱만 보므로 sessionLimit 과 무관하다
+        const attendance = buildAttendance(events, { quick: QUICK_SESSION_LIMIT, full: sessionLimit })
         const next: Preview = {
           ready: session.cards.length,
           fresh: session.cards.filter((c) => !c.due).length,
           rematch: rematchCount(pool, events),
           browse: browseCount(pool, events),
+          week: weekStrip(day, attendance),
+          streak: buildStreak(attendance, day),
+          day,
         }
         cache = { version: dataVersion(), preview: next }
         setPreview(next)
@@ -189,6 +212,16 @@ export function Home({ onFlow }: { onFlow: (flow: Flow) => void }) {
               <span className="dim">불러오는 중…</span>
             )}
           </p>
+
+          {/* 이번 주 띠 (2026-09-30). "오늘 할까"를 정하는 자리라 주 동작 바로 위에 둔다 —
+              리포트 달력은 돌아보는 기록이고 이건 결정 신호다. 문구가 「3장」을 말하므로
+              아래 「3장만」 버튼과 한 화면에 붙어 있어야 한다. 계산 전엔 같은 마크업을
+              숨겨 자리만 잡는다 (아래 「3장만」 슬롯과 같은 이유) */}
+          {preview === null ? (
+            <WeekStrip cells={SLOT_WEEK} line="·" slot />
+          ) : (
+            <WeekStrip cells={preview.week} line={homeLine(preview.streak, preview.day)} />
+          )}
 
           <button
             type="button"

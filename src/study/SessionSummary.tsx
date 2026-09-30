@@ -1,6 +1,8 @@
 // 세션 종료 화면 — 리포트의 축소판과 "오늘의 발견" 한 줄.
 // 숫자 하나로 끝내지 않는다. 매 세션이 진단 도구라는 정체성을 다시 확인하는 자리다 (PLAN §7)
-import { useEffect, useState, type ReactNode } from 'react'
+import { useEffect, useMemo, useState, type ReactNode } from 'react'
+import { buildAttendance, dateKey, weekStrip } from '../core/attendance.ts'
+import { buildStreak } from '../core/streak.ts'
 import { nextUp, type NextUp } from '../core/nextUp.ts'
 import { correctReadings, pickReadable } from '../core/readable.ts'
 import { buildSession } from '../core/session.ts'
@@ -11,7 +13,9 @@ import {
 } from '../core/sessionSummary.ts'
 import type { LearningEvent } from '../core/types.ts'
 import { loadExamples, loadPairs, type RuntimeIdiom } from '../dict/load.ts'
-import { loadSettings } from '../app/settings.ts'
+import { loadSettings, QUICK_SESSION_LIMIT } from '../app/settings.ts'
+import { WeekStrip } from '../app/WeekStrip.tsx'
+import { summaryLine } from '../app/weekLine.tsx'
 import { MISTAKE_LABEL } from './mistakeLabels.ts'
 
 /** 화면에 얹을 때 필요한 이름까지 붙인 "읽히는 문장" */
@@ -79,6 +83,8 @@ export function SessionSummary({
     }
   }, [events, pool])
 
+  const week = useMemo(() => weekOf(events), [events])
+
   const done = summary ?? { total: 0, correct: 0, newPairs: 0, topMistake: null, trend: [], finding: null }
 
   return (
@@ -105,6 +111,10 @@ export function SessionSummary({
           </dd>
         </div>
       </dl>
+
+      {/* 이번 주 띠 (2026-09-30). 이번 세션이 오늘 칸을 채웠거나 짙게 했으면 그 칸이
+          차오르는 순간을 보여준다 — 홈의 띠와 같은 컴포넌트다 */}
+      <WeekStrip cells={week.cells} line={week.line} fillDate={week.fillDate} />
 
       {done.topMistake && done.trend.length >= 2 && (
         <Trend trend={done.trend} label={MISTAKE_LABEL[done.topMistake.type]} />
@@ -262,4 +272,20 @@ function NextUpLine({ next }: { next: NextUp }) {
       </span>
     </p>
   )
+}
+
+/** 세션 전후의 출석을 비교해 요약의 이번 주 띠를 만든다. 사전이 필요 없어 바로 계산한다 */
+function weekOf(events: { prior: LearningEvent[]; session: LearningEvent[] }) {
+  const today = dateKey(Date.now())
+  const t = { quick: QUICK_SESSION_LIMIT, full: loadSettings().sessionLimit }
+  const before = buildAttendance(events.prior, t)
+  const after = buildAttendance([...events.prior, ...events.session], t)
+  const was = before.get(today)?.tier ?? 'none'
+  const now = after.get(today)?.tier ?? 'none'
+  return {
+    cells: weekStrip(today, after),
+    line: summaryLine(buildStreak(before, today), buildStreak(after, today), after.get(today), today),
+    // 등급이 올랐을 때만 — none→touched, none→full, touched→full
+    fillDate: now !== was && now !== 'none' ? today : undefined,
+  }
 }

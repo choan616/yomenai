@@ -1122,6 +1122,175 @@
   color: var(--text-faint);
 }
 
+/* ── 달력의 의미 층 (2026-09-30) — 달 요약·연속 기록·표식·날짜 상세 ──
+   새 색은 안 들인다. 이정표는 `--attend` 고리, 밴드 도달은 무채 화살표 */
+.cal-records {
+  margin: 0 0 10px;
+  font-size: calc(13px * var(--ui-scale));
+  color: var(--text-dim);
+}
+.cal-month-sum {
+  font-size: calc(12px * var(--ui-scale));
+  font-weight: 400;
+  color: var(--text-faint);
+}
+.cal-cell {
+  position: relative;
+}
+button.cal-cell {
+  background: none;
+  border: 0;
+  border-radius: var(--radius);
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+button.cal-cell[aria-pressed='true'] {
+  background: var(--surface-2);
+}
+/* 이정표 달성일 — 점 둘레에 고리. 점과 같은 색이라 "그날 채운 칸"의 연장으로 읽힌다 */
+.cal-cell[data-milestone] .cal-dot {
+  box-shadow: 0 0 0 2px var(--bg), 0 0 0 3.5px var(--attend);
+}
+.cal-reach {
+  position: absolute;
+  top: 1px;
+  right: 3px;
+  font-size: calc(9px * var(--ui-scale));
+  line-height: 1;
+  color: var(--text-dim);
+}
+.cal-detail {
+  margin-top: 8px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+.cal-detail-head {
+  margin: 0;
+  font-size: calc(13px * var(--ui-scale));
+  color: var(--text-dim);
+}
+.cal-detail-head b {
+  color: var(--text);
+}
+.cal-detail-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 6px 0 0;
+  font-size: calc(12px * var(--ui-scale));
+  color: var(--text);
+}
+.cal-detail-tags span {
+  padding: 1px 8px;
+  border: 1px solid var(--attend);
+  border-radius: 999px;
+}
+/* 범례 견본 — 달력 칸의 점과 같은 규칙으로 그린다 */
+.cal-key {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin: 0 3px 1px 8px;
+  border-radius: 999px;
+  background: var(--attend);
+  vertical-align: middle;
+}
+.cal-key:first-child {
+  margin-left: 0;
+}
+.cal-key[data-tier='touched'] {
+  opacity: 0.55;
+}
+.cal-key[data-milestone] {
+  box-shadow: 0 0 0 1.5px var(--bg), 0 0 0 3px var(--attend);
+}
+.cal-key-reach {
+  margin: 0 2px 0 8px;
+  color: var(--text-dim);
+}
+
+/* ── 이번 주 띠 — 홈·세션 요약 (2026-09-30) ──
+   리포트 달력과 같은 `--attend` 한 색에 opacity 두 단(옅음/짙음). 과거 빈 날은 무채
+   테두리만 — 강조하지 않는다(네거티브 표시 금지). 오늘 아직 안 채운 칸만 점선으로
+   "대기"를 보여준다. 미래 요일은 더 흐리게 */
+.week-strip {
+  width: 100%;
+  max-width: 320px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+.week-cells {
+  display: grid;
+  grid-template-columns: repeat(7, 32px);
+  justify-content: center;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.week-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.week-dow {
+  font-size: calc(10px * var(--ui-scale));
+  color: var(--text-faint);
+}
+.week-cell[data-today] .week-dow {
+  color: var(--text);
+  font-weight: 700;
+}
+.week-dot {
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  border: 1.5px solid var(--border);
+  box-sizing: border-box;
+}
+.week-cell[data-state='touched'] .week-dot,
+.week-cell[data-state='full'] .week-dot {
+  border-color: transparent;
+  background: var(--attend);
+  opacity: 0.55;
+}
+.week-cell[data-state='full'] .week-dot {
+  opacity: 1;
+}
+.week-cell[data-state='pending'] .week-dot {
+  border-style: dashed;
+  border-color: var(--text-dim);
+}
+.week-cell[data-state='future'] .week-dot {
+  opacity: 0.4;
+}
+.week-line {
+  margin: 0;
+  font-size: calc(13px * var(--ui-scale));
+  color: var(--text-dim);
+}
+.week-line b {
+  color: var(--text);
+}
+/* 세션 요약에서 이번 세션이 채운 칸 — 요약 블록이 올라온 뒤 한 박자 쉬고 차오른다.
+   셸 화면이라 느린 모션 허용 (PLAN §7). reduced-motion 은 index.css 전역 규칙이 접는다 */
+.week-cell[data-fill] .week-dot {
+  animation: week-fill 520ms cubic-bezier(0.3, 1.4, 0.5, 1) 700ms both;
+}
+@keyframes week-fill {
+  from {
+    background: transparent;
+    border-color: var(--text-dim);
+    opacity: 1;
+    transform: scale(0.6);
+  }
+}
+
 /* ── 홈 헤더의 설정 (2026-09-14) ── */
 /* 하단 메뉴에서 설정을 빼 다시보기 자리를 만들었다. 첫 진입에서도 닿아야 한다 */
 .home-top {

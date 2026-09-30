@@ -2,7 +2,14 @@
 import { Fragment, useEffect, useState } from 'react'
 import { dataVersion } from '../core/dataVersion.ts'
 import { onyomiSiblings } from '../core/contrast.ts'
-import { buildAttendance, dateKey, monthGrid, type DayRecord } from '../core/attendance.ts'
+import {
+  buildAttendance,
+  dateKey,
+  monthGrid,
+  monthSummary,
+  type DayRecord,
+} from '../core/attendance.ts'
+import { buildStreak, milestoneLabel, type Milestone, type StreakRecord } from '../core/streak.ts'
 import {
   buildLevel,
   LEVEL_MIN_SEEN,
@@ -10,6 +17,7 @@ import {
   LEVEL_SOLID_RATE,
   LEVEL_WINDOW,
   READING_STABLE_DAYS,
+  solidReachDays,
   type BandRow,
   type LevelProfile,
 } from '../core/level.ts'
@@ -33,7 +41,7 @@ import { loadStudyPool, withRuntimePairs } from '../dict/pool.ts'
 import { loadSettings, QUICK_SESSION_LIMIT } from './settings.ts'
 import { mistakeContextFromKanji } from '../dict/mistakeContext.ts'
 import { loadPairIndex } from '../dict/pairIndex.ts'
-import { BAND_NOTE } from '../lib/bands.ts'
+import { BAND_NOTE, type Band } from '../lib/bands.ts'
 import {
   MISTAKE_LABEL,
   mistakeHint,
@@ -71,6 +79,12 @@ interface Loaded {
   attendance: Map<string, DayRecord>
   /** 「많이 한 날」의 기준선 — 사용자 설정의 세션 길이 */
   sessionLimit: number
+  /** 연속 기록 — 현재·최장·이정표 (2026-09-30) */
+  streak: StreakRecord
+  /** 밴드 안정이 새 높이에 닿은 날 → 그 밴드 (2026-09-30) */
+  reach: Map<string, Band>
+  /** 계산한 날. 자정을 넘기면 캐시를 버린다 (Home 과 같은 이유) */
+  day: string
 }
 
 /**
@@ -80,6 +94,10 @@ interface Loaded {
  * `dataVersion` 이 같으면 기록도 설정도 그대로라 다시 돌 이유가 없다 (`Home` 과 같은 관례).
  */
 let cache: { version: number; data: Loaded } | null = null
+
+function cacheValid(): boolean {
+  return cache?.version === dataVersion() && cache.data.day === dateKey(Date.now())
+}
 
 export function Report({
   onBrowse,
@@ -100,13 +118,11 @@ export function Report({
   onOnyomi: () => void
 }) {
   // 초기화 함수에서 캐시를 꺼낸다 — effect 로 넣으면 「불러오고 있어요」가 한 번 그려진다
-  const [data, setData] = useState<Loaded | null>(
-    () => (cache?.version === dataVersion() ? cache.data : null),
-  )
+  const [data, setData] = useState<Loaded | null>(() => (cacheValid() ? cache!.data : null))
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    if (cache?.version === dataVersion()) return
+    if (cacheValid()) return
     let alive = true
     ;(async () => {
       try {
@@ -143,11 +159,8 @@ export function Report({
         // 훈독 기록도 빠진다 — `bandOf` 가 undefined 를 주면 `buildLevel` 이 그 이벤트도
         // 카드도 건너뛴다. level.ts 는 안 건드린다
         const inPool = new Set(learn.map((p) => p.idiomId))
-        const level = buildLevel(
-          events,
-          (id) => (inPool.has(id) ? byId.get(id)?.band : undefined),
-          state.cards,
-        )
+        const bandInPool = (id: string) => (inPool.has(id) ? byId.get(id)?.band : undefined)
+        const level = buildLevel(events, bandInPool, state.cards)
         const voicing = voicingCounts(classifiedMistakes(events), again)
         // 미분류 중 답이 있는 몫만 「잘못 읽기」다. 넘김(빈 답)은 이름 이전에 답이 없다
         const passed = passedCount(events)
@@ -157,6 +170,7 @@ export function Report({
           quick: QUICK_SESSION_LIMIT,
           full: settings.sessionLimit,
         })
+        const day = dateKey(Date.now())
         const next: Loaded = {
           report,
           onyomi,
@@ -165,6 +179,10 @@ export function Report({
           passed,
           attendance,
           sessionLimit: settings.sessionLimit,
+          streak: buildStreak(attendance, day),
+          // 사다리와 같은 자로 잰다 — 같은 bandOf
+          reach: solidReachDays(events, bandInPool),
+          day,
           rows: mistakeRows(report.mistakes, voicing, Math.max(0, report.unclassified - passed)),
           prescriptions: prescribe({
             report,
@@ -244,7 +262,8 @@ function ReportBody({
   onFocus: (pairIds: string[]) => void
   onRule: (id: RuleId | null) => void
 }) {
-  const { report, level, prescriptions, voicing, rows, passed, attendance, sessionLimit } = data
+  const { report, level, prescriptions, voicing, rows, passed, attendance, sessionLimit, streak, reach } =
+    data
   // 정답률은 *실제* 오답으로 센다. 분류된 오답만 쓰면 미분류분이 정답으로 둔갑한다
   const accuracy =
     report.totalReviews > 0
@@ -262,7 +281,12 @@ function ReportBody({
     <>
       <LevelSection level={level} reviews={report.totalReviews} accuracy={accuracy} />
 
-      <CalendarSection attendance={attendance} sessionLimit={sessionLimit} />
+      <CalendarSection
+        attendance={attendance}
+        sessionLimit={sessionLimit}
+        streak={streak}
+        reach={reach}
+      />
 
       <section className="rx">
         <p className="section-title">다음에 볼 것</p>
@@ -582,36 +606,61 @@ function StableMix({ bands, total }: { bands: readonly BandRow[]; total: number 
    표시도 처음엔 명도 3단(회색조)이었는데, 그 참고 이미지가 초록 점으로 표시하는 걸 보고
    사용자가 "했다/안했다/좀 많이 했다 만 색으로 구분하면 된다"고 명시적으로 정했다 —
    `--attend`(index.css)는 그 지시를 반영한 새 색 토큰이고, "정답에 색을 주면 정답도
-   이벤트가 된다"는 PLAN §7 원칙에 대한 의도적 예외다. */
+   이벤트가 된다"는 PLAN §7 원칙에 대한 의도적 예외다.
+
+   2026-09-30 — 달력에 의미를 붙였다. 달 요약(학습일·장수), 연속 기록 문구, 이정표
+   달성일(점 둘레 고리)과 밴드 안정 도달일(↑) 표식, 날짜를 누르면 그날 상세. 연속 기록은
+   스트릭 기각의 부분 번복이라 **끊김을 말하지 않는다** — 현재 연속은 2일 이상일 때만,
+   최장·달성 횟수는 줄지 않는 값만 보여준다 (streak.ts 머리 주석). */
 const CALENDAR_DOW = ['일', '월', '화', '수', '목', '금', '토']
 
 function CalendarSection({
   attendance,
   sessionLimit,
+  streak,
+  reach,
 }: {
   attendance: Map<string, DayRecord>
   sessionLimit: number
+  streak: StreakRecord
+  reach: Map<string, Band>
 }) {
   const now = new Date()
   const [view, setView] = useState({ y: now.getFullYear(), m: now.getMonth() + 1 })
   const todayKey = dateKey(now.getTime())
+  // 처음엔 오늘을 펼쳐 둔다 — 오늘 기록이 없으면 아무것도 안 펼친다
+  const [picked, setPicked] = useState<string | null>(() =>
+    attendance.has(todayKey) ? todayKey : null,
+  )
   // 이번 달을 넘어서는 못 간다 — 텅 빈 미래 달을 보여줄 이유가 없다(attendance.ts 주석)
   const atCurrentMonth = view.y === now.getFullYear() && view.m === now.getMonth() + 1
 
-  const shiftMonth = (delta: number) =>
+  const shiftMonth = (delta: number) => {
+    setPicked(null)
     setView(({ y, m }) => {
       const d = new Date(y, m - 1 + delta, 1)
       return { y: d.getFullYear(), m: d.getMonth() + 1 }
     })
+  }
 
   const weeks = monthGrid(view.y, view.m, attendance)
+  const month = monthSummary(view.y, view.m, attendance)
+  const milestoneOn = new Map(streak.milestones.map((m) => [m.date, m]))
+  const records = streakRecords(streak)
 
   return (
     <section className="attendance">
       <p className="section-title">얼마나 꾸준히</p>
+      {records && <p className="cal-records">{records}</p>}
       <div className="cal-header">
         <p className="report-lead cal-title">
           {view.y}년 {view.m}월
+          {month.cards > 0 && (
+            <span className="cal-month-sum">
+              {' '}
+              {month.days}일 · {month.cards}장
+            </span>
+          )}
         </p>
         <div className="cal-nav">
           <button type="button" onClick={() => shiftMonth(-1)} aria-label="이전 달">
@@ -634,29 +683,107 @@ function CalendarSection({
       </div>
       <div className="cal-grid">
         {weeks.flatMap((week, wi) =>
-          week.map((cell, di) =>
-            cell === null ? (
-              <span key={`pad-${wi}-${di}`} className="cal-cell cal-cell-pad" aria-hidden="true" />
-            ) : (
-              <span
-                key={cell.date}
-                className="cal-cell"
-                data-tier={cell.tier}
-                data-today={cell.date === todayKey || undefined}
-                title={cell.date}
-              >
+          week.map((cell, di) => {
+            if (cell === null) {
+              return (
+                <span key={`pad-${wi}-${di}`} className="cal-cell cal-cell-pad" aria-hidden="true" />
+              )
+            }
+            const props = {
+              className: 'cal-cell',
+              'data-tier': cell.tier,
+              'data-today': cell.date === todayKey || undefined,
+              'data-milestone': milestoneOn.has(cell.date) || undefined,
+              'data-reach': reach.has(cell.date) || undefined,
+              title: cell.date,
+            }
+            const body = (
+              <>
                 <span className="cal-num">{cell.day}</span>
                 <span className="cal-dot" aria-hidden="true" />
+                {reach.has(cell.date) && (
+                  <span className="cal-reach" aria-hidden="true">
+                    ↑
+                  </span>
+                )}
+              </>
+            )
+            // 채점이 하나라도 있는 날만 누를 수 있다. 빈 날에는 할 말이 없다 — 「기록 없음」도
+            // 안 띄운다(네거티브 표시 금지)
+            return attendance.has(cell.date) ? (
+              <button
+                key={cell.date}
+                type="button"
+                {...props}
+                aria-pressed={picked === cell.date}
+                onClick={() => setPicked((p) => (p === cell.date ? null : cell.date))}
+              >
+                {body}
+              </button>
+            ) : (
+              <span key={cell.date} {...props}>
+                {body}
               </span>
-            ),
-          ),
+            )
+          }),
         )}
       </div>
+      {picked && attendance.has(picked) && (
+        <DayDetail
+          record={attendance.get(picked)!}
+          milestone={milestoneOn.get(picked)}
+          band={reach.get(picked)}
+        />
+      )}
       <p className="cal-caption">
-        초록 = 그날 학습 · 옅음 = {QUICK_SESSION_LIMIT}장 이상 · 짙음 = 오늘 설정한 한 세션(
-        {sessionLimit}장) 이상 · 무채색 = 쉰 날
+        <span className="cal-key" data-tier="touched" /> {QUICK_SESSION_LIMIT}장 이상
+        <span className="cal-key" data-tier="full" /> {sessionLimit}장 이상
+        <span className="cal-key" data-milestone /> 연속 달성
+        <span className="cal-key-reach">↑</span> 밴드 안정 도달
       </p>
     </section>
+  )
+}
+
+/**
+ * 연속 기록 한 줄. 줄지 않는 값만 — 현재 연속은 2일 이상일 때만 말하고, 끊긴 뒤엔
+ * 최장과 달성 횟수만 남는다. 말할 게 없으면 null
+ */
+function streakRecords(streak: StreakRecord): string | null {
+  const parts: string[] = []
+  if (streak.current >= 2) parts.push(`지금 ${streak.current}일째`)
+  if (streak.longest >= 2 && streak.longest > streak.current) parts.push(`최장 ${streak.longest}일`)
+  const byDays = new Map<number, number>()
+  for (const m of streak.milestones) byDays.set(m.days, (byDays.get(m.days) ?? 0) + 1)
+  for (const [days, n] of byDays) parts.push(`${milestoneLabel(days)} ${n}번`)
+  return parts.length > 0 ? parts.join(' · ') : null
+}
+
+/** 누른 날의 상세 — 장수·정답률, 그날 달성한 것 */
+function DayDetail({
+  record,
+  milestone,
+  band,
+}: {
+  record: DayRecord
+  milestone: Milestone | undefined
+  band: Band | undefined
+}) {
+  const [y, m, d] = record.date.split('-').map(Number)
+  const dow = CALENDAR_DOW[new Date(y, m - 1, d).getDay()]
+  return (
+    <div className="cal-detail" aria-live="polite">
+      <p className="cal-detail-head">
+        {m}월 {d}일 ({dow}) · <b>{record.count}장</b> · 정답률{' '}
+        {Math.round((record.correct / record.count) * 100)}%
+      </p>
+      {(milestone || band !== undefined) && (
+        <p className="cal-detail-tags">
+          {milestone && <span>{milestoneLabel(milestone.days)} 달성</span>}
+          {band !== undefined && <span>밴드 {band} 안정 도달</span>}
+        </p>
+      )}
+    </div>
   )
 }
 

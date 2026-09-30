@@ -788,6 +788,10 @@ button.tag {
 .summary-screen > *:nth-child(8) {
   animation-delay: 490ms;
 }
+/* 이번 주 띠가 들어오며 9번째까지 (2026-09-30) */
+.summary-screen > *:nth-child(9) {
+  animation-delay: 560ms;
+}
 
 /* 오늘 맞힌 것으로 읽히는 문장 — 학습의 증거를 점수가 아니라 읽히는 경험으로 준다 */
 .readable {
