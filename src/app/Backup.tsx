@@ -4,8 +4,9 @@
 // 1. **덩치.** 로그인·동기화·진행 막대까지 붙어 설정 본문의 절반을 먹었다
 // 2. **위험.** 「학습 기록 초기화」는 되돌릴 수 없는데 스크롤하다 만나는 자리에 있었다
 //    — 한 겹 안으로 들여 일부러 찾아 들어가게 한다
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { db } from '../db/schema.ts'
+import { countUnsynced, LOCAL_USER_ID } from '../db/events.ts'
 import { getDeviceId } from '../db/device.ts'
 import { googleDrive } from '../sync/googleDrive.ts'
 import { resetLearning, syncNow, type SyncProgress } from '../sync/sync.ts'
@@ -49,6 +50,18 @@ function BackupSetting() {
   const [lastSyncAt, setLastSyncAtState] = useState<number | null>(getLastSyncAt)
   const [progress, setProgress] = useState<SyncProgress | null>(null)
   const [syncMsg, setSyncMsg] = useState<string | null>(null)
+  /** 아직 안 올린 이 기기 기록 수 (2026-10-01). 계산 전엔 null */
+  const [pending, setPending] = useState<number | null>(null)
+
+  useEffect(() => {
+    let alive = true
+    void countUnsynced(db(), LOCAL_USER_ID, getDeviceId(), lastSyncAt).then((n) => {
+      if (alive) setPending(n)
+    })
+    return () => {
+      alive = false
+    }
+  }, [lastSyncAt])
 
   /**
    * 전에는 설정에 들어오기만 해도 세션 복구를 시도했다. `prompt: ''` 라도 GIS 가
@@ -87,11 +100,13 @@ function BackupSetting() {
     setError(null)
     setProgress(null)
     setSyncMsg(null)
+    // 기준 시각은 **시작** 시각이다 (2026-10-01). 끝난 시각으로 적으면 동기화 도중에 생긴
+    // 기록이 올라가지 않았는데도 「올린 것」으로 셈이 빠진다. 시작으로 적으면 많이 세는 쪽으로만 틀린다
+    const startedAt = Date.now()
     void syncNow(db(), getDeviceId(), googleDrive, setProgress)
       .then(({ restored, backupTotal }) => {
-        const now = Date.now()
-        setLastSyncAt(now)
-        setLastSyncAtState(now)
+        setLastSyncAt(startedAt)
+        setLastSyncAtState(startedAt)
         // 무슨 일이 있었는지 알린다 — 조용히 넘기면 기록이 늘거나 준 이유를 모른다
         setSyncMsg(
           restored > 0
@@ -122,6 +137,12 @@ function BackupSetting() {
           {progress === null ? (
             <span className="hint">
               {lastSyncAt === null ? '아직 동기화하지 않았어요.' : `마지막 동기화 ${formatSyncTime(lastSyncAt)}`}
+              {pending !== null && pending > 0 && (
+                <>
+                  {' · '}
+                  <b className="sync-pending">아직 안 올린 기록 {pending}건</b>
+                </>
+              )}
             </span>
           ) : (
             <div className="sync-progress">

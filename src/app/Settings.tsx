@@ -7,7 +7,11 @@
 //
 // 백업과 초기화는 `Backup.tsx` 로 뺐다. 덩치가 본문의 절반이었고, 되돌릴 수 없는 초기화가
 // 스크롤하다 만나는 자리에 있었다
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { countUnsynced, LOCAL_USER_ID } from '../db/events.ts'
+import { db } from '../db/schema.ts'
+import { getDeviceId } from '../db/device.ts'
+import { getLastSyncAt, wasSignedIn } from '../sync/syncState.ts'
 import { loadReviewMode, saveReviewMode, UNLOCK_HOLD_MS } from './reviewMode.ts'
 import {
   DEFAULT_SETTINGS,
@@ -78,6 +82,18 @@ export function Settings({
   const [settings, setSettings] = useState<SettingsData>(loadSettings)
   const [theme, setThemeState] = useState<Theme>(loadTheme)
   const [textScale, setTextScaleState] = useState<TextScale>(loadTextScale)
+  /** 아직 동기화로 안 올린 이 기기 기록 수 (2026-10-01). 동기화를 연결한 적 없으면 0 으로 둔다 */
+  const [unsynced, setUnsynced] = useState(0)
+  useEffect(() => {
+    if (!wasSignedIn()) return
+    let alive = true
+    void countUnsynced(db(), LOCAL_USER_ID, getDeviceId(), getLastSyncAt()).then((n) => {
+      if (alive) setUnsynced(n)
+    })
+    return () => {
+      alive = false
+    }
+  }, [])
   /**
    * 검수 모드 — **숨은 진입**이다 (2026-09-24). 「보기」 묶음 제목을 길게 누르면 열린다.
    * 인증이 아니라 정돈이다 — 보통 학습자에게 검수 도구를 안 보여 주는 것까지가 목적이고,
@@ -354,6 +370,9 @@ export function Settings({
         <div className="setting">
           <button type="button" className="setting-link" onClick={onBackup}>
             <span>백업과 기록</span>
+            {/* 안 올린 기록이 있으면 여기서부터 보인다 (2026-10-01) — 동기화 버튼은 한 겹 안이라
+                거기까지 들어가야 알면 늦다. 동기화를 안 쓰는 사람에게는 안 뜬다 */}
+            {unsynced > 0 && <span className="sync-pending">안 올린 기록 {unsynced}건</span>}
             <span className="chev" aria-hidden="true">›</span>
           </button>
           <span className="hint">

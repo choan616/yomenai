@@ -68,6 +68,30 @@ export async function listDeviceEvents(
 }
 
 /**
+ * 이 기기가 `since` 뒤에 만든 이벤트 수 — 아직 동기화로 안 올린 기록 (2026-10-01).
+ *
+ * PC 에서 묶음을 옮기고 동기화를 안 누른 채 모바일에서 받아, 옮긴 것이 안 넘어온 일이
+ * 있었다(사용자 보고). 동기화가 수동이라 **올릴 게 남았다는 걸 보여 주는** 자리다.
+ * `since` 가 null 이면(한 번도 동기화 안 함) 이 기기 기록 전부다. 묘비도 센다 — 올릴 대상이다
+ */
+export async function countUnsynced(
+  db: YomenaiDB,
+  userId: string,
+  deviceId: string,
+  since: number | null,
+): Promise<number> {
+  return db.events
+    .where('[userId+deviceId+at]')
+    .between(
+      [userId, deviceId, since ?? Number.NEGATIVE_INFINITY],
+      [userId, deviceId, Number.POSITIVE_INFINITY],
+      since === null,
+      true,
+    )
+    .count()
+}
+
+/**
  * 다른 기기 파일에서 받아온 이벤트를 병합한다. id 가 같으면 내용도 같다는 게 append-only
  * 로그의 전제라 `bulkPut`(덮어쓰기)이 안전하다 — 몇 번을 다시 받아도 결과가 같다
  */

@@ -2217,3 +2217,19 @@ p.rule-record {
   font-family: inherit;
   min-height: 40px;
 }
+
+/* ── 아직 안 올린 기록 (2026-10-01) ──
+   PC 에서 바꾼 것을 동기화 안 누른 채 모바일에서 받아 안 넘어온 일이 있었다. 알림이지 경고가
+   아니라 색을 안 쓴다(PLAN §7 — 색은 오답에만). 굵기와 알약 테두리로만 눈에 띄게 한다 */
+.setting-link .sync-pending {
+  margin-left: auto;
+  padding: 2px 8px;
+  border: 1px solid var(--text-dim);
+  border-radius: 999px;
+  font-size: calc(12px * var(--ui-scale));
+  color: var(--text);
+  white-space: nowrap;
+}
+.hint .sync-pending {
+  color: var(--text);
+}

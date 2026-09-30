@@ -5,6 +5,7 @@ import { IDBFactory, IDBKeyRange as FDBKeyRange } from 'fake-indexeddb'
 import { YomenaiDB } from './schema.ts'
 import {
   appendEvent,
+  countUnsynced,
   importEvents,
   listCardEvents,
   listDeviceEvents,
@@ -181,5 +182,20 @@ describe('저장 → 조회 → 재생 왕복', () => {
     const loaded = await listEvents(db, LOCAL_USER_ID)
     expect(replay(loaded)).toEqual(replay(events))
     expect(replay(loaded).cards.get('1:reading')!.mistakes).toEqual({ SOKUON: 1 })
+  })
+})
+
+describe('countUnsynced', () => {
+  it('이 기기가 since 뒤에 만든 것만 센다 — 다른 기기 기록과 경계 시각은 빠진다', async () => {
+    const db = freshDb()
+    await importEvents(db, [
+      review({ at: T0, idiomId: '1', deviceId: 'me' }),
+      review({ at: T0 + 1000, idiomId: '2', deviceId: 'me' }),
+      review({ at: T0 + 2000, idiomId: '3', deviceId: 'me' }),
+      review({ at: T0 + 3000, idiomId: '4', deviceId: 'other' }),
+    ])
+    expect(await countUnsynced(db, LOCAL_USER_ID, 'me', T0 + 1000)).toBe(1)
+    expect(await countUnsynced(db, LOCAL_USER_ID, 'me', null)).toBe(3)
+    expect(await countUnsynced(db, LOCAL_USER_ID, 'me', T0 + 5000)).toBe(0)
   })
 })
