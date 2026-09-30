@@ -78,7 +78,12 @@ test('리포트의 처방에서 집중 세션으로 바로 들어간다', async 
 
   await page.getByRole('button', { name: '리포트', exact: true }).click()
   await expect(page.locator('.report')).toBeVisible()
-  await expect(page.getByText('취약 음독')).toBeVisible()
+  // 취약 음독은 맨 아래에 접혀 있다 (2026-10-01) — 눌러야 목록이 펼쳐진다
+  const weak = page.locator('.weak-onyomi')
+  await expect(weak.locator('summary')).toContainText('취약 음독')
+  await expect(weak.locator('.rows')).toBeHidden()
+  await weak.locator('summary').click()
+  await expect(weak.locator('.rows li').first()).toBeVisible()
 
   const run = page.locator('.rx-run').first()
   await expect(run).toBeVisible()

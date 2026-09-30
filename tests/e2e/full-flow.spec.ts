@@ -113,7 +113,10 @@ test('진입 진단 → 세션 → 리포트 전체 흐름을 완주한다', asy
   // 다시보기 진입 둘은 분포 아래 한 줄에 있다 (2026-09-18)
   await expect(page.locator('.browse-pair')).toBeVisible()
   await expect(page.getByRole('button', { name: /무작위 다시보기/ })).toBeVisible()
-  await expect(page.getByText('취약 음독')).toBeVisible()
+  // 취약 음독은 접힌 채다 — 진단 직후처럼 비었으면 섹션째로 없다 (2026-10-01)
+  await expect(page.locator('.weak-onyomi details[open]')).toHaveCount(0)
+  // 도구는 본문 맨 아래로 내려갔다 (2026-10-01)
+  await expect(page.locator('.report .tools')).toBeVisible()
 
   // ── 홈 탭: 진단을 마쳤으니 진입점이 사라진다 (리포트는 탭 루트라 「‹」 가 없다) ──
   await page.getByRole('button', { name: '홈', exact: true }).click()

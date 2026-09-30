@@ -783,6 +783,38 @@
 
 /* 다시보기 — 리포트의 진입 자리. 카드 화면 자체는 study.css 의 .card 셸을 그대로 쓴다
    (사용자 요청 2026-09-12: 목록이 아니라 카드로 넘겨 본다) */
+/* 2026-10-01 분포 섹션 안으로 들어왔다 — 막대·범례와 한 호흡 띄운다 */
+.browse-entry {
+  margin-top: 18px;
+}
+/* 취약 음독 — 접힌 채로 둔다 (2026-10-01). 제목줄 전체가 누르는 자리, 오른쪽 ›가 열림을 말한다 */
+.weak-onyomi summary {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  cursor: pointer;
+  list-style: none;
+}
+.weak-onyomi summary::-webkit-details-marker {
+  display: none;
+}
+.weak-onyomi summary::after {
+  content: '›';
+  margin-left: auto;
+  font-size: calc(16px * var(--ui-scale));
+  line-height: 1;
+  transition: transform 160ms ease-out;
+}
+.weak-onyomi details[open] summary::after {
+  transform: rotate(90deg);
+}
+.weak-count {
+  font-variant-numeric: tabular-nums;
+  color: var(--text-dim);
+}
+.weak-onyomi details:not([open]) summary {
+  margin-bottom: 0;
+}
 .browse-lead {
   margin: 0 0 12px;
   color: var(--text-dim);

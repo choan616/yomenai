@@ -1,4 +1,4 @@
-// 진단 리포트 화면 — 수준, 다음에 볼 것, 다시보기 진입, 오답 유형 분포, 1등 오답, 취약 음독. 이 앱의 얼굴이다 (PLAN §7)
+// 진단 리포트 화면 — 수준, 다음에 볼 것, 오답 유형 분포(+다시보기), 학습 달력, 도구, 취약 음독. 이 앱의 얼굴이다 (PLAN §7)
 import { Fragment, useEffect, useState } from 'react'
 import { dataVersion } from '../core/dataVersion.ts'
 import { onyomiSiblings } from '../core/contrast.ts'
@@ -211,18 +211,7 @@ export function Report({
       </div>
 
       <div className="screen-body">
-        {/* 도구 둘은 **기록이 없어도** 보인다 (2026-09-17). 규칙은 처방에서만 닿게 두면
-            읽기 30회를 채우기 전에는 아예 못 여는데, 규칙은 처음 틀린 날 가장 필요하다 */}
-        <ToolsSection
-          onyomi={data?.onyomi ?? null}
-          onOnyomi={onOnyomi}
-          onRules={() => onRule(null)}
-        />
-
-        {/* 알림은 **도구 아래**, 곧 본문이 들어설 자리에 둔다 (2026-09-21 사용자 지적).
-            위에 두면 계산이 끝나 문구가 사라질 때 도구 묶음이 통째로 24px 올라간다 —
-            이미 보이던 것이 움직이는 게 덜컥거림의 정체다. 여기 두면 문구 자리를 본문이
-            그대로 이어받아, 보이던 것은 하나도 안 움직이고 아래로만 자란다 */}
+        {/* 알림 자리를 본문이 그대로 이어받는다 — 보이던 것이 움직이지 않는다 (2026-09-21) */}
         {error ? (
           <p className="empty">불러오지 못했어요: {error}</p>
         ) : !data ? (
@@ -235,14 +224,28 @@ export function Report({
           </p>
         ) : null}
 
-        {data && data.report.totalReviews > 0 && (
+        {/* 도구는 **맨 아래로** 내렸다 (2026-10-01 사용자 판단 「맨 위에 노출할 정도 비중은
+            아니다」). 기록이 없어도 보인다는 원칙은 그대로다(2026-09-17 — 규칙은 처음 틀린 날
+            가장 필요하다) — 빈 상태에서도 알림 바로 아래에 선다.
+            **계산 중에는 안 그린다.** 본문 아래에 있으니 계산 중에 그려 두면 본문이 들어오며
+            통째로 밀려 내려간다 — 2026-09-21 절이 잡은 "보이던 것이 움직이는" 덜컥거림이다 */}
+        {data && data.report.totalReviews > 0 ? (
           <ReportBody
             data={data}
             onBrowse={onBrowse}
             onBrowseMistake={onBrowseMistake}
             onFocus={onFocus}
             onRule={onRule}
+            onOnyomi={onOnyomi}
           />
+        ) : (
+          (error || data) && (
+            <ToolsSection
+              onyomi={data?.onyomi ?? null}
+              onOnyomi={onOnyomi}
+              onRules={() => onRule(null)}
+            />
+          )
         )}
       </div>
     </section>
@@ -255,15 +258,28 @@ function ReportBody({
   onBrowseMistake,
   onFocus,
   onRule,
+  onOnyomi,
 }: {
   data: Loaded
   onBrowse: () => void
   onBrowseMistake: (type: MistakeType | null, voicing: VoicingKind | null, label: string) => void
   onFocus: (pairIds: string[]) => void
   onRule: (id: RuleId | null) => void
+  onOnyomi: () => void
 }) {
-  const { report, level, prescriptions, voicing, rows, passed, attendance, sessionLimit, streak, reach } =
-    data
+  const {
+    report,
+    level,
+    prescriptions,
+    voicing,
+    rows,
+    passed,
+    attendance,
+    sessionLimit,
+    streak,
+    reach,
+    onyomi,
+  } = data
   // 정답률은 *실제* 오답으로 센다. 분류된 오답만 쓰면 미분류분이 정답으로 둔갑한다
   const accuracy =
     report.totalReviews > 0
@@ -279,14 +295,11 @@ function ReportBody({
 
   return (
     <>
+      {/* 배치는 중요도 순이다 (2026-10-01 사용자 지적 「다시 조금 산만해졌다」).
+          어디쯤인가(수준) → 무엇을 할까(처방) → 왜(분포, 바로 다시보기로) → 얼마나 꾸준히 →
+          도구 → 취약 음독(접힘). 취약 음독은 처방이 파급력 큰 것을 이미 골라 올리므로
+          원본 목록은 접어 둔다 — 「눈이 가지 않는다」 */}
       <LevelSection level={level} reviews={report.totalReviews} accuracy={accuracy} />
-
-      <CalendarSection
-        attendance={attendance}
-        sessionLimit={sessionLimit}
-        streak={streak}
-        reach={reach}
-      />
 
       <section className="rx">
         <p className="section-title">다음에 볼 것</p>
@@ -361,62 +374,73 @@ function ReportBody({
             진함 · {Math.round(DOMINANT_SHARE * 100)}% 이상
           </p>
         )}
-      </section>
 
-      {/* 다시보기 진입 (사용자 지시 2026-09-18) — 분포 바로 아래다. 「무작위」와 「1등 유형만」이
-          같은 성격의 선택이라 한 줄에 양쪽으로 둔다. 1등 유형 하나에 칸을 따로 내주던 자리를
-          이 버튼 하나로 줄였다 */}
-      {report.frequent.length > 0 && (
-        <section className="browse-entry">
-          <p className="section-title">다시보기</p>
-          <p className="browse-lead">채점 없이 한 장씩 넘겨 봐요. 들어갈 때마다 섞여요.</p>
-          <div className="browse-pair">
-            <button type="button" className="btn" onClick={onBrowse}>
-              무작위 다시보기
-              <span className="sub">{Math.min(report.frequent.length, BROWSE_N)}장</span>
-            </button>
-            {top !== undefined && (
-              <button
-                type="button"
-                className="btn"
-                onClick={() => onBrowseMistake(top.type, top.voicing, top.label)}
-              >
-                오답 유형별 다시보기
-                <span className="sub">
-                  {top.label}
-                </span>
+        {/* 다시보기 진입 (사용자 지시 2026-09-18) — 분포 바로 아래다. 「무작위」와 「1등 유형만」이
+            같은 성격의 선택이라 한 줄에 양쪽으로 둔다. 2026-10-01 제목을 따로 달던 섹션을
+            분포 안으로 합쳤다 — 분포를 보고 바로 누르는 버튼이라 제목 하나만큼 덜 산만하다 */}
+        {report.frequent.length > 0 && (
+          <div className="browse-entry">
+            <p className="browse-lead">채점 없이 한 장씩 넘겨 봐요. 들어갈 때마다 섞여요.</p>
+            <div className="browse-pair">
+              <button type="button" className="btn" onClick={onBrowse}>
+                무작위 다시보기
+                <span className="sub">{Math.min(report.frequent.length, BROWSE_N)}장</span>
               </button>
-            )}
+              {top !== undefined && (
+                <button
+                  type="button"
+                  className="btn"
+                  onClick={() => onBrowseMistake(top.type, top.voicing, top.label)}
+                >
+                  오답 유형별 다시보기
+                  <span className="sub">
+                    {top.label}
+                  </span>
+                </button>
+              )}
+            </div>
           </div>
-        </section>
-      )}
-
-      <section>
-        <p className="section-title">취약 음독</p>
-        {report.weakOnyomi.length === 0 ? (
-          <p className="empty">오답률이 높은 음독이 아직 없어요.</p>
-        ) : (
-          <ul className="rows">
-            {report.weakOnyomi.map((w, i) => (
-              <li key={w.pairId} style={{ '--i': i } as React.CSSProperties}>
-                <span className="st learning" aria-hidden="true">
-                  ◐
-                </span>
-                <span className="r-main" lang="ja">
-                  {w.kanji}
-                </span>
-                <span className="r-sub r-ja" lang="ja">
-                  {w.base}
-                </span>
-                <span className="r-sub">{w.kind === 'on' ? '음' : '훈'}</span>
-                <span className="r-tail">
-                  {Math.round(w.rate * 100)}% · {w.wrong}/{w.seen}
-                </span>
-              </li>
-            ))}
-          </ul>
         )}
       </section>
+
+      <CalendarSection
+        attendance={attendance}
+        sessionLimit={sessionLimit}
+        streak={streak}
+        reach={reach}
+      />
+
+      <ToolsSection onyomi={onyomi} onOnyomi={onOnyomi} onRules={() => onRule(null)} />
+
+      {/* 취약 음독 — 접어 둔다 (2026-10-01). 비어 있으면 섹션째로 없다 */}
+      {report.weakOnyomi.length > 0 && (
+        <section className="weak-onyomi">
+          <details>
+            <summary className="section-title">
+              취약 음독 <span className="weak-count">{report.weakOnyomi.length}</span>
+            </summary>
+            <ul className="rows">
+              {report.weakOnyomi.map((w, i) => (
+                <li key={w.pairId} style={{ '--i': i } as React.CSSProperties}>
+                  <span className="st learning" aria-hidden="true">
+                    ◐
+                  </span>
+                  <span className="r-main" lang="ja">
+                    {w.kanji}
+                  </span>
+                  <span className="r-sub r-ja" lang="ja">
+                    {w.base}
+                  </span>
+                  <span className="r-sub">{w.kind === 'on' ? '음' : '훈'}</span>
+                  <span className="r-tail">
+                    {Math.round(w.rate * 100)}% · {w.wrong}/{w.seen}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </details>
+        </section>
+      )}
     </>
   )
 }

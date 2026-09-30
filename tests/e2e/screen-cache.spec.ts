@@ -101,7 +101,9 @@ test('계산 중에도 제목과 주 버튼이 안 움직인다', async ({ page 
   )
 })
 
-test('리포트도 계산 중에 도구 묶음이 안 움직인다', async ({ page }) => {
+test('리포트는 계산 중에 도구를 안 그린다 — 본문이 들어오며 밀려날 것이 없다', async ({ page }) => {
+  // 2026-10-01 도구가 본문 아래로 내려갔다. 계산 중에 그려 두면 본문이 들어오며 통째로
+  // 밀려 내려간다 — 2026-09-21 이 테스트가 잡던 「보이던 것이 움직이는」 덜컥거림의 새 얼굴이다
   await ready(page)
 
   // 사전을 붙잡아 로딩 상태를 고정한다 (위와 같은 처방)
@@ -116,33 +118,14 @@ test('리포트도 계산 중에 도구 묶음이 안 움직인다', async ({ pa
   await page.reload()
   await page.getByRole('button', { name: '리포트', exact: true }).click()
 
-  const probe = () =>
-    page.evaluate(() => {
-      const tools = document.querySelector('.report .tools')
-      return {
-        loading: (document.querySelector('.screen-body')?.textContent ?? '').includes(
-          '불러오고 있어요',
-        ),
-        tools: tools ? Math.round(tools.getBoundingClientRect().top) : -1,
-      }
-    })
-
-  await page.waitForSelector('.report .tools', { timeout: 20_000 })
-  const loading = await probe()
-  expect(loading.loading, '로딩 상태를 잡아야 의미가 있다').toBe(true)
+  await expect(page.locator('.screen-body')).toContainText('불러오고 있어요')
+  await expect(page.locator('.report .tools')).toHaveCount(0)
 
   release()
   await expect(page.locator('.screen-body')).not.toContainText('불러오고 있어요', {
     timeout: 20_000,
   })
-  const loaded = await probe()
-
-  // 4px 은 봐준다 — 위에 있는 건 제목줄뿐이라, 두 측정 사이에 폰트가 도착하면 행간이
-  // 그만큼 달라진다(실행마다 2~3px 흔들렸다). 잡으려는 건 알림이 사라지며 생기던 24px 이다
-  expect(
-    Math.abs(loaded.tools - loading.tools),
-    `도구 묶음이 ${loaded.tools - loading.tools}px 움직였다`,
-  ).toBeLessThanOrEqual(4)
+  await expect(page.locator('.report .tools')).toBeVisible()
 })
 
 test('찾기도 다시 열면 검색창 아래가 바로 차 있다', async ({ page }) => {
