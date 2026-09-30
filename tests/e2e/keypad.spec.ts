@@ -107,3 +107,27 @@ test('손가락 누름은 click 이 뒤따라도 한 번만 들어간다 — 같
   for (const ch of ['k', 'a', 't', 't', 'a']) await key(ch).tap()
   await expect(page.locator('.kana-input')).toHaveValue('かった')
 })
+
+test('설정에서 「기기 키보드」를 고르면 세션에 앱 자판이 안 뜨고 시스템 키보드가 열린다', async ({
+  page,
+}) => {
+  await page.goto('/')
+  await expect(page.getByRole('button', { name: '세션 시작' })).toBeEnabled({ timeout: 20_000 })
+  await page.getByRole('button', { name: '설정', exact: true }).click()
+  const system = page.getByRole('group', { name: '키보드', exact: true }).getByRole('button', {
+    name: '기기 키보드',
+  })
+  await system.click()
+  await expect(system).toHaveAttribute('aria-pressed', 'true')
+  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('yomenai:settings')!).keyboard)).toBe(
+    'system',
+  )
+
+  await page.getByRole('button', { name: '홈', exact: true }).click()
+  await reachReadingCard(page)
+  await expect(page.locator('.keypad')).toHaveCount(0)
+  // PC 와 같은 경로 — ASCII 키보드라 IME 후보 바는 안 뜨고, 받아쓰기 버튼이 있는 시스템 키보드다
+  await expect(page.locator('.kana-input')).toHaveAttribute('inputmode', 'url')
+  // 자판의 확인 키 대신 입력 옆 확인 버튼이 돌아온다
+  await expect(page.locator('.answer-row .btn-primary', { hasText: '확인' })).toBeVisible()
+})

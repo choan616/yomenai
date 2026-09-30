@@ -11,7 +11,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { CameraIcon } from './icons.tsx'
 import { toKana } from 'wanakana'
 import { RomajiKeypad } from '../study/RomajiKeypad.tsx'
-import { useCoarsePointer } from '../study/useCoarsePointer.ts'
+import { useAppKeypad } from '../study/useCoarsePointer.ts'
 import { dataVersion } from '../core/dataVersion.ts'
 import { replay } from '../core/replay.ts'
 import { recordStar } from '../core/session.ts'
@@ -303,7 +303,7 @@ export function Search({
 
   /** 자판을 띄울지 — 입력창을 누른 뒤에만 뜬다 */
   const [typing, setTyping] = useState(false)
-  const keypad = useCoarsePointer()
+  const keypad = useAppKeypad()
   const ref = useRef<HTMLInputElement>(null)
 
   return (

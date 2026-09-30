@@ -6,7 +6,7 @@ import { bind, unbind } from 'wanakana'
 import type { DiffChar } from '../core/answerDiff.ts'
 import { hasHangul } from '../lib/hangul.ts'
 import { RomajiKeypad } from './RomajiKeypad.tsx'
-import { useCoarsePointer } from './useCoarsePointer.ts'
+import { useAppKeypad } from './useCoarsePointer.ts'
 
 /**
  * 자판 버튼이 누른 글자를 입력창에 넣는다. 값을 직접 대입하지 않고 `execCommand` 로 넣는 이유는
@@ -64,8 +64,9 @@ export function KanaInput({ onSubmit, resetKey, locked, diff, done }: Props) {
    */
   const [warnedFor, setWarnedFor] = useState<string | number | null>(null)
   const keyboardWarning = warnedFor === resetKey
-  /** 손가락 기기에서만 자체 자판을 쓴다. PC 는 물리 키보드가 있어 자판이 방해만 된다 */
-  const keypad = useCoarsePointer()
+  /** 손가락 기기에서만 자체 자판을 쓴다. PC 는 물리 키보드가 있어 자판이 방해만 된다.
+   *  설정에서 「기기 키보드」를 고르면 손가락 기기도 시스템 키보드를 쓴다 (2026-09-30) */
+  const keypad = useAppKeypad()
 
   /**
    * 빈/공백뿐인 값은 제출하지 않는다. 다음 문제로 넘어가면 입력창이 auto-focus 되는데,

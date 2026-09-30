@@ -10,6 +10,7 @@ describe('parseSettings', () => {
         ratio: { correction: 6, expansion: 4 },
         keyFeedback: 'sound',
         keypadLayout: 'compact',
+        keyboard: 'system',
         browseMask: false,
         kunPercent: 30,
       }),
@@ -18,6 +19,7 @@ describe('parseSettings', () => {
       ratio: { correction: 6, expansion: 4 },
       keyFeedback: 'sound',
       keypadLayout: 'compact',
+      keyboard: 'system',
       browseMask: false,
       kunPercent: 30,
     })
@@ -78,5 +80,13 @@ describe('parseSettings — 자판 배열', () => {
   it('compact 만 받는다', () => {
     expect(parseSettings({ keypadLayout: 'compact' }).keypadLayout).toBe('compact')
     expect(parseSettings({ keypadLayout: 'dvorak' }).keypadLayout).toBe('qwerty')
+  })
+})
+
+describe('parseSettings — 키보드 선택', () => {
+  it('없거나 깨진 값이면 앱 자판이다 — 기기 키보드는 명시적으로 고른 사람만', () => {
+    expect(parseSettings({}).keyboard).toBe('app')
+    expect(parseSettings({ keyboard: 'nope' }).keyboard).toBe('app')
+    expect(parseSettings({ keyboard: 'system' }).keyboard).toBe('system')
   })
 })

@@ -3,7 +3,8 @@
 // 둘이 갈리면 함정이 생긴다 — 자판은 CSS 로 숨겼는데 `inputMode="none"` 은 걸려 있으면
 // 시스템 키보드도 자판도 없어 아무것도 못 친다 (마우스와 터치가 같이 있는 기기).
 // 그래서 CSS 미디어 쿼리가 아니라 이 값 하나로 양쪽을 정한다.
-import { useSyncExternalStore } from 'react'
+import { useState, useSyncExternalStore } from 'react'
+import { loadSettings } from '../app/settings.ts'
 
 const QUERY = '(hover: none) and (pointer: coarse)'
 
@@ -21,4 +22,15 @@ function snapshot(): boolean {
 /** 서버/테스트 기본값은 false — PC 취급이라 시스템 키보드를 막지 않는다 */
 export function useCoarsePointer(): boolean {
   return useSyncExternalStore(subscribe, snapshot, () => false)
+}
+
+/**
+ * 앱 자판을 띄울지 — 손가락 기기이고 설정이 「앱 자판」일 때만 (2026-09-30).
+ * 「기기 키보드」를 고르면 PC 와 같은 경로로 시스템 키보드가 열려 받아쓰기·음성 제어가 통한다.
+ * 설정은 마운트 때 한 번 읽는다 — 설정 화면과 입력 화면은 같이 떠 있지 않는다
+ */
+export function useAppKeypad(): boolean {
+  const coarse = useCoarsePointer()
+  const [keyboard] = useState(() => loadSettings().keyboard)
+  return coarse && keyboard === 'app'
 }

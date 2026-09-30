@@ -60,3 +60,20 @@ test('찾기 자판은 화면 아래에 고정된다 — 목록을 스크롤해�
   const after = (await keypad.boundingBox())!
   expect(Math.abs(after.y - before.y)).toBeLessThanOrEqual(1)
 })
+
+test('「기기 키보드」 설정이면 찾기도 앱 자판 없이 시스템 키보드를 연다 (2026-09-30)', async ({ page }) => {
+  await page.addInitScript(() => {
+    localStorage.setItem('yomenai:settings', JSON.stringify({ keyboard: 'system' }))
+  })
+  await page.goto('/')
+  await expect(page.getByRole('button', { name: '세션 시작' })).toBeEnabled({ timeout: 20_000 })
+  await page.getByRole('button', { name: '찾기', exact: true }).click()
+
+  const input = page.locator('.search-input')
+  await expect(input).toHaveAttribute('inputmode', 'url')
+  await input.click()
+  await expect(page.locator('.keypad')).toHaveCount(0)
+  // 로마자를 치면 가나로 바뀐다 — 시스템 키보드 경로의 변환
+  await input.pressSequentially('ka')
+  await expect(input).toHaveValue('か')
+})

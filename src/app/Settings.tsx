@@ -59,6 +59,12 @@ const BROWSE_MASKS: { label: string; value: boolean }[] = [
   { label: '안 가림', value: false },
 ]
 
+/** 키보드 선택 (2026-09-30). 기기 키보드는 받아쓰기·음성 제어 같은 기기 입력 기능을 쓰는 길이다 */
+const KEYBOARDS: { label: string; value: SettingsData['keyboard'] }[] = [
+  { label: '앱 자판', value: 'app' },
+  { label: '기기 키보드', value: 'system' },
+]
+
 /** 자판 입력 피드백 (2026-09-19). 진동은 기기가 지원해야 고를 수 있다 */
 const KEY_FEEDBACKS: { label: string; value: SettingsData['keyFeedback'] }[] = [
   { label: '없음', value: 'off' },
@@ -233,6 +239,25 @@ export function Settings({
         </div>
 
         <h3 className="setting-group">입력</h3>
+        <div className="setting">
+          <label>키보드</label>
+          <div className="seg" role="group" aria-label="키보드">
+            {KEYBOARDS.map((o) => (
+              <button
+                key={o.value}
+                type="button"
+                aria-pressed={settings.keyboard === o.value}
+                onClick={() => update({ ...settings, keyboard: o.value })}
+              >
+                {o.label}
+              </button>
+            ))}
+          </div>
+          <span className="hint">
+            받아쓰기·음성 제어·외부 입력 장치처럼 기기의 입력 기능을 쓰려면 기기 키보드를
+            고르세요. 영문 키보드에서 로마자로 치면 가나로 바뀌어요.
+          </span>
+        </div>
         <div className="setting">
           <label>자판 배열</label>
           <div className="seg" role="group" aria-label="자판 배열">

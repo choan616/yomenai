@@ -4,6 +4,12 @@ import { bumpDataVersion } from '../core/dataVersion.ts'
 export type KeyFeedback = 'off' | 'sound' | 'haptic'
 /** 로마자 자판 배열 (2026-09-20). 근거는 keypadLayouts.ts */
 export type KeypadLayout = 'qwerty' | 'compact'
+/**
+ * 터치 기기에서 앱 자판을 쓸지 시스템 키보드를 쓸지 (2026-09-30).
+ * `system` 은 수지장애 사용자를 위한 탈출구다 — 앱 자판이 `inputMode="none"` 으로 시스템
+ * 키보드를 막아 받아쓰기·음성 제어·외부 입력기로 가는 길이 닫혀 있었다
+ */
+export type KeyboardChoice = 'app' | 'system'
 
 export interface Settings {
   sessionLimit: number
@@ -12,6 +18,7 @@ export interface Settings {
   /** 기본은 끔 — 소리는 무음 스위치에, 진동은 기기 지원에 걸려 예측이 어렵다 */
   keyFeedback: KeyFeedback
   keypadLayout: KeypadLayout
+  keyboard: KeyboardChoice
   /**
    * 다시보기에서 요미가나를 가려 두고 눌러서 확인한다 (2026-09-21 사용자 요청).
    * 기본은 가림 — 읽기가 보이는 채로 넘기면 「아는 것 같은 느낌」만 남는다
@@ -43,6 +50,7 @@ export const DEFAULT_SETTINGS: Settings = {
   ratio: { correction: 7, expansion: 3 },
   keyFeedback: 'off',
   keypadLayout: 'qwerty',
+  keyboard: 'app',
   browseMask: true,
   kunPercent: 0,
 }
@@ -71,6 +79,7 @@ export function parseSettings(raw: unknown): Settings {
   const ratioOk = Number.isFinite(corr) && Number.isFinite(exp) && corr >= 0 && exp >= 0 && corr + exp > 0
   const kf = r.keyFeedback
   const kl = r.keypadLayout
+  const kb = r.keyboard
   const bm = r.browseMask
   const kp = Number(r.kunPercent)
   return {
@@ -82,6 +91,7 @@ export function parseSettings(raw: unknown): Settings {
       : { ...DEFAULT_SETTINGS.ratio },
     keyFeedback: kf === 'sound' || kf === 'haptic' ? kf : DEFAULT_SETTINGS.keyFeedback,
     keypadLayout: kl === 'compact' ? kl : DEFAULT_SETTINGS.keypadLayout,
+    keyboard: kb === 'system' ? kb : DEFAULT_SETTINGS.keyboard,
     // 저장된 적 없으면(undefined) 기본값이다 — false 만 명시적인 끔으로 받는다
     browseMask: bm === false ? false : DEFAULT_SETTINGS.browseMask,
     // 0~100 으로 자르고 10 단위로 맞춘다 — 레인지의 눈금과 같게 (깨진 값은 0)
