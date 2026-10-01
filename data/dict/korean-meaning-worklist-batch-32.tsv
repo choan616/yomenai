@@ -1,0 +1,42 @@
+﻿verdict	cat	fix	tier	flags	manual	headword	reading	glossEn	llm_ko	stdict_def	manual_reason	category	classSource	band	id
+o			4			不定	ふじょう	uncertainty; mutability	불확실함, 변덕스러움			2	default	4	2869404
+o			4			開戦	かいせん	outbreak of war; starting a war	전쟁 개시	전쟁을 시작함.		2	default	0	1202810
+o			4			開発	かいはつ	development; cultivation; application; exploitation (of resources)	개발, 개화	토지나 천연자원 따위를 유용하게 만듦.		2	default	0	1202880
+o			4			去年	きょねん	last year	작년	이해의 바로 앞의 해.		2	default	0	1231690
+o			4			距離	きょり	distance; range; interval; difference (e.g. in opinion)	거리, 간격	두 개의 물건이나 장소 따위가 공간적으로 떨어진 길이.		2	default	0	1232920
+o			4			拒否	きょひ	refusal; rejection; denial; veto	거부, 거절, 부인	요구나 제의 따위를 받아들이지 않고 물리침.		2	default	0	1232410
+o			4			拒否権	きょひけん	right of veto	거부권	거부할 수 있는 권리.		2	default	0	1232420
+o			4			居住	きょじゅう	residence; living (at, in); abode	거주, 생활	일정한 곳에 머물러 삶. 또는 그런 집.		2	default	0	1231810
+o			4			健康	けんこう	health; healthy; sound; fit	건강	정신적으로나 육체적으로 아무 탈이 없고 튼튼함. 또는 그런 상태.		2	default	0	1256170
+o			4			建物	たてもの	building	건물	사람이 들어 살거나, 일을 하거나, 물건을 넣어 두기 위하여 지은 집을 통틀어 이르는 말.		2	default	0	1257540
+o			4			建設	けんせつ	construction; establishment	건설, 구축	건물, 설비, 시설 따위를 새로 만들어 세움.		2	default	0	1257420
+o			4			建築	けんちく	construction; architecture (of buildings)	건축	집이나 성, 다리 따위의 구조물을 그 목적에 따라 설계하여 흙이나 나무, 돌, 벽돌, 쇠 따위를 써서 세우거나 쌓아 만드는 일.		2	default	0	1257500
+o			4			件数	けんすう	number of cases, incidents, items, messages, accounts, etc.	건수, 가지수	일이나 사건 따위의 수.		2	default	0	1255950
+o			4			激動	げきどう	violent shock; agitation; turbulence; turmoil	격동, 동요	정세 따위가 급격하게 움직임.		2	default	0	1253720
+o			4			激化	げきか	intensification; aggravation	격화, 심화	격렬하게 됨.		2	default	0	1253640
+o			1	cat-mismatch	Y(1)	激戦	げきせん	fierce battle; hard-fought battle; hot contest; severe fight	치열한 싸움, 격전	세차게 싸움. 또는 세찬 싸움.		2	default	0	1253680
+o			4			堅持	けんじ	adhering to (a view, policy, etc.); sticking to; holding fast to; steadfastly maintaining	고수함, 지키기	어떤 견해나 입장 따위를 굳게 지니거나 지킴.		2	default	0	1257150
+o			4			見解	けんかい	opinion; point of view	견해, 의견	어떤 사물이나 현상에 대한 자기의 의견이나 생각.		2	default	0	1259390
+o			4			見学	けんがく	inspection; study by observation; field trip; tour	견학, 참관	실지로 보고 그 일에 관한 구체적인 지식을 넓힘.		2	default	0	1259440
+o			3		Y(1)	結果	けっか	result; consequence; outcome; effect	결과, 결과물	열매를 맺음. 또는 그 열매.	일본어의 '결과'는 사건이나 행동에 따른 최종적인 산출물 (outcome) 을 의미하는 반면, 한국 표준국어대사전의 '결과 (2)'는 식물에서 맺히는 열매라는 본래 뜻과 그 확장된 개념을 지칭하여 핵심 의미가 갈린다.	1	manual	0	1254690
+o			4			結局	けっきょく	after all; in the end; ultimately; eventually	결국, 마침내	일이 마무리되는 마당이나 일의 결과가 그렇게 돌아감을 이르는 말.		2	default	0	1254730
+o			4			決裂	けつれつ	breakdown (of talks, negotiations, etc.); breaking off; rupture	결렬, 파열	갈래갈래 찢어짐.		2	default	0	1254430
+o			4			結論	けつろん	conclusion (of an argument, discussion, study, etc.); conclusion	결론	말이나 글의 끝을 맺는 부분.		2	default	0	1255020
+o			4			決算	けっさん	settlement of accounts; closing accounts; financial results; reporting (of accounts)	결산, 회계 마감	일정한 기간 동안의 수입과 지출을 마감하여 계산함. 또는 그렇게 산출한 계산.		2	default	0	1254290
+o			4			結成	けっせい	formation; combination	결성, 조직함	조직이나 단체 따위를 짜서 만듦.		2	default	0	1254900
+o			4			結束	けっそく	union; unity; solidarity; bundling	결속, 단결	한 덩어리가 되게 묶음.		2	default	0	1254930
+o			4			決勝	けっしょう	decision of a contest; finals	결승	운동 경기 따위에서, 마지막 승자를 결정함.		2	default	0	1254320
+o			4			決意	けつい	decision; determination; resolution	결심, 굳은 마음	뜻을 정하여 굳게 마음을 먹음. 또는 그런 마음.		2	default	0	1254220
+o			4			決議	けつぎ	resolution; vote; decision	결의, 결정	의논하여 결정함. 또는 그런 결정.		2	default	0	1254240
+o			4			決定	けってい	decision; determination	결정, 확정	행동이나 태도를 분명하게 정함. 또는 그렇게 정해진 내용.		2	default	0	1254380
+o			4			決定的	けっていてき	definite; final; decisive; conclusive	결정적인, 확정적인	일이 되어 가는 형편이 바뀔 수 없을 만큼 확실한 것.		2	default	0	1254400
+o			4			結集	けっしゅう	concentration (of efforts, forces, etc.); gathering together; regimentation; marshalling	집결, 모임	한곳에 모여 뭉침. 또는 한곳에 모아 뭉침.		2	default	0	1254860
+o			4			決着	けっちゃく	conclusion; decision; end; settlement	결말, 결정, 매듭	완전하게 결말이 지어짐.		2	default	0	1592630
+o			4			結核	けっかく	tuberculosis; TB; concretion	결핵	결핵균에 감염되어 일어나는 만성 전염병. 허파·콩팥·창자나 뼈·관절·피부·후두 따위에 침투하며 결핵 수막염, 흉막염, 복막염을 일으키고 온몸에 퍼지기도 한다.		2	default	0	1254710
+o			4			結婚	けっこん	marriage	결혼	남녀가 정식으로 부부 관계를 맺음.		2	default	0	1254790
+o			4			結婚式	けっこんしき	marriage ceremony; wedding; nuptials	결혼식	부부 관계를 맺는 서약을 하는 의식.		2	default	0	1254810
+o			1	cat-mismatch	Y(1)	決断	けつだん	decision; determination	결단, 결정	결정적인 판단을 하거나 단정을 내림. 또는 그런 판단이나 단정.		2	default	0	1254370
+o			3		Y(1)	決済	けっさい	settlement (of an account); liquidation of debts; payment	결제, 정산	일을 처리하여 끝을 냄.	결제는 일본어에서 '채무 변제'라는 구체적인 금융 행위를 뜻하는 반면, 한국 표준국어대사전의 '결제'는 일을 처리하여 끝내는 일반적인 동사적 의미를 지니며 핵심 쓰임이 갈라져 있다.	1	manual	0	1254260
+o			4			境界	きょうかい	boundary; border; limit; bounds	경계, 국경	사물이 어떠한 기준에 의하여 분간되는 한계.		2	default	0	1235960
+o			4			警戒	けいかい	vigilance; caution; alertness; precaution	경계, 주의	뜻밖의 사고가 생기지 않도록 조심하여 단속함.		2	default	0	1252310
+o			4			警告	けいこく	warning; caution; admonition; keikoku (penalty in judo)	경고, 주의	조심하거나 삼가도록 미리 주의를 줌. 또는 그 주의.		2	default	0	1252360
