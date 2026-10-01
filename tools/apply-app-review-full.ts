@@ -16,10 +16,13 @@
 //   apply:app-review [--force]              (그 줄의 verdict·fix 칸을 채운다)
 //   apply:korean-meaning                    (verdict → korean-class.json)
 //   build:runtime-dict                      (→ public/dict)
+//   apply-wide-review [--force]             (사전 밖 표현의 판정 → korean-meaning-wide-overrides.json, 2026-10-01)
+//   build:wide-dict                         (그 파일이 바뀌었을 때만 → public/dict/wide.json)
 //
 // 각 단계 출력은 그대로 흘려보낸다(`stdio: 'inherit'`) — 이상 신호를 못 보고 지나치지
 // 않으려면 중간 단계 로그가 가려지면 안 된다.
 import { execFileSync } from 'node:child_process'
+import { existsSync, readFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import { join } from 'node:path'
 
@@ -42,9 +45,14 @@ const steps: { label: string; file: string; args?: string[] }[] = [
   },
   { label: '3. 워크리스트 → korean-class.json', file: 'apply-korean-meaning.ts' },
   { label: '4. korean-class.json → public/dict', file: 'build-runtime-dict.ts' },
+  {
+    label: '5. 사전 밖 표현의 판정을 덮어쓰기 기록에 채우기',
+    file: 'apply-wide-review.ts',
+    args: [...passthrough, ...(FORCE ? ['--force'] : [])],
+  },
 ]
 
-for (const step of steps) {
+function run(step: { label: string; file: string; args?: string[] }): void {
   console.log(`\n=== ${step.label} ===`)
   try {
     // 한 단계라도 비정상 종료하면 여기서 멈춘다 — 다음 단계로 넘어가
@@ -61,5 +69,18 @@ for (const step of steps) {
   }
 }
 
-console.log('\n=== 4단계 전부 끝났다 ===')
+const REVIEW_PATH = join(ROOT, 'data', 'dict', 'korean-meaning-wide-overrides.json')
+const readReview = () => (existsSync(REVIEW_PATH) ? readFileSync(REVIEW_PATH, 'utf8') : '')
+const reviewBefore = readReview()
+
+for (const step of steps) run(step)
+
+// 덮어쓰기 기록이 바뀌었을 때만 넓힌 사전을 다시 만든다. 원본 JMdict(`data/raw`, 저장소에 없다)가
+// 필요한 단계라, 바뀐 게 없으면 그 파일이 없는 기기에서도 절차 전체가 막히지 않는다
+const rebuiltWide = readReview() !== reviewBefore
+if (rebuiltWide) {
+  run({ label: '6. 덮어쓰기 기록 → public/dict/wide.json', file: 'build-wide-dict.ts' })
+}
+
+console.log(`\n=== ${rebuiltWide ? 6 : 5}단계 전부 끝났다 ===`)
 console.log('  이어서: npx tsc -b && npm run lint && npm test && npm run build')

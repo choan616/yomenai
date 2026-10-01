@@ -171,3 +171,68 @@ test('판정을 파일로 받으면 네 칸만 들어 있다', async ({ page }) 
   expect(raw).not.toContain('deviceId')
   for (const l of lines) expect(l.split('\t')).toHaveLength(4)
 })
+
+// 사전 밖(넓힌 사전)에서 담은 표현도 검수 목록에 오른다 (2026-10-01 「b가 맞다」).
+// 전에는 기본 사전·밴드 4 만 읽어서 사전 밖에서 담은 표현이 **조용히 빠졌고**, 판정을 저장할 곳도 없었다.
+test('사전 밖에서 담은 표현도 올라오고, 판정이 그 id 로 남는다', async ({ page }) => {
+  test.setTimeout(180_000)
+  await page.addInitScript(() => {
+    try {
+      localStorage.setItem('yomenai:reviewMode', '1')
+      localStorage.setItem('yomenai:diagnosticDone', '1')
+      localStorage.setItem('yomenai:welcomeSeen', '1')
+    } catch {
+      /* private mode */
+    }
+  })
+  await page.goto('/')
+  // 亜鉛華軟膏(1928890) — 넓힌 사전에만 있는 표현을 담았다
+  await page.evaluate(
+    () =>
+      new Promise<void>((res, rej) => {
+        const req = indexedDB.open('yomenai')
+        req.onsuccess = () => {
+          const tx = req.result.transaction('events', 'readwrite')
+          tx.objectStore('events').put({
+            id: 'wide-1', userId: 'local', deviceId: 'e2e', at: Date.now() - 86_400_000,
+            idiomId: '1928890', on: true, deletedAt: null, type: 'star',
+          })
+          tx.oncomplete = () => res()
+          tx.onerror = () => rej(new Error('심기 실패'))
+        }
+        req.onerror = () => rej(new Error('DB 열기 실패'))
+      }),
+  )
+  await page.reload()
+  await page.getByRole('button', { name: '설정' }).click()
+  await page.getByRole('button', { name: /뜻 검수/ }).click()
+  await expect(page.getByRole('heading', { name: '뜻 검수' })).toBeVisible()
+
+  const row = page.locator('.review-row').filter({ hasText: '亜鉛華軟膏' })
+  await expect(row).toBeVisible({ timeout: 60_000 })
+  // 밴드가 아니라 「사전 밖」으로 표시된다
+  await expect(row.locator('.review-why')).toContainText('사전 밖')
+  await expect(row.locator('.review-def')).not.toBeEmpty()
+
+  await row.getByRole('button', { name: '맞아요' }).click()
+  const flags = await page.evaluate(
+    () =>
+      new Promise<{ idiomId: string; verdict: string }[]>((res, rej) => {
+        const req = indexedDB.open('yomenai')
+        req.onsuccess = () => {
+          const out: { idiomId: string; verdict: string }[] = []
+          const cur = req.result.transaction('events').objectStore('events').openCursor()
+          cur.onsuccess = () => {
+            const c = cur.result
+            if (!c) return res(out)
+            const v = c.value as { type?: string; idiomId: string; verdict: string }
+            if (v.type === 'flag') out.push({ idiomId: v.idiomId, verdict: v.verdict })
+            c.continue()
+          }
+          cur.onerror = () => rej(new Error('읽기 실패'))
+        }
+        req.onerror = () => rej(new Error('DB 열기 실패'))
+      }),
+  )
+  expect(flags).toEqual([{ idiomId: '1928890', verdict: 'ok' }])
+})

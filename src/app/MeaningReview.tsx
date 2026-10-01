@@ -19,6 +19,8 @@ import { getDeviceId } from '../db/device.ts'
 import { LOCAL_USER_ID, appendEvent, listEvents } from '../db/events.ts'
 import { db } from '../db/schema.ts'
 import { loadBand4Idioms, loadBaseIdioms, type RuntimeIdiom } from '../dict/load.ts'
+import { loadWideDict } from '../dict/wide.ts'
+import type { Band } from '../lib/bands.ts'
 
 /** 한 화면에 내는 수. 검수는 몰아서 하는 일이라 넉넉히 두되 무한정은 아니다 */
 const PAGE = 40
@@ -28,8 +30,16 @@ function rowsOf(tsv: string): string {
   return (tsv.split('\n').filter((l) => l !== '').length - 1).toLocaleString('ko')
 }
 
+/**
+ * 검수 화면이 쓰는 표제어의 최소 모양. 기본·밴드 4 는 `RuntimeIdiom` 이 그대로 들어오고,
+ * **학습 사전 밖(넓힌 사전)** 은 `band` 가 `null` 이다 (2026-10-01).
+ */
+type ReviewIdiom = Pick<RuntimeIdiom, 'idiomId' | 'headword' | 'reading' | 'koMeaning'> & {
+  band: Band | null
+}
+
 interface Row {
-  it: RuntimeIdiom
+  it: ReviewIdiom
   /** 이미 찍은 판정 */
   verdict: MeaningVerdict | null
   fix?: string
@@ -71,17 +81,36 @@ export function MeaningReview({ onBack }: { onBack: () => void }) {
         if (!alive) return
         const state = replay(events)
 
-        // 담은 것 중 기본 사전 밖(밴드 4)이 있으면 그때만 20MB 를 받는다 — 세션 풀과 같은 관례
-        const byId = new Map(base.map((it) => [it.idiomId, it]))
-        const missing = [...state.starred].filter((id) => !byId.has(id))
+        const seen = new Set<string>()
+        for (const c of state.cards.values()) seen.add(c.idiomId)
+
+        // 담았거나 만난 것 중 기본 사전 밖이 있으면 그때만 받는다 — 세션 풀과 같은 관례.
+        // 밴드 4(20MB)를 먼저 찾고, 거기도 없으면 학습 사전 밖(넓힌 사전 2.2MB)이다.
+        // **넓힌 사전을 안 읽으면 사전 밖에서 담은 표현이 목록에서 조용히 빠진다** (2026-10-01)
+        const byId = new Map<string, ReviewIdiom>(base.map((it) => [it.idiomId, it]))
+        let missing = [...new Set([...state.starred, ...seen])].filter((id) => !byId.has(id))
         if (missing.length > 0) {
           const want = new Set(missing)
           for (const it of await loadBand4Idioms()) if (want.has(it.idiomId)) byId.set(it.idiomId, it)
           if (!alive) return
+          missing = missing.filter((id) => !byId.has(id))
         }
-
-        const seen = new Set<string>()
-        for (const c of state.cards.values()) seen.add(c.idiomId)
+        if (missing.length > 0) {
+          const dict = await loadWideDict().catch(() => null)
+          if (!alive) return
+          for (const id of missing) {
+            const w = dict?.byId.get(id)
+            if (w) {
+              byId.set(id, {
+                idiomId: w.id,
+                headword: w.headword,
+                reading: w.reading,
+                koMeaning: w.koMeaning ?? null,
+                band: null,
+              })
+            }
+          }
+        }
 
         // 여기서 훑는 김에 검수 완료 id 도 같이 모은다 — 내보내기가 옛 판정을 거르는 기준
         verifiedIds.current = new Set(
@@ -125,7 +154,7 @@ export function MeaningReview({ onBack }: { onBack: () => void }) {
   }, [])
 
   // `useCallback` 으로 감싼다 — 안 그러면 린터가 `Date.now()` 를 렌더 중 호출로 본다
-  const vote = useCallback((it: RuntimeIdiom, verdict: MeaningVerdict | null, fix?: string) => {
+  const vote = useCallback((it: ReviewIdiom, verdict: MeaningVerdict | null, fix?: string) => {
     setLocal((prev) => new Map(prev).set(it.idiomId, { verdict, ...(fix ? { fix } : {}) }))
     void appendEvent(
       db(),
@@ -287,7 +316,7 @@ function ReviewRow({
           {row.it.reading}
         </span>
         <span className="review-why dim">
-          {row.why} · 밴드 {row.it.band}
+          {row.why} · {row.it.band === null ? '사전 밖' : `밴드 ${row.it.band}`}
         </span>
       </div>
       <p className="review-def">{row.it.koMeaning?.definition}</p>

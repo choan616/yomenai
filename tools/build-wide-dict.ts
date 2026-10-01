@@ -51,11 +51,12 @@ interface WideIdiom {
   pos: string[]
   glossEn: string[]
   /**
-   * 한국어 뜻 (2026-09-26). 영어 gloss 를 옮긴 LLM 초벌이라 `verified` 는 늘 false 다 —
+   * 한국어 뜻 (2026-09-26). 영어 gloss 를 옮긴 LLM 초벌이라 처음엔 `verified: false` 다 —
    * 학습 사전의 뜻과 같은 출처·같은 수준이다 (`build-korean-meaning.ts --wide`).
+   * 앱에서 검수한 것은 아래 `wideReview` 가 `verified: true` 로 덮는다 (2026-10-01).
    * 번역을 아직 안 돌렸으면 필드 자체가 없다
    */
-  koMeaning?: { definition: string; source: 'llm'; verified: false }
+  koMeaning?: { definition: string; source: 'llm' | 'manual'; verified: boolean }
 }
 
 /** 번역본. 없으면 영어 gloss 만 실린다 — 없는 것을 있는 척하지 않는다 */
@@ -66,6 +67,21 @@ const koWide: Record<string, { ko: string }> = existsSync(join(DICT_DIR, 'korean
       }
     ).byId
   : {}
+
+/**
+ * 앱에서 검수한 판정 (2026-10-01, `apply-wide-review.ts` 가 쓴다). 번역본 위에 얹는다 —
+ * 없으면 지금과 같은 결과다. 넓힌 사전 항목은 `korean-class.json` 에 없어서 (거기 넣으면
+ * 15,114개가 학습 사전 분류·밴드에 섞인다) 판정이 갈 곳이 여기뿐이다
+ */
+const REVIEW_PATH = join(DICT_DIR, 'korean-meaning-wide-overrides.json')
+const wideReview: Record<string, { definition: string; source: 'llm' | 'manual'; verified: true }> =
+  existsSync(REVIEW_PATH)
+    ? (
+        JSON.parse(readFileSync(REVIEW_PATH, 'utf8')) as {
+          byId: Record<string, { definition: string; source: 'llm' | 'manual'; verified: true }>
+        }
+      ).byId
+    : {}
 
 const kanji = (
   JSON.parse(readFileSync(join(DICT_DIR, 'kanji.json'), 'utf8')) as { kanji: Record<string, KanjiRow> }
@@ -135,6 +151,7 @@ for (const entry of doc.JMdict.entry) {
 
   const senses = asArray(entry.sense as El | El[] | undefined)
   const ko = koWide[id]?.ko?.trim()
+  const reviewed = wideReview[id]
   out.push({
     id,
     headword,
@@ -142,7 +159,12 @@ for (const entry of doc.JMdict.entry) {
     ...(readings.length > 1 ? { altReadings: readings.slice(1) } : {}),
     pos: [...new Set(senses.flatMap((s) => asArray(s.pos).map(posCode)).filter(Boolean))],
     glossEn: [...new Set(senses.flatMap((s) => asArray(s.gloss).map(text)).filter(Boolean))],
-    ...(ko ? { koMeaning: { definition: ko, source: 'llm' as const, verified: false as const } } : {}),
+    // 검수한 뜻이 번역 초안을 이긴다. 초안이 없어도(번역 전 빌드) 검수한 뜻은 실린다
+    ...(reviewed
+      ? { koMeaning: reviewed }
+      : ko
+        ? { koMeaning: { definition: ko, source: 'llm' as const, verified: false } }
+        : {}),
   })
 
   for (const ch of headword) {
@@ -169,6 +191,7 @@ writeFileSync(path, JSON.stringify({ _meta: meta, idioms: out, kanji: extraKanji
 const mb = (readFileSync(path).length / 1024 / 1024).toFixed(2)
 const noKr = Object.values(extraKanji).filter((k) => k.kr.length === 0).length
 const withKo = out.filter((it) => it.koMeaning).length
+const verifiedKo = out.filter((it) => it.koMeaning?.verified).length
 console.log('=== 넓힌 사전 ===')
 console.log(`  상용 밖 글자를 가진 표제어 ${candidates}개`)
 console.log(`    이미 배포 중이라 건너뜀 ${alreadyShipped} · kanjidic 밖 ${droppedNoKanjidic}`)
@@ -177,6 +200,6 @@ console.log(`    한국 한자음이 없는 글자 ${noKr}자 (화면에서 「�
 console.log(`  → ${path}  ${mb}MB`)
 console.log(
   withKo === out.length
-    ? `  한국어 뜻 ${withKo}개 (LLM 초벌, 전부 미검수)`
+    ? `  한국어 뜻 ${withKo}개 (LLM 초벌 · 앱에서 검수한 것 ${verifiedKo}개)`
     : `  한국어 뜻 ${withKo}/${out.length}개 — 나머지는 영어 gloss 만 실린다`,
 )

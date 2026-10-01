@@ -73,13 +73,21 @@ TSV 를 직접 편집할 거면 **VS Code** 나 **LibreOffice Calc** 로. Excel 
 「내보내기」로 받은 내용을 `data/dict/korean-meaning-app-review.tsv` 에 저장한 뒤:
 
 ```
-npm run apply:app-review-full            # 4단계(워크리스트→반영→사전) 를 순서대로 잇는다
+npm run apply:app-review-full            # 5단계(워크리스트→반영→사전→사전 밖 판정)를 순서대로 잇는다
 npm run apply:app-review-full -- --force # 이미 값이 찍힌 칸도 앱 값이 다르면 덮어쓴다
 ```
 
 `tools/apply-app-review-full.ts` 가 `build:korean-meaning-worklist --batch` →
 `apply:app-review` → `apply:korean-meaning` → `build:runtime-dict` 를 순서 고정으로 돈다.
 **한 단계라도 실패하면 그 자리에서 멈춘다** — 뒤 단계로 안 넘어간다.
+
+**사전 밖(넓힌 사전) 표현의 판정은 5단계가 따로 맡는다** (2026-10-01). 그 표현은 `korean-class.json`
+에 없어서(거기 넣으면 15,114개가 학습 사전의 분류·밴드에 섞인다) 1~4단계는 그 id 를 「작업 파일에
+없는 판정」으로 흘려보낸다. 5단계 `apply-wide-review.ts` 가 내보내기에서 넓힌 사전 id 만 골라
+`data/dict/korean-meaning-wide-overrides.json` 에 쌓고(o → 초안 그대로 검증, x+고친 뜻 → `manual`),
+그 파일이 **바뀌었을 때만** `build:wide-dict` 로 `public/dict/wide.json` 을 다시 만든다(원본
+JMdict 가 필요해서). 이미 기록된 항목은 안 덮고 `--force` 면 값이 다른 것만 덮는다. `--dry` 로
+집계만 볼 수 있다. 덮어쓰기 파일은 `*-overrides.json` 이라 `.gitignore` 예외로 커밋된다.
 
 네 단계를 나눠 돌리고 싶으면(각 단계 출력을 하나씩 보며 확인하고 싶을 때):
 

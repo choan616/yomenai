@@ -25,10 +25,12 @@ export interface WideIdiom {
   pos: string[]
   glossEn: string[]
   /**
-   * 한국어 뜻 (2026-09-26). 영어 gloss 를 옮긴 LLM 초벌이라 `verified` 는 늘 false 다 —
-   * 학습 사전의 뜻과 같은 출처·같은 수준이다. 번역 전 빌드에는 필드가 없다
+   * 한국어 뜻 (2026-09-26). 영어 gloss 를 옮긴 LLM 초벌이라 처음엔 `verified: false` 다 —
+   * 학습 사전의 뜻과 같은 출처·같은 수준이다. 번역 전 빌드에는 필드가 없다.
+   * **앱에서 검수한 것**은 `verified: true` 로 들어온다 (2026-10-01, `korean-meaning-wide-overrides.json`
+   * 을 빌드가 얹는다) — 고쳤으면 `source: 'manual'`
    */
-  koMeaning?: { definition: string; source: 'llm'; verified: false }
+  koMeaning?: { definition: string; source: 'llm' | 'manual'; verified: boolean }
 }
 
 export interface WideDict {
