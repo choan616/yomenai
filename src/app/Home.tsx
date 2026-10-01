@@ -37,6 +37,8 @@ interface Preview {
   rematch: number
   /** 한 번이라도 틀린 읽기 카드 수 — 다시보기 대상. 재대결보다 넓다 */
   browse: number
+  /** 단어장에 담은 표현 수. 0 이면 홈에 진입로를 안 낸다 — 첫 담기는 찾기에서 한다 (2026-10-01) */
+  wordlist: number
   /** 이번 주 띠 (2026-09-30) */
   week: WeekCell[]
   streak: StreakRecord
@@ -62,7 +64,13 @@ function cacheValid(): boolean {
   return cache?.version === dataVersion() && cache.preview.day === dateKey(Date.now())
 }
 
-export function Home({ onFlow }: { onFlow: (flow: Flow) => void }) {
+export function Home({
+  onFlow,
+  onWordlist,
+}: {
+  onFlow: (flow: Flow) => void
+  onWordlist: () => void
+}) {
   // 초기화 함수에서 캐시를 꺼낸다 — effect 로 넣으면 로딩 화면이 한 번 그려진 뒤에 바뀐다
   const [preview, setPreview] = useState<Preview | null>(
     () => (cacheValid() ? cache!.preview : null),
@@ -88,8 +96,9 @@ export function Home({ onFlow }: { onFlow: (flow: Flow) => void }) {
         // **같은 함수로 만든다** (2026-09-26). 전에는 `base.json` 만 봐서 담아 둔 밴드 4 가
         // 세션에는 나오는데 미리보기 장수에는 안 잡혔다
         const { sessionLimit, ratio, kunPercent } = loadSettings()
+        const state = replay(events)
         const { pool } = await loadStudyPool({
-          starred: replay(events).starred,
+          starred: state.starred,
           includeKun: kunPercent > 0,
           kanji,
         })
@@ -108,6 +117,7 @@ export function Home({ onFlow }: { onFlow: (flow: Flow) => void }) {
           fresh: session.cards.filter((c) => !c.due).length,
           rematch: rematchCount(pool, events),
           browse: browseCount(pool, events),
+          wordlist: state.wordlist.size,
           week: weekStrip(day, attendance),
           streak: buildStreak(attendance, day),
           day,
@@ -294,6 +304,21 @@ export function Home({ onFlow }: { onFlow: (flow: Flow) => void }) {
             </div>
           )}
 
+          {/* 단어장 진입로 (2026-10-01). 담은 게 있을 때만 낸다 — 없으면 찾기에서 담으며
+              들어가는 길이 이미 있고, 빈 단어장 버튼을 홈에 두면 안 쓰는 길이 상시 자리를 먹는다.
+              계산 전엔 같은 마크업을 숨겨 자리만 잡는다(위 「3장만」 슬롯과 같은 이유).
+              담은 게 없는 사람은 계산 뒤에 이 자리가 접히며 한 번 움직인다 */}
+          {preview === null ? (
+            <button type="button" className="btn quick slot" aria-hidden="true" tabIndex={-1}>
+              단어장
+            </button>
+          ) : (
+            preview.wordlist > 0 && (
+              <button type="button" className="btn quick" onClick={onWordlist}>
+                단어장<span className="dim"> · {preview.wordlist.toLocaleString('ko')}</span>
+              </button>
+            )
+          )}
         </>
       )}
     </main>

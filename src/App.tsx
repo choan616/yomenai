@@ -174,7 +174,7 @@ function TabRoot({
 }) {
   switch (tab) {
     case 'home':
-      return <Home onFlow={onFlow} />
+      return <Home onFlow={onFlow} onWordlist={() => onSub({ kind: 'wordlist' })} />
     case 'report':
       return (
         <Report

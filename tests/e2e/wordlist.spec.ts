@@ -6,7 +6,7 @@ import { expect, test, type Page } from '@playwright/test'
 
 const DAY = 86_400_000
 
-async function open(page: Page): Promise<void> {
+async function skipIntro(page: Page): Promise<void> {
   await page.addInitScript(() => {
     try {
       localStorage.setItem('yomenai:diagnosticDone', '1')
@@ -16,6 +16,11 @@ async function open(page: Page): Promise<void> {
     }
   })
   await page.goto('/')
+}
+
+/** `via` — 단어장에 들어가는 길. 찾기 탭(항상 있다) 또는 홈 진입로(담은 게 있을 때만) */
+async function open(page: Page, via: 'search' | 'home' = 'search'): Promise<void> {
+  await skipIntro(page)
   // 담아 둔 것 하나 + 그중 하나는 이미 학습을 시작했다
   await page.evaluate(
     (day) =>
@@ -46,10 +51,25 @@ async function open(page: Page): Promise<void> {
     DAY,
   )
   await page.reload()
-  await page.getByRole('button', { name: '찾기', exact: true }).click()
+  if (via === 'search') await page.getByRole('button', { name: '찾기', exact: true }).click()
   await page.getByRole('button', { name: /^단어장/ }).click()
   await expect(page.getByRole('heading', { name: '단어장' })).toBeVisible()
 }
+
+test('담은 게 있으면 홈에서 바로 들어가고, 뒤로 가면 홈이다', async ({ page }) => {
+  test.setTimeout(120_000)
+  await open(page, 'home')
+  // 씨앗은 두 개 — 홈 버튼이 개수를 단다
+  await page.getByRole('button', { name: '돌아가기' }).click()
+  await expect(page.getByRole('button', { name: /^단어장 · 2/ })).toBeVisible()
+})
+
+test('담은 게 없으면 홈에 단어장 진입로가 없다', async ({ page }) => {
+  await skipIntro(page)
+  // 계산이 끝난 뒤에야 「없다」를 말할 수 있다 — 끝나기 전엔 자리만 잡힌 숨은 버튼이다
+  await expect(page.locator('.home-stat')).toContainText('이번 세션', { timeout: 60_000 })
+  await expect(page.getByRole('button', { name: /^단어장/ })).toHaveCount(0)
+})
 
 test('학습을 시작해도 단어장에는 남는다', async ({ page }) => {
   test.setTimeout(120_000)
