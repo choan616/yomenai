@@ -175,3 +175,27 @@ test('숙자훈도 찾기에서는 나온다 — 다만 담기는 안 낸다', a
     page.locator('.rows > li').filter({ has: page.locator('.r-main', { hasText: /^今日$/ }) }).first(),
   ).toBeVisible()
 })
+
+// 학습 사전에서 걸려도 사전 밖에서 더 찾을 수 있다 (2026-10-02 사용자 보고 「粉塵은 검색에서도 안 나왔다」).
+// `ふんじん` 은 밴드 4 의 奮迅 하나가 걸려 0건이 아니었고, 사전 밖은 0건일 때만 쓰던 터라 넓힌 사전에만
+// 있는 粉塵 에 닿을 길이 없었다. 걸렸다고 그게 찾던 말이라는 보장은 없다 — 동음이의가 많다.
+test('학습 사전에서 걸려도 사전 밖에서 더 찾을 수 있다 — 읽기 ふんじん 의 粉塵', async ({ page }) => {
+  test.setTimeout(120_000)
+  await page.goto('/')
+  const tab = page.getByRole('button', { name: '찾기', exact: true })
+  await expect(tab).toBeVisible({ timeout: 20_000 })
+  await tab.click()
+
+  await page.getByLabel('읽기 또는 한자 검색').fill('ふんじん')
+  // 밴드 4 의 奮迅 이 걸린다 — 0건이 아니다
+  await expect(page.locator('.hit-group').filter({ hasText: '奮迅' })).toBeVisible({ timeout: 60_000 })
+  await expect(page.locator('.hit-group.outside')).toHaveCount(0)
+
+  // 그래도 사전 밖으로 가는 길이 있다. 자동으로 섞지는 않는다 — 누르면 아래에 붙는다
+  await page.getByRole('button', { name: '학습 사전 밖에서 찾기' }).click()
+  // 읽기 ふんじん 의 그룹에 粉塵 줄이 있다 (粉塵爆発 은 읽기가 달라 다른 그룹이다)
+  const group = page.locator('.hit-group.outside').filter({ has: page.locator('.section-title', { hasText: /^ふんじん/ }) })
+  const row = group.locator('.rows > li').filter({ has: page.locator('.r-main', { hasText: /^粉塵$/ }) })
+  await expect(row).toBeVisible({ timeout: 30_000 })
+  await expect(row.locator('.r-meaning')).not.toBeEmpty()
+})

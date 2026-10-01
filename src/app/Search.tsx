@@ -411,15 +411,31 @@ export function Search({
             <Scope poolSize={view.poolSize} widening={widening} />
           </>
         ) : (
-          groups.map((g) => (
-            <Group
-              key={g.reading}
-              group={g}
-              loaded={view}
+          <>
+            {groups.map((g) => (
+              <Group
+                key={g.reading}
+                group={g}
+                loaded={view}
+                starred={starred}
+                onToggle={toggleStar}
+              />
+            ))}
+            {/* **걸렸어도 찾던 말이 아닐 수 있다** (2026-10-02 사용자 보고 「粉塵은 검색에서도 안
+                나왔다」). 읽기 `ふんじん` 은 밴드 4 의 奮迅 하나가 걸려 0건이 아니었고, 사전 밖은
+                0건일 때만 쓰던 터라 粉塵 에 닿을 길이 없었다. 동음이의가 많은 일본어에서는 한 건이
+                걸렸다고 그게 답이라는 보장이 없다. 자동으로 섞지는 않는다 — 흔한 읽기는 사전 밖
+                결과가 길게 붙어 소음이 된다. **누르면** 아래에 붙는다 */}
+            <Outside
+              dict={outside}
+              state={outsideFailed ? 'failed' : askedOutside ? 'loading' : 'idle'}
+              groups={outsideGroups}
+              kanji={outsideKanji ?? view.kanji}
               starred={starred}
               onToggle={toggleStar}
+              onAsk={getOutside}
             />
-          ))
+          </>
         )}
       </div>
     </section>
