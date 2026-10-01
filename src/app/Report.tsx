@@ -551,14 +551,18 @@ function LevelSection({
           ))}
         </tbody>
       </table>
-      <p className="ladder-caption">
-        왼쪽 붉은 줄은 흔들리는 밴드, 점선은 표본이 모자란 밴드예요 · 숙지 ={' '}
-        {READING_STABLE_DAYS}일 이상 안 잊는 상태 · 출제된 표현에는 틀린 것·넘긴 것도 들어가요
-        (소개만 본 건 빼요) · 수준은 밴드 0~{LEVEL_MAX_BAND} 으로 재요 — 밴드 4 는 출제 범위
-        밖이라 담은 것만 들어와요 · 앞의 두 칸은 표현 개수, 정답률은 최근 {LEVEL_WINDOW}회 채점
-        기준이라 분모가 달라요 · 흔들림은 그 값이 {Math.round(LEVEL_SOLID_RATE * 100)}% 미만 ·{' '}
-        {LEVEL_MIN_SEEN}회 미만은 표본 부족
-      </p>
+      {/* 한 문단에 일곱 가지를 이어 붙이면 어느 말이 어느 열 얘기인지 안 보인다 (2026-10-01
+          사용자 지적). 항목마다 한 줄로 가른다 */}
+      <ul className="ladder-caption">
+        <li>숙지: {READING_STABLE_DAYS}일 이상 안 잊는 상태</li>
+        <li>출제: 틀린 것·넘긴 것도 포함, 소개만 본 건 제외</li>
+        <li>정답률: 표현 개수가 아니라 최근 {LEVEL_WINDOW}회 채점 기준</li>
+        <li>
+          붉은 줄 = 흔들림(정답률 {Math.round(LEVEL_SOLID_RATE * 100)}% 미만) · 점선 = 표본
+          부족({LEVEL_MIN_SEEN}회 미만)
+        </li>
+        <li>수준은 밴드 0~{LEVEL_MAX_BAND}만 재요. 밴드 4는 담은 것만 들어와요</li>
+      </ul>
     </section>
   )
 }
