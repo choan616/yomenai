@@ -18,7 +18,16 @@ import { LOCAL_USER_ID, appendEvent, listEvents } from '../db/events.ts'
 import { db } from '../db/schema.ts'
 import { loadCurrentList, saveCurrentList } from './currentList.ts'
 import { adopt, loadWideDict, withWideKanji } from '../dict/wide.ts'
-import { loadBand4Idioms, loadBaseIdioms, loadKanji, type RuntimeIdiom } from '../dict/load.ts'
+import {
+  loadBand4Idioms,
+  loadBaseIdioms,
+  loadExamples,
+  loadKanji,
+  type RuntimeIdiom,
+} from '../dict/load.ts'
+import { rubyOf, type RubySegment } from '../core/ruby.ts'
+import { WordCards } from './WordCards.tsx'
+import { loadWordlistView, saveWordlistView, type WordlistView } from './wordlistView.ts'
 
 interface Row {
   it: RuntimeIdiom
@@ -28,12 +37,39 @@ interface Row {
   /** 이미 카드가 생겼나. 담기의 소개 우선권은 여기서 끝나지만 단어장에는 남는다 */
   started: boolean
   wrong: number
+  /** 카드 보기에서 한자 위에 얹을 읽기 — 넓힌 사전 한자까지 합쳐서 구한다 */
+  ruby: RubySegment[]
+}
+
+/** 학습 중인 것도 남는다 — 여기가 대기열이 아니라는 표시이기도 하다 */
+function stateLabel(row: Row): string {
+  return row.started ? (row.wrong > 0 ? `학습 중 · ✗ ${row.wrong}회` : '학습 중') : '아직 안 나옴'
 }
 
 export function Wordlist({ onBack }: { onBack: () => void }) {
   const [rows, setRows] = useState<Row[] | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [current, setCurrent] = useState(loadCurrentList)
+  const [view, setView] = useState<WordlistView>(loadWordlistView)
+  /** 카드 보기에서만 필요하다(1.5MB). 처음 카드로 볼 때 받는다 */
+  const [examples, setExamples] = useState<Map<string, string[]> | null>(null)
+
+  useEffect(() => {
+    if (view !== 'card' || examples !== null) return
+    let alive = true
+    loadExamples()
+      .then((m) => alive && setExamples(m))
+      // 예문이 없어도 카드는 낸다 — 예문은 곁들이는 것이다
+      .catch(() => alive && setExamples(new Map()))
+    return () => {
+      alive = false
+    }
+  }, [view, examples])
+
+  const pickView = (next: WordlistView) => {
+    setView(next)
+    saveWordlistView(next)
+  }
 
   useEffect(() => {
     let alive = true
@@ -50,6 +86,7 @@ export function Wordlist({ onBack }: { onBack: () => void }) {
 
         // 담은 것 중 기본 사전 밖(밴드 4)이 있으면 그때만 20MB 를 받는다 — 검수 화면과 같은 관례
         const missing = [...state.wordlist.keys()].filter((id) => !byId.has(id))
+        let kanji = kj
         if (missing.length > 0) {
           const want = new Set(missing)
           for (const it of await loadBand4Idioms()) if (want.has(it.idiomId)) byId.set(it.idiomId, it)
@@ -63,6 +100,7 @@ export function Wordlist({ onBack }: { onBack: () => void }) {
             if (!alive) return
             if (dict !== null) {
               const merged = withWideKanji(kj, dict)
+              kanji = merged
               const look = (k: string) => {
                 const r = merged.get(k)
                 return r ? { onyomi: r.on, kunyomi: r.kun } : undefined
@@ -76,12 +114,17 @@ export function Wordlist({ onBack }: { onBack: () => void }) {
           }
         }
 
+        const lookup = (k: string) => {
+          const r = kanji.get(k)
+          return r ? { onyomi: r.on, kunyomi: r.kun } : undefined
+        }
         const out: Row[] = []
         for (const [id, meta] of state.wordlist) {
           const it = byId.get(id)
           if (!it) continue
           const card = state.cards.get(`${id}:reading`)
           out.push({
+            ruby: rubyOf(it.headword, it.reading, lookup),
             it,
             list: meta.list,
             ...(meta.memo ? { memo: meta.memo } : {}),
@@ -192,13 +235,25 @@ export function Wordlist({ onBack }: { onBack: () => void }) {
     [rows, current],
   )
 
+  /** 카드 보기는 화면 높이를 다 쓴다 — 스크롤하는 목록이 아니라 한 장씩 넘기는 덱이라서 */
+  const cardMode = view === 'card' && rows !== null && rows.length > 0
+
   return (
-    <section className="screen">
+    <section className={`screen${cardMode ? ' wl-cards-mode' : ''}`}>
       <div className="screen-bar">
         <button type="button" className="back" onClick={onBack} aria-label="돌아가기">
           ←
         </button>
         <h2>단어장</h2>
+        {/* 보기는 상단에서 고른다 (사용자 요청 2026-10-01). 고른 보기는 기기가 기억한다 */}
+        <div className="seg wl-view" role="group" aria-label="보기">
+          <button type="button" aria-pressed={view === 'list'} onClick={() => pickView('list')}>
+            리스트
+          </button>
+          <button type="button" aria-pressed={view === 'card'} onClick={() => pickView('card')}>
+            카드
+          </button>
+        </div>
       </div>
 
       <div className="screen-body">
@@ -206,6 +261,28 @@ export function Wordlist({ onBack }: { onBack: () => void }) {
           <p className="empty">불러오지 못했어요: {error}</p>
         ) : rows === null ? (
           <p className="empty">불러오고 있어요…</p>
+        ) : cardMode ? (
+          examples === null ? (
+            <p className="empty">불러오고 있어요…</p>
+          ) : (
+            <WordCards
+              cards={rows.map((r) => ({
+                item: {
+                  id: r.it.idiomId,
+                  headword: r.it.headword,
+                  reading: r.it.reading,
+                  meaning: r.it.koMeaning?.definition?.trim() ?? '',
+                  wrong: r.wrong,
+                  sentences: examples.get(r.it.idiomId) ?? [],
+                  ruby: r.ruby,
+                  rule: null,
+                },
+                tag: r.list,
+                note: stateLabel(r),
+                ...(r.memo ? { memo: r.memo } : {}),
+              }))}
+            />
+          )
         ) : (
           <>
             {/* 담을 때마다 묶음을 고르게 하면 한 번 누를 일이 두 번이 된다.
@@ -420,10 +497,7 @@ function WordRow({
         <span className="r-sub" lang="ja">
           {row.it.reading}
         </span>
-        {/* 학습 중인 것도 남는다 — 여기가 대기열이 아니라는 표시이기도 하다 */}
-        <span className="wl-state dim">
-          {row.started ? (row.wrong > 0 ? `학습 중 · ✗ ${row.wrong}회` : '학습 중') : '아직 안 나옴'}
-        </span>
+        <span className="wl-state dim">{stateLabel(row)}</span>
       </div>
       {row.it.koMeaning?.definition && <p className="review-def">{row.it.koMeaning.definition}</p>}
       {row.memo && !editing && <p className="wl-memo">메모: {row.memo}</p>}

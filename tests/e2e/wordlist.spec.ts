@@ -148,3 +148,58 @@ test('묶음 이름을 고치고, 삭제하면 단어는 기본으로 돌아간�
   await expect(page.locator('.wl-group .section-title')).toContainText('기본')
   await expect(page.locator('.review-row').filter({ hasText: '明白' })).toBeVisible()
 })
+
+test('카드로 보면 요미가나가 가려지고, 넘기면 도로 가려진다', async ({ page }) => {
+  test.setTimeout(120_000)
+  await open(page)
+  await page.getByRole('button', { name: '카드', exact: true }).click()
+
+  // 담은 두 개가 카드 두 장이다. 요미가나는 처음부터 가려져 있다
+  const slides = page.locator('.wl-deck .browse-slide')
+  await expect(slides).toHaveCount(2, { timeout: 60_000 })
+  await expect(slides.first().locator('.headword')).toHaveClass(/masked/)
+  // 머리 태그는 묶음, 옆은 학습 상태다 (다시보기의 「N회 틀림」이 아니다)
+  await expect(slides.first().locator('.card-head')).toContainText('기본')
+  await expect(slides.first().locator('.card-head')).not.toContainText('틀림')
+
+  // 벗겼다가 다음 장으로 넘기면 처음 장은 도로 가려진다
+  await slides.first().getByRole('button', { name: '읽기 보기' }).click()
+  await expect(slides.first().locator('.headword')).not.toHaveClass(/masked/)
+  await expect(page.locator('.wl-deck .count')).toHaveText('1 / 2')
+  // 「다음 예문」과 겹치지 않게 넘김 버튼만 짚는다
+  await page.locator('.wl-deck .browse-nav').getByRole('button', { name: /^다음/ }).click()
+  await expect(page.locator('.wl-deck .count')).toHaveText('2 / 2')
+  await page.locator('.wl-deck .browse-nav').getByRole('button', { name: /이전/ }).click()
+  await expect(page.locator('.wl-deck .count')).toHaveText('1 / 2')
+  await expect(slides.first().locator('.headword')).toHaveClass(/masked/)
+})
+
+test('고른 보기를 기억해서, 다시 들어가면 그 보기로 열린다', async ({ page }) => {
+  test.setTimeout(120_000)
+  await open(page)
+  // 처음엔 리스트다
+  await expect(page.getByRole('button', { name: '리스트', exact: true })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  )
+  await page.getByRole('button', { name: '카드', exact: true }).click()
+  await expect(page.locator('.wl-deck')).toBeVisible({ timeout: 60_000 })
+
+  await page.reload()
+  await page.getByRole('button', { name: /^단어장/ }).click()
+  await expect(page.getByRole('button', { name: '카드', exact: true })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  )
+  await expect(page.locator('.wl-deck')).toBeVisible({ timeout: 60_000 })
+
+  // 리스트로 돌리면 그 선택도 기억된다
+  await page.getByRole('button', { name: '리스트', exact: true }).click()
+  await expect(page.locator('.review-row').first()).toBeVisible()
+  await page.reload()
+  await page.getByRole('button', { name: /^단어장/ }).click()
+  await expect(page.getByRole('button', { name: '리스트', exact: true })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  )
+})

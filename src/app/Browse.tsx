@@ -30,7 +30,7 @@ import { loadSettings } from './settings.ts'
 import { tts } from '../study/tts.ts'
 import { useViewportLock } from '../study/useViewportLock.ts'
 
-interface BrowseItem {
+export interface BrowseItem {
   id: string
   headword: string
   reading: string
@@ -275,9 +275,12 @@ export function Browse({
  *
  * 예문 자리(`exAt`)는 부모가 준다 — 카드를 떠나면 0 으로 파생돼 첫 예문으로 돌아간다.
  */
-function BrowseSlide({
+export function BrowseSlide({
   item,
   filterLabel,
+  tag,
+  note,
+  memo,
   mask,
   masked,
   onToggleMask,
@@ -289,6 +292,12 @@ function BrowseSlide({
   item: BrowseItem
   /** 유형별 다시보기면 그 유형 이름 — "다시보기" 태그 옆에 왜 이 목록인지 밝힌다 */
   filterLabel?: string
+  /** 단어장 카드가 머리 태그를 바꾼다 (2026-10-01). 없으면 「다시보기」 */
+  tag?: string
+  /** 같은 이유로 「N회 틀림」 자리를 바꾼다. 없으면 오답 횟수 */
+  note?: string
+  /** 단어장 카드의 메모. 뜻 아래에 읽기만 보인다 */
+  memo?: string
   /** 가림 기능을 쓰는가 (설정). 버튼을 낼지가 여기서 갈린다 */
   mask: boolean
   /** 지금 덮여 있나 */
@@ -305,8 +314,8 @@ function BrowseSlide({
     <div className="browse-slide">
       <div className="card">
         <div className="card-head">
-          <span className="tag">다시보기{filterLabel ? ` · ${filterLabel}` : ''}</span>
-          <span className="tag muted">{item.wrong}회 틀림</span>
+          <span className="tag">{tag ?? `다시보기${filterLabel ? ` · ${filterLabel}` : ''}`}</span>
+          <span className="tag muted">{note ?? `${item.wrong}회 틀림`}</span>
           {/* 이 숙어를 왜 틀렸나 — 같은 줄에 규칙 이름으로 (사용자 요청 2026-09-17).
               누르면 그 절이 카드 안에서 펼쳐진다. 규칙 화면으로 나가면 넘기던 자리를 잃는다 */}
           {item.rule !== null && (
@@ -344,6 +353,7 @@ function BrowseSlide({
             </button>
           )}
           {item.meaning && <p className="meaning">{item.meaning}</p>}
+          {memo && <p className="wl-memo">메모: {memo}</p>}
           {tts.available && (
             <button type="button" className="tts-btn" onClick={() => tts.speak(item.reading)}>
               <SoundIcon /> 소리 듣기
