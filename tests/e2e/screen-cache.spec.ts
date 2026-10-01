@@ -37,8 +37,18 @@ test('탭을 오갔다 와도 로딩 문구가 다시 안 뜬다', async ({ page
   }
 })
 
-test('계산 중에도 제목과 주 버튼이 안 움직인다', async ({ page }) => {
+/**
+ * `withWordlist` — 단어장에 담은 게 있는 기기. 홈 맨 아래 「단어장」 진입로는 계산 뒤에야
+ * 개수를 알 수 있어서, 직전 계산의 힌트로 자리를 잡는다 (2026-10-01). 담은 게 없는 기기는
+ * 그 자리가 아예 없고, 있는 기기는 계산 전에도 같은 자리를 지켜야 한다
+ */
+async function titleHoldsStill(page: Page, withWordlist: boolean): Promise<void> {
   await ready(page)
+  if (withWordlist) {
+    // 홈의 계산이 끝나면 그 결과로 힌트를 다시 쓴다. 끝나기 전에 세우면 덮어써진다
+    await expect(page.locator('.home-stat')).not.toContainText('불러오는 중', { timeout: 20_000 })
+    await page.evaluate(() => localStorage.setItem('yomenai:wordlistHint', '1'))
+  }
 
   const probe = () =>
     page.evaluate(() => {
@@ -53,7 +63,7 @@ test('계산 중에도 제목과 주 버튼이 안 움직인다', async ({ page 
 
   // **진짜 숙어 id 로 오답을 심는다.** 기록이 없으면 「틀렸던 것」이 로딩 뒤에 접혀서,
   // 예약이 제대로 돼 있어도 화면이 움직인다 — 실사용(오답이 쌓인 상태)과 조건이 다르다
-  await page.evaluate(async () => {
+  await page.evaluate(async (withWordlist) => {
     const res = await fetch('/dict/base.json')
     const dict = (await res.json()) as { idioms: { id: string }[] }
     const ids = dict.idioms.slice(0, 20).map((i) => i.id)
@@ -70,10 +80,17 @@ test('계산 중에도 제목과 주 버튼이 안 움직인다', async ({ page 
             type: 'review', grade: 1, answer: 'あ', expected: 'い', correct: false, elapsedMs: 1000,
           })
         })
+        if (withWordlist) {
+          store.put({
+            id: '00000999-star', userId: 'local', deviceId: 'e2e', at: Date.now() - 86_400_000,
+            idiomId: ids[0], cardType: 'reading', mistakeType: null, deletedAt: null,
+            type: 'star', on: true,
+          })
+        }
         tx.oncomplete = () => done()
       }
     })
-  })
+  }, withWordlist)
 
   // 사전을 붙잡아 **로딩 상태를 고정한다.** 안 그러면 계산이 너무 빨리 끝나 그 순간을
   // 한 번도 못 보고 테스트가 헛돈다 (실제로 그랬다)
@@ -99,6 +116,17 @@ test('계산 중에도 제목과 주 버튼이 안 움직인다', async ({ page 
   expect(loaded.primary, `주 버튼이 ${loaded.primary - loading.primary}px 움직였다`).toBe(
     loading.primary,
   )
+  if (withWordlist) {
+    await expect(page.getByRole('button', { name: /^단어장/ })).toBeVisible()
+  }
+}
+
+test('계산 중에도 제목과 주 버튼이 안 움직인다', async ({ page }) => {
+  await titleHoldsStill(page, false)
+})
+
+test('단어장에 담은 게 있어도 계산 중에 제목과 주 버튼이 안 움직인다', async ({ page }) => {
+  await titleHoldsStill(page, true)
 })
 
 test('리포트는 계산 중에 도구를 안 그린다 — 본문이 들어오며 밀려날 것이 없다', async ({ page }) => {

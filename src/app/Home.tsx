@@ -24,6 +24,7 @@ import { openGuide } from './guide.ts'
 import { isWelcomeSeen, markWelcomeSeen } from './welcome.ts'
 import { WeekStrip } from './WeekStrip.tsx'
 import { homeLine } from './weekLine.tsx'
+import { hasWordlistHint, setWordlistHint } from './wordlistView.ts'
 
 interface Preview {
   ready: number
@@ -80,6 +81,8 @@ export function Home({
   const [needsDiagnostic, setNeedsDiagnostic] = useState(!isDiagnosticDone())
   /** 첫 안내를 아직 안 봤나. 화면 하나를 더 만들지 않고 홈 위에 얹는다 — 아래 주석 참조 */
   const [showWelcome, setShowWelcome] = useState(!isWelcomeSeen())
+  /** 직전 계산에서 단어장에 담은 게 있었나. 계산 전에 진입로 자리를 잡을지만 정한다 */
+  const [wordlistHint] = useState(hasWordlistHint)
 
   useEffect(() => {
     // 캐시가 유효하면 다시 계산하지 않는다. 진단 판정은 아래 플래그로 이미 끝나 있다
@@ -123,6 +126,7 @@ export function Home({
           day,
         }
         cache = { version: dataVersion(), preview: next }
+        setWordlistHint(next.wordlist > 0)
         setPreview(next)
 
         // 동기화로 받아온 기록만 있고 이 기기의 플래그는 비어 있을 수 있다 (플래그는 안 옮겨온다)
@@ -307,11 +311,15 @@ export function Home({
           {/* 단어장 진입로 (2026-10-01). 담은 게 있을 때만 낸다 — 없으면 찾기에서 담으며
               들어가는 길이 이미 있고, 빈 단어장 버튼을 홈에 두면 안 쓰는 길이 상시 자리를 먹는다.
               계산 전엔 같은 마크업을 숨겨 자리만 잡는다(위 「3장만」 슬롯과 같은 이유).
-              담은 게 없는 사람은 계산 뒤에 이 자리가 접히며 한 번 움직인다 */}
+              **직전 계산에서 담은 게 있던 기기에서만** 잡는다 — 개수는 로그를 읽어야 알 수 있어
+              힌트로 정한다. 늘 잡으면 담은 게 없는 사람은 계산 뒤에 자리가 접히며 제목이 밀리고
+              (`screen-cache.spec.ts` 가 잡았다), 안 잡으면 담은 사람이 계산 뒤에 밀린다 */}
           {preview === null ? (
-            <button type="button" className="btn quick slot" aria-hidden="true" tabIndex={-1}>
-              단어장
-            </button>
+            wordlistHint && (
+              <button type="button" className="btn quick slot" aria-hidden="true" tabIndex={-1}>
+                단어장
+              </button>
+            )
           ) : (
             preview.wordlist > 0 && (
               <button type="button" className="btn quick" onClick={onWordlist}>
