@@ -26,6 +26,7 @@ import {
   type RuntimeIdiom,
 } from '../dict/load.ts'
 import { rubyOf, type RubySegment } from '../core/ruby.ts'
+import { CardIcon, ListIcon } from './icons.tsx'
 import { WordCards } from './WordCards.tsx'
 import { loadWordlistView, saveWordlistView, type WordlistView } from './wordlistView.ts'
 
@@ -247,11 +248,22 @@ export function Wordlist({ onBack }: { onBack: () => void }) {
         <h2>단어장</h2>
         {/* 보기는 상단에서 고른다 (사용자 요청 2026-10-01). 고른 보기는 기기가 기억한다 */}
         <div className="seg wl-view" role="group" aria-label="보기">
-          <button type="button" aria-pressed={view === 'list'} onClick={() => pickView('list')}>
-            리스트
+          {/* 아이콘만 있으니 이름은 aria-label 이 맡는다 */}
+          <button
+            type="button"
+            aria-label="리스트"
+            aria-pressed={view === 'list'}
+            onClick={() => pickView('list')}
+          >
+            <ListIcon />
           </button>
-          <button type="button" aria-pressed={view === 'card'} onClick={() => pickView('card')}>
-            카드
+          <button
+            type="button"
+            aria-label="카드"
+            aria-pressed={view === 'card'}
+            onClick={() => pickView('card')}
+          >
+            <CardIcon />
           </button>
         </div>
       </div>

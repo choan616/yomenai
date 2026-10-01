@@ -75,3 +75,23 @@ export function ThumbUpIcon() {
 export function ThumbDownIcon() {
   return <Thumb down />
 }
+
+/** 단어장 리스트 보기 — 점 셋과 줄 셋 */
+export function ListIcon() {
+  return (
+    <Icon>
+      <path d="M9 6.5h11M9 12h11M9 17.5h11" />
+      <path d="M4.6 6.5h.01M4.6 12h.01M4.6 17.5h.01" />
+    </Icon>
+  )
+}
+
+/** 단어장 카드 보기 — 앞 카드와 뒤에 겹쳐 보이는 한 장 */
+export function CardIcon() {
+  return (
+    <Icon>
+      <rect x="4.5" y="7" width="15" height="12" rx="1.8" />
+      <path d="M7.5 4h9" />
+    </Icon>
+  )
+}

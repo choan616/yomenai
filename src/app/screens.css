@@ -2211,9 +2211,13 @@ p.rule-record {
 }
 .wl-view button {
   flex: none;
-  height: 32px;
-  padding: 0 12px;
-  font-size: calc(13px * var(--ui-scale));
+  width: 40px;
+  height: 36px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(17px * var(--ui-scale));
 }
 /* 카드 보기 — 목록과 달리 스크롤하지 않고 한 장씩 넘기므로 화면 높이를 다 쓴다.
    `.screen` 은 모바일에서 `.tabbed` 의 남는 높이이고(탭바는 그 밖이다), PC 에서는 문서가
