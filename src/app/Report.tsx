@@ -452,8 +452,6 @@ function ReportBody({
 
 /** 아직 잴 것이 없는 칸. 0 으로 적으면 「0개를 숙지했다」로 읽혀 안 푼 것과 못 외운 것이 섞인다 */
 const NO_DATA = '—'
-/** 수준 지표가 안 세는 자리. `—`(안 푼 것)와 달리 **일부러 뺀** 것이라 말이 달라야 한다 */
-const OUT_OF_SCOPE = '범위 밖'
 
 const BAND_STATUS_LABEL: Record<BandRow['status'], string> = {
   solid: '안정',
@@ -542,9 +540,12 @@ function LevelSection({
                   <span className="sr-only"> · {BAND_STATUS_LABEL[b.status]}</span>
                 </th>
                 <td>{b.met > 0 ? b.met : NO_DATA}</td>
-                {/* 밴드 4 의 숙지는 **총계에 안 들어간다** — 칸에 숫자를 적으면 위
-                    합계와 안 맞는다. 세는 범위 밖임을 그 자리에 적는다 */}
-                <td>{b.band > LEVEL_MAX_BAND ? OUT_OF_SCOPE : b.met > 0 ? b.stable : NO_DATA}</td>
+                {/* 밴드 4 의 숙지도 **값을 낸다** (2026-10-01 사용자 판단 — 사전 밖에서 담은 표현까지 뜻을
+                    검수하게 됐다). 다만 **총계·그래프·경계 판정에는 안 넣는다**: 2026-09-26 판단 그대로다.
+                    합계와 안 맞는 숫자라 흐리게 두고 아래 설명이 말한다 */}
+                <td className={b.band > LEVEL_MAX_BAND ? 'dim' : undefined}>
+                  {b.met > 0 ? b.stable : NO_DATA}
+                </td>
                 <td className="rate">{b.seen > 0 ? `${Math.round(b.rate * 100)}%` : NO_DATA}</td>
               </tr>
             </Fragment>
@@ -561,7 +562,10 @@ function LevelSection({
           붉은 줄 = 흔들림(정답률 {Math.round(LEVEL_SOLID_RATE * 100)}% 미만) · 점선 = 표본
           부족({LEVEL_MIN_SEEN}회 미만)
         </li>
-        <li>수준은 밴드 0~{LEVEL_MAX_BAND}만 재요. 밴드 4는 담은 것만 들어와요</li>
+        <li>
+          수준은 밴드 0~{LEVEL_MAX_BAND}만 재요. 밴드 4는 담은 것만 들어와서 표에만 나오고(흐린 숫자) 합계·
+          그래프에는 안 넣어요
+        </li>
       </ul>
     </section>
   )

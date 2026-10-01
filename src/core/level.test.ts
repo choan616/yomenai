@@ -167,6 +167,17 @@ describe('buildLevel — 붙은 숙어 (재고)', () => {
     expect(level.bands[0].stable).toBe(2)
   })
 
+  // 밴드 4 의 숙지도 행에는 센다 — 리포트 표가 그 값을 낸다 (2026-10-01). 판정·총계에는 안 들어간다
+  it('밴드 4 의 안정 카드도 행에는 세고, 수준 판정에는 영향이 없다', () => {
+    const level = buildLevel(
+      [...run('b1', 10, 0), ...run('b4', 10, 0)],
+      (id) => band[id.slice(0, 2)],
+      cards(cardState('b1a', READING_STABLE_DAYS + 1), cardState('b4a', READING_STABLE_DAYS + 1)),
+    )
+    expect(level.bands.find((b) => b.band === 4)).toMatchObject({ met: 1, stable: 1 })
+    expect(level.solidThrough).toBe(1)
+  })
+
   it('재학습 중인 카드는 간격이 길어도 안 센다 — 지금 틀리고 있는 것이다', () => {
     const level = buildLevel(
       [],
