@@ -236,3 +236,50 @@ test('사전 밖에서 담은 표현도 올라오고, 판정이 그 id 로 남�
   )
   expect(flags).toEqual([{ idiomId: '1928890', verdict: 'ok' }])
 })
+
+// 검수가 끝나 사전에 닿은 표현은 목록에서 빠진다 — 기본 사전·밴드 4·사전 밖 모두 (2026-10-01).
+// 爆轟(2425400)·改竄(1201170)은 사전 밖, 致死(1421910)는 기본 사전에서 이번에 verified 가 됐다.
+test('검수 완료된 표현은 목록에 안 오른다 — 사전 밖도 마찬가지다', async ({ page }) => {
+  test.setTimeout(180_000)
+  await page.addInitScript(() => {
+    try {
+      localStorage.setItem('yomenai:reviewMode', '1')
+      localStorage.setItem('yomenai:diagnosticDone', '1')
+      localStorage.setItem('yomenai:welcomeSeen', '1')
+    } catch {
+      /* private mode */
+    }
+  })
+  await page.goto('/')
+  await page.evaluate(
+    () =>
+      new Promise<void>((res, rej) => {
+        const req = indexedDB.open('yomenai')
+        req.onsuccess = () => {
+          const tx = req.result.transaction('events', 'readwrite')
+          const st = tx.objectStore('events')
+          // 검수 완료 셋 + 아직 미검수인 사전 밖 하나(亜鉛華軟膏)를 담는다
+          for (const [i, id] of ['2425400', '1201170', '1421910', '1928890'].entries()) {
+            st.put({
+              id: `done-${i}`, userId: 'local', deviceId: 'e2e', at: Date.now() - 86_400_000 + i,
+              idiomId: id, on: true, deletedAt: null, type: 'star',
+            })
+          }
+          tx.oncomplete = () => res()
+          tx.onerror = () => rej(new Error('심기 실패'))
+        }
+        req.onerror = () => rej(new Error('DB 열기 실패'))
+      }),
+  )
+  await page.reload()
+  await page.getByRole('button', { name: '설정' }).click()
+  await page.getByRole('button', { name: /뜻 검수/ }).click()
+  await expect(page.getByRole('heading', { name: '뜻 검수' })).toBeVisible()
+  await expect(page.locator('.review-row').filter({ hasText: '亜鉛華軟膏' })).toBeVisible({ timeout: 60_000 })
+
+  // 미검수 하나만 남고, 검수 완료된 셋은 없다
+  await expect(page.locator('.review-row')).toHaveCount(1)
+  for (const hw of ['爆轟', '改竄', '致死']) {
+    await expect(page.locator('.review-row').filter({ hasText: hw })).toHaveCount(0)
+  }
+})
