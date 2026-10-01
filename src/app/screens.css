@@ -2286,3 +2286,27 @@ p.rule-record {
 .hint .sync-pending {
   color: var(--text);
 }
+
+/* 「3장만」과 단어장 진입로를 한 줄에 (2026-10-01 사용자 실기기 캡처).
+   홈은 문서가 스크롤하지 않는 화면이라 한 줄을 더 얹으면 iPhone 크기에서 탭바에 묻혔다.
+   「3장만」이 남는 폭을 먹고 단어장은 글자 폭이다 — 단어장만 있으면 그 칸이 줄을 다 쓴다 */
+.quick-row {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+  max-width: 320px;
+}
+.quick-row .btn.quick {
+  flex: 1 1 0;
+  width: auto;
+  min-width: 0;
+  max-width: none;
+  padding: 12px 10px;
+}
+.quick-row .btn.quick.wl {
+  flex: 0 0 auto;
+  padding: 12px 16px;
+}
+.quick-row .btn.quick.wl:only-child {
+  flex: 1 1 0;
+}

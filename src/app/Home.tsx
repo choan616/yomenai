@@ -148,6 +148,9 @@ export function Home({
   }, [])
 
   const sessionReady = !!preview && preview.ready > 0
+  /** 「3장만」·단어장 칸을 낼지. 계산 전엔 자리를 잡으려고 낸다(단어장은 힌트가 있을 때만) */
+  const quickShown = preview === null || preview.ready > QUICK_SESSION_LIMIT
+  const wordlistShown = preview === null ? wordlistHint : preview.wordlist > 0
 
   return (
     <main className="home">
@@ -249,19 +252,41 @@ export function Home({
           {/* 의욕 없는 날의 진입로. 20장이냐 안 하냐의 양자택일에서 "안 함"이 이긴다 (Phase 11) */}
           {/* 아직 계산 전이면 **자리만 잡아 둔다** (2026-09-21 사용자 지적). `.home` 은 세로
               중앙 정렬이라, 버튼이 뒤늦게 생기면 그 높이의 절반만큼 제목까지 위로 밀린다.
-              `.answer-row` 가 빈 슬롯으로 주 동작의 자리를 지키는 것과 같은 처방이다 */}
-          {preview === null ? (
-            <button type="button" className="btn quick slot" aria-hidden="true" tabIndex={-1}>
-              <b>{QUICK_SESSION_LIMIT}장</b>만
-              <span className="dim"> · 오늘은 짧게</span>
-            </button>
-          ) : (
-            preview.ready > QUICK_SESSION_LIMIT && (
-              <button type="button" className="btn quick" onClick={() => onFlow({ kind: 'quick' })}>
-                <b>{QUICK_SESSION_LIMIT}장</b>만
-                <span className="dim"> · 오늘은 짧게</span>
-              </button>
-            )
+              `.answer-row` 가 빈 슬롯으로 주 동작의 자리를 지키는 것과 같은 처방이다.
+
+              **단어장 진입로는 같은 줄에 둔다** (2026-10-01 사용자 실기기 캡처). 맨 아래 한 줄로 더하니
+              iPhone 크기(375×667)에서 탭바 밑에 반쯤 묻혔다 — 홈은 문서가 스크롤하지 않는 화면이라
+              한 줄을 더 얹을 세로 여유가 없다. 둘 다 「오늘 어디로 들어갈까」의 보조 진입로라 한 줄에
+              놓아도 말이 맞고, 홈의 세로 길이는 진입로를 더하기 전과 같다.
+              담은 게 없으면 단어장 칸이 없다 — 찾기에서 담으며 들어가는 길이 이미 있다.
+              **직전 계산에서 담은 게 있던 기기에서만** 계산 전에 자리를 잡는다 — 개수는 로그를 읽어야
+              알 수 있어 힌트로 정한다. 늘 잡으면 담은 게 없는 사람은 계산 뒤에 칸이 접히고, 안 잡으면
+              담은 사람이 계산 뒤에 밀린다 (`screen-cache.spec.ts` 가 잡는다) */}
+          {(quickShown || wordlistShown) && (
+            <div className="quick-row">
+              {quickShown &&
+                (preview === null ? (
+                  <button type="button" className="btn quick slot" aria-hidden="true" tabIndex={-1}>
+                    <b>{QUICK_SESSION_LIMIT}장</b>만
+                    <span className="dim"> · 오늘은 짧게</span>
+                  </button>
+                ) : (
+                  <button type="button" className="btn quick" onClick={() => onFlow({ kind: 'quick' })}>
+                    <b>{QUICK_SESSION_LIMIT}장</b>만
+                    <span className="dim"> · 오늘은 짧게</span>
+                  </button>
+                ))}
+              {wordlistShown &&
+                (preview === null ? (
+                  <button type="button" className="btn quick wl slot" aria-hidden="true" tabIndex={-1}>
+                    단어장<span className="dim"> · 0</span>
+                  </button>
+                ) : (
+                  <button type="button" className="btn quick wl" onClick={onWordlist}>
+                    단어장<span className="dim"> · {preview.wordlist.toLocaleString('ko')}</span>
+                  </button>
+                ))}
+            </div>
           )}
 
           {/* 재대결과 다시보기는 **대상이 같다** — 틀렸던 숙어다. 차이는 채점 유무뿐이라
@@ -306,26 +331,6 @@ export function Home({
                 )}
               </div>
             </div>
-          )}
-
-          {/* 단어장 진입로 (2026-10-01). 담은 게 있을 때만 낸다 — 없으면 찾기에서 담으며
-              들어가는 길이 이미 있고, 빈 단어장 버튼을 홈에 두면 안 쓰는 길이 상시 자리를 먹는다.
-              계산 전엔 같은 마크업을 숨겨 자리만 잡는다(위 「3장만」 슬롯과 같은 이유).
-              **직전 계산에서 담은 게 있던 기기에서만** 잡는다 — 개수는 로그를 읽어야 알 수 있어
-              힌트로 정한다. 늘 잡으면 담은 게 없는 사람은 계산 뒤에 자리가 접히며 제목이 밀리고
-              (`screen-cache.spec.ts` 가 잡았다), 안 잡으면 담은 사람이 계산 뒤에 밀린다 */}
-          {preview === null ? (
-            wordlistHint && (
-              <button type="button" className="btn quick slot" aria-hidden="true" tabIndex={-1}>
-                단어장
-              </button>
-            )
-          ) : (
-            preview.wordlist > 0 && (
-              <button type="button" className="btn quick" onClick={onWordlist}>
-                단어장<span className="dim"> · {preview.wordlist.toLocaleString('ko')}</span>
-              </button>
-            )
           )}
         </>
       )}
