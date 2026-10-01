@@ -1,75 +1,61 @@
 ﻿verdict	cat	fix	tier	flags	manual	headword	reading	glossEn	llm_ko	stdict_def	manual_reason	category	classSource	band	id
-o			4			遺影	いえい	portrait of a deceased person	고인 사진	고인의 초상이나 사진.		2	default	1	1159040
-o			4			休憩	きゅうけい	rest; break; recess; intermission	휴식, 휴지	어떤 일을 하다가 잠깐 동안 쉼.		2	default	0	1227720
-o			4			窮屈	きゅうくつ	narrow; tight; cramped; formal	비좁음, 답답함, 빡빡함	‘궁굴하다’의 어근.		2	default	2	1230080
-o			4			原則	げんそく	principle; general rule; as a rule; in principle	원칙, 일반적인 규칙	어떤 행동이나 이론 따위에서 일관되게 지켜야 하는 기본적인 규칙이나 법칙.		2	default	0	1262070
-o			4			厳戒	げんかい	strict guard	엄격한 경계	엄중하게 경계함.		2	default	3	1262560
-o			4			公判	こうはん	public hearing; trial	공판, 재판	기소된 형사 사건을 법원이 심리하는 일. 또는 그런 절차. 검사, 피고인, 변호인 들이 입회하여 증거를 제출하면 법원이 유죄·무죄를 판단하는 형사 소송의 중심 절차이다. 공개 심리주의, 구두주의, 변론주의의 원칙에 의하여 진행된다.		2	default	0	1274510
-o			4			残虐	ざんぎゃく	cruel; brutal; savage; barbarous	잔혹함, 잔인함	잔인하고 포학함.		2	default	1	1304540
-o			4			姿勢	しせい	posture; pose; position; stance	자세, 태도	몸을 움직이거나 가누는 모양.		2	default	0	1307740
-o			4			耳目	じもく	eyes and ears; seeing and hearing; one's attention; one's interest	눈과 귀, 주의	귀와 눈을 아울러 이르는 말.		2	default	3	1317320
-o			4			手錠	てじょう	handcuffs; manacles; confinement in chains (Edo-era judicial corporal punishment)	수갑	→ 수갑.		2	default	2	1327900
-o			4			出廷	しゅってい	appearance in court	법정 출두	법정에 나가는 일.		2	default	3	1339770
-o			4			召喚	しょうかん	summons; subpoena; citation; summoning (a spirit, demon, etc.)	소환, 불러냄	법원이 피고인, 증인, 변호인, 대리인 따위의 소송 관계인에게 소환장을 발부하여, 공판 기일이나 그 밖의 일정한 일시에 법원 또는 법원이 지정한 장소에 나올 것을 명령하는 일.		2	default	3	1346460
-o			4			証人	しょうにん	witness	증인	어떤 사실을 증명하는 사람.		2	default	0	1351660
-o			4			静寂	せいじゃく	silence; stillness; quietness	고요함, 정적	고요하여 괴괴함.		2	default	3	1381910
-o			4			怠惰	たいだ	lazy; idle; indolent; slothful	나태함, 게으름	몹시 게으름.		2	default	3	1410730
-o			4			注意	ちゅうい	attention; notice; heed; care	주의, 조심	마음에 새겨 두고 조심함.		2	default	0	1426530
-o			4			注目	ちゅうもく	notice; attention; observation	주목, 주의	관심을 가지고 주의 깊게 살핌. 또는 그 시선.		2	default	0	1426670
-o			4			頭上	ずじょう	overhead; above one's head; high in the sky	머리 위, 머리 위쪽	머리의 위.		2	default	1	1450870
-o			4			背後	はいご	back; rear; background; behind the scenes	뒤, 배후	등의 뒤.		2	default	0	1472730
-o			4			飛行	ひこう	flight; flying; aviation	비행, 항공	공중으로 날아가거나 날아다님.		2	default	0	1485450
-o			4			補充	ほじゅう	replenishment; supplementation; supplement; replacement	보충, 채움	부족한 것을 보태어 채움.		2	default	1	1514580
-o			4			腕章	わんしょう	armband; arm band; brassard	팔찌, 완장	신분이나 지위 따위를 나타내기 위하여 팔에 두르는 표장(標章).		2	default	3	1562880
-o			4			万全	ばんぜん	perfection; flawlessness	완벽함, 빈틈없음	조금도 허술함이 없이 아주 완전함.		2	default	0	1584510
-o			4			凶悪	きょうあく	atrocious; heinous; fiendish; brutal	흉악함, 잔혹함	성질이나 언행이 악하고 모짊.		2	default	1	1591510
-o			4			職責	しょくせき	one's duty; responsibilities pertaining to one's work	직무, 책임	직무상의 책임.		2	default	3	1660350
-x		포승줄	4			腰縄	こしなわ	leash; rope tied round prisoner's waists	요대, 수갑	정도(正道)를 어지럽히는 요사스러운 승려.		2	default	3	1836530
-o			4			下世話	げせわ	common saying; everyday talk; common parlance; vulgar	속된 말, 저속함			2	default	4	1185560
-o			4			最後尾	さいこうび	end (e.g. of a line); tail end; rear; backmost part	끝, 마지막 부분			2	default	4	2134380
-o			4			凄惨	せいさん	ghastly; gruesome; appalling; lurid	끔찍함, 참혹함			2	default	4	1374580
-o			4			諦観	ていかん	clear insight; resignation (to one's fate); acceptance	체념, 수용			2	default	4	1436740
-o			4			曇天	どんてん	cloudy sky; overcast sky; cloudy weather	흐린 하늘, 흐린 날씨			2	default	4	1457570
-o			4			陪席	ばいせき	sitting with one's superior; in attendance with one's superior	곁에 앉음, 수행			2	default	4	1474170
-o			4			粉飾決算	ふんしょくけっさん	fraudulent accounting; window-dressing settlement of accounts; creative accounting	회계 부정, 허위 결산			2	default	4	2000540
-o			4			無下	むげ	without a doubt; completely; something out of the question; something outrageous	의심할 여지 없이, 형편없는, 비참함			2	default	4	2863328
+o			5			意地悪	いじわる	malicious; ill-tempered; unkind; mean	심술궂음, 못됨			3	default	3	1156740
+o			4			気骨	きこつ	(moral) backbone; spirit; soul; grit	기개, 꿋꿋한 정신	기혈과 뼈대 또는 겉으로 드러나 보이는 기백과 골격을 아울러 이르는 말.		2	default	3	1222220
+o			4			口笛	くちぶえ	whistle (sound made with the lips)	휘파람	입술을 좁게 오므리고 혀끝으로 입김을 불어서 맑게 내는 소리. 또는 그런 일.		2	default	3	1276630
+o			4			勝手	かって	one's own convenience; one's way; selfishness; surroundings	제멋대로, 자기 마음대로	아랫사람이 윗사람의 명령을 받들어 이음.		2	default	1	1346190
+o			4			常軌	じょうき	normal course (of action); proper course; regular way	정상 궤도, 평상시의 상태	언제나 따라야 하는 떳떳하고 올바른 길.		2	default	3	1355980
+o			4			申告	しんこく	report; return (e.g. tax); statement; declaration	신고, 신고서	국민이 법령의 규정에 따라 행정 관청에 일정한 사실을 진술·보고함.		2	default	0	1363100
+x		점심 전	4			昼前	ひるまえ	morning; forenoon; just before noon	낮 전	‘주전거리다’의 어근.		2	default	1	1426380
+o			4			被告人	ひこくにん	accused; defendant; prisoner at the bar	피고인	형사 소송에서, 검사에 의하여 형사 책임을 져야 할 자로 공소 제기를 받은 사람.		2	default	0	1484420
+o			4			弁護人	べんごにん	counsel; defender; advocate	변호인	형사 소송에서, 피의자나 피고인의 이익을 보호하는 보조자로서 변호를 담당하는 사람.		2	default	1	1512880
+o			4			無邪気	むじゃき	innocent; childlike; sweet and innocent; artless	순진함, 천진난만함	‘무사기하다’의 어근.		2	default	3	1530080
+o			4			無償	むしょう	without compensation; without reward; without pay; free (of charge)	무상, 대가 없음	어떤 행위에 대하여 아무런 대가나 보상이 없음.		2	default	0	1530130
+o			4			誘導	ゆうどう	guidance; leading; induction; introduction	유도, 이끔	사람이나 물건을 목적한 장소나 방향으로 이끎.		2	default	0	1542020
+x		일정하지 않음, 불확실함	4			不定	ふてい	unsettled; uncertain; indefinite; unfixed	불정함, 불확실함	일정하지 아니함.		2	default	1	1583570
+o			4			萎縮	いしゅく	withering; shrivelling; shrinking; contraction	위축, 수축	마르거나 시들어서 우그러지고 쭈그러듦.		2	default	1	1587220
+o			4			依頼人	いらいにん	client; requester	의뢰인			2	default	4	1575880
+x		가열함, 가혹함, 엄함	4			苛烈	かれつ	severe; fierce; stern	가혹함, 엄함			2	default	4	1195220
+x		기특함, 칭찬할 만함, 영험	4			奇特	きとく	praiseworthy; commendable; laudable; strange (person)	기특함, 칭찬할 만함, 이상함			2	default	4	1219450
+o			4			国選	こくせん	selection by the state (esp. of a defense lawyer); appointment; assignment	국선, 국가가 지정하는			2	default	4	2810250
+o			4			破顔	はがん	giving a broad smile	환한 웃음			2	default	4	1625480
+o			4			野心家	やしんか	ambitious person	야심가			2	default	4	1537440
 ?			4			開戦	かいせん	outbreak of war; starting a war	전쟁 개시	전쟁을 시작함.		2	default	0	1202810
 ?			4			開発	かいはつ	development; cultivation; application; exploitation (of resources)	개발, 개화	토지나 천연자원 따위를 유용하게 만듦.		2	default	0	1202880
 ?			4			去年	きょねん	last year	작년	이해의 바로 앞의 해.		2	default	0	1231690
 ?			4			距離	きょり	distance; range; interval; difference (e.g. in opinion)	거리, 간격	두 개의 물건이나 장소 따위가 공간적으로 떨어진 길이.		2	default	0	1232920
 ?			4			拒否	きょひ	refusal; rejection; denial; veto	거절, 부인	요구나 제의 따위를 받아들이지 않고 물리침.		2	default	0	1232410
 ?			4			拒否権	きょひけん	right of veto	거부권	거부할 수 있는 권리.		2	default	0	1232420
-?			4			居住	きょじゅう	residence; living (at, in); abode	거주, 생활	일정한 곳에 머물러 삶. 또는 그런 집.		2	default	0	1231810
-?			4			健康	けんこう	health; healthy; sound; fit	건강	정신적으로나 육체적으로 아무 탈이 없고 튼튼함. 또는 그런 상태.		2	default	0	1256170
-?			4			建物	たてもの	building	건물	사람이 들어 살거나, 일을 하거나, 물건을 넣어 두기 위하여 지은 집을 통틀어 이르는 말.		2	default	0	1257540
-?			4			建設	けんせつ	construction; establishment	건설, 구축	건물, 설비, 시설 따위를 새로 만들어 세움.		2	default	0	1257420
-?			4			建築	けんちく	construction; architecture (of buildings)	건축	집이나 성, 다리 따위의 구조물을 그 목적에 따라 설계하여 흙이나 나무, 돌, 벽돌, 쇠 따위를 써서 세우거나 쌓아 만드는 일.		2	default	0	1257500
-?			4			件数	けんすう	number of cases, incidents, items, messages, accounts, etc.	건수, 건수	일이나 사건 따위의 수.		2	default	0	1255950
-?			4			激動	げきどう	violent shock; agitation; turbulence; turmoil	격동, 동요	정세 따위가 급격하게 움직임.		2	default	0	1253720
-?			4			激化	げきか	intensification; aggravation	격화, 심화	격렬하게 됨.		2	default	0	1253640
-?			1	cat-mismatch	Y(1)	激戦	げきせん	fierce battle; hard-fought battle; hot contest; severe fight	치열한 싸움, 격전	세차게 싸움. 또는 세찬 싸움.		2	default	0	1253680
-?			4			堅持	けんじ	adhering to (a view, policy, etc.); sticking to; holding fast to; steadfastly maintaining	고수함, 지키기	어떤 견해나 입장 따위를 굳게 지니거나 지킴.		2	default	0	1257150
-?			4			見解	けんかい	opinion; point of view	견해, 의견	어떤 사물이나 현상에 대한 자기의 의견이나 생각.		2	default	0	1259390
-?			4			見学	けんがく	inspection; study by observation; field trip; tour	견학, 참관	실지로 보고 그 일에 관한 구체적인 지식을 넓힘.		2	default	0	1259440
-?			3		Y(1)	結果	けっか	result; consequence; outcome; effect	결과, 결과물	열매를 맺음. 또는 그 열매.	일본어의 '결과'는 사건이나 행동에 따른 최종적인 산출물 (outcome) 을 의미하는 반면, 한국 표준국어대사전의 '결과 (2)'는 식물에서 맺히는 열매라는 본래 뜻과 그 확장된 개념을 지칭하여 핵심 의미가 갈린다.	1	manual	0	1254690
-?			4			結局	けっきょく	after all; in the end; ultimately; eventually	결국, 마침내	일이 마무리되는 마당이나 일의 결과가 그렇게 돌아감을 이르는 말.		2	default	0	1254730
-?			4			決裂	けつれつ	breakdown (of talks, negotiations, etc.); breaking off; rupture	결렬, 파열	갈래갈래 찢어짐.		2	default	0	1254430
-?			4			結論	けつろん	conclusion (of an argument, discussion, study, etc.); conclusion	결론	말이나 글의 끝을 맺는 부분.		2	default	0	1255020
-?			4			決算	けっさん	settlement of accounts; closing accounts; financial results; reporting (of accounts)	결산, 회계 마감	일정한 기간 동안의 수입과 지출을 마감하여 계산함. 또는 그렇게 산출한 계산.		2	default	0	1254290
-?			4			結成	けっせい	formation; combination	결성, 조직함	조직이나 단체 따위를 짜서 만듦.		2	default	0	1254900
-?			4			結束	けっそく	union; unity; solidarity; bundling	결속, 단결	한 덩어리가 되게 묶음.		2	default	0	1254930
-?			4			決勝	けっしょう	decision of a contest; finals	결승	운동 경기 따위에서, 마지막 승자를 결정함.		2	default	0	1254320
-?			4			決意	けつい	decision; determination; resolution	결심, 굳은 마음	뜻을 정하여 굳게 마음을 먹음. 또는 그런 마음.		2	default	0	1254220
-?			4			決議	けつぎ	resolution; vote; decision	결의, 결정	의논하여 결정함. 또는 그런 결정.		2	default	0	1254240
-?			4			決定	けってい	decision; determination	결정, 확정	행동이나 태도를 분명하게 정함. 또는 그렇게 정해진 내용.		2	default	0	1254380
-?			4			決定的	けっていてき	definite; final; decisive; conclusive	결정적인, 확정적인	일이 되어 가는 형편이 바뀔 수 없을 만큼 확실한 것.		2	default	0	1254400
-?			4			結集	けっしゅう	concentration (of efforts, forces, etc.); gathering together; regimentation; marshalling	집결, 모임	한곳에 모여 뭉침. 또는 한곳에 모아 뭉침.		2	default	0	1254860
-?			4			決着	けっちゃく	conclusion; decision; end; settlement	결말, 결정, 매듭	완전하게 결말이 지어짐.		2	default	0	1592630
-?			4			結核	けっかく	tuberculosis; TB; concretion	결핵	결핵균에 감염되어 일어나는 만성 전염병. 허파·콩팥·창자나 뼈·관절·피부·후두 따위에 침투하며 결핵 수막염, 흉막염, 복막염을 일으키고 온몸에 퍼지기도 한다.		2	default	0	1254710
-?			4			結婚	けっこん	marriage	결혼	남녀가 정식으로 부부 관계를 맺음.		2	default	0	1254790
-?			4			結婚式	けっこんしき	marriage ceremony; wedding; nuptials	결혼식	부부 관계를 맺는 서약을 하는 의식.		2	default	0	1254810
-?			1	cat-mismatch	Y(1)	決断	けつだん	decision; determination	결단, 결정	결정적인 판단을 하거나 단정을 내림. 또는 그런 판단이나 단정.		2	default	0	1254370
-?			3		Y(1)	決済	けっさい	settlement (of an account); liquidation of debts; payment	결제, 정산	일을 처리하여 끝을 냄.	결제는 일본어에서 '채무 변제'라는 구체적인 금융 행위를 뜻하는 반면, 한국 표준국어대사전의 '결제'는 일을 처리하여 끝내는 일반적인 동사적 의미를 지니며 핵심 쓰임이 갈라져 있다.	1	manual	0	1254260
-?			4			境界	きょうかい	boundary; border; limit; bounds	경계, 국경	사물이 어떠한 기준에 의하여 분간되는 한계.		2	default	0	1235960
-?			4			警戒	けいかい	vigilance; caution; alertness; precaution	경계, 주의	뜻밖의 사고가 생기지 않도록 조심하여 단속함.		2	default	0	1252310
-?			4			警告	けいこく	warning; caution; admonition; keikoku (penalty in judo)	경고, 주의	조심하거나 삼가도록 미리 주의를 줌. 또는 그 주의.		2	default	0	1252360
+o			4			公判	こうはん	public hearing; trial	공판, 재판	기소된 형사 사건을 법원이 심리하는 일. 또는 그런 절차. 검사, 피고인, 변호인 들이 입회하여 증거를 제출하면 법원이 유죄·무죄를 판단하는 형사 소송의 중심 절차이다. 공개 심리주의, 구두주의, 변론주의의 원칙에 의하여 진행된다.		2	default	0	1274510
+o			4			万全	ばんぜん	perfection; flawlessness	완벽함, 빈틈없음	조금도 허술함이 없이 아주 완전함.		2	default	0	1584510
+o			4			背後	はいご	back; rear; background; behind the scenes	뒤, 배후	등의 뒤.		2	default	0	1472730
+o			4			飛行	ひこう	flight; flying; aviation	비행, 항공	공중으로 날아가거나 날아다님.		2	default	0	1485450
+o			4			原則	げんそく	principle; general rule; as a rule; in principle	원칙, 일반적인 규칙	어떤 행동이나 이론 따위에서 일관되게 지켜야 하는 기본적인 규칙이나 법칙.		2	default	0	1262070
+o			4			姿勢	しせい	posture; pose; position; stance	자세, 태도	몸을 움직이거나 가누는 모양.		2	default	0	1307740
+o			4			証人	しょうにん	witness	증인	어떤 사실을 증명하는 사람.		2	default	0	1351660
+o			4			注目	ちゅうもく	notice; attention; observation	주목, 주의	관심을 가지고 주의 깊게 살핌. 또는 그 시선.		2	default	0	1426670
+o			4			注意	ちゅうい	attention; notice; heed; care	주의, 조심	마음에 새겨 두고 조심함.		2	default	0	1426530
+o			4			休憩	きゅうけい	rest; break; recess; intermission	휴식, 휴지	어떤 일을 하다가 잠깐 동안 쉼.		2	default	0	1227720
+o			4			頭上	ずじょう	overhead; above one's head; high in the sky	머리 위, 머리 위쪽	머리의 위.		2	default	1	1450870
+o			4			補充	ほじゅう	replenishment; supplementation; supplement; replacement	보충, 채움	부족한 것을 보태어 채움.		2	default	1	1514580
+o			4			遺影	いえい	portrait of a deceased person	고인 사진	고인의 초상이나 사진.		2	default	1	1159040
+o			4			凶悪	きょうあく	atrocious; heinous; fiendish; brutal	흉악함, 잔혹함	성질이나 언행이 악하고 모짊.		2	default	1	1591510
+o			4			残虐	ざんぎゃく	cruel; brutal; savage; barbarous	잔혹함, 잔인함	잔인하고 포학함.		2	default	1	1304540
+o			4			窮屈	きゅうくつ	narrow; tight; cramped; formal	비좁음, 답답함, 빡빡함	‘궁굴하다’의 어근.		2	default	2	1230080
+o			4			手錠	てじょう	handcuffs; manacles; confinement in chains (Edo-era judicial corporal punishment)	수갑	→ 수갑.		2	default	2	1327900
+o			4			召喚	しょうかん	summons; subpoena; citation; summoning (a spirit, demon, etc.)	소환, 불러냄	법원이 피고인, 증인, 변호인, 대리인 따위의 소송 관계인에게 소환장을 발부하여, 공판 기일이나 그 밖의 일정한 일시에 법원 또는 법원이 지정한 장소에 나올 것을 명령하는 일.		2	default	3	1346460
+o			4			腕章	わんしょう	armband; arm band; brassard	팔찌, 완장	신분이나 지위 따위를 나타내기 위하여 팔에 두르는 표장(標章).		2	default	3	1562880
+x		포승줄	4			腰縄	こしなわ	leash; rope tied round prisoner's waists	요대, 수갑	정도(正道)를 어지럽히는 요사스러운 승려.		2	default	3	1836530
+o			4			耳目	じもく	eyes and ears; seeing and hearing; one's attention; one's interest	눈과 귀, 주의	귀와 눈을 아울러 이르는 말.		2	default	3	1317320
+o			4			職責	しょくせき	one's duty; responsibilities pertaining to one's work	직무, 책임	직무상의 책임.		2	default	3	1660350
+o			4			出廷	しゅってい	appearance in court	법정 출두	법정에 나가는 일.		2	default	3	1339770
+o			4			怠惰	たいだ	lazy; idle; indolent; slothful	나태함, 게으름	몹시 게으름.		2	default	3	1410730
+o			4			厳戒	げんかい	strict guard	엄격한 경계	엄중하게 경계함.		2	default	3	1262560
+o			4			静寂	せいじゃく	silence; stillness; quietness	고요함, 정적	고요하여 괴괴함.		2	default	3	1381910
+o			4			曇天	どんてん	cloudy sky; overcast sky; cloudy weather	흐린 하늘, 흐린 날씨			2	default	4	1457570
+o			4			無下	むげ	without a doubt; completely; something out of the question; something outrageous	의심할 여지 없이, 형편없는, 비참함			2	default	4	2863328
+o			4			陪席	ばいせき	sitting with one's superior; in attendance with one's superior	곁에 앉음, 수행			2	default	4	1474170
+o			4			粉飾決算	ふんしょくけっさん	fraudulent accounting; window-dressing settlement of accounts; creative accounting	회계 부정, 허위 결산			2	default	4	2000540
+o			4			凄惨	せいさん	ghastly; gruesome; appalling; lurid	끔찍함, 참혹함			2	default	4	1374580
+o			4			諦観	ていかん	clear insight; resignation (to one's fate); acceptance	체념, 수용			2	default	4	1436740
+o			4			最後尾	さいこうび	end (e.g. of a line); tail end; rear; backmost part	끝, 마지막 부분			2	default	4	2134380
+o			4			下世話	げせわ	common saying; everyday talk; common parlance; vulgar	속된 말, 저속함			2	default	4	1185560
