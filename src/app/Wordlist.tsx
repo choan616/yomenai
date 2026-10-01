@@ -134,8 +134,10 @@ export function Wordlist({ onBack }: { onBack: () => void }) {
             wrong: card?.wrong ?? 0,
           })
         }
-        // 묶음 안에서는 담은 순서 그대로 — 책을 읽어 내려간 순서다
-        out.sort((a, b) => a.list.localeCompare(b.list, 'ko') || a.at - b.at)
+        // **최근에 담은 것이 위다** (2026-10-01 사용자 요청). 전에는 묶음 이름순에 담은 순서 그대로(책을
+        // 읽어 내려간 순서)였는데, 새로 담은 말이 아래에 묻혀 찾으러 내려가야 했다. 한 줄 순서를 정하면
+        // 묶음도 그 안의 가장 최근 항목 순으로 따라온다 — 방금 담은 것은 어느 묶음이든 맨 위다
+        out.sort((a, b) => b.at - a.at || a.it.idiomId.localeCompare(b.it.idiomId))
         setRows(out)
       } catch (e) {
         if (alive) setError(e instanceof Error ? e.message : String(e))
@@ -194,9 +196,8 @@ export function Wordlist({ onBack }: { onBack: () => void }) {
       if (list === undefined) map.set(r.list, (list = []))
       list.push(r)
     }
-    return [...map].sort(([a], [b]) =>
-      a === DEFAULT_LIST ? -1 : b === DEFAULT_LIST ? 1 : a.localeCompare(b, 'ko'),
-    )
+    // 묶음 순서는 줄 순서를 따른다 — 가장 최근에 담은 항목이 있는 묶음이 위다 (`rows` 정렬 참조)
+    return [...map]
   }, [rows])
 
   const pickList = (name: string) => {

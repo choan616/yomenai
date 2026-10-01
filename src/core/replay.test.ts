@@ -363,6 +363,24 @@ describe('단어장 — 묶음과 메모 (2026-09-25)', () => {
     expect(state.wordlist.get('a')?.memo).toBeUndefined()
   })
 
+  it('담은 시각은 옮기기·메모 고치기로 안 바뀐다 — 다시 담으면 새로 잡힌다', () => {
+    const nextId = idFactory()
+    const state = replay([
+      star(nextId, T0, 'a', true, { list: '소설 A' }),
+      star(nextId, T0 + DAY, 'a', true, { list: '소설 B', memo: '고침' }),
+    ])
+    // 마지막 이벤트가 묶음·메모는 정하지만, 「언제 담았나」는 처음 담은 때다
+    expect(state.wordlist.get('a')).toMatchObject({ list: '소설 B', at: T0 })
+
+    // 빼고 다시 담으면 그때가 담은 시각이다
+    const readded = replay([
+      star(nextId, T0, 'a', true),
+      star(nextId, T0 + DAY, 'a', false),
+      star(nextId, T0 + 2 * DAY, 'a', true),
+    ])
+    expect(readded.wordlist.get('a')?.at).toBe(T0 + 2 * DAY)
+  })
+
   it('빼면 묶음·메모도 같이 사라진다', () => {
     const nextId = idFactory()
     const state = replay([

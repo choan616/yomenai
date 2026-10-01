@@ -59,6 +59,7 @@ export interface ReplayState {
    * `starred` 를 Map 으로 바꾸지 않은 이유는 호출부가 `[...starred]` 를 id 배열로 쓰기
    * 때문이다. 선택 로직·검수 화면·세션이 전부 그 모양에 기대고 있다
    */
+  /** `at` 은 **담은 시각**이다 — 옮기기·고치기로 안 바뀌고, 빼고 다시 담으면 새로 잡힌다 */
   wordlist: Map<string, { list: string; memo?: string; at: number }>
   /** 재생에 쓴 이벤트 수 (삭제분 제외) */
   applied: number
@@ -91,11 +92,14 @@ export function replay(events: LearningEvent[], options: ReplayOptions = {}): Re
     if (e.type === 'star') {
       if (e.on) {
         state.starred.add(e.idiomId)
-        // 묶음·메모도 마지막 이벤트가 이긴다 — 옮기기·고치기가 곧 새 `star` 이벤트다
+        // 묶음·메모도 마지막 이벤트가 이긴다 — 옮기기·고치기가 곧 새 `star` 이벤트다.
+        // **담은 시각(`at`)만은 처음 담은 때를 지킨다** (2026-10-01) — 안 그러면 메모를 고치거나
+        // 묶음을 옮긴 단어가 「최근에 담은 것」으로 맨 위에 올라온다. 빼면 항목이 지워지므로
+        // 다시 담으면 그때가 새 담은 시각이다
         state.wordlist.set(e.idiomId, {
           list: e.list ?? DEFAULT_LIST,
           ...(e.memo ? { memo: e.memo } : {}),
-          at: e.at,
+          at: state.wordlist.get(e.idiomId)?.at ?? e.at,
         })
       } else {
         state.starred.delete(e.idiomId)

@@ -203,3 +203,30 @@ test('고른 보기를 기억해서, 다시 들어가면 그 보기로 열린다
     'true',
   )
 })
+
+test('최근에 담은 것이 위다 — 오래된 것의 메모를 고쳐도 순서는 그대로다', async ({ page }) => {
+  test.setTimeout(120_000)
+  // 씨앗: 明白 은 이틀 전에, 愛好 는 하루 전에 담았다 → 愛好 가 위
+  await open(page)
+  const headwords = () => page.locator('.review-row .r-main').allInnerTexts()
+  await expect.poll(headwords, { timeout: 60_000 }).toEqual(['愛好', '明白'])
+
+  // 오래된 明白 의 메모를 고친다 — 새 star 이벤트가 쌓여도 「담은 시각」은 그대로여야 한다
+  await page.locator('.review-row', { hasText: '明白' }).getByRole('button', { name: /^메모/ }).click()
+  await page.getByLabel('明白 메모').fill('고쳤다')
+  await page.getByRole('button', { name: '저장' }).click()
+  await expect(page.locator('.review-row', { hasText: '明白' })).toContainText('고쳤다')
+
+  // 다시 열어도(재생을 새로 돌려도) 순서가 같다
+  await page.reload()
+  await page.getByRole('button', { name: '찾기', exact: true }).click()
+  await page.getByRole('button', { name: /^단어장/ }).click()
+  await expect.poll(headwords, { timeout: 60_000 }).toEqual(['愛好', '明白'])
+
+  // 카드 보기도 같은 순서다
+  await page.getByRole('button', { name: '카드', exact: true }).click()
+  await expect(page.locator('.wl-deck .browse-slide')).toHaveCount(2, { timeout: 60_000 })
+  // 한자는 글자마다 루비로 쪼개져 표제어 비교가 안 맞는다 — 카드에 뜨는 뜻으로 가른다(愛好 = 애호)
+  await expect(page.locator('.wl-deck .browse-slide').first().locator('.meaning')).toContainText('애호')
+  await expect(page.locator('.wl-deck .browse-slide').nth(1).locator('.meaning')).toContainText('분명함')
+})
