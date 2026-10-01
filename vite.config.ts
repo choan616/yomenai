@@ -101,21 +101,33 @@ export default defineConfig(({ command, isPreview }) => ({
           },
           {
             // band4.json — 밴드 4 를 켠 적이 있으면 그때 캐시되고 이후 오프라인에서 열린다.
+            //
+            // **NetworkFirst 다** (2026-10-01 사용자 실기기 캡처). 전에는 StaleWhileRevalidate 라
+            // 배포로 사전이 바뀌어도 **한 번 더 열어야** 새 내용이 보였다 — 뜻 검수에서 이미
+            // 검수해 반영한 표현이 계속 목록에 떠 있었다. 서버에는 ETag 로 바뀌었는지만 묻는다
+            // (`cache: no-cache` — GitHub Pages 의 max-age=600 에 안 걸리게). 안 바뀌었으면 304 라 다시
+            // 받지 않는다. 느린 회선에서 바뀐 파일을 통째로 받느라 막히지 않도록 4초 안에 안
+            // 오면(오프라인 포함) 캐시를 주고, 받기는 뒤에서 이어져 다음에 새것이 된다
             urlPattern: ({ url }) => url.pathname === '/yomenai/dict/band4.json',
-            handler: 'StaleWhileRevalidate',
+            handler: 'NetworkFirst',
             options: {
               cacheName: 'yomenai-dict-band4-v1',
+              networkTimeoutSeconds: 4,
+              fetchOptions: { cache: 'no-cache' },
               expiration: { maxEntries: 2, maxAgeSeconds: 60 * 60 * 24 * 90 },
               cacheableResponse: { statuses: [0, 200] },
             },
           },
           {
             // wide.json — 학습 사전 밖 조회용(2.2MB). 「사전 밖에서 찾을까」에 그렇다고
-            // 답한 적이 있어야 받는다. band4 와 같은 자리다
+            // 답한 적이 있어야 받는다. band4 와 같은 자리, 같은 이유로 NetworkFirst 다
+            // (검수 판정이 `verified` 로 실려 오므로 낡은 사전이 보이면 안 된다)
             urlPattern: ({ url }) => url.pathname === '/yomenai/dict/wide.json',
-            handler: 'StaleWhileRevalidate',
+            handler: 'NetworkFirst',
             options: {
               cacheName: 'yomenai-dict-wide-v1',
+              networkTimeoutSeconds: 4,
+              fetchOptions: { cache: 'no-cache' },
               expiration: { maxEntries: 2, maxAgeSeconds: 60 * 60 * 24 * 90 },
               cacheableResponse: { statuses: [0, 200] },
             },
