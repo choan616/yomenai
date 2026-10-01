@@ -1,0 +1,9 @@
+﻿verdict	cat	fix	tier	flags	manual	headword	reading	glossEn	llm_ko	stdict_def	manual_reason	category	classSource	band	id
+o			4			死語	しご	dead language; extinct language; obsolete word; dated word	사어, 사어구	과거에는 쓰였으나 현재에는 쓰이지 아니하게 된 언어. 또는 그런 단어. 고대 그리스어, 고대 라틴어 따위가 있다.		2	default	3	1310840
+o			4			水源地	すいげんち	source (of a river, etc.)	물줄기 근원지	물이 흘러나오는 근원이 되는 곳. 산의 꼭대기 부근이나 선상지 말단의 용수대 따위이다.		2	default	3	1371470
+o			6			機会	きかい	chance; opportunity; occasion	기회, 경우	어떠한 일을 하는 데 적절한 시기나 경우.		1	llm	0	1220800
+o			6			協和	きょうわ	concord; harmony; concert	화합, 조화	서로 협력하며 화합함.		1	llm	1	1235840
+o			6			図形	ずけい	figure; shape; graphic	도형, 모양	그림의 모양이나 형태.		1	llm	1	1370380
+o			6			対照	たいしょう	contrast; antithesis; comparison	대조, 비교	둘 이상인 대상의 내용을 맞대어 같고 다름을 검토함.		1	llm	1	1410080
+o			6			発達	はったつ	development; growth; progress; advancement	발달, 성장	신체, 정서, 지능 따위가 성장하거나 성숙함.		1	llm	1	1477680
+o			6			賛美	さんび	praise; glorification; extolment	찬미, 찬양, 칭송	아름답고 훌륭한 것이나 위대한 것 따위를 기리어 칭송함.		1	llm	3	1304240
