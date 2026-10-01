@@ -1,0 +1,43 @@
+{
+ "_meta": {
+  "note": "사전 밖(넓힌 사전) 표현의 뜻 검수 결과. build-wide-dict.ts 가 번역 초안 위에 얹는다",
+  "count": 7
+ },
+ "byId": {
+  "1201170": {
+   "definition": "변조, 위조",
+   "source": "llm",
+   "verified": true
+  },
+  "1564270": {
+   "definition": "억울한 죄, 누명",
+   "source": "llm",
+   "verified": true
+  },
+  "1572650": {
+   "definition": "궤변, 속임수",
+   "source": "llm",
+   "verified": true
+  },
+  "1584590": {
+   "definition": "전례 없는, 전례가 없는",
+   "source": "llm",
+   "verified": true
+  },
+  "1668160": {
+   "definition": "유골함",
+   "source": "llm",
+   "verified": true
+  },
+  "1735210": {
+   "definition": "적대심, 원한",
+   "source": "llm",
+   "verified": true
+  },
+  "2425400": {
+   "definition": "폭굉, 화염이 음속을 뛰어넘어 전파되는 것",
+   "source": "manual",
+   "verified": true
+  }
+ }
+}
