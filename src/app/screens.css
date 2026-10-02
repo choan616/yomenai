@@ -1386,7 +1386,7 @@ button.cal-cell[aria-pressed='true'] .cal-dot {
 
 
 /* ── 「틀렸던 것」 묶음 (2026-09-14) ── */
-/* 재대결과 다시보기는 대상이 같다. 나란히 세워 채점 유무의 선택으로 읽히게 한다 */
+/* 재대결과 다시보기는 대상이 같다. 나란히 세워 "풀래, 볼래" 의 선택으로 읽히게 한다 */
 .wrong-group {
   width: 100%;
   max-width: 320px;
@@ -1405,8 +1405,8 @@ button.cal-cell[aria-pressed='true'] .cal-dot {
   gap: 8px;
 }
 /* 한 줄에 둘이 서므로 각자 절반을 쓴다. 하나뿐이면 그대로 다 쓴다.
-   `.btn` 이 height 를 --tap(52px) 으로 고정하므로 **반드시 풀어야 한다** —
-   안 풀면 두 번째 줄이 버튼 박스 밖으로 흘러나온다 (2026-09-14) */
+   `.btn` 의 고정 height(--tap)를 풀어 둔 건 2026-09-14 에 설명 줄을 아래에 붙였기 때문이고,
+   그 줄은 2026-10-02 에 걷어냈다 — 지금은 `min-height` 가 둘의 높이를 같이 잡는다 */
 .wrong-group-row .btn.rematch {
   flex: 1;
   max-width: none;
@@ -1463,10 +1463,6 @@ button.cal-cell[aria-pressed='true'] .cal-dot {
   font-size: calc(12px * var(--ui-scale));
   line-height: 1.7;
   font-variant-numeric: tabular-nums;
-}
-.wg-note {
-  font-size: calc(12px * var(--ui-scale));
-  color: var(--text-faint);
 }
 
 /* ── 뜻 평가 엄지 (2026-09-22) ── */

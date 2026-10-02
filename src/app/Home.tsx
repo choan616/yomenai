@@ -269,9 +269,11 @@ export function Home({
             </div>
           )}
 
-          {/* 재대결과 다시보기는 **대상이 같다** — 틀렸던 숙어다. 차이는 채점 유무뿐이라
-              한 줄에 세워 "풀래, 볼래" 의 선택으로 읽히게 한다 (2026-09-14).
-              틀린 게 없으면 줄째로 사라진다 — 첫 진입에는 안 보이는 게 맞다 */}
+          {/* 재대결과 다시보기는 **대상이 같다** — 틀렸던 숙어다. 한 줄에 세워 "풀래, 볼래" 의
+              선택으로 읽히게 한다 (2026-09-14). 틀린 게 없으면 줄째로 사라진다 — 첫 진입에는
+              안 보이는 게 맞다.
+              **설명 줄(「채점해요」·「채점 없이」)은 걷어냈다** (2026-10-02 사용자 지시) —
+              이름만으로 갈리는 자리에 한 줄을 더 읽게 할 이유가 없다 */}
           {/* 같은 이유로 「틀렸던 것」 자리도 잡는다. 높이를 숫자로 적지 않고 **진짜 마크업을
               숨겨서** 잡는다 — 버튼 높이가 바뀌어도 자리가 따라온다.
               기록이 하나도 없는 사람은 계산 뒤에 이 자리가 접히며 한 번 움직인다.
@@ -284,7 +286,6 @@ export function Home({
                   <span className="wg-head">
                     재도전 <span className="wg-badge">0</span>
                   </span>
-                  <span className="wg-note">채점해요</span>
                 </button>
               </div>
             </div>
@@ -298,7 +299,6 @@ export function Home({
                     <span className="wg-head">
                       재도전 <span className="wg-badge">{preview.rematch}</span>
                     </span>
-                    <span className="wg-note">채점해요</span>
                   </button>
                 )}
                 {preview.browse > 0 && (
@@ -306,7 +306,6 @@ export function Home({
                     <span className="wg-head">
                       다시보기 <span className="wg-badge">{preview.browse}</span>
                     </span>
-                    <span className="wg-note">채점 없이</span>
                   </button>
                 )}
               </div>

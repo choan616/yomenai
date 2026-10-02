@@ -71,6 +71,10 @@ test('홈은 첫 진입에도 기록이 쌓여도 안 넘친다', async ({ page 
   await expect(page.locator('.home')).not.toContainText('이번 세션')
   await expect(page.locator('.home')).not.toContainText('새 표현')
   await expect(page.getByRole('button', { name: /3장만/ })).toHaveCount(0)
+  // 「채점해요」·「채점 없이」 설명 줄도 걷어냈다 (2026-10-02 사용자 지시) — 이름만으로 갈리는
+  // 자리에 한 줄을 더 읽게 할 이유가 없다. 재도전·다시보기 버튼 자체는 그대로다
+  await expect(page.locator('.wrong-group')).not.toContainText('채점')
+  await expect(page.getByRole('button', { name: /재도전/ })).toBeVisible()
 })
 
 test('탭 넷을 오가고, 세션에서는 탭바가 사라진다', async ({ page }) => {
