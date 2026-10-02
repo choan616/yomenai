@@ -107,6 +107,22 @@ test('진단 전에는 안 뜬다 — 먼저 할 일이 있는 상태다', async
   await expect(page.locator('.nudge-toast')).toHaveCount(0)
 })
 
+test('바깥을 누르면 사라진다 — 그날은 다시 안 뜬다', async ({ page }) => {
+  await boot(page, 23)
+  await page.reload()
+  const toast = page.locator('.nudge-toast')
+  await expect(toast).toBeVisible({ timeout: 60_000 })
+  // 토스트 안(문구)을 눌러서는 안 닫힌다 — 화살표·닫기가 제 일을 해야 한다
+  await toast.locator('p').click()
+  await expect(toast).toBeVisible()
+  // 바깥(제목)을 누르면 닫힌다
+  await page.locator('.home h1').click()
+  await expect(toast).toHaveCount(0)
+  await page.reload()
+  await previewReady(page)
+  await expect(toast).toHaveCount(0)
+})
+
 test('가만히 두면 스스로 사라진다', async ({ page }) => {
   await boot(page, 23)
   await page.reload()
@@ -116,7 +132,7 @@ test('가만히 두면 스스로 사라진다', async ({ page }) => {
   await expect(toast).toHaveCount(0, { timeout: 15_000 })
 })
 
-test('탭바와 주 동작을 안 가린다', async ({ page }) => {
+test('화면 위에 떠서 제목도 탭바도 안 가린다', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 })
   await boot(page, 23)
   await page.reload()
@@ -133,10 +149,15 @@ test('탭바와 주 동작을 안 가린다', async ({ page }) => {
   await page.waitForTimeout(400)
   const t = (await toast.boundingBox())!
   const bar = (await page.locator('.tabbar').boundingBox())!
-  const primary = (await page.locator('.home .btn-primary.big').boundingBox())!
-  // 탭바 위에 떠서 탭을 안 덮고, 주 동작(세션 시작)도 안 덮는다
+  const title = (await page.locator('.home h1').boundingBox())!
+  // 화면 위에 뜬다 (2026-10-02 사용자 지시 — 아래는 탭바 자리다). 제목 위에서 끝나고 탭바와 멀다
+  expect(t.y).toBeGreaterThanOrEqual(0)
+  expect(Math.round(t.y + t.height)).toBeLessThanOrEqual(Math.round(title.y))
   expect(Math.round(t.y + t.height)).toBeLessThanOrEqual(Math.round(bar.y))
-  expect(Math.round(primary.y + primary.height)).toBeLessThanOrEqual(Math.round(t.y))
   // 가로로는 가운데다
   expect(Math.abs(t.x + t.width / 2 - vw / 2)).toBeLessThanOrEqual(1)
+  // 닫기는 모서리에 걸쳐 있어도 화면 안이다
+  const close = (await toast.getByRole('button', { name: '닫기' }).boundingBox())!
+  expect(close.y).toBeGreaterThanOrEqual(0)
+  expect(Math.round(close.x + close.width)).toBeLessThanOrEqual(vw)
 })

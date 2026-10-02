@@ -148,7 +148,7 @@ test('오늘 칸이 비어 있으면 눌러 짧은 세션으로 가고, 지난 �
   await expect(page.locator('.cal-nudge')).toHaveCount(0)
 
   await page.locator('button.cal-cell[data-today]').click()
-  await expect(page.locator('.cal-nudge')).toContainText('조금만 해도 2일째로 이어져요')
+  await expect(page.locator('.cal-nudge')).toContainText('3장이면 2일째로 이어져요')
   await page.locator('.cal-nudge').getByRole('button', { name: /3장만/ }).click()
   await expect(page.locator('.study-bar .count')).toContainText('/ 3', { timeout: 30_000 })
 })
@@ -190,7 +190,8 @@ async function reviewCount(page: Page): Promise<number> {
 // 세션을 끝까지 안 해도 그 날은 채워지나 (2026-10-02 사용자 질문).
 // 답은 **채워진다** — 읽기 답은 「다음」을 누를 때, 뜻 답은 고를 때 그 자리에서 `appendEvent` 한다.
 // 달력은 세션 완주가 아니라 채점 수를 세므로(`buildAttendance`) 3장만 넘기고 나가도 문턱을 넘는다.
-// 홈 띠 문구가 「조금만 해도 채워져요」라고 말할 수 있는 근거라 여기서 못 박는다.
+// 홈 띠가 「3장이면 오늘 칸이 채워져요」라고 말할 수 있는 근거라 여기서 못 박는다 — 20장 세션에서
+// 3장만 해도 된다는 뜻이고, 그 3장은 완주와 무관하다.
 test('세션을 중간에 나가도 넘긴 카드는 남아 오늘 칸이 채워진다', async ({ page }) => {
   test.setTimeout(120_000)
   await page.clock.setFixedTime(new Date(2026, 8, 15, 12, 0, 0))

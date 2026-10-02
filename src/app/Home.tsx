@@ -1,7 +1,7 @@
 // 홈 — 홈 탭의 루트. 진단 전엔 진단이, 진단 후엔 세션이 주 동작 (Phase 9-A).
 // 2026-09-17 하단 탭 전환 — 리포트·음독 맵·규칙·안내서·설정·찾기가 전부 탭으로 내려갔다.
 // 여기 남는 건 **세션을 시작하는 것들뿐**이다. 홈은 2초 안에 세션을 시작하는 자리다
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { dataVersion } from '../core/dataVersion.ts'
 import { buildSession, rematchCount } from '../core/session.ts'
 import { browseCount } from '../core/report.ts'
@@ -26,6 +26,7 @@ import { WeekStrip } from './WeekStrip.tsx'
 import { homeLine } from './weekLine.tsx'
 import { hasWordlistHint, setWordlistHint } from './wordlistView.ts'
 import { markNudgeShown, NUDGE_DISMISS_MS, shouldNudge } from './nudgeToast.ts'
+import { ArrowRightIcon, CloseIcon } from './icons.tsx'
 
 interface Preview {
   /**
@@ -90,6 +91,8 @@ export function Home({
    * 진단 전과 첫 안내 중에는 안 띄운다 — 그 둘은 「오늘 뭘 할까」보다 먼저 할 일이 있는 상태다.
    * 띄우는 순간 그날 기록을 남긴다. 닫든 8초로 사라지든 그날은 끝이다 (`nudgeToast.ts`)
    */
+  /** 바깥을 눌렀는지 가리려면 토스트가 어디까지인지 알아야 한다 */
+  const toastRef = useRef<HTMLDivElement>(null)
   const [nudge, setNudge] = useState(() => {
     const p = cacheValid() ? cache!.preview : null
     if (!p || !isDiagnosticDone() || !isWelcomeSeen()) return false
@@ -167,11 +170,25 @@ export function Home({
     }
   }, [])
 
-  // 스스로 사라진다. 세션으로 들어가면 홈이 언마운트되며 같이 사라진다
+  /**
+   * 사라지는 길 셋 — 8초, 닫기, 그리고 **바깥 누르기** (2026-10-02 사용자 지적 「다른 영역을
+   * 클릭하면 없어지도록 설계된 것이 아닌가」). 바깥을 눌러도 닫히니 닫기 버튼이 유일한
+   * 탈출구가 아니고, 그래서 작아도 된다.
+   *
+   * `pointerdown` 으로 받는다 — 누르는 순간 걷혀야 그 아래 버튼을 누른 것처럼 느껴진다.
+   * 토스트 안은 빼므로 화살표·닫기는 제 일을 한다. 세션으로 들어가면 홈이 언마운트되며 같이 사라진다
+   */
   useEffect(() => {
     if (!nudge) return
     const t = setTimeout(() => setNudge(false), NUDGE_DISMISS_MS)
-    return () => clearTimeout(t)
+    const away = (e: PointerEvent) => {
+      if (!toastRef.current?.contains(e.target as Node)) setNudge(false)
+    }
+    document.addEventListener('pointerdown', away)
+    return () => {
+      clearTimeout(t)
+      document.removeEventListener('pointerdown', away)
+    }
   }, [nudge])
 
   const sessionReady = !!preview && preview.ready > 0
@@ -255,9 +272,9 @@ export function Home({
           )}
 
           {/* 이번 주 띠 (2026-09-30). "오늘 할까"를 정하는 자리라 주 동작 바로 위에 둔다 —
-              리포트 달력은 돌아보는 기록이고 이건 결정 신호다. 문구에서 장수를 뺐다
-              (2026-10-02) — 「3장이면」이 세던 숫자는 「조금만 해도」가 대신한다. 숫자를 말하던
-              「3장만」 버튼도 그때 리포트 달력으로 옮겼다.
+              리포트 달력은 돌아보는 기록이고 이건 결정 신호다. 문구가 말하는 「3장」은 **설정과
+              무관한 문턱**이다 — 설정이 정하는 건 많이 한 날(`full`) 쪽이고 칸이 채워지는 기준은
+              늘 3장이다. 숫자를 말하던 「3장만」 버튼은 2026-10-02 에 리포트 달력으로 옮겼다.
               계산 전엔 같은 마크업을 숨겨 자리만 잡는다 (단어장 슬롯과 같은 이유) */}
           {preview === null ? (
             <WeekStrip cells={SLOT_WEEK} line="·" slot />
@@ -343,19 +360,32 @@ export function Home({
           )}
 
           {/* 「오늘은 짧게」 토스트 (2026-10-02 사용자 지시) — 22시가 지났는데 오늘 칸이 비었을 때
-              한 번. 탭바 바로 위에 뜨고 8초 뒤 스스로 사라진다. 모달이 아니라 아무것도 막지 않는다.
+              한 번. 8초 뒤 스스로 사라진다. 모달이 아니라 아무것도 막지 않는다.
 
-              **문구는 띠와 다른 말을 한다.** 띠가 바로 위에서 이미 「조금만 해도 …」라고 약속하므로
-              같은 문장을 두 번 쓰지 않는다 — 여기 할 일은 권하는 것이고, 약속은 띠가 한다.
-              재촉으로 읽히지 않게 긍정형 한 줄과 닫기만 둔다 (`nudgeToast.ts` 머리 주석) */}
+              **문구는 띠와 다른 말을 한다.** 띠가 이미 「3장이면 …」이라고 약속하므로 같은 문장을
+              두 번 쓰지 않는다 — 여기 할 일은 권하는 것이고, 약속은 띠가 한다.
+
+              **글자 버튼 대신 화살표 원형 버튼**이다 (2026-10-02 사용자 지시) — 바로 가기를
+              연상시키는 게 간결하다. 다만 그림만으론 어디로 가는지 못 읽으므로 `aria-label` 이
+              「3장만」을 글자로 말한다(보조 기술·테스트가 그 이름으로 찾는다) */}
           {nudge && (
-            <div className="nudge-toast" role="status">
+            <div className="nudge-toast" role="status" ref={toastRef}>
               <p>오늘은 짧게 어때요?</p>
-              <button type="button" className="btn quick" onClick={() => onFlow({ kind: 'quick' })}>
-                <b>{QUICK_SESSION_LIMIT}장</b>만
+              <button
+                type="button"
+                className="nudge-go"
+                aria-label={`${QUICK_SESSION_LIMIT}장만 바로 시작`}
+                onClick={() => onFlow({ kind: 'quick' })}
+              >
+                <ArrowRightIcon />
               </button>
-              <button type="button" className="toast-close" onClick={() => setNudge(false)}>
-                닫기
+              <button
+                type="button"
+                className="nudge-close"
+                aria-label="닫기"
+                onClick={() => setNudge(false)}
+              >
+                <CloseIcon />
               </button>
             </div>
           )}

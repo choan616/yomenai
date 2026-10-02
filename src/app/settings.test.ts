@@ -1,6 +1,22 @@
 // 환경설정 파싱·클램프 검증 — 깨진 값과 범위 초과를 안전하게 처리한다
 import { describe, expect, it } from 'vitest'
-import { DEFAULT_SETTINGS, parseSettings } from './settings.ts'
+import { DEFAULT_SETTINGS, LIMIT_MIN, parseSettings, QUICK_SESSION_LIMIT } from './settings.ts'
+
+/**
+ * 「3장」은 설정이 못 건드리는 값이다 (2026-10-02 사용자 확인 요청 — 홈 띠가 「3장이면」이라고
+ * 말할 수 있으려면 그 수가 사용자가 정한 세션 장수에 안 흔들려야 한다).
+ * 설정의 최소값(`LIMIT_MIN`)보다도 작아서, 어떤 설정에서도 「세션 장수 중 3장」이 성립한다
+ */
+describe('3장 문턱', () => {
+  it('설정으로는 만들 수 없는 값이고, 설정 최소값보다 작다', () => {
+    expect(QUICK_SESSION_LIMIT).toBeLessThan(LIMIT_MIN)
+  })
+
+  it('세션 장수를 아무리 낮춰 잡아도 문턱보다 크다', () => {
+    expect(parseSettings({ sessionLimit: 1 }).sessionLimit).toBeGreaterThan(QUICK_SESSION_LIMIT)
+    expect(parseSettings({ sessionLimit: 999 }).sessionLimit).toBeGreaterThan(QUICK_SESSION_LIMIT)
+  })
+})
 
 describe('parseSettings', () => {
   it('정상 값은 그대로 통과한다', () => {

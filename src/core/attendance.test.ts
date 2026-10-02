@@ -56,6 +56,18 @@ describe('buildAttendance', () => {
     expect(map2.get('2026-09-10')?.tier).toBe('touched')
   })
 
+  /**
+   * 문턱(quick)은 **사용자가 정한 세션 장수와 무관하다** (2026-10-02 사용자 확인 요청).
+   * 설정이 바꾸는 건 `full`(많이 한 날) 쪽뿐이고, 칸이 채워지는 기준은 늘 3장이다.
+   * 5·20·40 은 각각 `LIMIT_MIN`·기본값·`LIMIT_MAX` 다 (core 는 app 을 안 부르므로 값만 적는다)
+   */
+  it('quick 문턱은 full 설정과 무관하다 — 어떤 세션 장수에서도 3장이면 채워진다', () => {
+    const three = repeat(2026, 9, 10, 3)
+    for (const full of [5, 20, 40]) {
+      expect(buildAttendance(three, { quick: 3, full }).get('2026-09-10')?.tier).toBe('touched')
+    }
+  })
+
   it('full 이상이면 full', () => {
     const map = buildAttendance(repeat(2026, 9, 10, T.full), T)
     expect(map.get('2026-09-10')?.tier).toBe('full')

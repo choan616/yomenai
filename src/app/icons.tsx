@@ -95,3 +95,22 @@ export function CardIcon() {
     </Icon>
   )
 }
+
+/** 바로 가기 — 오른쪽 화살표. 토스트의 원형 버튼 안에 들어간다 (2026-10-02) */
+export function ArrowRightIcon() {
+  return (
+    <Icon>
+      <path d="M4.5 12h14" />
+      <path d="m12.5 6 6 6-6 6" />
+    </Icon>
+  )
+}
+
+/** 닫기 — ✕. 토스트 모서리에 걸치는 작은 버튼이 쓴다 (2026-10-02) */
+export function CloseIcon() {
+  return (
+    <Icon>
+      <path d="m6.5 6.5 11 11M17.5 6.5l-11 11" />
+    </Icon>
+  )
+}
