@@ -64,6 +64,12 @@ test('오답 상세를 닫고 돌아오면 입력한 답이 그대로 남아 있
   await input.press('Enter')
   await expect(page.locator('.card.feedback.is-ng')).toBeVisible({ timeout: 10_000 })
 
+  // 피드백 중에는 「확인」이 할 일이 없다 (2026-10-02). 자리는 남기되 안 보인다 —
+  // 칸이 사라지면 입력창 폭이 변해 대조 글자가 움직인다
+  const confirm = page.getByRole('button', { name: '확인', exact: true })
+  await expect(confirm).toBeDisabled()
+  expect(await confirm.evaluate((el) => getComputedStyle(el).opacity)).toBe('0')
+
   // 채점 뒤 입력창에 남은 값 (wanakana 변환 결과)
   const answered = await input.inputValue()
   expect(answered).not.toBe('')
