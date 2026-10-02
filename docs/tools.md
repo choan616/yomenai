@@ -26,11 +26,39 @@ build:bands            nf 빈도 → 밴드 0~4 → data/dict/bands.json
 build:decomp-overrides JmdictFurigana 대조 → 熟字訓 거부 목록 (data/raw/JmdictFurigana.json 필요)
 build:onyomi           숙어 → (한자, 음독) 분해 → data/dict/onyomi-map.json
 build:examples         Tatoeba → 무번역 예문 (data/raw/tatoeba/ 필요, 아래 「예문」 절)
+build:extra-readings   JMdict_e.gz → 임포트가 떨어뜨린 읽기 → data/dict/extra-readings.json (아래 「다른 읽기」 절)
 build:fonts            data/raw/fonts/ → public/fonts/ 서브셋 (Regular·Bold)
 build:runtime-dict     위 산출물 → public/dict/{base,band4,pairs,kanji,examples}.json
 ```
 
 일회성 실측(산출물 안 남김): `measure:tatoeba`, `measure:furigana`.
+
+## 다른 읽기 — 읽기 둘 항목 (2026-10-02)
+
+`import:jmdict` 는 JMdict 한 항목에서 읽기를 **하나만** 고른다. 逆手 의 `ぎゃくて`(foul trick) 같은 둘째 읽기가
+사전에 없어서, 그 읽기로 답하면 일본어로는 맞는데 오답이 됐다. 임포트를 다시 돌리면 밴드·한국어 분류·음독 분해가
+전부 그 id 를 키로 쌓여 있어 파이프라인 전체가 흔들리므로, **빠진 읽기만 따로 뽑아 `build:runtime-dict` 에서 얹는다.**
+
+```
+npm run build:extra-readings      # JMdict_e.gz → data/dict/extra-readings.json (원본에서 재생성, 추적 안 함)
+npm run build:runtime-dict        # 위 파일이 있으면 형제 항목과 altReadings 를 얹는다. 없으면 건너뛴다
+```
+
+| 갈래 | 기준 | 하는 일 |
+|---|---|---|
+| plain | 뜻이 같은 읽기 | 채점만 받는다 (`altReadings`) |
+| split | 그 읽기 **자신에게 걸린 뜻**(`stagr`)이 있는 읽기 | 별도 항목(형제)으로 올린다 |
+
+- 형제 id 는 `{JMdict id}-{romaji}` (예 `1693370-gyakute`). 학습 기록이 이 id 를 영구히 참조하므로 **한 번 정하면 못 바꾼다.**
+- **밴드는 그 읽기 자신의 `re_pri` 로만** 정한다. 표기의 `nf` 를 합치면 모든 읽기가 그 순위를 공짜로 물려받는다.
+  없으면 밴드 4(선택 범위)다.
+- 뺀다: 읽기 표시(`re_inf`)가 붙은 읽기, 가타카나 읽기, 한자 없는 읽기, 다른 표기 전용 읽기, ぢ/づ 만 다른 읽기,
+  그리고 전용 뜻이 전부 고어·폐어(`arch`·`obs`)인 읽기(→ 채점만).
+- 분해(`decompose`)가 안 되는 읽기는 항목이 못 되고 채점만으로 내려간다.
+- **한국어 뜻은 사람이 쓴 `data/dict/korean-meaning-sibling-overrides.json`**(추적함, 재생성 불가)이 온다.
+  전부 초안(`llm`, `verified: false`)이라 앱 뜻 검수를 거친다.
+- JMdict 를 갱신해 새 형제가 생기면 뜻이 없는 형제가 된다 — 산출물 불변조건 테스트(`src/dict/siblings.test.ts`)가
+  막으니 위 overrides 파일에 뜻을 먼저 더한다.
 
 ## 한국어 뜻 — 검수 절차
 

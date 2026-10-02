@@ -1,0 +1,745 @@
+{
+ "_meta": {
+  "note": "읽기마다 뜻이 다른 말의 형제 항목(build:extra-readings 가 뽑고 build-runtime-dict 가 조립) 한국어 뜻 초안",
+  "rule": "그 읽기 전용 뜻을 앞에, 공통 뜻을 뒤에. 전부 초안(llm)이고 앱 뜻 검수를 거친다",
+  "source": "JMdict_e 영어 뜻(EDRDG, CC BY-SA 4.0)을 보고 쓴 초안",
+  "generatedAt": "2026-10-02T10:06:32.134Z"
+ },
+ "byId": {
+  "1158110-imei": {
+   "definition": "다른 이름, 별칭, 동의어",
+   "source": "llm",
+   "verified": false
+  },
+  "1161510-hitomaki": {
+   "definition": "한 번 감음, 한 두루마리, 한 권",
+   "source": "llm",
+   "verified": false
+  },
+  "1171290-uwan": {
+   "definition": "우완 투수, 오른팔",
+   "source": "llm",
+   "verified": false
+  },
+  "1181820-kouka": {
+   "definition": "국화, 유채꽃, 노란 꽃",
+   "source": "llm",
+   "verified": false
+  },
+  "1188170-kanabumi": {
+   "definition": "가나로만 쓴 글, 가나문",
+   "source": "llm",
+   "verified": false
+  },
+  "1191990-ienushi": {
+   "definition": "집주인, 임대인",
+   "source": "llm",
+   "verified": false
+  },
+  "1192250-kachuu": {
+   "definition": "다이묘의 가신, 번(藩), 온 집안",
+   "source": "llm",
+   "verified": false
+  },
+  "1193500-kawadoko": {
+   "definition": "강바닥, 여름철 강가에 만든 납량 마루",
+   "source": "llm",
+   "verified": false
+  },
+  "1194730-kajitsu": {
+   "definition": "겉과 속(형식과 내용), 꽃과 열매",
+   "source": "llm",
+   "verified": false
+  },
+  "1202590-kaigen": {
+   "definition": "개안(불상에 눈을 그려 넣는 의식), 깨달음",
+   "source": "llm",
+   "verified": false
+  },
+  "1204160-sotozura": {
+   "definition": "남을 대할 때의 태도, 겉모습",
+   "source": "llm",
+   "verified": false
+  },
+  "1228510-kyuukei": {
+   "definition": "활꼴(원의 일부), 활 모양",
+   "source": "llm",
+   "verified": false
+  },
+  "1228510-yumigata": {
+   "definition": "활꼴(원의 일부), 활 모양",
+   "source": "llm",
+   "verified": false
+  },
+  "1231830-kyosho": {
+   "definition": "임시 거처, 있는 곳",
+   "source": "llm",
+   "verified": false
+  },
+  "1241780-sujibone": {
+   "definition": "연골, 근육과 뼈",
+   "source": "llm",
+   "verified": false
+  },
+  "1263790-gensei": {
+   "definition": "현세(지질학의 완신세), 이 세상",
+   "source": "llm",
+   "verified": false
+  },
+  "1299590-zouyou": {
+   "definition": "잡비, 잡다한 용무",
+   "source": "llm",
+   "verified": false
+  },
+  "1300080-sankakuha": {
+   "definition": "삼각파, 일렁이는 파도",
+   "source": "llm",
+   "verified": false
+  },
+  "1307370-yohou": {
+   "definition": "주위, 정사각형, 사방",
+   "source": "llm",
+   "verified": false
+  },
+  "1327970-tekazu": {
+   "definition": "수(手)의 수, 타격 횟수, 수고",
+   "source": "llm",
+   "verified": false
+  },
+  "1361440-furihaba": {
+   "definition": "변동폭, 불안정, 진폭",
+   "source": "llm",
+   "verified": false
+  },
+  "1368890-nindou": {
+   "definition": "인간계(불교), 인도(人道)",
+   "source": "llm",
+   "verified": false
+  },
+  "1371390-suiki": {
+   "definition": "수증기, 부종, 물기",
+   "source": "llm",
+   "verified": false
+  },
+  "1371560-mizugo": {
+   "definition": "유산·사산된 태아, 갓난아기",
+   "source": "llm",
+   "verified": false
+  },
+  "1379060-shouji": {
+   "definition": "생사(윤회), 삶과 죽음",
+   "source": "llm",
+   "verified": false
+  },
+  "1379060-shoushi": {
+   "definition": "생사(윤회), 삶과 죽음",
+   "source": "llm",
+   "verified": false
+  },
+  "1381790-seiran": {
+   "definition": "산 기운, 푸른 잎을 스치는 바람",
+   "source": "llm",
+   "verified": false
+  },
+  "1382800-ishibotoke": {
+   "definition": "무뚝뚝한 사람, 석불",
+   "source": "llm",
+   "verified": false
+  },
+  "1392060-funaosa": {
+   "definition": "뱃사공, 선장",
+   "source": "llm",
+   "verified": false
+  },
+  "1413200-ooumi": {
+   "definition": "(천의) 무늬 이름, 큰 바다",
+   "source": "llm",
+   "verified": false
+  },
+  "1414350-taisetsu": {
+   "definition": "대설(24절기, 12월 7일경), 큰눈",
+   "source": "llm",
+   "verified": false
+  },
+  "1428310-asakai": {
+   "definition": "여름 이른 아침의 다회, 조회",
+   "source": "llm",
+   "verified": false
+  },
+  "1431990-chinkin": {
+   "definition": "임대료, 임금",
+   "source": "llm",
+   "verified": false
+  },
+  "1438640-tengan": {
+   "definition": "경련 때 눈이 뒤집힘, 천안",
+   "source": "llm",
+   "verified": false
+  },
+  "1439690-tensou": {
+   "definition": "머리, 천창",
+   "source": "llm",
+   "verified": false
+  },
+  "1448120-higashigata": {
+   "definition": "동쪽 선수(스모 등), 동쪽",
+   "source": "llm",
+   "verified": false
+  },
+  "1448120-higashikata": {
+   "definition": "동쪽 선수(스모 등), 동쪽",
+   "source": "llm",
+   "verified": false
+  },
+  "1462080-futae": {
+   "definition": "쌍꺼풀, 이중",
+   "source": "llm",
+   "verified": false
+  },
+  "1465210-chichishiru": {
+   "definition": "식물의 젖빛 즙, 젖",
+   "source": "llm",
+   "verified": false
+  },
+  "1469000-nenchuu": {
+   "definition": "유치원 연중반, 일 년 내내",
+   "source": "llm",
+   "verified": false
+  },
+  "1474990-byakue": {
+   "definition": "속인, 흰옷",
+   "source": "llm",
+   "verified": false
+  },
+  "1474990-hakue": {
+   "definition": "관직 없는 평민(고대 중국), 속인, 흰옷",
+   "source": "llm",
+   "verified": false
+  },
+  "1474990-shiroginu": {
+   "definition": "속인, 흰옷",
+   "source": "llm",
+   "verified": false
+  },
+  "1474990-shirokinu": {
+   "definition": "속인, 흰옷",
+   "source": "llm",
+   "verified": false
+  },
+  "1479370-hanji": {
+   "definition": "반 시간, 한 시간",
+   "source": "llm",
+   "verified": false
+  },
+  "1501160-fukukin": {
+   "definition": "윗몸일으키기, 복근",
+   "source": "llm",
+   "verified": false
+  },
+  "1507720-hirabi": {
+   "definition": "부수 曰(가로왈)의 이름, 평일",
+   "source": "llm",
+   "verified": false
+  },
+  "1529680-buen": {
+   "definition": "신선한 생선, 순박한 사람, 소금기 없음",
+   "source": "llm",
+   "verified": false
+  },
+  "1530220-bunin": {
+   "definition": "일손이 모자람, 무인",
+   "source": "llm",
+   "verified": false
+  },
+  "1530220-munin": {
+   "definition": "일손이 모자람, 무인",
+   "source": "llm",
+   "verified": false
+  },
+  "1539270-yuujo": {
+   "definition": "아름답고 우아한 여자, 상냥한 여자",
+   "source": "llm",
+   "verified": false
+  },
+  "1541060-ariyou": {
+   "definition": "있어야 할 모습, 사실, 상태",
+   "source": "llm",
+   "verified": false
+  },
+  "1549470-riyaku": {
+   "definition": "(신불의) 은혜·영험, 이익",
+   "source": "llm",
+   "verified": false
+  },
+  "1553590-ryougoku": {
+   "definition": "료고쿠(도쿄의 지명), 양국",
+   "source": "llm",
+   "verified": false
+  },
+  "1559700-renjuu": {
+   "definition": "일행(음악가 등), 무리",
+   "source": "llm",
+   "verified": false
+  },
+  "1561420-rokusho": {
+   "definition": "모세 오경과 여호수아(구약 첫 여섯 권), 한자의 여섯 가지 구성 원리(육서)",
+   "source": "llm",
+   "verified": false
+  },
+  "1562120-kashou": {
+   "definition": "화상(스승 스님), 승려의 높은 직위, 주지",
+   "source": "llm",
+   "verified": false
+  },
+  "1576140-ichijiki": {
+   "definition": "하루 한 끼, 한 끼",
+   "source": "llm",
+   "verified": false
+  },
+  "1576250-hitotabi": {
+   "definition": "잠시, 한 번",
+   "source": "llm",
+   "verified": false
+  },
+  "1576440-usui": {
+   "definition": "우수(24절기, 2월 19일경), 빗물",
+   "source": "llm",
+   "verified": false
+  },
+  "1578510-kohon": {
+   "definition": "고서, 헌책",
+   "source": "llm",
+   "verified": false
+  },
+  "1579510-sekou": {
+   "definition": "시행(법률 등을 실제로 적용함)",
+   "source": "llm",
+   "verified": false
+  },
+  "1579510-shigyou": {
+   "definition": "실행(계획·정책 등을 실시함)",
+   "source": "llm",
+   "verified": false
+  },
+  "1579670-shashu": {
+   "definition": "사수(총을 쏘는 사람), 궁수",
+   "source": "llm",
+   "verified": false
+  },
+  "1579730-jakunen": {
+   "definition": "쓸쓸함, 적막함",
+   "source": "llm",
+   "verified": false
+  },
+  "1580400-kamite": {
+   "definition": "강 상류, 무대의 객석 기준 오른쪽, 위쪽",
+   "source": "llm",
+   "verified": false
+  },
+  "1580410-joushin": {
+   "definition": "윗입술, 상순(곤충의 입 부위)",
+   "source": "llm",
+   "verified": false
+  },
+  "1580470-kamisama": {
+   "definition": "남의 부인, 천황·쇼군, 높은 분",
+   "source": "llm",
+   "verified": false
+  },
+  "1580680-hitogokoro": {
+   "definition": "의식, 정신, 사람의 마음",
+   "source": "llm",
+   "verified": false
+  },
+  "1580920-nishigata": {
+   "definition": "서쪽 선수(스모 등), 서쪽",
+   "source": "llm",
+   "verified": false
+  },
+  "1580920-saihou": {
+   "definition": "서방 정토(극락), 서쪽",
+   "source": "llm",
+   "verified": false
+  },
+  "1580940-sekishoku": {
+   "definition": "공산주의·좌익 계열, 붉은색",
+   "source": "llm",
+   "verified": false
+  },
+  "1581060-senkei": {
+   "definition": "부채꼴(원의 일부), 부채 모양",
+   "source": "llm",
+   "verified": false
+  },
+  "1581150-maewa": {
+   "definition": "안장 앞쪽 가름대, 앞바퀴",
+   "source": "llm",
+   "verified": false
+  },
+  "1582420-toppana": {
+   "definition": "맨 처음, 끝(첨단)",
+   "source": "llm",
+   "verified": false
+  },
+  "1582840-nyuusui": {
+   "definition": "물에 들어감(입수), 투신",
+   "source": "llm",
+   "verified": false
+  },
+  "1582880-toshigashira": {
+   "definition": "최연장자, 연초",
+   "source": "llm",
+   "verified": false
+  },
+  "1583420-koorisui": {
+   "definition": "빙수",
+   "source": "llm",
+   "verified": false
+  },
+  "1583710-kazaguruma": {
+   "definition": "바람개비, 풍차",
+   "source": "llm",
+   "verified": false
+  },
+  "1583840-monjo": {
+   "definition": "수신인이 있는 문서, 문서",
+   "source": "llm",
+   "verified": false
+  },
+  "1584820-yagyou": {
+   "definition": "밤에 도깨비들이 줄지어 다님, 야간 이동",
+   "source": "llm",
+   "verified": false
+  },
+  "1584860-yobanashi": {
+   "definition": "저녁 다과 모임, 밤에 하는 이야기",
+   "source": "llm",
+   "verified": false
+  },
+  "1585070-rakuyou": {
+   "definition": "낙엽이 짐, 낙엽성, 떨어진 잎",
+   "source": "llm",
+   "verified": false
+  },
+  "1587180-seika": {
+   "definition": "생화, 꽃꽂이",
+   "source": "llm",
+   "verified": false
+  },
+  "1592710-kenshi": {
+   "definition": "옥수수수염, 견사",
+   "source": "llm",
+   "verified": false
+  },
+  "1614810-sawan": {
+   "definition": "좌완 투수, 왼팔",
+   "source": "llm",
+   "verified": false
+  },
+  "1635330-nichigetsu": {
+   "definition": "일요일과 월요일, 해와 달",
+   "source": "llm",
+   "verified": false
+  },
+  "1649480-atowa": {
+   "definition": "뒷바퀴, 안장 뒤쪽 가름대",
+   "source": "llm",
+   "verified": false
+  },
+  "1649900-senkyou": {
+   "definition": "선교(배의 조타 구역), 부교",
+   "source": "llm",
+   "verified": false
+  },
+  "1649950-suien": {
+   "definition": "수연(탑 꼭대기의 장식 금속판), 물안개",
+   "source": "llm",
+   "verified": false
+  },
+  "1650450-kusuriyu": {
+   "definition": "약효가 있는 온천, 약탕",
+   "source": "llm",
+   "verified": false
+  },
+  "1650860-hakuro": {
+   "definition": "백로(24절기, 9월 8일경), 맺힌 이슬",
+   "source": "llm",
+   "verified": false
+  },
+  "1655400-taigo": {
+   "definition": "마주 보고 하는 대화, 반의어",
+   "source": "llm",
+   "verified": false
+  },
+  "1656040-bunji": {
+   "definition": "분지 연호(1185~1190), 문치",
+   "source": "llm",
+   "verified": false
+  },
+  "1657410-kunibito": {
+   "definition": "그 지방 사람, 토박이, 호족",
+   "source": "llm",
+   "verified": false
+  },
+  "1659510-shuten": {
+   "definition": "호텔(중국), 술집",
+   "source": "llm",
+   "verified": false
+  },
+  "1663270-yadonushi": {
+   "definition": "여관 주인, 숙주",
+   "source": "llm",
+   "verified": false
+  },
+  "1678850-gohou": {
+   "definition": "후세의 응보, 후속 보고",
+   "source": "llm",
+   "verified": false
+  },
+  "1693370-gyakute": {
+   "definition": "반칙 수, 역방향으로 잡는 그립, 역이용",
+   "source": "llm",
+   "verified": false
+  },
+  "1712240-iba": {
+   "definition": "활 쏘는 자리, 사격장",
+   "source": "llm",
+   "verified": false
+  },
+  "1752210-meigou": {
+   "definition": "명성, 부처의 이름",
+   "source": "llm",
+   "verified": false
+  },
+  "1755100-sanjin": {
+   "definition": "호(號)에 쓰는 말 산인, 산사람",
+   "source": "llm",
+   "verified": false
+  },
+  "1764460-seika": {
+   "definition": "꽃이 한창인 철, 꽃꽂이",
+   "source": "llm",
+   "verified": false
+  },
+  "1805320-houkai": {
+   "definition": "남의 연애를 시기함, 법계(우주)",
+   "source": "llm",
+   "verified": false
+  },
+  "1806140-tsukisekai": {
+   "definition": "쓰키세카이(도야마의 명과), 달 세계",
+   "source": "llm",
+   "verified": false
+  },
+  "1806940-sotowa": {
+   "definition": "팔자걸음, 바깥 바퀴",
+   "source": "llm",
+   "verified": false
+  },
+  "1816640-tokigane": {
+   "definition": "시간을 알리는 종소리, 시종",
+   "source": "llm",
+   "verified": false
+  },
+  "1822170-hadakami": {
+   "definition": "칼집 없는 칼, 알몸",
+   "source": "llm",
+   "verified": false
+  },
+  "1834840-ryuujin": {
+   "definition": "떠돌이, 유배된 사람",
+   "source": "llm",
+   "verified": false
+  },
+  "1836760-kakubashira": {
+   "definition": "대나무(드문 뜻), 네모기둥",
+   "source": "llm",
+   "verified": false
+  },
+  "1841490-shirouma": {
+   "definition": "탁주, 백마",
+   "source": "llm",
+   "verified": false
+  },
+  "1853860-komise": {
+   "definition": "싸구려 유곽(에도), 눈 많은 지방의 처마 밑 통로, 작은 가게",
+   "source": "llm",
+   "verified": false
+  },
+  "1954650-bungen": {
+   "definition": "문언(고전 한문체), 문구",
+   "source": "llm",
+   "verified": false
+  },
+  "2080830-hatsuzuri": {
+   "definition": "새해 첫 인쇄, 초판 인쇄",
+   "source": "llm",
+   "verified": false
+  },
+  "2089950-shinki": {
+   "definition": "신령한 거북(길조), 진키 연호(724~729)",
+   "source": "llm",
+   "verified": false
+  },
+  "2091320-shouchuu": {
+   "definition": "쇼추 연호(1324~1326), 노(能) 무대의 중앙",
+   "source": "llm",
+   "verified": false
+  },
+  "2182350-kamigashira": {
+   "definition": "부수 髟(터럭발)의 이름, 머리카락",
+   "source": "llm",
+   "verified": false
+  },
+  "2220440-hachimanshisen": {
+   "definition": "아주 많음, 팔만사천",
+   "source": "llm",
+   "verified": false
+  },
+  "2221360-keko": {
+   "definition": "산화(꽃 뿌리기) 의식에 쓰는 꽃 바구니",
+   "source": "llm",
+   "verified": false
+  },
+  "2271030-onri": {
+   "definition": "번뇌를 떠남, 멀리 떨어짐",
+   "source": "llm",
+   "verified": false
+  },
+  "2271650-honchi": {
+   "definition": "본래의 땅, 부처의 본체",
+   "source": "llm",
+   "verified": false
+  },
+  "2517960-houge": {
+   "definition": "집착을 내려놓음(선), 버림",
+   "source": "llm",
+   "verified": false
+  },
+  "2519530-shinriki": {
+   "definition": "신리키(벼 품종), 신의 힘",
+   "source": "llm",
+   "verified": false
+  },
+  "2570280-shunpuku": {
+   "definition": "새해 옷, 봄옷",
+   "source": "llm",
+   "verified": false
+  },
+  "2591940-teimei": {
+   "definition": "정해진 운명, 타고난 수명",
+   "source": "llm",
+   "verified": false
+  },
+  "2592410-jogaku": {
+   "definition": "궁중 무악을 하던 여성들, 여성이 연주하는 음악",
+   "source": "llm",
+   "verified": false
+  },
+  "2596590-hatsuzuki": {
+   "definition": "음력 정월, 초승달",
+   "source": "llm",
+   "verified": false
+  },
+  "2610200-yubiita": {
+   "definition": "손가락 판, 지판",
+   "source": "llm",
+   "verified": false
+  },
+  "2612580-nuriita": {
+   "definition": "칠하는 판, 칠판",
+   "source": "llm",
+   "verified": false
+  },
+  "2638510-yataba": {
+   "definition": "화살 다발, 화살 길이",
+   "source": "llm",
+   "verified": false
+  },
+  "2649080-suikin": {
+   "definition": "수요일과 금요일, 도자기에 쓰는 액체 금, 뇌물",
+   "source": "llm",
+   "verified": false
+  },
+  "2660540-nagauta": {
+   "definition": "나가우타(샤미센 반주의 긴 노래), 장가",
+   "source": "llm",
+   "verified": false
+  },
+  "2681790-haiban": {
+   "definition": "등판(곤충의 등 쪽 판), 등널",
+   "source": "llm",
+   "verified": false
+  },
+  "2682060-yamagusa": {
+   "definition": "우라지로(고사리류), 산에 나는 풀",
+   "source": "llm",
+   "verified": false
+  },
+  "2820040-kanju": {
+   "definition": "승려가 읽는 경전 두루마리 수, 권수",
+   "source": "llm",
+   "verified": false
+  },
+  "2820040-kanzu": {
+   "definition": "승려가 읽는 경전 두루마리 수, 권수",
+   "source": "llm",
+   "verified": false
+  },
+  "2820170-jouya": {
+   "definition": "밤새 이어짐, 늘 밤",
+   "source": "llm",
+   "verified": false
+  },
+  "2821470-hibune": {
+   "definition": "불을 밝혀 물고기를 모으는 배, 불이 난 배",
+   "source": "llm",
+   "verified": false
+  },
+  "2829342-kanmotsu": {
+   "definition": "지방에서 나라에 내는 조세(율령제), 관유물",
+   "source": "llm",
+   "verified": false
+  },
+  "2841739-kuusho": {
+   "definition": "허공에 글씨 쓰기(서예), 공서",
+   "source": "llm",
+   "verified": false
+  },
+  "2843105-shichido": {
+   "definition": "7도 음정, 일곱 번",
+   "source": "llm",
+   "verified": false
+  },
+  "2847330-seikei": {
+   "definition": "성현의 글, 성경, 경전",
+   "source": "llm",
+   "verified": false
+  },
+  "2851151-higashiyama": {
+   "definition": "히가시야마(교토의 지구), 동쪽 산",
+   "source": "llm",
+   "verified": false
+  },
+  "2851345-nyozoku": {
+   "definition": "남자의 진리 탐구를 방해하는 여자(불교), 여자 도적",
+   "source": "llm",
+   "verified": false
+  },
+  "2852327-hakutai": {
+   "definition": "대하(질 분비물), 흰 띠",
+   "source": "llm",
+   "verified": false
+  },
+  "2853303-sessan": {
+   "definition": "만년설 산, 히말라야",
+   "source": "llm",
+   "verified": false
+  },
+  "2869657-nikuheki": {
+   "definition": "질벽, 인간 방패, 살로 된 벽",
+   "source": "llm",
+   "verified": false
+  }
+ }
+}

@@ -4,7 +4,16 @@
 // band4.json(20MB)을 아무 데서도 안 불렀다. 밴드는 어려움이 아니라 뉴스 코퍼스 빈도로
 // 갈리므로, 일상어인 憂鬱 도 밴드 4다. **찾기는 학습이 아니라 조회라** 출제 범위와
 // 찾을 수 있는 범위가 같을 이유가 없다.
+import { readFileSync } from 'node:fs'
 import { expect, test, type Page } from '@playwright/test'
+
+/**
+ * 기본 사전의 개수 — 산출물에서 읽는다. 리터럴(16,959)로 박아 두었더니 읽기 형제 항목 5개가 들어오며
+ * (2026-10-02) 깨졌다. 사전이 바뀔 때마다 이 숫자를 고치는 일이 되풀이될 이유가 없다
+ */
+const BASE_COUNT = (
+  JSON.parse(readFileSync('public/dict/base.json', 'utf8')) as { _meta: { count: number } }
+)._meta.count.toLocaleString('en-US')
 
 async function openSearch(page: Page): Promise<void> {
   await page.addInitScript(() => {
@@ -24,7 +33,7 @@ test('밴드 4 숙어를 읽기로 찾는다', async ({ page }) => {
   test.setTimeout(180_000)
   await openSearch(page)
   // 열자마자는 기본 범위다 — 20MB 를 화면 여는 값으로 치르지 않는다
-  await expect(page.locator('.search-scope')).toContainText('16,959')
+  await expect(page.locator('.search-scope')).toContainText(BASE_COUNT)
 
   await page.locator('.search-input').fill('いんうつ')
   // 넓은 사전이 오면 결과가 뜬다

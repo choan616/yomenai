@@ -9,6 +9,8 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { pairId } from '../src/lib/onyomi.ts'
 import { DICT_DIR } from './lib/dict.ts'
+import { buildSiblings, type MeaningOverride } from './lib/siblings.ts'
+import type { Extras } from './build-extra-readings.ts'
 
 const OUT_DIR = join(import.meta.dirname, '..', 'public', 'dict')
 
@@ -190,6 +192,70 @@ for (const it of idioms) {
   for (const ch of it.headword) if (kanji[ch]) usedKanji.add(ch)
 }
 
+// ── 읽기마다 뜻이 다른 말을 형제 항목으로 (2026-10-02) ──
+// 임포트가 JMdict 한 항목에서 읽기를 **하나만** 골라서, 逆手 의 `ぎゃくて`(foul trick) 같은 읽기가
+// 사전에 없었다. `build:extra-readings` 가 빠진 읽기를 뽑아 두면(`extra-readings.json`):
+//   · 그 읽기 자신에게 걸린 뜻이 있는 읽기(split) → 별도 항목. 아래 「같은 표기 정리」가 부모와 서로의
+//     읽기를 `altReadings` 로 묶어 주고, 풀에 둘 다 있으면 세션이 「읽기 둘」 카드로 묻는다
+//   · 뜻이 같은 읽기(plain) → 항목이 아니라 채점만 받아준다 (`altReadings`)
+// 파일이 없으면 건너뛴다 — 원본 JMdict 가 없는 환경에서도 빌드가 돈다 (examples.json 과 같은 처리).
+// 밴드는 새로 정하지 않고 같은 함수(`bandOf`)로 구한다. 근거는 context-notes 2026-10-02.
+const extraPath = join(DICT_DIR, 'extra-readings.json')
+const extras: Record<string, Extras> = existsSync(extraPath)
+  ? read<{ byId: Record<string, Extras> }>('extra-readings.json').byId
+  : {}
+const siblingMeaningPath = join(DICT_DIR, 'korean-meaning-sibling-overrides.json')
+const siblingMeanings: Record<string, MeaningOverride> = existsSync(siblingMeaningPath)
+  ? read<{ byId: Record<string, MeaningOverride> }>('korean-meaning-sibling-overrides.json').byId
+  : {}
+/** 채점만 받아줄 읽기 — 부모 id → 읽기들. 형제가 못 된 split 도 여기로 내려온다 */
+const plainExtras = new Map<string, string[]>()
+let siblingCount = 0
+let siblingDemoted = 0
+if (Object.keys(extras).length > 0) {
+  const parents = [...base, ...band4].map((r) => ({ id: r.id, headword: r.headword, reading: r.reading, pos: r.pos }))
+  const existingKeys = new Set([...base, ...band4, ...lookup].map((r) => r.headword + ' ' + r.reading))
+  const made = buildSiblings(parents, extras, (k) => kanji[k], siblingMeanings, existingKeys)
+  for (const s of made.siblings) {
+    const rec: RuntimeIdiom = {
+      id: s.id,
+      headword: s.headword,
+      reading: s.reading,
+      pos: s.pos,
+      band: s.band,
+      common: s.common,
+      category: null,
+      classSource: null,
+      koMeaning: s.koMeaning,
+      pairIds: s.pairIds,
+      readingKind: s.readingKind,
+    }
+    ;(s.band <= 3 ? base : band4).push(rec)
+  }
+  for (const [k, p] of made.pairs) {
+    if (!pairsRaw[k]) pairsRaw[k] = { kanji: p.kanji, base: p.base, kind: p.kind }
+  }
+  for (const [id, ex] of Object.entries(extras)) {
+    const list = [...ex.plain, ...(made.demotedByParent.get(id) ?? [])]
+    if (list.length > 0) plainExtras.set(id, list)
+  }
+  siblingCount = made.siblings.length
+  siblingDemoted = made.demoted.length
+  const reasons = new Map<string, number>()
+  for (const d of made.demoted) reasons.set(d.reason, (reasons.get(d.reason) ?? 0) + 1)
+  if (reasons.size > 0) {
+    console.log('  채점만으로 내려간 사유 — ' + [...reasons].map(([r, n]) => r + ' ' + n).join(' · '))
+  }
+  const byBand = (b: (r: { band: number }) => boolean) => made.siblings.filter(b).length
+  console.log(
+    '형제 항목 ' + siblingCount + '개 (기본 ' + byBand((r) => r.band <= 3) + ' · 밴드 4 ' +
+      byBand((r) => r.band === 4) + ') · 채점만으로 내려간 읽기 ' + siblingDemoted +
+      ' · 채점만 받는 읽기 ' + [...plainExtras.values()].reduce((n, l) => n + l.length, 0),
+  )
+} else {
+  console.log('형제 항목 건너뜀 (data/dict/extra-readings.json 없음 — npm run build:extra-readings)')
+}
+
 // ── 같은 표기 정리 (2026-09-14) ──
 // 두 가지가 섞여 있어 다르게 다룬다.
 //
@@ -238,6 +304,14 @@ for (const r of [...base, ...band4]) {
   if (!all || all.size < 2) continue
   r.altReadings = [...all].filter((x) => x !== r.reading).sort()
   homographs++
+}
+// 뜻이 같은 읽기는 항목이 아니라 채점만 받아준다. 같은 표기의 다른 항목이 이미 실어 준 읽기와 합친다
+for (const r of [...base, ...band4]) {
+  const more = plainExtras.get(r.id)
+  if (!more) continue
+  const merged = new Set([...(r.altReadings ?? []), ...more])
+  merged.delete(r.reading)
+  r.altReadings = [...merged].sort()
 }
 console.log(
   '표기+읽기가 겹친 항목 ' + droppedTwins + '개 버림 · 동형이독 ' +

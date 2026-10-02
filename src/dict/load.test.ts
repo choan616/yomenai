@@ -23,7 +23,8 @@ describe.runIf(existsSync(BASE))('base.json', () => {
 
   it('모든 레코드가 학습에 필요한 필드를 갖춘다', () => {
     for (const p of pool) {
-      expect(p.idiomId).toMatch(/^\d+$/)
+      // JMdict id(숫자) 이거나 그 읽기의 형제 항목(`{id}-{romaji}`, 2026-10-02)이다
+      expect(p.idiomId).toMatch(/^\d+(-[a-z0-9]+(-[a-z0-9]+)*)?$/)
       expect(p.headword.length).toBeGreaterThan(0)
       expect(p.reading.length).toBeGreaterThan(0)
       expect(p.band).toBeGreaterThanOrEqual(0)
