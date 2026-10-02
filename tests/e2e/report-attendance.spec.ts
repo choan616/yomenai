@@ -3,9 +3,10 @@
 // 포인트·배지·스트릭은 기각했지만(2026-09-06/07 절) 빈 칸이 "쉰 날"로 보이는 것 자체는
 // 남긴다. 대신 "3장만"(QUICK_SESSION_LIMIT)만 채워도 구멍이 안 생기고, 기준 세션
 // (sessionLimit)을 넘긴 날은 `full`로 갈라 다르게 보여준다는 것을 실제 DOM에서 못 박는다.
-// 달력은 이번 달을 기본으로 보여준다 — daysAgo 0~2가 이전 달로 넘어가는(월초 실행)
-// 경우는 다루지 않는다. 다른 e2e(report-stable-mix)도 날짜 상대 오프셋만 쓰고 월
-// 경계는 안 따진다 — 같은 수준의 허용 오차다.
+// 달력은 이번 달을 기본으로 보여준다. 그래서 오늘·어제·그저께가 한 달 안에 들어야 세 칸이 다 보이는데,
+// 실제 날짜로 돌리면 **매달 1일·2일에 그저께·어제가 지난달이라 칸을 못 찾아 실패했다**
+// (2026-10-01·02 에 실제로 걸렸다). 그래서 브라우저 시계를 월중 날짜로 **고정**한다 — 언제 돌려도 같다.
+// 다른 e2e(report-stable-mix)도 날짜 상대 오프셋을 쓰지만 이 테스트처럼 칸 하나하나를 짚지는 않는다.
 import { expect, test, type Page } from '@playwright/test'
 
 /** `daysAgo`일 전 로컬 정오에 채점 `count`개를 심는다. 자정 근처 실행에서도 날짜가
@@ -62,6 +63,9 @@ async function dateKeyForDaysAgo(page: Page, daysAgo: number): Promise<string> {
 }
 
 test('매일 학습 달력 — 문턱에 따라 none/touched/full로 갈린다', async ({ page }) => {
+  // 시계를 월중(9월 15일 정오)으로 고정한다. 타이머는 그대로 흐르고 `Date` 만 고정이다.
+  // 새로고침해도 유지된다 — 아래에서 reload 한 뒤에도 같은 날짜로 칸을 짚는다
+  await page.clock.setFixedTime(new Date(2026, 8, 15, 12, 0, 0))
   await page.goto('/')
   await expect(page.getByRole('button', { name: '세션 시작' })).toBeVisible({ timeout: 20_000 })
   await page.evaluate(() => {
