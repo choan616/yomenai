@@ -11,7 +11,30 @@ const RAW_FONTS = join(import.meta.dirname, '..', 'data', 'raw', 'fonts')
 const DICT_DIR = join(import.meta.dirname, '..', 'public', 'dict')
 const OUT_DIR = join(import.meta.dirname, '..', 'public', 'fonts')
 
+/**
+ * 정보용 한국어 서체의 **원본**. 서브셋 산출물은 이름을 바꿔 내보낸다 — 아래 `KO_OUT` 주석 참조
+ */
 const SRC_KO = join(RAW_FONTS, 'Pretendard-Regular.woff2')
+
+/**
+ * 서브셋 산출물의 이름 (2026-10-02). **원본 이름을 그대로 못 쓴다.**
+ *
+ * Pretendard 는 OFL 예약 폰트 이름 `'Pretendard'` 를 선언했고, OFL FAQ 는 글리프를 걷어내는
+ * 서브셋을 수정본으로 본다. 수정본은 예약 이름을 사용자에게 보이는 이름으로 못 쓴다 — 웹에서는
+ * `font-family` 가 그 자리다. 단어의 **일부**는 쓸 수 있어 자음만 남긴 축약으로 간다.
+ *
+ * **파일 안의 이름 테이블은 원본 그대로다.** 지금 서브셋 도구(HarfBuzz 래퍼)가 이름을 못 바꾼다.
+ * 웹에서 보이는 이름은 CSS 쪽이라 실질은 지켜지지만, 완전히 맞추려면 이름 테이블까지 고쳐야
+ * 한다 — `public/fonts/LICENSES.txt` 에 그 사실을 적어 둔다
+ */
+const KO_OUT = 'PrdSansKO-Regular.woff2'
+
+/**
+ * 표시용 한국어 서체 (2026-10-02) — 「보여지는 쪽」 화면만 쓴다(홈·세션·진단·요약).
+ * 보려고 찾아 들어가는 화면(리포트·설정·단어장·찾기)은 정보용(`SRC_KO`) 그대로다.
+ * OFL 1.1, Copyright 2018 The Jua Project Authors. 저작권 줄에 예약 이름 선언이 없다
+ */
+const SRC_KO_DISPLAY = join(RAW_FONTS, 'Jua-Regular.ttf')
 
 /** 같은 문자 집합으로 서브셋할 일본어 원본. lang="ja" + 100% 커버라 한국 자형 폴백이 안 난다 */
 const JP_WEIGHTS = [
@@ -258,17 +281,42 @@ const koText = [...koTargets]
   .map((cp) => String.fromCodePoint(cp))
   .join('')
 const koOut = await subsetFont(koSrc, koText, { targetFormat: 'woff2' })
-writeFileSync(join(OUT_DIR, 'Pretendard-Regular.woff2'), koOut)
+writeFileSync(join(OUT_DIR, KO_OUT), koOut)
 
 const koOutSet = charSet(koOut)
 const koGap = [...koTargets].filter((cp) => koHave.has(cp) && !koOutSet.has(cp))
 console.log(
-  `\nPretendard-Regular.woff2  ${(koSrc.length / 1024).toFixed(0)} KB → ` +
+  `\n${KO_OUT}  ${(koSrc.length / 1024).toFixed(0)} KB → ` +
     `${(koOut.length / 1024).toFixed(0)} KB  (글리프 ${koOutSet.size}자)`,
 )
 if (koGap.length > 0) {
   console.error(`  ✗ 한국어 서브셋에서 누락 ${koGap.length}개: ${show(koGap)}`)
   allCovered = false
+}
+
+/**
+ * 표시용 서체도 **같은 문자 집합**으로 뜬다. 화면별로 좁히면 나중에 문구를 고칠 때 그 글자가
+ * 빠져 한 줄 안에서 글꼴이 갈린다 — 80KB 아끼자고 질 위험이 아니다.
+ *
+ * **빠지는 글자는 빌드를 멈추지 않는다.** 주아체에 없는 기호(화살표·✓·「」·중점 등)는
+ * 정보용 서체로 폴백하는 게 맞다. 일본어처럼 자형을 잘못 학습하는 문제가 아니라 기호 모양이
+ * 한 끗 다를 뿐이고, 표시용 서체에 없는 글자를 억지로 채울 방법도 없다
+ */
+const displaySrc = readFileSync(SRC_KO_DISPLAY)
+const displayHave = charSet(displaySrc)
+const displayText = [...koTargets]
+  .filter((cp) => displayHave.has(cp))
+  .map((cp) => String.fromCodePoint(cp))
+  .join('')
+const displayOut = await subsetFont(displaySrc, displayText, { targetFormat: 'woff2' })
+writeFileSync(join(OUT_DIR, 'Jua-subset.woff2'), displayOut)
+const displayGap = [...koTargets].filter((cp) => !displayHave.has(cp))
+console.log(
+  `Jua-subset.woff2          ${(displaySrc.length / 1024).toFixed(0)} KB → ` +
+    `${(displayOut.length / 1024).toFixed(0)} KB  (글리프 ${charSet(displayOut).size}자)`,
+)
+if (displayGap.length > 0) {
+  console.log(`  · 표시용 서체에 없어 정보용으로 폴백 ${displayGap.length}개: ${show(displayGap)}`)
 }
 
 if (!allCovered) {

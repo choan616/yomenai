@@ -137,14 +137,22 @@ GitHub Actions 가 배포한다.
 npm run build:fonts    # data/raw/fonts/ → public/fonts/
 ```
 
-원본 셋(`NotoSansJP-Regular.otf`·`NotoSansJP-Bold.otf`·`Pretendard-Regular.woff2`)이
-`data/raw/fonts/` 에 있어야 한다.
+원본 넷(`NotoSansJP-Regular.otf`·`NotoSansJP-Bold.otf`·`Pretendard-Regular.woff2`·
+`Jua-Regular.ttf`)이 `data/raw/fonts/` 에 있어야 한다. 그 폴더는 커밋하지 않으므로 받는 곳을
+적어 둔다 — 주아체는 `https://github.com/google/fonts/tree/main/ofl/jua` 의 `Jua-Regular.ttf`
+와 `OFL.txt` 다.
 
 | 파일 | 크기 | 담는 것 |
 |---|---|---|
 | `NotoSansJP-subset` | 496KB | 숙어·읽기에 나오는 문자 + 가나 전 구간 |
 | `NotoSansJP-Bold-subset` | 508KB | 같은 문자 집합 (합성 볼드는 자형을 왜곡한다) |
-| `Pretendard-Regular` | 96KB | **사전의 뜻·한국 한자음 + 소스·안내서의 UI 문구** + 라틴/기호 |
+| `PrdSansKO-Regular` | 97KB | **사전의 뜻·한국 한자음 + 소스·안내서의 UI 문구** + 라틴/기호 |
+| `Jua-subset` | 200KB | 같은 한국어 집합 — 「보여지는 쪽」(홈·세션·진단·요약) 전용 표시 서체 |
+
+**`PrdSansKO-Regular` 는 Pretendard 서브셋이다.** Pretendard 는 OFL 예약 폰트 이름을 선언했고
+OFL 은 서브셋을 수정본으로 보므로, 사용자에게 보이는 이름(웹에서는 `font-family`)에 원본 이름을
+쓸 수 없다. 근거와 남은 한계(파일 안 이름 테이블은 원본 그대로)는 `public/fonts/LICENSES.txt`
+에 적어 뒀다. 주아체는 예약 이름 선언이 없어 `Jua` 를 그대로 쓴다.
 
 ### 위험의 크기가 언어마다 다르다
 
@@ -157,7 +165,7 @@ npm run build:fonts    # data/raw/fonts/ → public/fonts/
 
 ### 프리로드는 한국어만
 
-`index.html` 이 `Pretendard` 만 `rel="preload"` 한다. 일본어 Bold(509KB)까지 얹었더니
+`index.html` 이 한국어 서체(`PrdSansKO-Regular`)만 `rel="preload"` 한다. 일본어 Bold(509KB)까지 얹었더니
 JS 번들과 대역폭을 나눠 가져 **FCP 가 1,500ms → 2,584ms 로 되레 나빠졌다**(1.6Mbps 실측).
 한국어만 남기니 1,892ms 에 한글 폰트가 1.3초에 끝난다 — 전에는 11.4초였다.
 

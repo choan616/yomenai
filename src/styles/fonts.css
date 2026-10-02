@@ -18,9 +18,26 @@
   font-display: swap;
 }
 
+/* 정보용 한국어 서체 — Pretendard 를 이 앱이 쓰는 글자만 남겨 서브셋한 것이다.
+   **이름을 바꿔 쓴다** (2026-10-02). Pretendard 는 OFL 예약 폰트 이름을 선언했고 서브셋은
+   수정본이라, 사용자에게 보이는 이름(웹에서는 이 `font-family`)에 그 이름을 쓸 수 없다.
+   단어의 일부는 허용되어 자음만 남긴 축약으로 간다. 출처는 `public/fonts/LICENSES.txt` 에 적는다.
+   스택 뒤의 `'Pretendard'` 는 그대로 둔다 — 그건 기기에 설치된 **원본**을 가리키는 것이라
+   수정본이 아니다 */
 @font-face {
-  font-family: 'Pretendard';
-  src: url('/fonts/Pretendard-Regular.woff2') format('woff2');
+  font-family: 'Prd Sans KO';
+  src: url('/fonts/PrdSansKO-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* 표시용 한국어 서체 (2026-10-02 사용자 지시 「보여지는 페이지와 보려고 찾는 페이지는 분위기를
+   다르게」). 굵기가 400 하나뿐이라 굵은 글자는 합성 볼드가 된다 — 한글은 자형 학습 대상이
+   아니라 일본어에 그걸 금지한 이유(획 왜곡)가 여기엔 안 걸린다 */
+@font-face {
+  font-family: 'Jua';
+  src: url('/fonts/Jua-subset.woff2') format('woff2');
   font-weight: 400;
   font-style: normal;
   font-display: swap;
@@ -32,8 +49,28 @@
      그래도 실제 일본 고딕을 앞에 세워 두고 sans-serif 는 최후로만 둔다. */
   --font-ja: 'Noto Sans JP', 'Hiragino Kaku Gothic ProN', 'Yu Gothic', 'YuGothic',
     'Meiryo', sans-serif;
-  --font-ko: 'Pretendard', system-ui, 'Segoe UI', 'Apple SD Gothic Neo',
+  --font-ko: 'Prd Sans KO', 'Pretendard', system-ui, 'Segoe UI', 'Apple SD Gothic Neo',
     'Malgun Gothic', sans-serif;
+  /* 표시용 — 주아체에 없는 기호(화살표·✓·「」·중점)는 뒤의 정보용 서체가 받는다 */
+  --font-ko-display: 'Jua', 'Prd Sans KO', 'Pretendard', system-ui, 'Segoe UI',
+    'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+}
+
+/* **보여지는 쪽만 표시용 서체** (2026-10-02 사용자 지시).
+   홈·세션·진단·세션 요약은 짧은 말과 동작뿐이라 둥근 서체가 어울리고, 리포트·설정·단어장·
+   찾기는 숫자와 설명을 읽는 자리라 정보용 서체가 맞는다. 모션을 「카드 루프 무모션 / 셸은
+   느리게」로 가른 것과 같은 선이다.
+   일본어는 어느 쪽에서도 `--font-ja` 가 받는다 — 이 규칙이 한자 자형에 닿지 않는다.
+
+   **`font-family` 를 걸지 않고 변수를 그 범위에서 바꾼다.** 아래 `:lang(ko)` 규칙이 모든
+   한국어 요소에 직접 서체를 걸기 때문에, 조상에 `font-family` 를 줘 봐야 상속이 자식에게
+   닿기 전에 덮인다(실제로 그렇게 짰다가 화면이 그대로여서 계산된 값으로 확인했다).
+   커스텀 속성은 상속되므로 이 범위 안에서는 `:lang(ko)` 가 알아서 표시용 스택을 집는다 */
+.home,
+.study,
+.diag,
+.summary-screen {
+  --font-ko: var(--font-ko-display);
 }
 
 /* 일본어 텍스트를 담은 요소에는 lang="ja" 를 명시한다 (CLAUDE.md).
@@ -42,7 +79,7 @@
   font-family: var(--font-ko);
 }
 /* 일본어는 자간을 조금 좁힌다 — 전각 한자가 기본 자간으로는 성기게 보인다.
-   한국어(Pretendard)는 현행 자간 그대로 둔다 (사용자 지시 2026-09-06). */
+   한국어는 현행 자간 그대로 둔다 (사용자 지시 2026-09-06). */
 :lang(ja) {
   font-family: var(--font-ja);
   letter-spacing: -0.02em;
