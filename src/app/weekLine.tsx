@@ -26,38 +26,38 @@ function todayMilestone(streak: StreakRecord, todayKey: string) {
   return last?.date === todayKey ? last : undefined
 }
 
-/** 홈의 한 줄 — 오늘 칸을 채웠는지에 따라 갈린다 */
-export function homeLine(streak: StreakRecord, todayKey: string): ReactNode {
+/**
+ * 홈 띠와 달력 유도가 같이 쓰는 한 줄 — 오늘 칸을 채웠는지에 따라 갈린다.
+ *
+ * `todayCount` 는 **오늘 이미 채점한 수**다. 0 이면 문턱 그대로 「3장이면」, 1~2 면
+ * **남은 장수**를 말한다 (2026-10-02 — 그 전엔 2장을 한 사람에게도 「3장이면」이라고 해서
+ * 실제 남은 양과 어긋났다. 달력·요약은 그때도 남은 장수를 말하고 있었다).
+ * 어느 쪽이든 뒷말은 같다 — 오늘 칸이 채워지거나, 연속이 하루 늘거나, 이정표에 닿는다
+ */
+export function homeLine(streak: StreakRecord, todayKey: string, todayCount = 0): ReactNode {
   if (streak.todayDone) {
     const hit = todayMilestone(streak, todayKey)
     if (hit) return <>오늘로 <b>{milestoneLabel(hit.days)}</b>이에요</>
     if (streak.current >= 2) return <><b>{streak.current}일째</b> 이어가고 있어요</>
     return <>오늘 칸을 채웠어요</>
   }
-  // 어제까지 이어진 연속이 있으면 오늘 3장이 그걸 한 칸 늘린다
+  const need =
+    todayCount > 0 ? (
+      <>
+        <b>{QUICK_SESSION_LIMIT - todayCount}장</b> 더 하면
+      </>
+    ) : (
+      <>{QUICK_SESSION_LIMIT}장이면</>
+    )
+  // 어제까지 이어진 연속이 있으면 오늘 문턱을 넘는 것이 그걸 한 칸 늘린다
   if (streak.current >= 1) {
     const next = streak.current + 1
     if (nextMilestone(streak.current) === next) {
-      return <>{QUICK_SESSION_LIMIT}장이면 <b>{milestoneLabel(next)}</b>이에요</>
+      return <>{need} <b>{milestoneLabel(next)}</b>이에요</>
     }
-    return <>{QUICK_SESSION_LIMIT}장이면 <b>{next}일째</b>로 이어져요</>
+    return <>{need} <b>{next}일째</b>로 이어져요</>
   }
-  return <>{QUICK_SESSION_LIMIT}장이면 오늘 칸이 채워져요</>
-}
-
-/**
- * 리포트 달력에서 **오늘 칸을 눌렀을 때**의 한 줄 (2026-10-02). 아직 채우지 않은 날에만 쓴다 —
- * 이미 몇 장 한 날은 남은 장수를 말하고(요약과 같은 말), 아예 비었으면 홈과 같은 말을 한다.
- * 여기서도 「못 했다」가 아니라 「하면 채워진다」로만 말한다
- */
-export function nudgeLine(
-  streak: StreakRecord,
-  todayKey: string,
-  today: DayRecord | undefined,
-): ReactNode {
-  const count = today?.count ?? 0
-  if (count > 0) return <><b>{QUICK_SESSION_LIMIT - count}장</b> 더 하면 오늘 칸이 채워져요</>
-  return homeLine(streak, todayKey)
+  return <>{need} 오늘 칸이 채워져요</>
 }
 
 /**

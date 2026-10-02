@@ -42,6 +42,8 @@ interface Preview {
   wordlist: number
   /** 이번 주 띠 (2026-09-30) */
   week: WeekCell[]
+  /** 오늘 이미 채점한 수. 띠 문구가 남은 장수를 말하는 데 쓴다 (2026-10-02) */
+  todayCount: number
   streak: StreakRecord
   /** 이 미리보기를 계산한 날. 앱을 켜 둔 채 자정을 넘기면 띠가 어제에 머물지 않게 캐시를 버린다 */
   day: string
@@ -138,6 +140,7 @@ export function Home({
           browse: browseCount(pool, events),
           wordlist: state.wordlist.size,
           week: weekStrip(day, attendance),
+          todayCount: attendance.get(day)?.count ?? 0,
           streak: buildStreak(attendance, day),
           day,
         }
@@ -279,7 +282,10 @@ export function Home({
           {preview === null ? (
             <WeekStrip cells={SLOT_WEEK} line="·" slot />
           ) : (
-            <WeekStrip cells={preview.week} line={homeLine(preview.streak, preview.day)} />
+            <WeekStrip
+              cells={preview.week}
+              line={homeLine(preview.streak, preview.day, preview.todayCount)}
+            />
           )}
 
           <button

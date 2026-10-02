@@ -41,7 +41,7 @@ import { loadStudyPool, withRuntimePairs } from '../dict/pool.ts'
 import { loadSettings, QUICK_SESSION_LIMIT } from './settings.ts'
 import { mistakeContextFromKanji } from '../dict/mistakeContext.ts'
 import { isCalendarOpen, setCalendarOpen } from './calendarOpen.ts'
-import { nudgeLine } from './weekLine.tsx'
+import { homeLine } from './weekLine.tsx'
 import { loadPairIndex } from '../dict/pairIndex.ts'
 import { BAND_NOTE, type Band } from '../lib/bands.ts'
 import {
@@ -816,7 +816,7 @@ function CalendarSection({
             소급해 채울 수 없는 날에 할 말이 없다. 문구는 긍정형만(weekLine.tsx) */}
         {picked === todayKey && !streak.todayDone && (
           <div className="cal-nudge" aria-live="polite">
-            <p>{nudgeLine(streak, todayKey, attendance.get(todayKey))}</p>
+            <p>{homeLine(streak, todayKey, attendance.get(todayKey)?.count ?? 0)}</p>
             <button type="button" className="btn quick" onClick={onQuick}>
               <b>{QUICK_SESSION_LIMIT}장</b>만<span className="dim"> · 오늘은 짧게</span>
             </button>

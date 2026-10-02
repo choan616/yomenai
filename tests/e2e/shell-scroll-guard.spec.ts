@@ -46,6 +46,12 @@ test('그래도 밀렸으면 자판이 내려갈 때 되돌린다', async ({ pag
   test.setTimeout(120_000)
   await openWordlist(page)
 
+  // **가드의 지연 되돌림을 먼저 흘려보낸다** (2026-10-02 에 이 경합으로 실패했다).
+  // 단어장은 입력에 자동 포커스가 걸리고, 가드는 `focusin` 뒤 rAF 와 **350ms** 에 한 번씩
+  // 되돌린다. 사전이 캐시에 더워 화면이 빨리 열리면 그 350ms 가 아래에서 민 400 을 0 으로
+  // 되돌려, 밀린 상태를 만들기도 전에 단언이 깨졌다 (Expected 400 / Received 0)
+  await page.waitForTimeout(400)
+
   // iOS 가 포커스된 입력을 보이려고 문서를 올린 상태를 흉내 낸다
   await page.evaluate(() => {
     document.documentElement.style.minHeight = '3000px'

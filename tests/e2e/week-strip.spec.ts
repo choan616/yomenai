@@ -76,6 +76,23 @@ test('홈 — 오늘 채웠으면 채운 칸 + 연속 일수', async ({ page }) 
   await expect(page.locator('.week-strip:not(.slot) .week-line')).toHaveText('2일째 이어가고 있어요')
 })
 
+// 오늘 조금 했지만 아직 문턱 아래인 날 (2026-10-02 — 그 전엔 2장을 한 사람에게도
+// 「3장이면」이라고 해서 실제 남은 양과 어긋났다)
+test('홈 — 오늘 몇 장 했으면 남은 장수를 말한다', async ({ page }) => {
+  await boot(page)
+  await seedDay(page, 0, 1)
+  await page.reload()
+  await expect(page.locator('.week-strip:not(.slot) .week-line')).toHaveText(
+    '2장 더 하면 오늘 칸이 채워져요',
+  )
+  // 연속이 걸려 있으면 뒷말만 바뀐다
+  await seedDay(page, 1, 3)
+  await page.reload()
+  await expect(page.locator('.week-strip:not(.slot) .week-line')).toHaveText(
+    '2장 더 하면 2일째로 이어져요',
+  )
+})
+
 test('홈 — 이정표 하루 전이면 이정표 이름으로 말한다', async ({ page }) => {
   await boot(page)
   for (let d = 1; d <= 6; d++) await seedDay(page, d, 3)
