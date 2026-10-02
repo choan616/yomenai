@@ -2336,11 +2336,15 @@ p.rule-record {
    읽고 새로고침해야 하는 쪽이 위에 와야 한다 */
 .nudge-toast {
   position: fixed;
-  left: 50%;
-  transform: translateX(-50%);
+  /* 가운데 정렬을 `transform` 으로 하지 않는다 (2026-10-02 캡처에서 잡았다) — `fade-up` 이
+     `transform` 을 쓰므로 뜨는 240ms 동안 `translateX(-50%)` 가 덮여 오른쪽으로 밀렸다.
+     좌우 여백을 주고 `margin: auto` 로 가운데를 잡으면 애니메이션과 안 겹친다 */
+  left: 16px;
+  right: 16px;
+  margin: 0 auto;
   bottom: calc(var(--tap) + env(safe-area-inset-bottom, 0px) + 12px);
   z-index: 40;
-  width: calc(100% - 32px);
+  width: auto;
   max-width: 320px;
   display: flex;
   align-items: center;

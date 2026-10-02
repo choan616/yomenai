@@ -122,10 +122,21 @@ test('탭바와 주 동작을 안 가린다', async ({ page }) => {
   await page.reload()
   const toast = page.locator('.nudge-toast')
   await expect(toast).toBeVisible({ timeout: 60_000 })
+  // 뜨자마자 한 번 — **뜨는 동안에도** 화면 밖으로 안 나가야 한다. 처음엔 가운데 정렬을
+  // `transform` 으로 했다가 `fade-up` 이 같은 속성을 덮어 240ms 동안 오른쪽으로 밀렸다.
+  // 세로만 재던 이 테스트는 그걸 못 잡았고 캡처로 발견했다 (2026-10-02)
+  const vw = page.viewportSize()!.width
+  const rising = (await toast.boundingBox())!
+  expect(rising.x).toBeGreaterThanOrEqual(0)
+  expect(Math.round(rising.x + rising.width)).toBeLessThanOrEqual(vw)
+
+  await page.waitForTimeout(400)
   const t = (await toast.boundingBox())!
   const bar = (await page.locator('.tabbar').boundingBox())!
   const primary = (await page.locator('.home .btn-primary.big').boundingBox())!
   // 탭바 위에 떠서 탭을 안 덮고, 주 동작(세션 시작)도 안 덮는다
   expect(Math.round(t.y + t.height)).toBeLessThanOrEqual(Math.round(bar.y))
   expect(Math.round(primary.y + primary.height)).toBeLessThanOrEqual(Math.round(t.y))
+  // 가로로는 가운데다
+  expect(Math.abs(t.x + t.width / 2 - vw / 2)).toBeLessThanOrEqual(1)
 })
