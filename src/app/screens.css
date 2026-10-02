@@ -2329,3 +2329,50 @@ p.rule-record {
 .cal-nudge p b {
   color: var(--text);
 }
+
+/* 「오늘은 짧게」 토스트 (2026-10-02 사용자 지시) — 탭바 바로 위에 뜨고 스스로 사라진다.
+   모달이 아니다. 이 앱은 어디에도 모달을 안 쓰고, 재촉하는 자리일수록 더 그렇다.
+   `z-index` 는 새 버전 알림 띠(`.update-banner`, 50) 보다 **아래**다 — 둘이 겹치면
+   읽고 새로고침해야 하는 쪽이 위에 와야 한다 */
+.nudge-toast {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: calc(var(--tap) + env(safe-area-inset-bottom, 0px) + 12px);
+  z-index: 40;
+  width: calc(100% - 32px);
+  max-width: 320px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface-2);
+  box-shadow: 0 6px 20px rgb(0 0 0 / 0.22);
+  text-align: left;
+  /* 셸 구간이라 느린 모션을 쓴다 (PLAN §7). 전역 prefers-reduced-motion 규칙이 접는다 */
+  animation: fade-up 240ms ease-out both;
+}
+.nudge-toast p {
+  flex: 1;
+  margin: 0;
+  font-size: calc(13px * var(--ui-scale));
+  color: var(--text);
+}
+/* 버튼은 글자 폭만 쓴다 — 한 줄에 셋이 서는 자리라 `.btn.quick` 의 전폭을 풀어야 한다 */
+.nudge-toast .btn.quick {
+  width: auto;
+  max-width: none;
+  height: auto;
+  min-height: 36px;
+  padding: 6px 12px;
+  font-size: calc(13px * var(--ui-scale));
+}
+.nudge-toast .toast-close {
+  background: none;
+  border: 0;
+  padding: 6px 2px;
+  color: var(--text-faint);
+  font-size: calc(13px * var(--ui-scale));
+}

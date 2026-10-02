@@ -25,6 +25,7 @@ import { isWelcomeSeen, markWelcomeSeen } from './welcome.ts'
 import { WeekStrip } from './WeekStrip.tsx'
 import { homeLine } from './weekLine.tsx'
 import { hasWordlistHint, setWordlistHint } from './wordlistView.ts'
+import { markNudgeShown, NUDGE_DISMISS_MS, shouldNudge } from './nudgeToast.ts'
 
 interface Preview {
   /**
@@ -81,6 +82,21 @@ export function Home({
   const [showWelcome, setShowWelcome] = useState(!isWelcomeSeen())
   /** 직전 계산에서 단어장에 담은 게 있었나. 계산 전에 진입로 자리를 잡을지만 정한다 */
   const [wordlistHint] = useState(hasWordlistHint)
+  /**
+   * 「오늘은 짧게」 토스트가 지금 떠 있나 (2026-10-02 사용자 지시).
+   *
+   * 판정은 **홈에 들어오는 길 두 곳**에서 한다. 캐시로 들어왔으면 여기서 바로(계산이 없다),
+   * 처음 계산하는 길이면 계산이 끝나는 자리에서. 그래서 탭을 옮겼다 돌아와도 같은 규칙이 돈다.
+   * 진단 전과 첫 안내 중에는 안 띄운다 — 그 둘은 「오늘 뭘 할까」보다 먼저 할 일이 있는 상태다.
+   * 띄우는 순간 그날 기록을 남긴다. 닫든 8초로 사라지든 그날은 끝이다 (`nudgeToast.ts`)
+   */
+  const [nudge, setNudge] = useState(() => {
+    const p = cacheValid() ? cache!.preview : null
+    if (!p || !isDiagnosticDone() || !isWelcomeSeen()) return false
+    if (!shouldNudge(p.streak.todayDone, p.day, Date.now())) return false
+    markNudgeShown(p.day)
+    return true
+  })
 
   useEffect(() => {
     // 캐시가 유효하면 다시 계산하지 않는다. 진단 판정은 아래 플래그로 이미 끝나 있다
@@ -130,10 +146,17 @@ export function Home({
         // 출제 풀로만 만든다 — 범위 밖 기록은 undefined 가 되어 수준 판정에서 빠진다 (Report 와 같다)
         const bandOf = new Map(pool.map((p) => [p.idiomId, p.band]))
         const level = buildLevel(events, (id) => bandOf.get(id))
-        if (!shouldOfferDiagnostic(isDiagnosticDone(), level)) {
+        const offerDiagnostic = shouldOfferDiagnostic(isDiagnosticDone(), level)
+        if (!offerDiagnostic) {
           // 다음 진입부터는 로그를 다 읽기 전에도 바로 정해지도록 플래그를 세워 둔다
           markDiagnosticDone()
           setNeedsDiagnostic(false)
+        }
+        // 「오늘은 짧게」 토스트 — 계산이 끝난 **이 자리**에서 한 번만 본다 (아래 상태 주석)
+        if (offerDiagnostic || !isWelcomeSeen()) return
+        if (shouldNudge(next.streak.todayDone, day, Date.now())) {
+          markNudgeShown(day)
+          setNudge(true)
         }
       } catch (e) {
         if (alive) setError(e instanceof Error ? e.message : String(e))
@@ -143,6 +166,13 @@ export function Home({
       alive = false
     }
   }, [])
+
+  // 스스로 사라진다. 세션으로 들어가면 홈이 언마운트되며 같이 사라진다
+  useEffect(() => {
+    if (!nudge) return
+    const t = setTimeout(() => setNudge(false), NUDGE_DISMISS_MS)
+    return () => clearTimeout(t)
+  }, [nudge])
 
   const sessionReady = !!preview && preview.ready > 0
   /** 단어장 칸을 낼지. 계산 전엔 직전에 담은 게 있던 기기에서만 자리를 잡는다 (아래 주석) */
@@ -309,6 +339,24 @@ export function Home({
                   </button>
                 )}
               </div>
+            </div>
+          )}
+
+          {/* 「오늘은 짧게」 토스트 (2026-10-02 사용자 지시) — 22시가 지났는데 오늘 칸이 비었을 때
+              한 번. 탭바 바로 위에 뜨고 8초 뒤 스스로 사라진다. 모달이 아니라 아무것도 막지 않는다.
+
+              **문구는 띠와 다른 말을 한다.** 띠가 바로 위에서 이미 「3장이면 …」이라고 약속하므로
+              같은 문장을 두 번 쓰지 않는다 — 여기 할 일은 권하는 것이고, 약속은 띠가 한다.
+              재촉으로 읽히지 않게 긍정형 한 줄과 닫기만 둔다 (`nudgeToast.ts` 머리 주석) */}
+          {nudge && (
+            <div className="nudge-toast" role="status">
+              <p>오늘은 짧게 어때요?</p>
+              <button type="button" className="btn quick" onClick={() => onFlow({ kind: 'quick' })}>
+                <b>{QUICK_SESSION_LIMIT}장</b>만
+              </button>
+              <button type="button" className="toast-close" onClick={() => setNudge(false)}>
+                닫기
+              </button>
             </div>
           )}
         </>
