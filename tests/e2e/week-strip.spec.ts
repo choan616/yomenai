@@ -62,7 +62,7 @@ test('홈 — 오늘 아직이면 대기 칸 + 이어짐 문구, 과거 빈 날�
   await page.reload()
 
   await expect(page.locator(today)).toHaveAttribute('data-state', 'pending')
-  await expect(page.locator('.week-strip:not(.slot) .week-line')).toHaveText('3장이면 3일째로 이어져요')
+  await expect(page.locator('.week-strip:not(.slot) .week-line')).toHaveText('조금만 해도 3일째로 이어져요')
   await expect(page.locator('.home')).not.toContainText(/끊|놓쳤|구멍|빠졌/)
 })
 
@@ -80,7 +80,7 @@ test('홈 — 이정표 하루 전이면 이정표 이름으로 말한다', asyn
   await boot(page)
   for (let d = 1; d <= 6; d++) await seedDay(page, d, 3)
   await page.reload()
-  await expect(page.locator('.week-strip:not(.slot) .week-line')).toHaveText('3장이면 1주 연속이에요')
+  await expect(page.locator('.week-strip:not(.slot) .week-line')).toHaveText('조금만 해도 1주 연속이에요')
 })
 
 test('요약 — 이번 세션이 오늘 칸을 채우면 그 칸이 차오른다', async ({ page }) => {
@@ -92,7 +92,7 @@ test('요약 — 이번 세션이 오늘 칸을 채우면 그 칸이 차오른�
   await page.getByRole('button', { name: '리포트', exact: true }).click()
   await page.getByRole('button', { name: '달력', exact: true }).click()
   await page.locator('button.cal-cell[data-today]').click()
-  await expect(page.locator('.cal-nudge')).toContainText('3장이면 2일째로 이어져요')
+  await expect(page.locator('.cal-nudge')).toContainText('조금만 해도 2일째로 이어져요')
   await page.locator('.cal-nudge').getByRole('button', { name: /3장만/ }).click()
   await expect(page.locator('.study-bar .count')).toContainText('/ 3')
   for (let i = 0; i < 40; i++) {

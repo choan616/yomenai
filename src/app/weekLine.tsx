@@ -3,6 +3,16 @@
 // 사용자 지시 「빠진 날에 구멍이 생겼다는 네거티브 메시지는 노출하지 않는다」. 끊긴 뒤엔
 // 현재 연속을 아예 말하지 않는다 — 「0일째」도 안 쓴다. 이정표 문구는 보상 개념이 생기기
 // 전까지의 자리다 (streak.ts 머리 주석).
+//
+// **장수를 안 센다** (2026-10-02 사용자 지적 「유독 여기에서만 3장이라고 카운트하니 위화감이
+// 든다」). 옛 문구는 「3장이면 오늘 칸이 채워져요」였다. 그 숫자가 하려던 말은 「적게 해도
+// 된다」이고 그 뜻은 숫자 없이도 선다 — 「조금만 해도」로 쓴다. 문턱이 3장이라는 사실 자체는
+// 리포트 달력 범례가 글자로 말한다.
+//
+// 이 말이 정확한 근거 — 세션을 완주해야 채워지는 게 아니다. 읽기 답은 「다음」을 누를 때,
+// 뜻 답은 고를 때 그 자리에서 기록되고(`useStudySession` 의 `record`), 달력은 완주가 아니라
+// 채점 수를 센다(`buildAttendance`). 20장 세션에서 3장만 넘기고 나가도 칸은 채워진다
+// (`report-attendance.spec.ts` 가 실제로 재현해 못 박는다)
 import type { ReactNode } from 'react'
 import type { DayRecord } from '../core/attendance.ts'
 import { milestoneLabel, nextMilestone, type StreakRecord } from '../core/streak.ts'
@@ -22,15 +32,15 @@ export function homeLine(streak: StreakRecord, todayKey: string): ReactNode {
     if (streak.current >= 2) return <><b>{streak.current}일째</b> 이어가고 있어요</>
     return <>오늘 칸을 채웠어요</>
   }
-  // 어제까지 이어진 연속이 있으면 오늘 3장이 그걸 한 칸 늘린다
+  // 어제까지 이어진 연속이 있으면 오늘 조금만 해도 그걸 한 칸 늘린다
   if (streak.current >= 1) {
     const next = streak.current + 1
     if (nextMilestone(streak.current) === next) {
-      return <>{QUICK_SESSION_LIMIT}장이면 <b>{milestoneLabel(next)}</b>이에요</>
+      return <>조금만 해도 <b>{milestoneLabel(next)}</b>이에요</>
     }
-    return <>{QUICK_SESSION_LIMIT}장이면 <b>{next}일째</b>로 이어져요</>
+    return <>조금만 해도 <b>{next}일째</b>로 이어져요</>
   }
-  return <>{QUICK_SESSION_LIMIT}장이면 오늘 칸이 채워져요</>
+  return <>조금만 해도 오늘 칸이 채워져요</>
 }
 
 /**
@@ -44,7 +54,7 @@ export function nudgeLine(
   today: DayRecord | undefined,
 ): ReactNode {
   const count = today?.count ?? 0
-  if (count > 0) return <><b>{QUICK_SESSION_LIMIT - count}장</b> 더 하면 오늘 칸이 채워져요</>
+  if (count > 0) return <>조금만 더 하면 오늘 칸이 채워져요</>
   return homeLine(streak, todayKey)
 }
 

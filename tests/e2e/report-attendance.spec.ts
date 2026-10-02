@@ -148,7 +148,7 @@ test('오늘 칸이 비어 있으면 눌러 짧은 세션으로 가고, 지난 �
   await expect(page.locator('.cal-nudge')).toHaveCount(0)
 
   await page.locator('button.cal-cell[data-today]').click()
-  await expect(page.locator('.cal-nudge')).toContainText('3장이면 2일째로 이어져요')
+  await expect(page.locator('.cal-nudge')).toContainText('조금만 해도 2일째로 이어져요')
   await page.locator('.cal-nudge').getByRole('button', { name: /3장만/ }).click()
   await expect(page.locator('.study-bar .count')).toContainText('/ 3', { timeout: 30_000 })
 })
@@ -168,4 +168,66 @@ test('오늘 칸을 이미 채운 날에는 유도가 없다', async ({ page }) 
   // 오늘 기록이 있으면 달력이 처음부터 그 날을 펼친다 — 누르지 않아도 상세가 떠 있다
   await expect(page.locator('.cal-detail')).toBeVisible()
   await expect(page.locator('.cal-nudge')).toHaveCount(0)
+})
+
+/** 지금까지 쌓인 채점(`type: 'review'`) 수 — 소개 카드는 안 센다(그건 `meaningKnown` 이다) */
+async function reviewCount(page: Page): Promise<number> {
+  return page.evaluate(
+    () =>
+      new Promise<number>((res, rej) => {
+        const req = indexedDB.open('yomenai')
+        req.onsuccess = () => {
+          const all = req.result.transaction('events', 'readonly').objectStore('events').getAll()
+          all.onsuccess = () =>
+            res((all.result as { type: string }[]).filter((e) => e.type === 'review').length)
+          all.onerror = () => rej(new Error('읽기 실패'))
+        }
+        req.onerror = () => rej(new Error('DB 열기 실패'))
+      }),
+  )
+}
+
+// 세션을 끝까지 안 해도 그 날은 채워지나 (2026-10-02 사용자 질문).
+// 답은 **채워진다** — 읽기 답은 「다음」을 누를 때, 뜻 답은 고를 때 그 자리에서 `appendEvent` 한다.
+// 달력은 세션 완주가 아니라 채점 수를 세므로(`buildAttendance`) 3장만 넘기고 나가도 문턱을 넘는다.
+// 홈 띠 문구가 「조금만 해도 채워져요」라고 말할 수 있는 근거라 여기서 못 박는다.
+test('세션을 중간에 나가도 넘긴 카드는 남아 오늘 칸이 채워진다', async ({ page }) => {
+  test.setTimeout(120_000)
+  await page.clock.setFixedTime(new Date(2026, 8, 15, 12, 0, 0))
+  await page.goto('/')
+  await expect(page.getByRole('button', { name: '세션 시작' })).toBeVisible({ timeout: 20_000 })
+  await page.evaluate(() => {
+    localStorage.setItem('yomenai:diagnosticDone', '1')
+    localStorage.setItem('yomenai:welcomeSeen', '1')
+  })
+  await page.reload()
+  await page.getByRole('button', { name: '세션 시작' }).click()
+  await expect(page.locator('.headword').first()).toBeVisible({ timeout: 20_000 })
+
+  // 채점 3개(문턱)만 만들고 **완주하지 않고** 나간다
+  for (let i = 0; i < 80 && (await reviewCount(page)) < 3; i++) {
+    for (const name of ['다음', '봤어요', '알고 있었다', '뜻 보기', '알았어요']) {
+      const btn = page.getByRole('button', { name, exact: true })
+      if (await btn.isVisible().catch(() => false)) {
+        await btn.click().catch(() => {})
+        break
+      }
+    }
+    const input = page.locator('.kana-input')
+    if (
+      (await input.isVisible().catch(() => false)) &&
+      !(await page.locator('.card.feedback').isVisible())
+    ) {
+      await input.fill('tadashii')
+      await input.press('Enter')
+    }
+    await page.waitForTimeout(30)
+  }
+  expect(await reviewCount(page)).toBeGreaterThanOrEqual(3)
+  await expect(page.getByText('세션 완료')).toHaveCount(0)
+
+  await page.getByRole('button', { name: '세션 나가기' }).click()
+  await page.getByRole('button', { name: '리포트' }).click()
+  await page.getByRole('button', { name: '달력', exact: true }).click()
+  await expect(page.locator('.cal-cell[data-today]')).toHaveAttribute('data-tier', 'touched')
 })
