@@ -38,6 +38,14 @@ test('로마자 자판으로 쳐서 가나가 들어가고 채점까지 간다',
   const input = page.locator('.kana-input')
   const key = (ch: string) => keypad.getByRole('button', { name: ch, exact: true })
 
+  // 자판은 세션 안에 있어도 정보용 서체다 (2026-10-02 사용자 지적 「커스텀 자판은 원래가 더 좋은 것 같다」).
+  // 세션은 표시용(Jua)인데 자판만 되돌아와야 한다 — 위의 카드 꼬리표와 비교해 둘이 다름을 본다
+  const family = (loc: ReturnType<Page['locator']>) =>
+    loc.evaluate((el) => getComputedStyle(el).fontFamily.split(',')[0]!.replace(/["']/g, ''))
+  expect(await family(key('k'))).toBe('Prd Sans KO')
+  expect(await family(keypad.getByRole('button', { name: '지우기' }))).toBe('Prd Sans KO')
+  expect(await family(page.locator('.study-bar .count'))).toBe('Jua')
+
   // wanakana 변환 — k + a 가 か 로 합쳐진다. 값 대입이었으면 'ka' 로 남는다
   await key('k').click()
   await key('a').click()
