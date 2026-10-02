@@ -45,8 +45,8 @@ const EMPTY: Answers = {
 /** 엄지로 평가해 둔 뜻. 사전 없이 이벤트만으로 읽힌다 */
 export type VoteList = { verdict: 'ok' | 'bad'; headword: string; definition: string }[]
 
-function compose(a: Answers, votes: VoteList): string {
-  const lines = [
+function composeAnswers(a: Answers): string {
+  return [
     `[얼마나 썼나] ${a.usage || '-'}`,
     `[가장 큰 오답 유형] ${a.topMistake || '-'}`,
     `[밴드 사다리] ${a.ladder || '-'}`,
@@ -54,19 +54,40 @@ function compose(a: Answers, votes: VoteList): string {
     `[알아 두기 카드] ${a.intro || '-'}`,
     `[계속 쓰고 싶은지] ${a.keep || '-'}`,
     `[이상했던 곳] ${a.issues || '-'}`,
-  ]
-  // 평가해 둔 뜻은 답변 뒤에 붙인다. **판정별로 절을 가른다** — 받는 쪽에서 「맞다」는
-  // 워크리스트에 o 로 찍고 「이상하다」는 고칠 목록으로 가는, 서로 다른 일이다.
-  // 빈 절은 안 붙인다: 「0건」과 「기능을 안 씀」이 구분되지 않는다
-  for (const [label, list] of [
-    ['이상하다고 본 뜻', votes.filter((v) => v.verdict === 'bad')],
-    ['맞다고 본 뜻', votes.filter((v) => v.verdict === 'ok')],
-  ] as const) {
+  ].join('\n')
+}
+
+/** 판정별로 가른 절. 받는 쪽에서 하는 일이 다르다 — 「맞다」는 워크리스트에 o, 「이상하다」는 고칠 목록 */
+const VOTE_SECTIONS = [
+  ['이상하다고 본 뜻', 'bad'],
+  ['맞다고 본 뜻', 'ok'],
+] as const
+
+/**
+ * 평가해 둔 뜻 — **보내는 내용에만 붙는다** (2026-10-02 사용자 지시 「노출하지 않아도 될 것 같다.
+ * 숨겨놓고 보내기만」). 목록이 길어 미리보기를 다 먹었고, 테스터가 답을 적는 화면에서 읽을 글도
+ * 아니다. 대신 몇 건이 함께 가는지는 `voteSummary` 가 말한다 — 안 보인다고 안 보내는 건 아니다.
+ *
+ * 빈 절은 안 붙인다: 「0건」과 「기능을 안 씀」이 구분되지 않는다
+ */
+function composeVotes(votes: VoteList): string {
+  const lines: string[] = []
+  for (const [label, verdict] of VOTE_SECTIONS) {
+    const list = votes.filter((v) => v.verdict === verdict)
     if (list.length === 0) continue
     lines.push('', `[${label} ${list.length}건]`)
     for (const v of list) lines.push(`- ${v.headword} — ${v.definition}`)
   }
   return lines.join('\n')
+}
+
+/** 미리보기에 목록 대신 들어가는 한 줄. 평가가 없으면 빈 문자열 */
+function voteSummary(votes: VoteList): string {
+  const parts = VOTE_SECTIONS.map(([label, verdict]) => {
+    const n = votes.filter((v) => v.verdict === verdict).length
+    return n > 0 ? `${label} ${n}건` : null
+  }).filter((s): s is string => s !== null)
+  return parts.length === 0 ? '' : `[뜻 평가] ${parts.join(' · ')} — 목록은 함께 보내요`
 }
 
 export function Feedback({ onBack }: { onBack: () => void }) {
@@ -96,7 +117,11 @@ export function Feedback({ onBack }: { onBack: () => void }) {
     }
   }, [])
 
-  const body = compose(a, votes)
+  /** 실제로 나가는 내용 — 답변 + 평가 목록 */
+  const body = composeAnswers(a) + composeVotes(votes)
+  /** 화면에 보이는 내용 — 평가는 목록 대신 건수만 (2026-10-02 사용자 지시) */
+  const summary = voteSummary(votes)
+  const preview = summary === '' ? composeAnswers(a) : `${composeAnswers(a)}\n\n${summary}`
   const set = (k: keyof Answers) => (v: string) => setA((prev) => ({ ...prev, [k]: v }))
 
   const handleSend = () => {
@@ -125,7 +150,7 @@ export function Feedback({ onBack }: { onBack: () => void }) {
           이 앱이 도움이 되는지, 다른 사람에게도 맞을지를 보려고 여쭙습니다.
           <strong> 채점 기록은 보내지 않아요.</strong> 아래에 적으신 답과,
           뜻에 엄지로 남기신 평가{votes.length > 0 && ` ${votes.length}건`}이 갑니다 —
-          무엇이 나가는지는 아래 미리보기에 그대로 보여요.
+          평가는 목록이 길어서 미리보기에 <strong>건수만</strong> 적고, 보낼 때는 목록째로 갑니다.
         </p>
 
         {state === 'sent' ? (
@@ -133,9 +158,9 @@ export function Feedback({ onBack }: { onBack: () => void }) {
             <p>보냈어요. 고맙습니다.</p>
             <p className="hint">
               전송이 됐는지는 이 화면에서 확인할 수 없어요. 확실히 하시려면 아래 내용을 복사해
-              따로 보내 주셔도 됩니다.
+              따로 보내 주셔도 됩니다 — 복사에는 뜻 평가 목록까지 들어갑니다.
             </p>
-            <pre className="fb-preview">{body}</pre>
+            <pre className="fb-preview">{preview}</pre>
             <button type="button" onClick={handleCopy}>
               {copied ? '복사했어요' : '내용 복사'}
             </button>
@@ -245,8 +270,11 @@ export function Feedback({ onBack }: { onBack: () => void }) {
 
             <div className="setting">
               <label>보낼 내용</label>
-              <pre className="fb-preview">{body}</pre>
-              <span className="hint">이게 전부예요. 개발자의 Google 스프레드시트로 갑니다.</span>
+              <pre className="fb-preview">{preview}</pre>
+              <span className="hint">
+                개발자의 Google 스프레드시트로 갑니다.
+                {summary !== '' && ' 뜻 평가는 목록 대신 건수만 적었지만 목록째로 나가요.'}
+              </span>
             </div>
 
             <div className="setting">

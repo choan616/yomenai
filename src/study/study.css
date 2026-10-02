@@ -375,21 +375,47 @@ button.tag {
   pointer-events: none;
 }
 
+/* ── 버튼 (2026-10-02 사용자 지시 「듀오링고 스타일을 차용하되 캐주얼까지는 아니고 소소하게
+   재미가 있으면」) ──
+
+   **아래로 솔리드 그림자를 깐다.** 듀오링고의 두툼한 버튼에서 가져온 건 색이 아니라 이것뿐이다 —
+   `0 Npx 0` 그림자는 번지지 않아 「두께」로 읽히고, 누르면 그만큼 내려앉는다. 색을 안 쓰므로
+   「색은 오답의 朱 하나」(PLAN §7)를 안 건드린다.
+
+   **주 동작은 가볍게, 보조는 무겁게.** 전에는 순흑 역상과 1px 테두리라 둘의 차이가 너무 벌어졌다
+   (사용자 지적). 주 동작은 먹을 한 톤 열고, 보조는 테두리를 2px 로 올려 제 비중을 갖게 한다 */
 .btn,
 .btn-primary {
   height: var(--tap);
   padding: 0 18px;
   border-radius: var(--radius);
-  border: 1px solid var(--border);
+  border: 2px solid var(--border);
   background: var(--surface);
   color: var(--text);
   white-space: nowrap;
+  box-shadow: 0 3px 0 var(--btn-shade);
+  /* 누름은 카드 루프 안에서도 일어나니 짧게 — 150ms 제약 아래다 (PLAN §7) */
+  transition: box-shadow 90ms ease-out, transform 90ms ease-out;
+}
+.btn:active,
+.btn-primary:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 var(--btn-shade);
 }
 .btn-primary {
-  background: var(--text);
+  background: var(--ink);
   color: var(--bg);
-  border-color: var(--text);
+  border-color: var(--ink);
   font-weight: 600;
+  box-shadow: 0 3px 0 var(--ink-shade);
+}
+.btn-primary:active {
+  box-shadow: 0 1px 0 var(--ink-shade);
+}
+.btn:disabled,
+.btn-primary:disabled {
+  box-shadow: none;
+  transform: none;
 }
 /* 3슬롯 그리드에서는 폭을 슬롯이 정한다. wide 는 남겨두되 그리드를 거스르지 않는다 */
 .btn-primary.wide {
@@ -713,8 +739,11 @@ button.tag {
   font-size: 15px;
   line-height: 1.65;
 }
+/* 꼬리표는 12px (2026-10-02). 11px 로 두고 표시용 서체를 입혔더니 작아 보였다 (사용자 지적) —
+   두 서체의 글자 높이는 같은데(실측 0.95~1.04) 폭이 3% 좁고 획 끝이 둥글어 작은 크기에서
+   더 묽게 읽힌다. 자간이 넓은 꼬리표라 그 효과가 더 크다. 이 묶음(발견·문장·예고)이 같은 층이다 */
 .finding-tag {
-  font-size: 11px;
+  font-size: 12px;
   letter-spacing: 0.12em;
   color: var(--text-faint);
 }
@@ -828,7 +857,7 @@ button.tag {
 }
 .readable-tag {
   margin: 0 0 8px;
-  font-size: 11px;
+  font-size: 12px;
   letter-spacing: 0.12em;
   color: var(--text-faint);
 }
@@ -862,7 +891,7 @@ button.tag {
   color: var(--text-dim);
 }
 .next-up-tag {
-  font-size: 11px;
+  font-size: 12px;
   letter-spacing: 0.12em;
   color: var(--text-faint);
 }

@@ -114,3 +114,32 @@ export function CloseIcon() {
     </Icon>
   )
 }
+
+/** 재도전 — 한 바퀴 도는 화살표. 「틀렸던 것을 다시 푼다」 (2026-10-02) */
+export function RetryIcon() {
+  return (
+    <Icon>
+      <path d="M20 11.5a8 8 0 1 1-2.6-5.4" />
+      <path d="M20.5 4v4.2h-4.2" />
+    </Icon>
+  )
+}
+
+/** 다시보기 — 넘겨 보는 카드 두 장. 채점이 없다는 걸 눈 대신 카드로 말한다 (2026-10-02) */
+export function StackIcon() {
+  return (
+    <Icon>
+      <rect x="7.5" y="4.5" width="12" height="15" rx="2.2" />
+      <path d="M15.5 21.5h-7a3 3 0 0 1-3-3V8" />
+    </Icon>
+  )
+}
+
+/** 단어장 — 책갈피를 꽂은 쪽 (2026-10-02) */
+export function BookmarkIcon() {
+  return (
+    <Icon>
+      <path d="M6.5 4.5h11a1 1 0 0 1 1 1V20l-6.5-3.6L5.5 20V5.5a1 1 0 0 1 1-1z" />
+    </Icon>
+  )
+}

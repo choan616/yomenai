@@ -170,7 +170,10 @@ test('평가는 카드를 넘기지 않는다 — 누르고 하던 대로 답한
   await expect(page.getByRole('button', { name: '알았어요' })).toBeVisible()
 })
 
-test('평가한 뜻이 피드백에 판정별로 실려 나간다', async ({ page }) => {
+// 2026-10-02 사용자 지시 「이상하다고 본 뜻, 맞다고 본 뜻은 노출하지 않아도 될 것 같다.
+// 숨겨놓고 보내기만」. 그래서 **보이는 것과 보내는 것이 갈린다** — 화면엔 건수만, 전송엔 목록째.
+// 안 보인다고 안 보내는 게 아니라는 걸 전송 본문까지 열어 확인한다
+test('평가한 뜻은 화면엔 건수만, 보낼 때는 목록째 나간다', async ({ page }) => {
   await page.goto('/')
   await resetState(page)
   await clickIfVisible(page, '알겠어요')
@@ -185,12 +188,24 @@ test('평가한 뜻이 피드백에 판정별로 실려 나간다', async ({ pag
 
   const preview = page.locator('.fb-preview').first()
   await expect(preview).toBeVisible({ timeout: 10_000 })
-  // 보내는 내용에 그대로 보인다 — 무엇이 나가는지 감추지 않는다
-  await expect(preview).toContainText('이상하다고 본 뜻')
-  await expect(preview).toContainText(voted.headword)
-  await expect(preview).toContainText(voted.definition)
-  // 안 누른 쪽 절은 아예 안 붙는다
+  // 건수는 말한다 — 몇 건이 함께 가는지는 감추지 않는다
+  await expect(preview).toContainText('이상하다고 본 뜻 1건')
+  // 목록(표제어·뜻)은 화면에 안 띄운다
+  await expect(preview).not.toContainText(voted.definition)
+  // 안 누른 쪽은 건수 요약에도 안 붙는다
   await expect(preview).not.toContainText('맞다고 본 뜻')
+
+  // 실제 전송 본문에는 목록이 들어 있다 — 요청을 가로채 그대로 읽는다
+  let sent = ''
+  await page.route('**/script.google.com/**', async (route) => {
+    sent = route.request().postData() ?? ''
+    await route.fulfill({ status: 200, body: '' })
+  })
+  await page.getByRole('button', { name: '보내기', exact: true }).click()
+  await expect(page.getByText('보냈어요. 고맙습니다.')).toBeVisible({ timeout: 15_000 })
+  expect(sent).toContain('이상하다고 본 뜻 1건')
+  expect(sent).toContain(voted.headword)
+  expect(sent).toContain(voted.definition)
 })
 
 test('「몰랐어요」를 누르면 엄지가 사라진다 — 방금 배운 뜻은 평가할 처지가 아니다', async ({ page }) => {

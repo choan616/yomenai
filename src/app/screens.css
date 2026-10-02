@@ -1320,8 +1320,10 @@ button.cal-cell[aria-pressed='true'] .cal-dot {
   align-items: center;
   gap: 4px;
 }
+/* 요일 글자는 11px (2026-10-02 — 위 `.finding-tag` 와 같은 이유. 표시용 서체에서 10px 은
+   너무 묽다). 띠는 홈과 요약에만 서는 표시용 화면 전용이다 */
 .week-dow {
-  font-size: calc(10px * var(--ui-scale));
+  font-size: calc(11px * var(--ui-scale));
   color: var(--text-faint);
 }
 .week-cell[data-today] .week-dow {
@@ -2421,4 +2423,24 @@ p.rule-record {
 .nudge-close .icon {
   width: 11px;
   height: 11px;
+}
+
+/* 보조 버튼의 작은 아이콘 (2026-10-02 사용자 지시 「아이콘과 함께 아기자기한 느낌」).
+   글자 크기를 따라 커지고 색도 글자를 따른다 — `.icon` 의 기본 1.35em 은 이 자리에선 커서
+   줄인다. 「소소한 재미」 쪽이지 장식이 아니다 */
+.btn.quick .icon,
+.wg-head .icon {
+  width: 1.05em;
+  height: 1.05em;
+  color: var(--text-dim);
+}
+/* **아이콘이 붙은 버튼에만 건다** (2026-10-02). `.btn.quick` 전체를 flex 로 바꿨더니 글자가
+   조각나 접근성 이름이 달라졌다 — 「3장만」 버튼의 `<b>3장</b>` 과 「만」이 각각 플렉스 항목이
+   되면서 이름이 「3장 만 · 오늘은 짧게」로 띄어지고, 그 이름으로 찾던 e2e 둘이 깨졌다.
+   보조 기술이 읽는 이름이 바뀌는 일이라 모양 문제로 끝나지 않는다 */
+.btn.quick.wl {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
 }

@@ -26,7 +26,7 @@ import { WeekStrip } from './WeekStrip.tsx'
 import { homeLine } from './weekLine.tsx'
 import { hasWordlistHint, setWordlistHint } from './wordlistView.ts'
 import { markNudgeShown, NUDGE_DISMISS_MS, shouldNudge } from './nudgeToast.ts'
-import { ArrowRightIcon, CloseIcon } from './icons.tsx'
+import { ArrowRightIcon, BookmarkIcon, CloseIcon, RetryIcon, StackIcon } from './icons.tsx'
 
 interface Preview {
   /**
@@ -312,10 +312,12 @@ export function Home({
             <div className="quick-row">
               {preview === null ? (
                 <button type="button" className="btn quick wl slot" aria-hidden="true" tabIndex={-1}>
+                  <BookmarkIcon />
                   단어장<span className="dim"> · 0</span>
                 </button>
               ) : (
                 <button type="button" className="btn quick wl" onClick={onWordlist}>
+                  <BookmarkIcon />
                   단어장<span className="dim"> · {preview.wordlist.toLocaleString('ko')}</span>
                 </button>
               )}
@@ -337,6 +339,7 @@ export function Home({
               <div className="wrong-group-row">
                 <button type="button" className="btn rematch" tabIndex={-1}>
                   <span className="wg-head">
+                    <RetryIcon />
                     재도전 <span className="wg-badge">0</span>
                   </span>
                 </button>
@@ -350,6 +353,7 @@ export function Home({
                 {preview.rematch > 0 && (
                   <button type="button" className="btn rematch" onClick={() => onFlow({ kind: 'rematch' })}>
                     <span className="wg-head">
+                      <RetryIcon />
                       재도전 <span className="wg-badge">{preview.rematch}</span>
                     </span>
                   </button>
@@ -357,6 +361,7 @@ export function Home({
                 {preview.browse > 0 && (
                   <button type="button" className="btn rematch" onClick={() => onFlow({ kind: 'browse' })}>
                     <span className="wg-head">
+                      <StackIcon />
                       다시보기 <span className="wg-badge">{preview.browse}</span>
                     </span>
                   </button>
