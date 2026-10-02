@@ -293,6 +293,12 @@ button.tag {
 .answer-row.choice {
   grid-template-columns: 1fr 1fr;
 }
+/* 둘뿐인 행 — 주 동작이 넓은 쪽을 가진다 (2026-10-02). 빈 칸을 남겨 「다음」의 칸을 지키던
+   방식은 접었다. 정답(셋)과 오답(둘) 사이에서 주 동작의 폭은 달라지지만, 빈 칸이 먼저
+   눈에 띈다는 사용자 판단을 따른다 */
+.answer-row.pair {
+  grid-template-columns: 1fr 1.4fr;
+}
 /* 입력 행 — 입력이 폭을 먹고 확인 버튼은 내용 폭 */
 .answer-row.input {
   grid-template-columns: 1fr auto;

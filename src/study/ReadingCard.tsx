@@ -231,14 +231,16 @@ export function ReadingCard({
               </button>
             </div>
           ) : (
-            <div className="answer-row">
+            /* 오답은 둘뿐이라 **줄을 채운다** (2026-10-02 사용자 지시 「버튼이 차는 것이 좋겠다.
+               비는 것은 이상해보인다」). 전에는 빈 슬롯을 세워 「다음」을 정답일 때와 같은 칸에
+               뒀는데, 그 빈 칸이 먼저 눈에 띄었다 */
+            <div className="answer-row pair">
               <button type="button" className="btn" onClick={() => setDetail(true)}>
                 자세히
               </button>
               <button type="button" className="btn-primary" onClick={() => next()}>
                 다음
               </button>
-              <span className="slot" aria-hidden="true" />
             </div>
           ))}
       </div>
