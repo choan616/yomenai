@@ -42,15 +42,28 @@ export interface WideDict {
   count: number
 }
 
-/** `@font-face` 선언은 한 번만 붙인다 */
+/**
+ * `@font-face` 선언은 한 번만 붙인다.
+ *
+ * **폰트도 같이 당긴다** (2026-10-02). `wide.css` 만 붙이면 브라우저는 그 글자가 화면에 뜰 때야
+ * 709KB 를 받기 시작한다. 선언이 `font-display: block` 이라 그동안 글자가 안 보이므로, 받는
+ * 시작점을 앞당기는 만큼 그 공백이 짧아진다. Regular 만 당긴다 — Bold 는 쓰는 자리가 적어
+ * 같이 당기면 안 쓸 수도 있는 719KB 를 더 받는다
+ */
 let fontsLinked = false
 function linkWideFonts(): void {
   if (fontsLinked || typeof document === 'undefined') return
   fontsLinked = true
+  const preload = document.createElement('link')
+  preload.rel = 'preload'
+  preload.as = 'font'
+  preload.type = 'font/woff2'
+  preload.crossOrigin = 'anonymous'
+  preload.href = `${import.meta.env.BASE_URL}fonts/NotoSansJP-wide.woff2`
   const link = document.createElement('link')
   link.rel = 'stylesheet'
   link.href = `${import.meta.env.BASE_URL}fonts/wide.css`
-  document.head.append(link)
+  document.head.append(preload, link)
 }
 
 let promise: Promise<WideDict> | null = null

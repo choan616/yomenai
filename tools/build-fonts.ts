@@ -255,6 +255,11 @@ if (wideTargets.size > 0) {
       '/* 넓힌 사전(조회 전용) 전용 글자. **tools/build-fonts.ts 가 만든다 — 손으로 고치지 않는다** */',
       '/* 본 서브셋과 같은 family 지만 unicode-range 로 갈라 둔다. 그 글자가 화면에 뜰 때만',
       '   브라우저가 woff2 를 받는다. url 이 상대 경로인 이유는 이 파일이 번들을 안 거쳐서다 */',
+      '/* `font-display: block` 이다 (2026-10-02 사용자 보고 「이 한자는 렌더링이 이상했다」 — 改竄).',
+      '   이 폰트는 709KB 라 프리캐시에서 빼 뒀고 사전을 읽을 때 비로소 붙는다. `swap` 이면 도착 전에',
+      '   시스템 폰트로 먼저 그려지는데 **그게 곧 한국 자형**이라, 사용자가 잘못된 글자 모양을 본다.',
+      '   `optional` 을 일본어에 안 쓰는 이유(docs/tools.md)와 같은 논리다 — 틀린 모양을 보여주느니',
+      '   잠깐 안 보이는 쪽이 낫다. 블록 구간(약 3초)이 지나면 브라우저가 폴백으로 넘어간다 */',
       ...WIDE_WEIGHTS.map((w) =>
         [
           '@font-face {',
@@ -262,7 +267,7 @@ if (wideTargets.size > 0) {
           `  src: url('${w.out}') format('woff2');`,
           `  font-weight: ${w.weight};`,
           '  font-style: normal;',
-          '  font-display: swap;',
+          '  font-display: block;',
           `  unicode-range: ${unicodeRange(covered)};`,
           '}',
         ].join('\n'),
