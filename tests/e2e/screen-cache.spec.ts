@@ -1,7 +1,10 @@
 // 홈·리포트가 탭을 다시 열 때 덜컥거리지 않는지 (2026-09-21 사용자 실기기 지적).
 //
-// 두 가지를 본다. 돌아왔을 때 로딩 문구가 아예 안 뜨는 것(캐시), 그리고 첫 계산 중에도
+// 두 가지를 본다. 돌아왔을 때 계산을 다시 안 하는 것(캐시), 그리고 첫 계산 중에도
 // 제목과 주 버튼이 안 움직이는 것(자리 예약).
+//
+// 2026-10-02 — 홈의 「불러오는 중…」 줄을 걷어내면서 **계산 중인지 보는 기준을 띠로 옮겼다.**
+// 계산 전엔 띠가 `.slot`(숨은 자리)이고 끝나면 진짜 띠가 된다. 리포트는 「불러오고 있어요」 그대로다
 import { expect, test, type Page } from '@playwright/test'
 
 test.use({ hasTouch: true, isMobile: true, viewport: { width: 375, height: 667 } })
@@ -18,7 +21,7 @@ async function ready(page: Page): Promise<void> {
 
 test('탭을 오갔다 와도 로딩 문구가 다시 안 뜬다', async ({ page }) => {
   await ready(page)
-  await expect(page.locator('.home-stat')).not.toContainText('불러오는 중', { timeout: 20_000 })
+  await expect(page.locator('.home .week-strip:not(.slot)')).toBeVisible({ timeout: 20_000 })
 
   // 리포트를 한 번 열어 캐시를 채운다
   await page.getByRole('button', { name: '리포트', exact: true }).click()
@@ -31,7 +34,8 @@ test('탭을 오갔다 와도 로딩 문구가 다시 안 뜬다', async ({ page
 
   for (let i = 0; i < 3; i++) {
     await page.getByRole('button', { name: '홈', exact: true }).click()
-    expect(await page.locator('.home-stat').innerText()).not.toContain('불러오는 중')
+    // 돌아온 첫 렌더에 이미 차 있다 — 자리만 잡은 띠(`.slot`)를 거치지 않는다
+    expect(await page.locator('.home .week-strip.slot').count()).toBe(0)
     await page.getByRole('button', { name: '리포트', exact: true }).click()
     expect(await page.locator('.screen-body').innerText()).not.toContain('불러오고 있어요')
   }
@@ -46,7 +50,7 @@ async function titleHoldsStill(page: Page, withWordlist: boolean): Promise<void>
   await ready(page)
   if (withWordlist) {
     // 홈의 계산이 끝나면 그 결과로 힌트를 다시 쓴다. 끝나기 전에 세우면 덮어써진다
-    await expect(page.locator('.home-stat')).not.toContainText('불러오는 중', { timeout: 20_000 })
+    await expect(page.locator('.home .week-strip:not(.slot)')).toBeVisible({ timeout: 20_000 })
     await page.evaluate(() => localStorage.setItem('yomenai:wordlistHint', '1'))
   }
 
@@ -55,7 +59,7 @@ async function titleHoldsStill(page: Page, withWordlist: boolean): Promise<void>
       const h1 = document.querySelector('.home h1')
       const primary = document.querySelector('.home .btn-primary.big')
       return {
-        loading: (document.querySelector('.home-stat')?.textContent ?? '').includes('불러오는 중'),
+        loading: document.querySelector('.home .week-strip.slot') !== null,
         h1: h1 ? Math.round(h1.getBoundingClientRect().top) : -1,
         primary: primary ? Math.round(primary.getBoundingClientRect().top) : -1,
       }
@@ -109,7 +113,7 @@ async function titleHoldsStill(page: Page, withWordlist: boolean): Promise<void>
   expect(loading.loading, '로딩 상태를 잡아야 의미가 있다').toBe(true)
 
   release()
-  await expect(page.locator('.home-stat')).not.toContainText('불러오는 중', { timeout: 20_000 })
+  await expect(page.locator('.home .week-strip:not(.slot)')).toBeVisible({ timeout: 20_000 })
   const loaded = await probe()
 
   expect(loaded.h1, `제목이 ${loaded.h1 - loading.h1}px 움직였다`).toBe(loading.h1)

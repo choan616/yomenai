@@ -67,7 +67,8 @@ test('담은 게 있으면 홈에서 바로 들어가고, 뒤로 가면 홈이�
 test('담은 게 없으면 홈에 단어장 진입로가 없다', async ({ page }) => {
   await skipIntro(page)
   // 계산이 끝난 뒤에야 「없다」를 말할 수 있다 — 끝나기 전엔 자리만 잡힌 숨은 버튼이다
-  await expect(page.locator('.home-stat')).toContainText('이번 세션', { timeout: 60_000 })
+  // 계산이 끝났다는 신호는 띠다 — 홈의 숫자 줄은 2026-10-02 에 걷어냈다
+  await expect(page.locator('.week-strip:not(.slot)')).toBeVisible({ timeout: 60_000 })
   await expect(page.getByRole('button', { name: /^단어장/ })).toHaveCount(0)
 })
 

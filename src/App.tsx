@@ -185,6 +185,7 @@ function TabRoot({
           onFocus={(pairIds) => onFlow({ kind: 'focus', pairIds })}
           onRule={(focus) => onSub({ kind: 'rules', focus })}
           onOnyomi={() => onSub({ kind: 'onyomi' })}
+          onQuick={() => onFlow({ kind: 'quick' })}
         />
       )
     case 'search':

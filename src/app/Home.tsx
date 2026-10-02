@@ -27,13 +27,11 @@ import { homeLine } from './weekLine.tsx'
 import { hasWordlistHint, setWordlistHint } from './wordlistView.ts'
 
 interface Preview {
-  ready: number
   /**
-   * 이번 세션에서 **처음 보는** 카드 수 (`due: false`). 기한이 지난 카드가 모자랄 때
-   * 그 나머지를 신규가 채우므로(`selectSession`), 설정이 아니라 매일 달라지는 값이다.
-   * 옛 「복습 기한 N」은 `ready` 의 부분집합이라 대개 같은 숫자를 두 번 말했다 (2026-09-17)
+   * 세션에 낼 카드 수. **홈에 숫자로는 안 적는다** (2026-10-02) — 주 동작을 누를 수 있는지만
+   * 가린다. 옛 「이번 세션 20장 · 새 표현 6」 줄과 그 뒤 숫자(`fresh`)는 그때 같이 걷어냈다
    */
-  fresh: number
+  ready: number
   /** 예전에 틀린 읽기 카드 수 — 재대결 대상 */
   rematch: number
   /** 한 번이라도 틀린 읽기 카드 수 — 다시보기 대상. 재대결보다 넓다 */
@@ -117,7 +115,6 @@ export function Home({
         const attendance = buildAttendance(events, { quick: QUICK_SESSION_LIMIT, full: sessionLimit })
         const next: Preview = {
           ready: session.cards.length,
-          fresh: session.cards.filter((c) => !c.due).length,
           rematch: rematchCount(pool, events),
           browse: browseCount(pool, events),
           wordlist: state.wordlist.size,
@@ -148,8 +145,7 @@ export function Home({
   }, [])
 
   const sessionReady = !!preview && preview.ready > 0
-  /** 「3장만」·단어장 칸을 낼지. 계산 전엔 자리를 잡으려고 낸다(단어장은 힌트가 있을 때만) */
-  const quickShown = preview === null || preview.ready > QUICK_SESSION_LIMIT
+  /** 단어장 칸을 낼지. 계산 전엔 직전에 담은 게 있던 기기에서만 자리를 잡는다 (아래 주석) */
   const wordlistShown = preview === null ? wordlistHint : preview.wordlist > 0
 
   return (
@@ -215,25 +211,24 @@ export function Home({
         </>
       ) : (
         <>
-          <p className="home-stat">
-            {error ? (
+          {/* 숫자 줄을 걷어냈다 (2026-10-02 사용자 지시). 「이번 세션 20장」은 설정에서 자기가 정한
+              길이를 되읽는 말이고, 「새 표현 N」은 그 줄에 붙어 살던 값이다. 오늘의 신호는 바로
+              아래 띠 한 줄이 말한다.
+
+              **「불러오는 중…」도 같이 걷어냈다.** 계산이 끝날 때 줄이 사라지면 `.home` 이 세로
+              중앙 정렬이라 제목까지 그만큼 올라간다 — 자리를 숨겨 잡는 `.slot` 관례와 같은 이유다.
+              그 사이는 주 동작이 눌리지 않는 것으로 알린다 */}
+          {error && (
+            <p className="home-stat">
               <span className="dim">사전을 불러오지 못했어요</span>
-            ) : preview ? (
-              <>
-                이번 세션 <b>{preview.ready}</b>장
-                {/* 오늘 얼마나 새것을 만나는지. 전부 복습인 날은 아예 안 뜬다 —
-                    앞 숫자와 같은 말을 두 번 하지 않는다 (사용자 지적 2026-09-17) */}
-                {preview.fresh > 0 && <span className="dim"> · 새 표현 {preview.fresh}</span>}
-              </>
-            ) : (
-              <span className="dim">불러오는 중…</span>
-            )}
-          </p>
+            </p>
+          )}
 
           {/* 이번 주 띠 (2026-09-30). "오늘 할까"를 정하는 자리라 주 동작 바로 위에 둔다 —
-              리포트 달력은 돌아보는 기록이고 이건 결정 신호다. 문구가 「3장」을 말하므로
-              아래 「3장만」 버튼과 한 화면에 붙어 있어야 한다. 계산 전엔 같은 마크업을
-              숨겨 자리만 잡는다 (아래 「3장만」 슬롯과 같은 이유) */}
+              리포트 달력은 돌아보는 기록이고 이건 결정 신호다. 문구는 「3장이면…」이라고
+              말하지만 그 버튼은 2026-10-02 에 리포트 달력으로 옮겼다 — 여기 남은 건 **문턱이
+              3장이라는 사실**이고, 세션 시작으로 3장을 넘겨도 칸은 채워진다.
+              계산 전엔 같은 마크업을 숨겨 자리만 잡는다 (단어장 슬롯과 같은 이유) */}
           {preview === null ? (
             <WeekStrip cells={SLOT_WEEK} line="·" slot />
           ) : (
@@ -249,43 +244,28 @@ export function Home({
             세션 시작
           </button>
 
-          {/* 의욕 없는 날의 진입로. 20장이냐 안 하냐의 양자택일에서 "안 함"이 이긴다 (Phase 11) */}
-          {/* 아직 계산 전이면 **자리만 잡아 둔다** (2026-09-21 사용자 지적). `.home` 은 세로
-              중앙 정렬이라, 버튼이 뒤늦게 생기면 그 높이의 절반만큼 제목까지 위로 밀린다.
-              `.answer-row` 가 빈 슬롯으로 주 동작의 자리를 지키는 것과 같은 처방이다.
+          {/* 「3장만」은 홈에서 걷어냈다 (2026-10-02 사용자 지시) — 짧은 세션으로 가는 길은 리포트
+              달력에서 **오늘 칸을 누를 때** 낸다(`Report.tsx` 의 `.cal-nudge`). 의욕 없는 날의
+              진입로라는 목적은 그대로지만(Phase 11), 매일 보이는 버튼일 이유는 없다.
 
-              **단어장 진입로는 같은 줄에 둔다** (2026-10-01 사용자 실기기 캡처). 맨 아래 한 줄로 더하니
-              iPhone 크기(375×667)에서 탭바 밑에 반쯤 묻혔다 — 홈은 문서가 스크롤하지 않는 화면이라
-              한 줄을 더 얹을 세로 여유가 없다. 둘 다 「오늘 어디로 들어갈까」의 보조 진입로라 한 줄에
-              놓아도 말이 맞고, 홈의 세로 길이는 진입로를 더하기 전과 같다.
+              남은 단어장 칸은 계산 전이면 **자리만 잡아 둔다** (2026-09-21 사용자 지적). `.home` 은
+              세로 중앙 정렬이라, 버튼이 뒤늦게 생기면 그 높이의 절반만큼 제목까지 위로 밀린다.
+              `.answer-row` 가 빈 슬롯으로 주 동작의 자리를 지키는 것과 같은 처방이다.
               담은 게 없으면 단어장 칸이 없다 — 찾기에서 담으며 들어가는 길이 이미 있다.
               **직전 계산에서 담은 게 있던 기기에서만** 계산 전에 자리를 잡는다 — 개수는 로그를 읽어야
               알 수 있어 힌트로 정한다. 늘 잡으면 담은 게 없는 사람은 계산 뒤에 칸이 접히고, 안 잡으면
               담은 사람이 계산 뒤에 밀린다 (`screen-cache.spec.ts` 가 잡는다) */}
-          {(quickShown || wordlistShown) && (
+          {wordlistShown && (
             <div className="quick-row">
-              {quickShown &&
-                (preview === null ? (
-                  <button type="button" className="btn quick slot" aria-hidden="true" tabIndex={-1}>
-                    <b>{QUICK_SESSION_LIMIT}장</b>만
-                    <span className="dim"> · 오늘은 짧게</span>
-                  </button>
-                ) : (
-                  <button type="button" className="btn quick" onClick={() => onFlow({ kind: 'quick' })}>
-                    <b>{QUICK_SESSION_LIMIT}장</b>만
-                    <span className="dim"> · 오늘은 짧게</span>
-                  </button>
-                ))}
-              {wordlistShown &&
-                (preview === null ? (
-                  <button type="button" className="btn quick wl slot" aria-hidden="true" tabIndex={-1}>
-                    단어장<span className="dim"> · 0</span>
-                  </button>
-                ) : (
-                  <button type="button" className="btn quick wl" onClick={onWordlist}>
-                    단어장<span className="dim"> · {preview.wordlist.toLocaleString('ko')}</span>
-                  </button>
-                ))}
+              {preview === null ? (
+                <button type="button" className="btn quick wl slot" aria-hidden="true" tabIndex={-1}>
+                  단어장<span className="dim"> · 0</span>
+                </button>
+              ) : (
+                <button type="button" className="btn quick wl" onClick={onWordlist}>
+                  단어장<span className="dim"> · {preview.wordlist.toLocaleString('ko')}</span>
+                </button>
+              )}
             </div>
           )}
 

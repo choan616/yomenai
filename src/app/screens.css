@@ -2310,3 +2310,26 @@ p.rule-record {
 .quick-row .btn.quick.wl:only-child {
   flex: 1 1 0;
 }
+
+/* 달력의 오늘 칸을 누르면 나오는 짧은 세션 유도 (2026-10-02 사용자 지시).
+   홈에서 매일 보이던 「3장만」을 걷어낸 자리를 여기가 받는다 — 아직 지나지 않은 날에만,
+   누른 사람에게만 나온다. 「오늘 안 했다」가 아니라 「하면 채워진다」 한 줄과 시작 버튼뿐이다 */
+.cal-nudge {
+  margin-top: 10px;
+  padding: 12px 14px;
+  border-radius: var(--radius);
+  background: var(--surface-2);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  text-align: center;
+}
+.cal-nudge p {
+  margin: 0;
+  font-size: calc(13px * var(--ui-scale));
+  color: var(--text-dim);
+}
+.cal-nudge p b {
+  color: var(--text);
+}

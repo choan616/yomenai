@@ -34,6 +34,21 @@ export function homeLine(streak: StreakRecord, todayKey: string): ReactNode {
 }
 
 /**
+ * 리포트 달력에서 **오늘 칸을 눌렀을 때**의 한 줄 (2026-10-02). 아직 채우지 않은 날에만 쓴다 —
+ * 이미 몇 장 한 날은 남은 장수를 말하고(요약과 같은 말), 아예 비었으면 홈과 같은 말을 한다.
+ * 여기서도 「못 했다」가 아니라 「하면 채워진다」로만 말한다
+ */
+export function nudgeLine(
+  streak: StreakRecord,
+  todayKey: string,
+  today: DayRecord | undefined,
+): ReactNode {
+  const count = today?.count ?? 0
+  if (count > 0) return <><b>{QUICK_SESSION_LIMIT - count}장</b> 더 하면 오늘 칸이 채워져요</>
+  return homeLine(streak, todayKey)
+}
+
+/**
  * 요약의 한 줄 — 이번 세션이 오늘 칸에 무엇을 했나. 세션 전후를 비교한다.
  * 아직 문턱에 못 미쳤으면(짧은 재도전 등) 남은 장수를 말한다 — "모자랐다"가 아니라 "N장 더"
  */

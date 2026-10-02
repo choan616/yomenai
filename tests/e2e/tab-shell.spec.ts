@@ -10,7 +10,7 @@ async function overflow(page: Page): Promise<number> {
   })
 }
 
-/** 기록이 쌓인 상태 — 「틀렸던 것」 줄과 「3장만」 이 같이 뜨는, 홈이 가장 긴 상태다 */
+/** 기록이 쌓인 상태 — 「틀렸던 것」 줄이 뜨는, 홈이 가장 긴 상태다 */
 async function seedWrong(page: Page): Promise<void> {
   await page.evaluate(() => {
     localStorage.setItem('yomenai:diagnosticDone', '1')
@@ -63,16 +63,14 @@ test('홈은 첫 진입에도 기록이 쌓여도 안 넘친다', async ({ page 
   await expect(page.locator('.wrong-group')).toBeVisible({ timeout: 20_000 })
   expect(await overflow(page)).toBeLessThanOrEqual(0)
 
-  // 홈의 숫자는 평가가 아니라 **오늘 할 일**이다 (context-notes 2026-09-14).
-  // 뒤 숫자는 그중 처음 보는 카드 — 기한이 지난 카드를 심었으니 전체보다 적어야 한다.
-  // 옛 「복습 기한 N」은 앞 숫자의 부분집합이라 대개 같은 수를 두 번 말했다 (사용자 지적 2026-09-17)
-  const stat = page.locator('.home-stat')
-  await expect(stat).not.toContainText('복습 기한')
-  await expect(stat).toContainText('새 표현')
-  const [ready, fresh] = [...(await stat.innerText()).matchAll(/[0-9]+/g)].map((m) => Number(m[0]))
-  expect(ready).toBeGreaterThan(0)
-  expect(fresh).toBeGreaterThan(0)
-  expect(fresh).toBeLessThan(ready)
+  // 홈에 세션 장수를 안 적는다 (2026-10-02 사용자 지시) — 설정에서 자기가 정한 길이를 되읽는
+  // 말이라 「이번 세션 20장 · 새 표현 6」 줄째로 걷어냈다. 「3장만」도 같이 걷어냈다 —
+  // 짧은 세션은 리포트 달력의 오늘 칸에서 간다(`report-attendance.spec.ts`).
+  // 오늘의 신호로 남는 건 띠 한 줄뿐이다
+  await expect(page.locator('.week-strip:not(.slot) .week-line')).toBeVisible()
+  await expect(page.locator('.home')).not.toContainText('이번 세션')
+  await expect(page.locator('.home')).not.toContainText('새 표현')
+  await expect(page.getByRole('button', { name: /3장만/ })).toHaveCount(0)
 })
 
 test('탭 넷을 오가고, 세션에서는 탭바가 사라진다', async ({ page }) => {

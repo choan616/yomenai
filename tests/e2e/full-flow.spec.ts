@@ -122,34 +122,13 @@ test('진입 진단 → 세션 → 리포트 전체 흐름을 완주한다', asy
   await page.getByRole('button', { name: '홈', exact: true }).click()
   await expect(page.getByRole('button', { name: '세션 시작' })).toBeVisible()
 
-  // ── "3장만" — 설정을 안 건드리고 이번만 짧게 (Phase 11) ──
-  await page.getByRole('button', { name: /3장만/ }).click()
-  await expect(page.locator('.study-bar .count')).toContainText('/ 3')
-  for (let i = 0; i < 40; i++) {
-    if (await page.getByText('세션 완료').isVisible().catch(() => false)) break
-    if (await page.locator('.card.feedback').isVisible().catch(() => false)) {
-      await clickIfVisible(page, '다음')
-      await page.waitForTimeout(20)
-      continue
-    }
-    // 처음 만나는 숙어는 소개로 나온다 (2026-09-13) — 보고 넘긴다
-    if (await clickIfVisible(page, '봤어요')) continue
-    if (await clickIfVisible(page, '알고 있었다')) continue
-    const qi = page.locator('.kana-input')
-    if (await qi.isVisible().catch(() => false)) {
-      await qi.fill('tadashii')
-      await qi.press('Enter')
-      await page.waitForTimeout(20)
-      continue
-    }
-    if (await clickIfVisible(page, '뜻 보기')) continue
-    if (await clickIfVisible(page, '알았어요')) continue
-    await page.waitForTimeout(30)
-  }
-  await expect(page.getByText('세션 완료')).toBeVisible({ timeout: 15_000 })
-  await page.getByRole('button', { name: '홈으로' }).click()
-  // 다음 세션은 다시 원래 길이로 돌아온다
-  await expect(page.getByRole('button', { name: '세션 시작' })).toBeVisible()
+  // ── 홈은 세션을 시작하는 것만 남는다 (2026-10-02 사용자 지시) ──
+  // 세션 장수 줄도 「3장만」도 없다. 짧은 세션으로 가는 길은 리포트 달력의 오늘 칸이다 —
+  // 이 흐름은 진단에서 이미 오늘 채점이 쌓여 그 유도가 안 나오므로(오늘 칸이 채워졌다)
+  // 그 경로는 `report-attendance.spec.ts`·`week-strip.spec.ts` 가 맡는다
+  await expect(page.locator('.week-strip:not(.slot) .week-line')).toBeVisible({ timeout: 30_000 })
+  await expect(page.locator('.home')).not.toContainText('이번 세션')
+  await expect(page.getByRole('button', { name: /3장만/ })).toHaveCount(0)
   await expect(page.getByRole('button', { name: /진입 진단 시작/ })).toHaveCount(0)
 
   // ── 세션 완주 ──

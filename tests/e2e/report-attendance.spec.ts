@@ -123,3 +123,49 @@ test('이전 달로 넘어가면 그 달 기록을, 다음 달 버튼은 이번 
   await page.getByRole('button', { name: '다음 달' }).click()
   await expect(page.locator('.cal-title')).toHaveText(beforeTitle ?? '')
 })
+
+// 오늘 칸 유도 (2026-10-02 사용자 지시) — 홈에서 걷어낸 「3장만」이 이 자리로 옮겨왔다.
+// 아직 지나지 않은 날에만, 그 칸을 누른 사람에게만 나온다. 소급해 채울 수 없는 지난 빈 날은
+// 누를 수도 없다(네거티브 표시 금지의 연장 — 할 말이 없는 날엔 아무 말도 안 한다)
+test('오늘 칸이 비어 있으면 눌러 짧은 세션으로 가고, 지난 빈 날은 눌리지 않는다', async ({ page }) => {
+  await page.clock.setFixedTime(new Date(2026, 8, 15, 12, 0, 0))
+  await page.goto('/')
+  await expect(page.getByRole('button', { name: '세션 시작' })).toBeVisible({ timeout: 20_000 })
+  await page.evaluate(() => {
+    localStorage.setItem('yomenai:diagnosticDone', '1')
+    localStorage.setItem('yomenai:welcomeSeen', '1')
+  })
+  // 어제만 채운다 — 오늘과 그제는 비어 있다
+  await seedDay(page, 1, 3)
+  await page.reload()
+  await page.getByRole('button', { name: '리포트' }).click()
+  await page.getByRole('button', { name: '달력', exact: true }).click()
+  await expect(page.locator('.cal-grid')).toBeVisible()
+
+  const dayBefore = await dateKeyForDaysAgo(page, 2)
+  await expect(page.locator(`button.cal-cell[title="${dayBefore}"]`)).toHaveCount(0)
+  // 누르기 전에는 유도가 없다 — 달력을 열었을 뿐인 사람에게 들이대지 않는다
+  await expect(page.locator('.cal-nudge')).toHaveCount(0)
+
+  await page.locator('button.cal-cell[data-today]').click()
+  await expect(page.locator('.cal-nudge')).toContainText('3장이면 2일째로 이어져요')
+  await page.locator('.cal-nudge').getByRole('button', { name: /3장만/ }).click()
+  await expect(page.locator('.study-bar .count')).toContainText('/ 3', { timeout: 30_000 })
+})
+
+test('오늘 칸을 이미 채운 날에는 유도가 없다', async ({ page }) => {
+  await page.clock.setFixedTime(new Date(2026, 8, 15, 12, 0, 0))
+  await page.goto('/')
+  await expect(page.getByRole('button', { name: '세션 시작' })).toBeVisible({ timeout: 20_000 })
+  await page.evaluate(() => {
+    localStorage.setItem('yomenai:diagnosticDone', '1')
+    localStorage.setItem('yomenai:welcomeSeen', '1')
+  })
+  await seedDay(page, 0, 3)
+  await page.reload()
+  await page.getByRole('button', { name: '리포트' }).click()
+  await page.getByRole('button', { name: '달력', exact: true }).click()
+  // 오늘 기록이 있으면 달력이 처음부터 그 날을 펼친다 — 누르지 않아도 상세가 떠 있다
+  await expect(page.locator('.cal-detail')).toBeVisible()
+  await expect(page.locator('.cal-nudge')).toHaveCount(0)
+})

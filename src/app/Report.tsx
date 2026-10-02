@@ -41,6 +41,7 @@ import { loadStudyPool, withRuntimePairs } from '../dict/pool.ts'
 import { loadSettings, QUICK_SESSION_LIMIT } from './settings.ts'
 import { mistakeContextFromKanji } from '../dict/mistakeContext.ts'
 import { isCalendarOpen, setCalendarOpen } from './calendarOpen.ts'
+import { nudgeLine } from './weekLine.tsx'
 import { loadPairIndex } from '../dict/pairIndex.ts'
 import { BAND_NOTE, type Band } from '../lib/bands.ts'
 import {
@@ -106,6 +107,7 @@ export function Report({
   onFocus,
   onRule,
   onOnyomi,
+  onQuick,
 }: {
   /** 자주 틀린 숙어를 채점 없이 넘겨 보는 화면으로 (2026-09-12) */
   onBrowse: () => void
@@ -117,6 +119,8 @@ export function Report({
   onRule: (id: RuleId | null) => void
   /** 음독 맵으로 (2026-09-17). 홈 메뉴가 탭으로 내려가면서 이 탭 아래로 옮겨왔다 */
   onOnyomi: () => void
+  /** 짧은 세션으로 (2026-10-02). 홈에서 걷어낸 「3장만」이 달력의 오늘 칸으로 옮겨왔다 */
+  onQuick: () => void
 }) {
   // 초기화 함수에서 캐시를 꺼낸다 — effect 로 넣으면 「불러오고 있어요」가 한 번 그려진다
   const [data, setData] = useState<Loaded | null>(() => (cacheValid() ? cache!.data : null))
@@ -238,6 +242,7 @@ export function Report({
             onFocus={onFocus}
             onRule={onRule}
             onOnyomi={onOnyomi}
+            onQuick={onQuick}
           />
         ) : (
           (error || data) && (
@@ -260,6 +265,7 @@ function ReportBody({
   onFocus,
   onRule,
   onOnyomi,
+  onQuick,
 }: {
   data: Loaded
   onBrowse: () => void
@@ -267,6 +273,7 @@ function ReportBody({
   onFocus: (pairIds: string[]) => void
   onRule: (id: RuleId | null) => void
   onOnyomi: () => void
+  onQuick: () => void
 }) {
   const {
     report,
@@ -308,6 +315,7 @@ function ReportBody({
         sessionLimit={sessionLimit}
         streak={streak}
         reach={reach}
+        onQuick={onQuick}
       />
 
       <section className="rx">
@@ -653,11 +661,13 @@ function CalendarSection({
   sessionLimit,
   streak,
   reach,
+  onQuick,
 }: {
   attendance: Map<string, DayRecord>
   sessionLimit: number
   streak: StreakRecord
   reach: Map<string, Band>
+  onQuick: () => void
 }) {
   const now = new Date()
   const [open, setOpen] = useState(isCalendarOpen)
@@ -772,9 +782,11 @@ function CalendarSection({
                   )}
                 </>
               )
-              // 채점이 하나라도 있는 날만 누를 수 있다. 빈 날에는 할 말이 없다 — 「기록 없음」도
-              // 안 띄운다(네거티브 표시 금지)
-              return attendance.has(cell.date) ? (
+              // 채점이 하나라도 있는 날만 누를 수 있다. 지난 빈 날에는 할 말이 없다 —
+              // 「기록 없음」도 안 띄운다(네거티브 표시 금지).
+              // **오늘 칸만 비어도 누를 수 있다** (2026-10-02) — 아직 지나지 않은 날이라
+              // 할 말이 있다. 누르면 짧은 세션으로 가는 길이 열린다(`.cal-nudge`)
+              return attendance.has(cell.date) || cell.date === todayKey ? (
                 <button
                   key={cell.date}
                   type="button"
@@ -798,6 +810,17 @@ function CalendarSection({
             milestone={milestoneOn.get(picked)}
             band={reach.get(picked)}
           />
+        )}
+        {/* 오늘 칸을 눌렀고 아직 그 칸을 못 채웠으면 짧은 세션을 권한다 (2026-10-02 사용자 지시).
+            홈에 매일 띄우던 「3장만」을 **필요한 순간에만** 내는 자리다. 지난 날에는 안 나온다 —
+            소급해 채울 수 없는 날에 할 말이 없다. 문구는 긍정형만(weekLine.tsx) */}
+        {picked === todayKey && !streak.todayDone && (
+          <div className="cal-nudge" aria-live="polite">
+            <p>{nudgeLine(streak, todayKey, attendance.get(todayKey))}</p>
+            <button type="button" className="btn quick" onClick={onQuick}>
+              <b>{QUICK_SESSION_LIMIT}장</b>만<span className="dim"> · 오늘은 짧게</span>
+            </button>
+          </div>
         )}
         <p className="cal-caption">
           <span>

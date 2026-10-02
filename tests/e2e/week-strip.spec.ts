@@ -87,7 +87,13 @@ test('요약 — 이번 세션이 오늘 칸을 채우면 그 칸이 차오른�
   await boot(page)
   await seedDay(page, 1, 3)
   await page.reload()
-  await page.getByRole('button', { name: /3장만/ }).click()
+  // 짧은 세션 진입로는 리포트 달력의 오늘 칸이다 (2026-10-02) — 홈에서 「3장만」을 걷어냈다.
+  // 어제까지 하루 이어졌으니 유도 문구가 그 이어짐으로 말한다
+  await page.getByRole('button', { name: '리포트', exact: true }).click()
+  await page.getByRole('button', { name: '달력', exact: true }).click()
+  await page.locator('button.cal-cell[data-today]').click()
+  await expect(page.locator('.cal-nudge')).toContainText('3장이면 2일째로 이어져요')
+  await page.locator('.cal-nudge').getByRole('button', { name: /3장만/ }).click()
   await expect(page.locator('.study-bar .count')).toContainText('/ 3')
   for (let i = 0; i < 40; i++) {
     if (await page.getByText('세션 완료').isVisible().catch(() => false)) break
