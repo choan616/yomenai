@@ -187,35 +187,36 @@ test('이름이 같은 음성이 둘이어도 구분되고 둘째를 고를 수 
 
 // 장음·촉음이 어색하고 탁음이 맨 앞에 오면 끊긴다는 지적 (2026-10-03, iPhone Kyoko).
 // 효과는 코드가 못 들어서 끄고 켜며 비교하게 한 스위치다 — 켜고 끈 상태가 실제 발화에 어떻게 닿는지 본다
-test('발음 보정은 기본으로 켜져 있어 장음을 고치고 앞에 깨우기 발화를 넣는다', async ({ page }) => {
+// 기본은 끔이다 — 사용자가 켜고 들어 본 뒤 「보정을 하는 것이 오히려 부자연스럽다」고 했다 (2026-10-03)
+test('발음 보정은 기본으로 꺼져 있어 원문 그대로 한 번만 읽는다', async ({ page }) => {
   await installFakeSpeech(page, VOICES)
   await openSettings(page)
 
-  const on = page.getByRole('group', { name: '발음 보정' }).getByRole('button', { name: '켬' })
-  await expect(on).toHaveAttribute('aria-pressed', 'true')
+  const off = page.getByRole('group', { name: '발음 보정' }).getByRole('button', { name: '끔' })
+  await expect(off).toHaveAttribute('aria-pressed', 'true')
 
+  await page.getByRole('button', { name: '들어보기' }).click()
+  const queue = await queueOf(page)
+  expect(queue).toHaveLength(1)
+  expect(queue[0]).toMatchObject({ text: 'がっこう', volume: 1 })
+})
+
+test('보정을 켜면 장음을 고치고 앞에 깨우기 발화를 넣고, 다시 열어도 켜져 있다', async ({ page }) => {
+  await installFakeSpeech(page, VOICES)
+  await openSettings(page)
+
+  const group = page.getByRole('group', { name: '발음 보정' })
+  await group.getByRole('button', { name: '켬' }).click()
   await page.getByRole('button', { name: '들어보기' }).click()
   const queue = await queueOf(page)
   // 큐 순서: 음량 0 의 깨우기 → 진짜 발화. 진짜는 장음이 ー 로 바뀐 말이다
   expect(queue).toHaveLength(2)
   expect(queue[0]).toMatchObject({ volume: 0 })
   expect(queue[1]).toMatchObject({ text: 'がっこー', volume: 1 })
-})
-
-test('보정을 끄면 원문 그대로 한 번만 읽고, 다시 열어도 꺼져 있다', async ({ page }) => {
-  await installFakeSpeech(page, VOICES)
-  await openSettings(page)
-
-  const group = page.getByRole('group', { name: '발음 보정' })
-  await group.getByRole('button', { name: '끔' }).click()
-  await page.getByRole('button', { name: '들어보기' }).click()
-  const queue = await queueOf(page)
-  expect(queue).toHaveLength(1)
-  expect(queue[0]).toMatchObject({ text: 'がっこう', volume: 1 })
 
   await page.reload()
   await page.getByRole('button', { name: '설정', exact: true }).click()
   await expect(
-    page.getByRole('group', { name: '발음 보정' }).getByRole('button', { name: '끔' }),
+    page.getByRole('group', { name: '발음 보정' }).getByRole('button', { name: '켬' }),
   ).toHaveAttribute('aria-pressed', 'true')
 })

@@ -17,13 +17,14 @@ export interface TtsPrefs {
   /**
    * 발음 보정 (2026-10-03 사용자 「장음, 촉음이 이상하고 탁음이 처음에 나오면 끊겨 들린다」).
    * 장음을 `ー` 로 적고, 발화 앞에 음량 0 의 발화를 먼저 넣어 오디오를 깨워 둔다.
-   * 효과를 코드가 못 들어서 끄고 켜며 비교하게 한다. 기본은 켬
+   * 효과를 코드가 못 들어서 끄고 켜며 비교하게 했는데, **사용자가 들어 보고 「보정을 하는 것이 오히려
+   * 부자연스럽다」고 했다.** 그래서 기본은 **끔**이다 (같은 날 켬 → 끔)
    */
   shape: boolean
 }
 
 const KEY = 'yomenai:tts'
-const DEFAULTS: TtsPrefs = { voice: '', rate: 'normal', shape: true }
+const DEFAULTS: TtsPrefs = { voice: '', rate: 'normal', shape: false }
 
 export function loadTtsPrefs(): TtsPrefs {
   try {
@@ -33,8 +34,8 @@ export function loadTtsPrefs(): TtsPrefs {
     return {
       voice: typeof r.voice === 'string' ? r.voice : DEFAULTS.voice,
       rate: RATES.includes(r.rate as TtsRate) ? (r.rate as TtsRate) : DEFAULTS.rate,
-      // 저장된 적 없으면 기본(켬) — 끈 것만 false 로 받는다
-      shape: r.shape === false ? false : DEFAULTS.shape,
+      // 저장된 적 없으면 기본(끔) — 켠 것만 true 로 받는다
+      shape: r.shape === true ? true : DEFAULTS.shape,
     }
   } catch {
     // 읽기가 막히거나 값이 깨졌으면 기본값 — 소리는 나야 한다
