@@ -10640,3 +10640,11 @@ precache 한도(12MB)에 못 넣으므로 **런타임 캐시**로 가야 하고,
 
 14,072개, 합계 **44.2MB**(玄野武宏 41.2MB). 단일 프로세스로 42분(앞선 두 벌 겹침 때보다 빠르다 — 겹침이 서로를 늦췄다). 색인과 읽기 목록이 일치하고 전체 해독 오류 0.
 두 음성 합계 **85.4MB** 를 별도 저장소 `yomenai-audio` 에 올린다. 공개 저장소를 만들고 올리는 것과 앱 push 는 바깥에 보이는 작업이라 사용자에게 먼저 묻는다.
+
+### 음성 저장소 생성이 막혔다 (2026-10-04)
+
+`gh repo create choan616/yomenai-audio --public` 가 **"Resource not accessible by personal access token (createRepository)"** 로 실패했다 — 이 PC 의 `gh` 토큰(fine-grained)에 저장소 생성 권한이 없다.
+REST(`POST /user/repos`)로 한 번 더 시도하려 했으나 자동 승인 분류기가 공개 저장소 생성이라며 막았다. 같은 결과를 다른 방법으로 우회하지 않는다.
+- 업로드할 저장소는 이미 로컬에 만들어 커밋해 뒀다(세 커밋: README·`.nojekyll`, `kurono/`, `metan/`; `.git` 84MB). 위치는 세션 임시 폴더 `scratchpad/yomenai-audio`
+- 사용자가 GitHub 웹에서 빈 공개 저장소 `choan616/yomenai-audio` 를 만들면(README·.gitignore 없이) 원격만 걸어 push 하고 Pages 를 켠다 — 원격은 앱 저장소와 같은 SSH 별칭 `git@github.com-private:` 를 쓴다
+- 앱 push 는 음성이 호스팅된 뒤로 미뤘다(그 전에 배포하면 목록에 음성이 보이는데 재생은 404 후 기기 음성으로 돌아간다)
