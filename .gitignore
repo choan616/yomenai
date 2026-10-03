@@ -32,3 +32,6 @@ data/dict/*
 
 # 앱에서 내려받은 학습 이벤트 원본 (개인 학습 기록, 커밋 금지)
 data/events/
+
+# 합성한 읽기 음성 (재생성 가능한 산출물, 커밋 금지) — context-notes 2026-10-03
+data/audio/

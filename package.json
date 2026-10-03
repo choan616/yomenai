@@ -20,6 +20,7 @@
     "build:decomp-overrides": "tsx tools/build-decomp-overrides.ts",
     "build:onyomi": "tsx tools/build-onyomi-map.ts",
     "build:extra-readings": "tsx tools/build-extra-readings.ts",
+    "build:audio": "tsx tools/build-audio.ts",
     "review:bands": "tsx tools/review-bands.ts",
     "match:korean": "tsx tools/match-korean.ts",
     "draft:korean-review": "tsx tools/draft-korean-review.ts",

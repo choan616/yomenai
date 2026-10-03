@@ -28,6 +28,7 @@ build:onyomi           숙어 → (한자, 음독) 분해 → data/dict/onyomi-m
 build:examples         Tatoeba → 무번역 예문 (data/raw/tatoeba/ 필요, 아래 「예문」 절)
 build:extra-readings   JMdict_e.gz → 임포트가 떨어뜨린 읽기 → data/dict/extra-readings.json (아래 「다른 읽기」 절)
 build:fonts            data/raw/fonts/ → public/fonts/ 서브셋 (Regular·Bold)
+build:audio            기본 사전 읽기 → 로컬 VOICEVOX 합성 → data/audio/<voice>/*.mp3 (엔진·ffmpeg 필요, 커밋 안 함. --speaker --voice [--limit])
 build:runtime-dict     위 산출물 → public/dict/{base,band4,pairs,kanji,examples}.json
 ```
 
