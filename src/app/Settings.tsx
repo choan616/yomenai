@@ -26,6 +26,11 @@ import { applyTextScale, loadTextScale, saveTextScale, type TextScale } from './
 import { openGuide } from './guide.ts'
 import { canVibrate } from '../study/keyFeedback.ts'
 import { KEYPAD_LABEL, type KeypadLayout } from '../study/keypadLayouts.ts'
+import { tts, type TtsVoice } from '../study/tts.ts'
+import { loadTtsPrefs, RATE_LABEL, RATES, saveTtsPrefs, type TtsPrefs } from '../study/ttsPrefs.ts'
+
+/** 「들어보기」에 읽는 말 — 특정 숙어에 기대지 않는 짧은 읽기 */
+const TTS_SAMPLE = 'にほんごのよみかた'
 
 const STEP = 5
 
@@ -86,6 +91,15 @@ export function Settings({
   onBackup: () => void
 }) {
   const [settings, setSettings] = useState<SettingsData>(loadSettings)
+  /** 소리 취향 (2026-10-03) — 기기 값이라 `settings` 와 따로 둔다. 음성 목록은 비동기로 채워진다 */
+  const [ttsPrefs, setTtsPrefsState] = useState<TtsPrefs>(loadTtsPrefs)
+  const [voices, setVoices] = useState<TtsVoice[]>(() => tts.voices())
+  // 처음 값은 위 초기화가 읽는다. 여기는 늦게 채워지는 목록을 구독만 한다
+  useEffect(() => tts.onVoicesChanged(() => setVoices(tts.voices())), [])
+  const setTtsPrefs = (next: TtsPrefs) => {
+    saveTtsPrefs(next)
+    setTtsPrefsState(next)
+  }
   const [theme, setThemeState] = useState<Theme>(loadTheme)
   const [textScale, setTextScaleState] = useState<TextScale>(loadTextScale)
   /** 아직 동기화로 안 올린 이 기기 기록 수 (2026-10-01). 동기화를 연결한 적 없으면 0 으로 둔다 */
@@ -299,6 +313,58 @@ export function Settings({
               : ' 이 기기는 진동을 못 써요 — iOS 는 웹에 진동 기능이 없어요. 소리도 기기가 무음이면 안 들려요.'}
           </span>
         </div>
+
+        {/* 소리 (2026-10-03 사용자 지적 「tts가 너무 딱딱하다」). 음성이 하나도 없는 기기에서는 그룹째 안 보인다.
+            어떤 소리가 덜 딱딱한지는 코드가 못 듣는다 — 기기에 있는 음성을 직접 고르고 들어 본다 */}
+        {tts.available && voices.length > 0 && (
+          <>
+            <h3 className="setting-group">소리</h3>
+            <p className="setting-group-note">읽기 소리 듣기</p>
+            <div className="setting">
+              <label htmlFor="tts-voice">음성</label>
+              <div className="tts-voice-row">
+                <select
+                  id="tts-voice"
+                  value={voices.some((v) => v.name === ttsPrefs.voice) ? ttsPrefs.voice : ''}
+                  onChange={(e) => setTtsPrefs({ ...ttsPrefs, voice: e.target.value })}
+                >
+                  <option value="">자동 (자연스러운 음성을 골라요)</option>
+                  {voices.map((v) => (
+                    <option key={v.name} value={v.name}>
+                      {v.label}
+                      {v.online ? ' · 온라인' : ''}
+                    </option>
+                  ))}
+                </select>
+                <button type="button" className="btn" onClick={() => tts.speak(TTS_SAMPLE)}>
+                  들어보기
+                </button>
+              </div>
+              <span className="hint">
+                기기에 설치된 음성만 나와요. 마음에 드는 게 없으면 기기의 음성 설정에서 일본어 음성을 더
+                내려받을 수 있어요. 온라인 음성은 인터넷이 없으면 소리가 안 나요.
+              </span>
+            </div>
+            <div className="setting">
+              <label>속도</label>
+              <div className="seg" role="group" aria-label="소리 속도">
+                {RATES.map((r) => (
+                  <button
+                    key={r}
+                    type="button"
+                    aria-pressed={ttsPrefs.rate === r}
+                    onClick={() => {
+                      setTtsPrefs({ ...ttsPrefs, rate: r })
+                    }}
+                  >
+                    {RATE_LABEL[r]}
+                  </button>
+                ))}
+              </div>
+              <span className="hint">바꾸고 위의 「들어보기」로 바로 들어 볼 수 있어요.</span>
+            </div>
+          </>
+        )}
 
         {/* 이 제목이 숨은 진입이다 — 길게 누르면 검수 모드가 열린다. 눈에 띄는 표시를
             두지 않는다: 보통 학습자에게는 그냥 묶음 제목이어야 한다 */}

@@ -2444,3 +2444,28 @@ p.rule-record {
   justify-content: center;
   gap: 7px;
 }
+
+/* 설정의 소리 — 음성 선택과 「들어보기」를 한 줄에 (2026-10-03). 선택 칸이 남는 폭을 먹는다 */
+.tts-voice-row {
+  display: flex;
+  gap: 8px;
+  align-items: stretch;
+}
+.tts-voice-row select {
+  flex: 1 1 0;
+  min-width: 0;
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--text);
+  font-size: calc(0.9rem * var(--ui-scale));
+  font-family: inherit;
+  min-height: 44px;
+}
+.tts-voice-row .btn {
+  flex: none;
+  height: auto;
+  min-height: 44px;
+  padding: 0 14px;
+}
