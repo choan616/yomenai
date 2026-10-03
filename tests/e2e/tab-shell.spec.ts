@@ -70,7 +70,8 @@ test('홈은 첫 진입에도 기록이 쌓여도 안 넘친다', async ({ page 
   await expect(page.locator('.week-strip:not(.slot) .week-line')).toBeVisible()
   await expect(page.locator('.home')).not.toContainText('이번 세션')
   await expect(page.locator('.home')).not.toContainText('새 표현')
-  await expect(page.getByRole('button', { name: /3장만/ })).toHaveCount(0)
+  // 22시가 지나면 토스트의 바로 가기(.nudge-go)가 「3장만」이라는 이름을 갖는다 — 홈 본문에 그 버튼이 없다는 말이라 토스트는 뺀다
+  await expect(page.getByRole('button', { name: /3장만/ }).and(page.locator(':not(.nudge-go)'))).toHaveCount(0)
   // 「채점해요」·「채점 없이」 설명 줄도 걷어냈다 (2026-10-02 사용자 지시) — 이름만으로 갈리는
   // 자리에 한 줄을 더 읽게 할 이유가 없다. 재도전·다시보기 버튼 자체는 그대로다
   await expect(page.locator('.wrong-group')).not.toContainText('채점')
