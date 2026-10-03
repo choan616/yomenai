@@ -1,4 +1,5 @@
 // 확인 단계에서 정답 읽기를 소리로 들려준다. Web Speech API 우선, 엔진은 Tts 인터페이스 뒤에 둔다 (PLAN §6)
+import { createFileTts } from './fileTts.ts'
 import { loadTtsPrefs, RATE_VALUE, type TtsPrefs } from './ttsPrefs.ts'
 
 /** 설정 화면이 고르게 보여 주는 음성 한 개 */
@@ -227,5 +228,5 @@ export function createWebSpeechTts(
   }
 }
 
-/** 앱 전역 인스턴스 */
-export const tts: Tts = createWebSpeechTts()
+/** 앱 전역 인스턴스 — 음성 파일을 먼저 쓰고, 없으면 기기 음성 (fileTts.ts) */
+export const tts: Tts = createFileTts({ fallback: createWebSpeechTts() })

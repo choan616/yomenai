@@ -100,6 +100,20 @@ export default defineConfig(({ command, isPreview }) => ({
             },
           },
           {
+            // 읽기 음성 파일(VOICEVOX 로 미리 합성, choan616/yomenai-audio 의 Pages). 앱 오리진의 다른 경로라
+            // 서비스 워커 스코프(/yomenai/) 밖이지만, 스코프는 **제어하는 페이지**를 정하므로 이 페이지가 보내는 요청은
+            // 경로와 상관없이 여기를 지난다. 들은 읽기만 쌓이고(사용자당 수 MB) CacheFirst 다. 이름이 읽기의 해시라
+            // **같은 읽기를 다시 합성하면(비트레이트·음성 교체) 이름이 그대로**다 — 그때는 cacheName 의 v1 을 올린다.
+            // 재생은 fetch 로 받은 200 응답을 쓴다 — <audio> 의 206 은 캐시할 수 없다 (fileTts.ts)
+            urlPattern: ({ url }) => url.pathname.startsWith('/yomenai-audio/'),
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'yomenai-audio-v1',
+              expiration: { maxEntries: 6000, maxAgeSeconds: 60 * 60 * 24 * 365 },
+              cacheableResponse: { statuses: [200] },
+            },
+          },
+          {
             // band4.json — 밴드 4 를 켠 적이 있으면 그때 캐시되고 이후 오프라인에서 열린다.
             //
             // **NetworkFirst 다** (2026-10-01 사용자 실기기 캡처). 전에는 StaleWhileRevalidate 라

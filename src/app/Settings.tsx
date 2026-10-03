@@ -28,6 +28,7 @@ import { canVibrate } from '../study/keyFeedback.ts'
 import { KEYPAD_LABEL, type KeypadLayout } from '../study/keypadLayouts.ts'
 import { tts, type TtsVoice } from '../study/tts.ts'
 import { loadTtsPrefs, RATE_LABEL, RATES, saveTtsPrefs, type TtsPrefs } from '../study/ttsPrefs.ts'
+import { audioBase, FILE_VOICES, fileVoiceFor } from '../study/voiceFiles.ts'
 
 /**
  * 「들어보기」에 읽는 말. 소리가 어색한 세 곳이 한 낱말에 다 든다 — 맨 앞의 탁음(が), 촉음(っ), 장음(こう).
@@ -99,6 +100,8 @@ export function Settings({
   const [voices, setVoices] = useState<TtsVoice[]>(() => tts.voices())
   // 처음 값은 위 초기화가 읽는다. 여기는 늦게 채워지는 목록을 구독만 한다
   useEffect(() => tts.onVoicesChanged(() => setVoices(tts.voices())), [])
+  /** 지금 소리를 내는 음성 파일. 기기 음성을 골랐거나 음성 파일을 안 쓰는 환경이면 null */
+  const fileVoice = fileVoiceFor(ttsPrefs.voice, audioBase())
   const setTtsPrefs = (next: TtsPrefs) => {
     saveTtsPrefs(next)
     setTtsPrefsState(next)
@@ -337,7 +340,7 @@ export function Settings({
                 >
                   <option value="">자동 (자연스러운 음성을 골라요)</option>
                   {voices.map((v) => (
-                    <option key={v.id} value={v.id}>
+                    <option key={v.id} value={v.id} lang={v.id.startsWith('file:') ? 'ja' : undefined}>
                       {v.label}
                       {v.online ? ' · 온라인' : ''}
                     </option>
@@ -347,51 +350,67 @@ export function Settings({
                   들어보기
                 </button>
               </div>
+              {audioBase() !== '' && (
+                <span className="hint">
+                  음성 파일은 처음 들을 때 인터넷으로 받아 두었다가, 다시 들을 땐 저장된 파일로 들려줘요. 아직 없는 말이나
+                  받지 못했을 때는 기기 음성이 대신 읽어요. 음성 합성:{' '}
+                  {FILE_VOICES.map((v, i) => (
+                    <span key={v.id}>
+                      {i > 0 && ', '}
+                      <span lang="ja">{v.credit}</span>
+                    </span>
+                  ))}
+                </span>
+              )}
               <span className="hint">
                 기기에 설치된 음성만 나와요. 마음에 드는 게 없으면 기기의 음성 설정에서 일본어 음성을 더
                 내려받을 수 있어요. 온라인 음성은 인터넷이 없으면 소리가 안 나요.
               </span>
             </div>
-            <div className="setting">
-              <label>발음 보정</label>
-              <div className="seg" role="group" aria-label="발음 보정">
-                {[
-                  { label: '켬', value: true },
-                  { label: '끔', value: false },
-                ].map((o) => (
-                  <button
-                    key={o.label}
-                    type="button"
-                    aria-pressed={ttsPrefs.shape === o.value}
-                    onClick={() => setTtsPrefs({ ...ttsPrefs, shape: o.value })}
-                  >
-                    {o.label}
-                  </button>
-                ))}
-              </div>
-              <span className="hint">
-                장음을 길게 읽게 하고, 소리 맨 앞이 끊기는 것을 줄여 보는 실험이에요. 켜면 소리가 나기까지 조금 걸리고,
-                기기에 따라 오히려 어색할 수 있어서 기본은 꺼 두었어요. 「들어보기」로 비교해 보세요.
-              </span>
-            </div>
-            <div className="setting">
-              <label>속도</label>
-              <div className="seg" role="group" aria-label="소리 속도">
-                {RATES.map((r) => (
-                  <button
-                    key={r}
-                    type="button"
-                    aria-pressed={ttsPrefs.rate === r}
-                    onClick={() => {
-                      setTtsPrefs({ ...ttsPrefs, rate: r })
-                    }}
-                  >
-                    {RATE_LABEL[r]}
-                  </button>
-                ))}
-              </div>
-              <span className="hint">바꾸고 위의 「들어보기」로 바로 들어 볼 수 있어요.</span>
-            </div>
+            {!fileVoice && (
+              <>
+                <div className="setting">
+                  <label>발음 보정</label>
+                  <div className="seg" role="group" aria-label="발음 보정">
+                    {[
+                      { label: '켬', value: true },
+                      { label: '끔', value: false },
+                    ].map((o) => (
+                      <button
+                        key={o.label}
+                        type="button"
+                        aria-pressed={ttsPrefs.shape === o.value}
+                        onClick={() => setTtsPrefs({ ...ttsPrefs, shape: o.value })}
+                      >
+                        {o.label}
+                      </button>
+                    ))}
+                  </div>
+                  <span className="hint">
+                    장음을 길게 읽게 하고, 소리 맨 앞이 끊기는 것을 줄여 보는 실험이에요. 켜면 소리가 나기까지 조금 걸리고,
+                    기기에 따라 오히려 어색할 수 있어서 기본은 꺼 두었어요. 「들어보기」로 비교해 보세요.
+                  </span>
+                </div>
+                <div className="setting">
+                  <label>속도</label>
+                  <div className="seg" role="group" aria-label="소리 속도">
+                    {RATES.map((r) => (
+                      <button
+                        key={r}
+                        type="button"
+                        aria-pressed={ttsPrefs.rate === r}
+                        onClick={() => {
+                          setTtsPrefs({ ...ttsPrefs, rate: r })
+                        }}
+                      >
+                        {RATE_LABEL[r]}
+                      </button>
+                    ))}
+                  </div>
+                  <span className="hint">바꾸고 위의 「들어보기」로 바로 들어 볼 수 있어요.</span>
+                </div>
+              </>
+            )}
           </>
         )}
 
