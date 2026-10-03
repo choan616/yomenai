@@ -16,8 +16,8 @@ describe('ttsPrefs', () => {
   beforeEach(() => void stubStorage())
   afterEach(() => vi.unstubAllGlobals())
 
-  it('저장한 적이 없으면 자동 음성·보통 속도다', () => {
-    expect(loadTtsPrefs()).toEqual({ voice: '', rate: 'normal' })
+  it('저장한 적이 없으면 자동 음성·보통 속도·발음 보정 켬이다', () => {
+    expect(loadTtsPrefs()).toEqual({ voice: '', rate: 'normal', shape: true })
   })
 
   it('보통 속도는 예전 고정값 0.9 와 같다 — 기본 소리를 안 바꾼다', () => {
@@ -25,15 +25,20 @@ describe('ttsPrefs', () => {
   })
 
   it('저장하면 다음에도 그대로다', () => {
-    saveTtsPrefs({ voice: 'Microsoft Nanami Online (Natural)', rate: 'slow' })
-    expect(loadTtsPrefs()).toEqual({ voice: 'Microsoft Nanami Online (Natural)', rate: 'slow' })
+    saveTtsPrefs({ voice: 'Microsoft Nanami Online (Natural)', rate: 'slow', shape: false })
+    expect(loadTtsPrefs()).toEqual({ voice: 'Microsoft Nanami Online (Natural)', rate: 'slow', shape: false })
+  })
+
+  it('이전 버전이 저장한 값(shape 없음)은 보정 켬으로 읽는다', () => {
+    localStorage.setItem('yomenai:tts', JSON.stringify({ voice: 'Kyoko', rate: 'fast' }))
+    expect(loadTtsPrefs()).toEqual({ voice: 'Kyoko', rate: 'fast', shape: true })
   })
 
   it('깨진 값은 기본값으로 읽는다 — 소리는 나야 한다', () => {
     localStorage.setItem('yomenai:tts', '{not json')
-    expect(loadTtsPrefs()).toEqual({ voice: '', rate: 'normal' })
-    localStorage.setItem('yomenai:tts', JSON.stringify({ voice: 3, rate: 'warp' }))
-    expect(loadTtsPrefs()).toEqual({ voice: '', rate: 'normal' })
+    expect(loadTtsPrefs()).toEqual({ voice: '', rate: 'normal', shape: true })
+    localStorage.setItem('yomenai:tts', JSON.stringify({ voice: 3, rate: 'warp', shape: 'no' }))
+    expect(loadTtsPrefs()).toEqual({ voice: '', rate: 'normal', shape: true })
   })
 
   it('저장소가 막혀도 던지지 않는다', () => {
@@ -41,7 +46,7 @@ describe('ttsPrefs', () => {
       throw new Error('blocked')
     }
     vi.stubGlobal('localStorage', { getItem: blocked, setItem: blocked, removeItem: blocked })
-    expect(loadTtsPrefs()).toEqual({ voice: '', rate: 'normal' })
-    expect(() => saveTtsPrefs({ voice: 'x', rate: 'fast' })).not.toThrow()
+    expect(loadTtsPrefs()).toEqual({ voice: '', rate: 'normal', shape: true })
+    expect(() => saveTtsPrefs({ voice: 'x', rate: 'fast', shape: true })).not.toThrow()
   })
 })

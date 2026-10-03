@@ -69,5 +69,10 @@ test('소리 듣기는 확인 단계에만 있고 ja-JP 로 발화한다', async
   )
   expect(calls.length).toBeGreaterThanOrEqual(1)
   expect(calls[0].lang).toBe('ja-JP')
-  expect(calls[0].text.length).toBeGreaterThan(0)
+  // 발음 보정이 켜져 있으면(기본) 앞에 음량 0 의 깨우기(`、`)가 먼저 들어간다 (2026-10-03).
+  // 진짜 읽기는 마지막 호출이다 — 깨우기만 있고 읽기가 안 나가는 일은 없어야 한다
+  const reading = calls[calls.length - 1]
+  expect(reading.lang).toBe('ja-JP')
+  expect(reading.text).not.toBe('、')
+  expect(reading.text.length).toBeGreaterThan(0)
 })

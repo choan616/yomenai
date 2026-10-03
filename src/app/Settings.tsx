@@ -29,8 +29,11 @@ import { KEYPAD_LABEL, type KeypadLayout } from '../study/keypadLayouts.ts'
 import { tts, type TtsVoice } from '../study/tts.ts'
 import { loadTtsPrefs, RATE_LABEL, RATES, saveTtsPrefs, type TtsPrefs } from '../study/ttsPrefs.ts'
 
-/** 「들어보기」에 읽는 말 — 특정 숙어에 기대지 않는 짧은 읽기 */
-const TTS_SAMPLE = 'にほんごのよみかた'
+/**
+ * 「들어보기」에 읽는 말. 소리가 어색한 세 곳이 한 낱말에 다 든다 — 맨 앞의 탁음(が), 촉음(っ), 장음(こう).
+ * 보정을 켜고 끄며 비교할 때 같은 말을 듣게 한다
+ */
+const TTS_SAMPLE = 'がっこう'
 
 const STEP = 5
 
@@ -325,12 +328,16 @@ export function Settings({
               <div className="tts-voice-row">
                 <select
                   id="tts-voice"
-                  value={voices.some((v) => v.name === ttsPrefs.voice) ? ttsPrefs.voice : ''}
+                  value={
+                    // 이름으로 저장하던 때의 값도 받아 준다 — 같은 이름이 둘이면 첫째를 가리킨다
+                    (voices.find((v) => v.id === ttsPrefs.voice) ??
+                      voices.find((v) => v.name === ttsPrefs.voice))?.id ?? ''
+                  }
                   onChange={(e) => setTtsPrefs({ ...ttsPrefs, voice: e.target.value })}
                 >
                   <option value="">자동 (자연스러운 음성을 골라요)</option>
                   {voices.map((v) => (
-                    <option key={v.name} value={v.name}>
+                    <option key={v.id} value={v.id}>
                       {v.label}
                       {v.online ? ' · 온라인' : ''}
                     </option>
@@ -343,6 +350,28 @@ export function Settings({
               <span className="hint">
                 기기에 설치된 음성만 나와요. 마음에 드는 게 없으면 기기의 음성 설정에서 일본어 음성을 더
                 내려받을 수 있어요. 온라인 음성은 인터넷이 없으면 소리가 안 나요.
+              </span>
+            </div>
+            <div className="setting">
+              <label>발음 보정</label>
+              <div className="seg" role="group" aria-label="발음 보정">
+                {[
+                  { label: '켬', value: true },
+                  { label: '끔', value: false },
+                ].map((o) => (
+                  <button
+                    key={o.label}
+                    type="button"
+                    aria-pressed={ttsPrefs.shape === o.value}
+                    onClick={() => setTtsPrefs({ ...ttsPrefs, shape: o.value })}
+                  >
+                    {o.label}
+                  </button>
+                ))}
+              </div>
+              <span className="hint">
+                장음을 길게 읽게 하고, 소리 맨 앞이 끊기는 것을 줄여요. 켜면 소리가 나기까지 조금 걸려요.
+                「들어보기」로 켜고 끈 소리를 비교해 보세요. 오히려 어색하면 끄세요.
               </span>
             </div>
             <div className="setting">

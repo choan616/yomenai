@@ -8,18 +8,42 @@ interface Spoken {
   text: string
   lang: string
   rate: number
+  volume: number
   voice: string | null
+  uri: string | null
 }
 
 /** 가짜 음성 셋과 발화 기록 — 브라우저 전역을 통째로 바꾼다 */
-async function installFakeSpeech(page: Page, voices: { name: string; local: boolean }[]): Promise<void> {
+async function installFakeSpeech(
+  page: Page,
+  voices: { name: string; local: boolean; uri?: string }[],
+): Promise<void> {
   await page.addInitScript((vs) => {
     const spoken: unknown[] = []
     const fake = {
       getVoices: () =>
-        vs.map((v) => ({ name: v.name, lang: 'ja-JP', localService: v.local, default: false })),
-      speak: (u: { text: string; lang: string; rate: number; voice: { name: string } | null }) => {
-        spoken.push({ text: u.text, lang: u.lang, rate: u.rate, voice: u.voice?.name ?? null })
+        vs.map((v) => ({
+          name: v.name,
+          voiceURI: v.uri ?? v.name,
+          lang: 'ja-JP',
+          localService: v.local,
+          default: false,
+        })),
+      speak: (u: {
+        text: string
+        lang: string
+        rate: number
+        volume: number
+        voice: { name: string; voiceURI: string } | null
+      }) => {
+        spoken.push({
+          text: u.text,
+          lang: u.lang,
+          rate: u.rate,
+          volume: u.volume,
+          voice: u.voice?.name ?? null,
+          uri: u.voice?.voiceURI ?? null,
+        })
       },
       cancel: () => {},
       addEventListener: () => {},
@@ -32,7 +56,8 @@ async function installFakeSpeech(page: Page, voices: { name: string; local: bool
       text: string
       lang = ''
       rate = 1
-      voice: { name: string } | null = null
+      volume = 1
+      voice: { name: string; voiceURI: string } | null = null
       constructor(text: string) {
         this.text = text
       }
@@ -48,8 +73,13 @@ async function installFakeSpeech(page: Page, voices: { name: string; local: bool
   }, voices)
 }
 
-const spokenOf = (page: Page): Promise<Spoken[]> =>
+/** 큐에 들어간 발화 전부 — 깨우기(음량 0)도 들어 있다 */
+const queueOf = (page: Page): Promise<Spoken[]> =>
   page.evaluate(() => (window as unknown as { __spoken: Spoken[] }).__spoken)
+
+/** 실제로 소리가 나는 발화만 — 발음 보정이 앞에 넣는 음량 0 의 깨우기는 뺀다 */
+const spokenOf = async (page: Page): Promise<Spoken[]> =>
+  (await queueOf(page)).filter((s) => s.volume !== 0)
 
 async function openSettings(page: Page): Promise<void> {
   await page.goto('/')
@@ -121,4 +151,71 @@ test('일본어 음성이 하나도 없는 기기에서는 소리 그룹이 안 
   await openSettings(page)
   await expect(page.getByRole('heading', { name: '소리' })).toHaveCount(0)
   await expect(page.getByLabel('음성')).toHaveCount(0)
+})
+
+// 실기기(iPhone)에서 발견한 결함 (2026-10-03) — iOS 는 `Kyoko` 를 같은 이름으로 둘 내준다.
+// 이름으로 식별하던 때는 선택지가 `Kyoko` `Kyoko` 로 똑같이 보였고 둘째를 고를 방법이 없었다
+test('이름이 같은 음성이 둘이어도 구분되고 둘째를 고를 수 있다', async ({ page }) => {
+  const compact = 'com.apple.voice.compact.ja-JP.Kyoko'
+  const enhanced = 'com.apple.voice.enhanced.ja-JP.Kyoko'
+  await installFakeSpeech(page, [
+    { name: 'Kyoko', local: true, uri: compact },
+    { name: 'Kyoko', local: true, uri: enhanced },
+  ])
+  await openSettings(page)
+
+  const select = page.getByLabel('음성')
+  // 선택지가 서로 다르다 — 품질 표지를 붙였다. 자동 선택은 고음질판을 앞세운다
+  await expect(select.locator('option')).toHaveText([
+    '자동 (자연스러운 음성을 골라요)',
+    'Kyoko · 고음질',
+    'Kyoko · 기본',
+  ])
+  await page.getByRole('button', { name: '들어보기' }).click()
+  expect((await spokenOf(page))[0]!.uri).toBe(enhanced)
+
+  // 둘째(기본)를 골라 들어 본다 — 같은 이름이어도 그쪽으로 읽는다
+  await select.selectOption({ label: 'Kyoko · 기본' })
+  await page.getByRole('button', { name: '들어보기' }).click()
+  expect((await spokenOf(page))[1]!.uri).toBe(compact)
+
+  // 다시 열어도 그 선택이 남는다
+  await page.reload()
+  await page.getByRole('button', { name: '설정', exact: true }).click()
+  await expect(page.getByLabel('음성')).toHaveValue(compact)
+})
+
+// 장음·촉음이 어색하고 탁음이 맨 앞에 오면 끊긴다는 지적 (2026-10-03, iPhone Kyoko).
+// 효과는 코드가 못 들어서 끄고 켜며 비교하게 한 스위치다 — 켜고 끈 상태가 실제 발화에 어떻게 닿는지 본다
+test('발음 보정은 기본으로 켜져 있어 장음을 고치고 앞에 깨우기 발화를 넣는다', async ({ page }) => {
+  await installFakeSpeech(page, VOICES)
+  await openSettings(page)
+
+  const on = page.getByRole('group', { name: '발음 보정' }).getByRole('button', { name: '켬' })
+  await expect(on).toHaveAttribute('aria-pressed', 'true')
+
+  await page.getByRole('button', { name: '들어보기' }).click()
+  const queue = await queueOf(page)
+  // 큐 순서: 음량 0 의 깨우기 → 진짜 발화. 진짜는 장음이 ー 로 바뀐 말이다
+  expect(queue).toHaveLength(2)
+  expect(queue[0]).toMatchObject({ volume: 0 })
+  expect(queue[1]).toMatchObject({ text: 'がっこー', volume: 1 })
+})
+
+test('보정을 끄면 원문 그대로 한 번만 읽고, 다시 열어도 꺼져 있다', async ({ page }) => {
+  await installFakeSpeech(page, VOICES)
+  await openSettings(page)
+
+  const group = page.getByRole('group', { name: '발음 보정' })
+  await group.getByRole('button', { name: '끔' }).click()
+  await page.getByRole('button', { name: '들어보기' }).click()
+  const queue = await queueOf(page)
+  expect(queue).toHaveLength(1)
+  expect(queue[0]).toMatchObject({ text: 'がっこう', volume: 1 })
+
+  await page.reload()
+  await page.getByRole('button', { name: '설정', exact: true }).click()
+  await expect(
+    page.getByRole('group', { name: '발음 보정' }).getByRole('button', { name: '끔' }),
+  ).toHaveAttribute('aria-pressed', 'true')
 })
