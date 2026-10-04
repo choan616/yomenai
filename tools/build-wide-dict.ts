@@ -22,7 +22,7 @@ import { join } from 'node:path'
 import { gunzipSync } from 'node:zlib'
 import { XMLParser } from 'fast-xml-parser'
 import { DICT_DIR, findRawFile, isKanjiOnly } from './lib/dict.ts'
-import { repairByteTokens } from './lib/meaning.ts'
+import { loadTruncatedOverrides, repairByteTokens } from './lib/meaning.ts'
 
 const OUT_DIR = join(import.meta.dirname, '..', 'public', 'dict')
 
@@ -83,6 +83,9 @@ const wideReview: Record<string, { definition: string; source: 'llm' | 'manual';
         }
       ).byId
     : {}
+
+/** 바이트가 잘려 복원이 안 되는 뜻의 사람이 정한 표 — 번역본보다 먼저 본다 */
+const truncatedFix = loadTruncatedOverrides(DICT_DIR)
 
 const kanji = (
   JSON.parse(readFileSync(join(DICT_DIR, 'kanji.json'), 'utf8')) as { kanji: Record<string, KanjiRow> }
@@ -151,7 +154,7 @@ for (const entry of doc.JMdict.entry) {
   if (readings.length === 0) continue
 
   const senses = asArray(entry.sense as El | El[] | undefined)
-  const ko = koWide[id]?.ko ? repairByteTokens(koWide[id]!.ko.trim()) : undefined
+  const ko = truncatedFix[id] ?? (koWide[id]?.ko ? repairByteTokens(koWide[id]!.ko.trim()) : undefined)
   const reviewed = wideReview[id]
   out.push({
     id,

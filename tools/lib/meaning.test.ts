@@ -74,16 +74,13 @@ describe('repairByteTokens', () => {
   })
 })
 
-/** 바이트가 잘려 복원할 수 없는 뜻 — 사람이 정해야 한다(context-notes 2026-10-04). 고치면 이 목록에서 뺀다 */
-const UNRECOVERABLE = new Set(['2180960', '2180970', '2597630', '2624430', '1167890'])
-
-describe('배포 사전에는 복원 가능한 바이트 토큰이 없다', () => {
+describe('배포 사전에는 바이트 토큰이 없다', () => {
   it.each(['base', 'band4', 'wide', 'lookup'])('%s.json', (name) => {
     const { idioms } = JSON.parse(readFileSync(`public/dict/${name}.json`, 'utf8')) as {
       idioms: { id: string; koMeaning?: { definition: string } | null }[]
     }
     const left = idioms
-      .filter((r) => /<0x[0-9A-Fa-f]{2}>/.test(r.koMeaning?.definition ?? '') && !UNRECOVERABLE.has(r.id))
+      .filter((r) => /<0x[0-9A-Fa-f]{2}>/.test(r.koMeaning?.definition ?? ''))
       .map((r) => r.id)
     expect(left).toEqual([])
   })

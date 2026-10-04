@@ -1,4 +1,6 @@
 // 카드에 뜨는 한국어 뜻 한 줄의 표기 규칙. 여러 뜻은 쉼표로 가른다 (사용자 요청 2026-09-12)
+import { existsSync, readFileSync } from 'node:fs'
+import { join } from 'node:path'
 
 /**
  * 뜻이 여럿일 때 구분자를 `, ` 로 통일한다.
@@ -35,4 +37,13 @@ export function normalizeDefinition(definition: string): string {
     .replace(/\s*;\s*\.?\s*/g, ', ')
     .replace(/[,;\s]+$/, '')
     .trim()
+}
+
+/**
+ * 바이트가 잘려 `repairByteTokens` 로도 못 살리는 뜻을 사람이 정해 둔 표 (id → 한국어 뜻).
+ * 없는 파일이면 빈 표다. 사전 빌더가 번역본보다 먼저 본다 — `source: llm`·`verified: false` 로 실린다.
+ */
+export function loadTruncatedOverrides(dictDir: string): Record<string, string> {
+  const path = join(dictDir, 'korean-meaning-truncated-overrides.json')
+  return existsSync(path) ? (JSON.parse(readFileSync(path, 'utf8')) as { byId: Record<string, string> }).byId : {}
 }

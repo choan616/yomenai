@@ -9,7 +9,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { pairId } from '../src/lib/onyomi.ts'
 import { DICT_DIR } from './lib/dict.ts'
-import { repairByteTokens } from './lib/meaning.ts'
+import { loadTruncatedOverrides, repairByteTokens } from './lib/meaning.ts'
 import { buildSiblings, type MeaningOverride } from './lib/siblings.ts'
 import type { Extras } from './build-extra-readings.ts'
 
@@ -127,10 +127,11 @@ function slim(m: KoClass['koMeaning']): RuntimeIdiom['koMeaning'] {
 }
 
 /** 분류표에 없는 숙어(밴드 4)의 뜻. 번역본에서 그대로 가져온다 */
+const truncatedFix = loadTruncatedOverrides(DICT_DIR)
 function fallbackMeaning(id: string): RuntimeIdiom['koMeaning'] {
   const m = koMeaningById[id]
   if (!m?.ko) return null
-  return { definition: repairByteTokens(m.ko), source: 'llm', verified: false }
+  return { definition: truncatedFix[id] ?? repairByteTokens(m.ko), source: 'llm', verified: false }
 }
 
 const base: RuntimeIdiom[] = []
