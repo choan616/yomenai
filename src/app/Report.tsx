@@ -107,6 +107,7 @@ export function Report({
   onFocus,
   onRule,
   onOnyomi,
+  onShiritori,
   onQuick,
 }: {
   /** 자주 틀린 숙어를 채점 없이 넘겨 보는 화면으로 (2026-09-12) */
@@ -119,6 +120,8 @@ export function Report({
   onRule: (id: RuleId | null) => void
   /** 음독 맵으로 (2026-09-17). 홈 메뉴가 탭으로 내려가면서 이 탭 아래로 옮겨왔다 */
   onOnyomi: () => void
+  /** 한자 끝말잇기로 (2026-10-04). 탭바를 덮는 흐름이다 */
+  onShiritori: () => void
   /** 짧은 세션으로 (2026-10-02). 홈에서 걷어낸 「3장만」이 달력의 오늘 칸으로 옮겨왔다 */
   onQuick: () => void
 }) {
@@ -242,6 +245,7 @@ export function Report({
             onFocus={onFocus}
             onRule={onRule}
             onOnyomi={onOnyomi}
+            onShiritori={onShiritori}
             onQuick={onQuick}
           />
         ) : (
@@ -249,6 +253,7 @@ export function Report({
             <ToolsSection
               onyomi={data?.onyomi ?? null}
               onOnyomi={onOnyomi}
+              onShiritori={onShiritori}
               onRules={() => onRule(null)}
             />
           )
@@ -265,6 +270,7 @@ function ReportBody({
   onFocus,
   onRule,
   onOnyomi,
+  onShiritori,
   onQuick,
 }: {
   data: Loaded
@@ -273,6 +279,8 @@ function ReportBody({
   onFocus: (pairIds: string[]) => void
   onRule: (id: RuleId | null) => void
   onOnyomi: () => void
+  /** 한자 끝말잇기로 (2026-10-04). 탭바를 덮는 흐름이다 */
+  onShiritori: () => void
   onQuick: () => void
 }) {
   const {
@@ -420,7 +428,12 @@ function ReportBody({
         )}
       </section>
 
-      <ToolsSection onyomi={onyomi} onOnyomi={onOnyomi} onRules={() => onRule(null)} />
+      <ToolsSection
+        onyomi={onyomi}
+        onOnyomi={onOnyomi}
+        onShiritori={onShiritori}
+        onRules={() => onRule(null)}
+      />
 
       {/* 취약 음독 — 접어 둔다 (2026-10-01). 비어 있으면 섹션째로 없다 */}
       {report.weakOnyomi.length > 0 && (
@@ -1014,11 +1027,14 @@ function RxItem({
 function ToolsSection({
   onyomi,
   onOnyomi,
+  onShiritori,
   onRules,
 }: {
   /** 계산 전에는 `null` 이다 — 이 묶음은 기록이 없어도, 재생이 끝나기 전에도 보인다 */
   onyomi: OnyomiMasterySummary | null
   onOnyomi: () => void
+  /** 한자 끝말잇기로 (2026-10-04). 탭바를 덮는 흐름이다 */
+  onShiritori: () => void
   onRules: () => void
 }) {
   return (
@@ -1040,6 +1056,11 @@ function ToolsSection({
             ? '(한자, 음독) 쌍 숙달 현황'
             : `한자 읽기 ${onyomi.mastered}/${onyomi.total}쌍 숙달`}
         </span>
+        <span className="chev">›</span>
+      </button>
+      <button type="button" className="tool-row" onClick={onShiritori}>
+        <span className="tool-name">한자 끝말잇기</span>
+        <span className="tool-note">끝 한자로 이어 읽기 놀이</span>
         <span className="chev">›</span>
       </button>
     </section>

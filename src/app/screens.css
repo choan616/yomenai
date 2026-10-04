@@ -2671,3 +2671,87 @@ p.rule-record {
     transition: none;
   }
 }
+
+/* ── 한자 끝말잇기 (2026-10-04) — 진단과 같은 3분할 골격(.diag) 위에 사슬 목록과 입력을 얹는다 ── */
+.shiritori .shiritori-title {
+  flex: 1;
+  text-align: center;
+  font-size: calc(15px * var(--ui-scale));
+}
+.shiritori .study-main {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+.chain {
+  flex: 1;
+  min-height: 0;
+  margin: 0;
+  padding: 12px 16px;
+  list-style: none;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.chain-item {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  max-width: 85%;
+  padding: 8px 14px;
+  border-radius: 14px;
+  background: var(--surface);
+}
+.chain-item.app {
+  align-self: flex-start;
+}
+.chain-item.me {
+  align-self: flex-end;
+  background: var(--surface-2);
+}
+.chain-word {
+  font-size: calc(24px * var(--ui-scale));
+}
+.chain-reading {
+  font-size: calc(13px * var(--ui-scale));
+  color: var(--text-faint);
+}
+.shiritori-ask,
+.shiritori-over {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px 16px 12px;
+}
+.shiritori-need {
+  margin: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+.need-kanji {
+  font-size: calc(30px * var(--ui-scale));
+}
+.need-note {
+  font-size: calc(14px * var(--ui-scale));
+  color: var(--text-dim);
+}
+.shiritori-msg,
+.shiritori-over p {
+  margin: 0;
+  font-size: calc(14px * var(--ui-scale));
+  color: var(--text-dim);
+}
+.shiritori-hint {
+  margin: 0;
+  font-size: calc(20px * var(--ui-scale));
+}
+.shiritori-actions {
+  display: flex;
+  gap: 8px;
+}
+.shiritori-actions .btn {
+  flex: 1;
+}

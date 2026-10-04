@@ -11,6 +11,7 @@ import { Home } from './app/Home.tsx'
 import { OnyomiMap } from './app/OnyomiMap.tsx'
 import { Report } from './app/Report.tsx'
 import { Settings } from './app/Settings.tsx'
+import { Shiritori } from './app/Shiritori.tsx'
 import { Browse } from './app/Browse.tsx'
 import { Search } from './app/Search.tsx'
 import { CameraFind, type CameraFound } from './app/CameraFind.tsx'
@@ -53,7 +54,7 @@ export type Sub =
  * 세션은 키보드가 올라오는 화면이라 하단에 탭이 깔리면 안 된다
  */
 export type Flow =
-  | { kind: 'study' | 'quick' | 'rematch' | 'diagnostic' }
+  | { kind: 'study' | 'quick' | 'rematch' | 'diagnostic' | 'shiritori' }
   /**
    * `filter` 가 있으면 그 오답 유형(+탁음이면 갈래)만 다시본다 — 리포트의 분포 그래프
    * "N회 다시보기" 가 쓴다 (2026-09-18). 없으면 기존처럼 자주 틀린 것 전체를 섞어 낸다
@@ -157,6 +158,8 @@ function FlowScreen({
       return <Study kind="rematch" onExit={onExit} />
     case 'focus':
       return <Study kind="focus" focusPairIds={flow.pairIds} onExit={onExit} />
+    case 'shiritori':
+      return <Shiritori onExit={onExit} />
     case 'browse':
       return <Browse onExit={onExit} filter={flow.filter} />
     case 'diagnostic':
@@ -200,6 +203,7 @@ function TabRoot({
           onRule={(focus) => onSub({ kind: 'rules', focus })}
           onOnyomi={() => onSub({ kind: 'onyomi' })}
           onQuick={() => onFlow({ kind: 'quick' })}
+          onShiritori={() => onFlow({ kind: 'shiritori' })}
         />
       )
     case 'search':
