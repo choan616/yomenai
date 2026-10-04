@@ -4,6 +4,10 @@
 // 206 을 캐시하지 못해 오프라인이 깨진다. `fetch` 는 200 전체 응답이라 `CacheFirst` 로 캐시된다.
 // iOS 는 `AudioContext.resume()` 이 사용자 제스처 안에서 불려야 소리가 난다 — `speak()` 가 첫 줄에서 동기로 부른다
 // (읽기 듣기는 모두 버튼 클릭에서 시작한다). 파일 이름이 동기 해시라 비동기가 `await` 한 번(받기) 뒤에만 생긴다.
+//
+// **무음 스위치를 무시한다** (2026-10-04 사용자 실기기 「무음스위치에서는 재생 안 된다」 → 「의도적인 재생이라 안 나오는 게 어색하다」).
+// iOS 는 Web Audio 를 기본(ambient) 세션으로 재생해 스위치를 따른다. `navigator.audioSession.type = 'playback'` 이면 스위치를 무시한다.
+// 세션은 페이지 전체가 공유해서, 자판 소리(`keyFeedback.ts`)까지 스위치를 무시하게 되지 않도록 **재생하는 동안만** 바꾸고 끝나면 되돌린다.
 import { audioName } from '../lib/audioName.ts'
 import { loadTtsPrefs, type TtsPrefs } from './ttsPrefs.ts'
 import type { Tts, TtsVoice } from './tts.ts'
@@ -33,6 +37,8 @@ export interface FileTtsDeps {
   fetchFn?: typeof fetch
   /** 테스트가 가짜를 넣는다. 기본은 브라우저의 AudioContext */
   makeContext?: () => ContextLike | null
+  /** 오디오 세션 (iOS 16.4+ Safari). 없으면 건드리지 않는다 */
+  audioSession?: { type: string } | null
 }
 
 const defaultContext = (): ContextLike | null => {
@@ -40,12 +46,16 @@ const defaultContext = (): ContextLike | null => {
   return Ctor ? (new Ctor() as unknown as ContextLike) : null
 }
 
+const defaultSession = (): { type: string } | null =>
+  typeof navigator === 'undefined' ? null : ((navigator as unknown as { audioSession?: { type: string } }).audioSession ?? null)
+
 export function createFileTts({
   fallback,
   base = audioBase,
   readPrefs = loadTtsPrefs,
   fetchFn = (...a) => fetch(...a),
   makeContext = defaultContext,
+  audioSession = defaultSession(),
 }: FileTtsDeps): Tts {
   let ctx: ContextLike | null | undefined
   let current: SourceLike | null = null
@@ -54,6 +64,27 @@ export function createFileTts({
   const memory = new Map<string, unknown>()
   /** 서버에 없다고 한 주소 — 사전 밖 읽기를 누를 때마다 다시 묻지 않게 (세션 동안) */
   const missing = new Set<string>()
+
+  /** 재생 전에 바꾸기 전 세션 종류. 바꾼 상태가 아니면 null */
+  let savedSession: string | null = null
+  const claimSession = (): void => {
+    if (!audioSession || savedSession !== null) return
+    try {
+      savedSession = audioSession.type
+      audioSession.type = 'playback'
+    } catch {
+      savedSession = null
+    }
+  }
+  const releaseSession = (): void => {
+    if (!audioSession || savedSession === null) return
+    try {
+      audioSession.type = savedSession
+    } catch {
+      /* 되돌리지 못해도 소리는 난다 */
+    }
+    savedSession = null
+  }
 
   const stopCurrent = (): void => {
     if (!current) return
@@ -93,14 +124,17 @@ export function createFileTts({
       if (!voice) {
         seq++
         stopCurrent()
+        releaseSession()
         fallback.speak(t)
         return
       }
       const mine = ++seq
       stopCurrent()
       fallback.cancel() // 기기 음성이 말하던 중이면 멈춘다
+      claimSession() // 제스처 안에서 소리를 내기 전에
       ctx ??= makeContext()
       if (!ctx) {
+        releaseSession()
         fallback.speak(t)
         return
       }
@@ -114,19 +148,26 @@ export function createFileTts({
           src.buffer = buffer
           src.connect(context.destination)
           src.onended = () => {
-            if (current === src) current = null
+            if (current === src) {
+              current = null
+              releaseSession()
+            }
           }
           src.start()
           current = src
         } catch {
           // 파일이 없거나(사전 밖 읽기·아직 안 올린 음성) 받지 못했거나(오프라인) 해독이 안 됐다 → 기기 음성
-          if (mine === seq) fallback.speak(t)
+          if (mine === seq) {
+            releaseSession()
+            fallback.speak(t)
+          }
         }
       })()
     },
     cancel() {
       seq++
       stopCurrent()
+      releaseSession()
       fallback.cancel()
     },
     voices(): TtsVoice[] {

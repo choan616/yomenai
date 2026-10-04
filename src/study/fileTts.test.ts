@@ -9,7 +9,14 @@ import { fileVoiceFor } from './voiceFiles.ts'
 const BASE = '/yomenai-audio'
 const prefs = (voice = ''): TtsPrefs => ({ voice, rate: 'normal', shape: false })
 
-function setup(opts: { voice?: string; base?: string; fetchImpl?: (url: string) => Promise<Response> } = {}) {
+function setup(
+  opts: {
+    voice?: string
+    base?: string
+    fetchImpl?: (url: string) => Promise<Response>
+    session?: { type: string } | null
+  } = {},
+) {
   const fallback: Tts & { spoken: string[]; cancelled: number } = {
     available: true,
     spoken: [],
@@ -62,6 +69,7 @@ function setup(opts: { voice?: string; base?: string; fetchImpl?: (url: string) 
     readPrefs: () => prefs(opts.voice),
     fetchFn: fetchFn as unknown as typeof fetch,
     makeContext: () => ctx,
+    audioSession: opts.session ?? null,
   })
   return { tts, fallback, sources, urls, ctx, events, fetchFn }
 }
@@ -210,6 +218,63 @@ describe('음성 파일 재생', () => {
     release(new Response(new Uint8Array([1]), { status: 200 }))
     await flush()
     expect(sources).toHaveLength(0)
+  })
+})
+
+describe('무음 스위치 (오디오 세션)', () => {
+  it('재생하기 전에 playback 으로 바꾸고, 소리가 끝나면 원래대로 되돌린다', async () => {
+    const session = { type: 'auto' }
+    const { tts, sources } = setup({ session })
+    tts.speak('がっこう')
+    expect(session.type).toBe('playback') // resume·fetch 보다 앞, 같은 동기 구간
+    await flush()
+    expect(session.type).toBe('playback') // 재생 중
+    ;(sources[0] as unknown as { onended: () => void }).onended()
+    expect(session.type).toBe('auto')
+  })
+
+  it('cancel 하면 되돌린다', async () => {
+    const session = { type: 'auto' }
+    const { tts } = setup({ session })
+    tts.speak('がっこう')
+    await flush()
+    tts.cancel()
+    expect(session.type).toBe('auto')
+  })
+
+  it('파일이 없어 기기 음성으로 돌아가도 되돌린다', async () => {
+    const session = { type: 'auto' }
+    const { tts, fallback } = setup({ session, fetchImpl: async () => new Response('', { status: 404 }) })
+    tts.speak('ないよみ')
+    await flush()
+    expect(fallback.spoken).toEqual(['ないよみ'])
+    expect(session.type).toBe('auto')
+  })
+
+  it('이어서 다른 읽기를 눌러도 처음의 원래 값을 기억한다', async () => {
+    const session = { type: 'auto' }
+    const { tts, sources } = setup({ session })
+    tts.speak('がっこう')
+    await flush()
+    tts.speak('きっぷ')
+    await flush()
+    ;(sources[1] as unknown as { onended: () => void }).onended()
+    expect(session.type).toBe('auto') // 'playback' 이 아니라
+  })
+
+  it('기기 음성을 고르면 세션을 건드리지 않는다', async () => {
+    const session = { type: 'auto' }
+    const { tts } = setup({ session, voice: 'Kyoko' })
+    tts.speak('がっこう')
+    await flush()
+    expect(session.type).toBe('auto')
+  })
+
+  it('오디오 세션이 없는 환경(데스크톱·구형)에서도 그대로 재생된다', async () => {
+    const { tts, sources } = setup({ session: null })
+    tts.speak('がっこう')
+    await flush()
+    expect(sources[0]!.started).toBe(1)
   })
 })
 
