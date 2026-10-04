@@ -53,6 +53,7 @@ import {
   VOICING_LABEL,
 } from '../study/mistakeLabels.ts'
 import { Mixed } from './RuleBody.tsx'
+import { loadShiritoriRecord } from './shiritoriRecord.ts'
 import { isUnlocked } from './unlocks.ts'
 import { ruleForMistake } from './rules.ts'
 import { RULE_OF_MISTAKE, type RuleId } from './rules.ts'
@@ -1043,6 +1044,8 @@ function ToolsSection({
   streak: { longest: number } | null
   onRules: () => void
 }) {
+  // 도구 줄이 그려질 때마다 읽는다 — 끝말잇기에서 돌아오면 Report 가 다시 그려져 새 기록이 보인다
+  const record = loadShiritoriRecord()
   return (
     <section className="tools">
       <p className="section-title">도구</p>
@@ -1068,7 +1071,9 @@ function ToolsSection({
       {isUnlocked('shiritori', streak) && (
         <button type="button" className="tool-row" onClick={onShiritori}>
           <span className="tool-name">한자 끝말잇기</span>
-          <span className="tool-note">끝 한자로 이어 읽기 놀이</span>
+          <span className="tool-note">
+            {record.plays > 0 ? `최고 ${record.best}개 · ${record.plays}판` : '끝 한자로 이어 읽기 놀이'}
+          </span>
           <span className="chev">›</span>
         </button>
       )}

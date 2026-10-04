@@ -181,3 +181,27 @@ test('27일이면 아직 잠겨 있다', async ({ page }) => {
   await expect(page.getByText(/한자 읽기 \d+\/\d+쌍 숙달/)).toBeVisible({ timeout: 20_000 })
   await expect(page.getByRole('button', { name: /한자 끝말잇기/ })).toHaveCount(0)
 })
+
+test('이은 개수가 기록으로 남아 결과 화면과 리포트 도구 줄에 보인다', async ({ page }) => {
+  await open(page)
+  const need = tail(await lastWord(page))
+  const starts = BASE.filter((w) => [...w.headword][0] === need)
+  const mine = starts.find((w) => w.reading.length >= 2 && starts.filter((x) => x.reading === w.reading).length === 1)!
+  await page.locator('.kana-input').fill(mine.reading)
+  await page.locator('.kana-input').press('Enter')
+  await expect(page.locator('.count')).toHaveText('1개')
+
+  // 앱이 이을 말이 없어 이미 끝났으면 바로 결과, 아니면 그만하기로 끝낸다
+  if ((await page.getByRole('button', { name: '그만하기' }).count()) > 0) {
+    await page.getByRole('button', { name: '그만하기' }).click()
+  }
+  await expect(page.locator('.shiritori-record')).toHaveText('새 기록이에요! 최고 1개 · 1판')
+
+  // 한 개도 못 이은 판은 판으로 안 센다
+  await page.getByRole('button', { name: '다시 하기' }).click()
+  await page.getByRole('button', { name: '그만하기' }).click()
+  await expect(page.locator('.shiritori-record')).toHaveText('최고 1개 · 1판')
+
+  await page.getByRole('button', { name: '나가기', exact: true }).click()
+  await expect(page.getByRole('button', { name: /한자 끝말잇기/ })).toContainText('최고 1개 · 1판')
+})

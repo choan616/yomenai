@@ -4,6 +4,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { loadBaseIdioms } from '../dict/load.ts'
 import { KanaInput } from '../study/KanaInput.tsx'
+import { recordGame, type GameResult } from './shiritoriRecord.ts'
 import {
   buildIndex,
   hintWords,
@@ -34,6 +35,9 @@ export function Shiritori({ onExit }: { onExit: () => void }) {
   /** 판이 바뀔 때마다 올려 입력 값을 비운다 */
   const [round, setRound] = useState(0)
   const listRef = useRef<HTMLOListElement>(null)
+  /** 이번 판을 기록했나 — 끝난 판과 나가는 판이 겹쳐도 한 번만 센다 */
+  const recorded = useRef(false)
+  const [result, setResult] = useState<GameResult | null>(null)
 
   useEffect(() => {
     let alive = true
@@ -69,6 +73,18 @@ export function Shiritori({ onExit }: { onExit: () => void }) {
   const need = last ? tailKanji(last.headword) : ''
   const mine = chain.filter((l) => l.by === 'me').length
 
+  /** 한 판을 끝낸다 — 기록은 판당 한 번이다 */
+  const finish = (count: number) => {
+    if (recorded.current) return
+    recorded.current = true
+    setResult(recordGame(count))
+  }
+
+  const leave = () => {
+    if (!over) finish(mine)
+    onExit()
+  }
+
   const submit = (value: string) => {
     if (!index || !last || over) return
     const v = judge(index, need, value, used)
@@ -88,12 +104,16 @@ export function Shiritori({ onExit }: { onExit: () => void }) {
     setMessage(null)
     setHint(null)
     setRound((r) => r + 1)
-    if (!reply) setOver({ reason: 'win' })
+    if (!reply) {
+      setOver({ reason: 'win' })
+      finish(next.filter((l) => l.by === 'me').length)
+    }
   }
 
   const giveUp = () => {
     if (!index) return
     setOver({ reason: 'giveup', examples: hintWords(index, need, used, 3) })
+    finish(mine)
   }
 
   const again = () => {
@@ -102,6 +122,8 @@ export function Shiritori({ onExit }: { onExit: () => void }) {
     setMessage(null)
     setHint(null)
     setOver(null)
+    recorded.current = false
+    setResult(null)
     setRound((r) => r + 1)
   }
 
@@ -121,7 +143,7 @@ export function Shiritori({ onExit }: { onExit: () => void }) {
   return (
     <div className="diag shiritori">
       <header className="study-bar">
-        <button type="button" className="link" onClick={onExit} aria-label="끝말잇기 나가기">
+        <button type="button" className="link" onClick={leave} aria-label="끝말잇기 나가기">
           ✕
         </button>
         <span className="shiritori-title">한자 끝말잇기</span>
@@ -162,11 +184,16 @@ export function Shiritori({ onExit }: { onExit: () => void }) {
                 )}
               </>
             )}
+            {result && result.best > 0 && (
+              <p className="shiritori-record">
+                {result.isNewBest ? '새 기록이에요! ' : ''}최고 {result.best}개 · {result.plays}판
+              </p>
+            )}
             <div className="shiritori-actions">
               <button type="button" className="btn" onClick={again}>
                 다시 하기
               </button>
-              <button type="button" className="btn" onClick={onExit}>
+              <button type="button" className="btn" onClick={leave}>
                 나가기
               </button>
             </div>
