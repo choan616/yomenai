@@ -10648,3 +10648,11 @@ REST(`POST /user/repos`)로 한 번 더 시도하려 했으나 자동 승인 분
 - 업로드할 저장소는 이미 로컬에 만들어 커밋해 뒀다(세 커밋: README·`.nojekyll`, `kurono/`, `metan/`; `.git` 84MB). 위치는 세션 임시 폴더 `scratchpad/yomenai-audio`
 - 사용자가 GitHub 웹에서 빈 공개 저장소 `choan616/yomenai-audio` 를 만들면(README·.gitignore 없이) 원격만 걸어 push 하고 Pages 를 켠다 — 원격은 앱 저장소와 같은 SSH 별칭 `git@github.com-private:` 를 쓴다
 - 앱 push 는 음성이 호스팅된 뒤로 미뤘다(그 전에 배포하면 목록에 음성이 보이는데 재생은 404 후 기기 음성으로 돌아간다)
+
+### 음성 저장소 올림, Pages 켜기는 사용자 몫 (2026-10-04)
+
+`choan616/yomenai-audio`(공개)에 음성 파일과 README 를 push 했다(커밋 `61b47a67`, 이어서 워크플로 `d2e44130`).
+**Pages 를 켜지 못했다.** 토큰(`gh`)은 Pages 생성이 403, 그래서 `configure-pages` 의 `enablement: true` 로 워크플로가 켜게 해 봤으나 `GITHUB_TOKEN` 도
+`Resource not accessible by integration` 로 거절됐다(Pages 생성은 저장소 관리자 권한이 필요하다). 모바일 GitHub 앱에는 Pages 설정이 없어서
+**모바일 브라우저로 `github.com/choan616/yomenai-audio/settings/pages` 를 열고 Source 를 「GitHub Actions」로** 두는 길을 안내한다(앱 저장소와 같은 방식).
+켠 뒤에는 워크플로를 다시 돌려야 해서(`workflow_dispatch` 또는 빈 커밋 push) 내가 빈 커밋을 push 한다. 앱 push 는 그 뒤다.
