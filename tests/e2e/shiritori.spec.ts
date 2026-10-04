@@ -98,7 +98,7 @@ test('✕ 로 나가면 리포트로 돌아온다', async ({ page }) => {
   await expect(page.getByRole('button', { name: '리포트', exact: true })).toHaveAttribute('aria-current', 'page')
 })
 
-test('잠겨 있으면 도구 줄에 안 보인다 (레벨 제도가 생기기 전의 기본)', async ({ page }) => {
+test('기록이 없으면 도구 줄에 안 보인다', async ({ page }) => {
   await page.addInitScript(() => {
     try {
       localStorage.setItem('yomenai:diagnosticDone', '1')
@@ -110,5 +110,74 @@ test('잠겨 있으면 도구 줄에 안 보인다 (레벨 제도가 생기기 �
   await page.goto('/')
   await page.getByRole('button', { name: '리포트', exact: true }).click()
   await expect(page.getByRole('button', { name: /읽기 규칙/ })).toBeVisible()
+  await expect(page.getByRole('button', { name: /한자 끝말잇기/ })).toHaveCount(0)
+})
+
+/** 어제까지 `days` 일 연속, 하루 3개씩(「3장만」 문턱) 채점 기록을 심는다 */
+async function seedStreak(page: Page, days: number): Promise<void> {
+  await page.evaluate(
+    (days) =>
+      new Promise<void>((res, rej) => {
+        const req = indexedDB.open('yomenai')
+        req.onsuccess = () => {
+          const tx = req.result.transaction('events', 'readwrite')
+          const store = tx.objectStore('events')
+          for (let d = 1; d <= days; d++) {
+            const at = new Date()
+            at.setDate(at.getDate() - d)
+            at.setHours(12, 0, 0, 0)
+            for (let i = 0; i < 3; i++) {
+              store.put({
+                id: `streak-${d}-${i}`,
+                userId: 'local',
+                deviceId: 'e2e',
+                at: at.getTime() + i,
+                idiomId: '1000220',
+                cardType: 'reading',
+                mistakeType: null,
+                deletedAt: null,
+                type: 'review',
+                grade: 3,
+                answer: 'x',
+                expected: 'x',
+                correct: true,
+                elapsedMs: 1000,
+              })
+            }
+          }
+          tx.oncomplete = () => res()
+          tx.onerror = () => rej(new Error('심기 실패'))
+        }
+      }),
+    days,
+  )
+}
+
+async function reportAfterSeed(page: Page, days: number): Promise<void> {
+  await page.addInitScript(() => {
+    try {
+      localStorage.setItem('yomenai:diagnosticDone', '1')
+      localStorage.setItem('yomenai:welcomeSeen', '1')
+    } catch {
+      /* private mode */
+    }
+  })
+  await page.goto('/')
+  await expect(page.getByRole('button', { name: '세션 시작' })).toBeVisible({ timeout: 20_000 })
+  await seedStreak(page, days)
+  await page.reload()
+  await page.getByRole('button', { name: '리포트', exact: true }).click()
+  await expect(page.getByRole('button', { name: /읽기 규칙/ })).toBeVisible({ timeout: 20_000 })
+}
+
+test('연속 기록이 28일에 닿으면 도구 줄에 열린다 (열쇠 없이, 기록만으로)', async ({ page }) => {
+  await reportAfterSeed(page, 28)
+  await expect(page.getByRole('button', { name: /한자 끝말잇기/ })).toBeVisible({ timeout: 20_000 })
+})
+
+test('27일이면 아직 잠겨 있다', async ({ page }) => {
+  await reportAfterSeed(page, 27)
+  // 기록 계산이 끝났다는 신호 — 음독 맵 줄의 수치가 채워진다. 그 전에는 어차피 잠겨 있어서 이걸 기다려야 안 열린다는 검사가 의미 있다
+  await expect(page.getByText(/한자 읽기 \d+\/\d+쌍 숙달/)).toBeVisible({ timeout: 20_000 })
   await expect(page.getByRole('button', { name: /한자 끝말잇기/ })).toHaveCount(0)
 })

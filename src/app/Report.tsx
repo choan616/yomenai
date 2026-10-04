@@ -255,6 +255,7 @@ export function Report({
               onyomi={data?.onyomi ?? null}
               onOnyomi={onOnyomi}
               onShiritori={onShiritori}
+              streak={data?.streak ?? null}
               onRules={() => onRule(null)}
             />
           )
@@ -433,6 +434,7 @@ function ReportBody({
         onyomi={onyomi}
         onOnyomi={onOnyomi}
         onShiritori={onShiritori}
+        streak={streak}
         onRules={() => onRule(null)}
       />
 
@@ -1029,6 +1031,7 @@ function ToolsSection({
   onyomi,
   onOnyomi,
   onShiritori,
+  streak,
   onRules,
 }: {
   /** 계산 전에는 `null` 이다 — 이 묶음은 기록이 없어도, 재생이 끝나기 전에도 보인다 */
@@ -1036,6 +1039,8 @@ function ToolsSection({
   onOnyomi: () => void
   /** 한자 끝말잇기로 (2026-10-04). 탭바를 덮는 흐름이다 */
   onShiritori: () => void
+  /** 연속 기록 — 끝말잇기가 열리는 조건이다 (unlocks.ts). 계산 전이면 null */
+  streak: { longest: number } | null
   onRules: () => void
 }) {
   return (
@@ -1059,8 +1064,8 @@ function ToolsSection({
         </span>
         <span className="chev">›</span>
       </button>
-      {/* 레벨 제도가 생기면 특정 레벨에서 열린다 (2026-10-04) — 그때까지 잠겨 있다. unlocks.ts */}
-      {isUnlocked('shiritori') && (
+      {/* 연속 기록이 4주(28일)에 닿은 적이 있으면 열린다 (2026-10-04). unlocks.ts */}
+      {isUnlocked('shiritori', streak) && (
         <button type="button" className="tool-row" onClick={onShiritori}>
           <span className="tool-name">한자 끝말잇기</span>
           <span className="tool-note">끝 한자로 이어 읽기 놀이</span>
