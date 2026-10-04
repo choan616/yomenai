@@ -7,7 +7,7 @@
 //
 // 백업과 초기화는 `Backup.tsx` 로 뺐다. 덩치가 본문의 절반이었고, 되돌릴 수 없는 초기화가
 // 스크롤하다 만나는 자리에 있었다
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, type CSSProperties } from 'react'
 import { countUnsynced, LOCAL_USER_ID } from '../db/events.ts'
 import { db } from '../db/schema.ts'
 import { getDeviceId } from '../db/device.ts'
@@ -28,6 +28,7 @@ import { canVibrate } from '../study/keyFeedback.ts'
 import { KEYPAD_LABEL, type KeypadLayout } from '../study/keypadLayouts.ts'
 import { tts, type TtsVoice } from '../study/tts.ts'
 import { BottomSheet } from './BottomSheet.tsx'
+import { StepSlider } from './StepSlider.tsx'
 import { loadTtsPrefs, RATE_LABEL, RATES, saveTtsPrefs, type TtsPrefs } from '../study/ttsPrefs.ts'
 import { audioBase, FILE_VOICES, fileVoiceFor } from '../study/voiceFiles.ts'
 
@@ -160,12 +161,6 @@ export function Settings({
     applyTextScale(next)
   }
 
-  const setLimit = (delta: number) =>
-    update({
-      ...settings,
-      sessionLimit: Math.min(LIMIT_MAX, Math.max(LIMIT_MIN, settings.sessionLimit + delta)),
-    })
-
   return (
     <BottomSheet title="설정" onClose={onClose}>
         {/* 값을 고르는 게 아니라 다른 화면으로 가는 것들 — 시트의 처음 높이에 보인다 (2026-10-04).
@@ -223,43 +218,29 @@ export function Settings({
         <p className="setting-group-note">무엇을 얼마나 낼지</p>
         <div className="setting">
           <label htmlFor="session-len">세션 길이</label>
-          <div className="stepper" id="session-len">
-            <button
-              type="button"
-              onClick={() => setLimit(-STEP)}
-              disabled={settings.sessionLimit <= LIMIT_MIN}
-              aria-label="세션 길이 줄이기"
-            >
-              −
-            </button>
+          <div className="slider">
+            <input
+              id="session-len"
+              type="range"
+              min={LIMIT_MIN}
+              max={LIMIT_MAX}
+              step={STEP}
+              value={settings.sessionLimit}
+              style={{ '--f': (settings.sessionLimit - LIMIT_MIN) / (LIMIT_MAX - LIMIT_MIN) } as CSSProperties}
+              onChange={(e) => update({ ...settings, sessionLimit: Number(e.target.value) })}
+            />
             <span className="val">{settings.sessionLimit}장</span>
-            <button
-              type="button"
-              onClick={() => setLimit(STEP)}
-              disabled={settings.sessionLimit >= LIMIT_MAX}
-              aria-label="세션 길이 늘리기"
-            >
-              +
-            </button>
           </div>
-          <span className="hint">
-            한 세션에 낼 카드 수 ({LIMIT_MIN}~{LIMIT_MAX}). 기본 {DEFAULT_SETTINGS.sessionLimit}
-          </span>
+          <span className="hint">한 세션에 낼 카드 수예요. 기본 {DEFAULT_SETTINGS.sessionLimit}</span>
         </div>
         <div className="setting">
           <label>모드 비율 (읽기 교정 : 어휘 확장)</label>
-          <div className="seg" role="group" aria-label="모드 비율">
-            {RATIO_PRESETS.map((p) => (
-              <button
-                key={p.label}
-                type="button"
-                aria-pressed={sameRatio(settings.ratio, p.value)}
-                onClick={() => update({ ...settings, ratio: p.value })}
-              >
-                {p.label}
-              </button>
-            ))}
-          </div>
+          <StepSlider
+                label="모드 비율"
+                options={RATIO_PRESETS}
+                index={RATIO_PRESETS.findIndex((p) => sameRatio(settings.ratio, p.value))}
+                onPick={(i) => update({ ...settings, ratio: RATIO_PRESETS[i]!.value })}
+              />
           <span className="hint">한쪽 정원이 비면 다른 쪽이 채워요. 기본 7 : 3</span>
         </div>
         <div className="setting">
@@ -274,15 +255,12 @@ export function Settings({
               max={100}
               step={10}
               value={settings.kunPercent}
+              style={{ '--f': settings.kunPercent / 100 } as CSSProperties}
               onChange={(e) => update({ ...settings, kunPercent: Number(e.target.value) })}
             />
             <span className="val">{settings.kunPercent}%</span>
           </div>
-          <span className="hint">
-            浜辺(はまべ)·荒木(あらき) 처럼 음독이 없는 숙어예요. 한국 한자음으로 유추할 수
-            없어서 기본은 0% 예요. 올리면 그 몫만큼 세션에 섞여요 — 100% 면 훈독만 나와요.
-            0% 보다 크면 진단과 밴드 사다리도 같은 범위를 봐요.
-          </span>
+          <span className="hint">浜辺처럼 음독 없는 숙어를 섞는 몫이에요. 기본 0%</span>
         </div>
 
         {/* 관찰 문구를 빼고 나니 여기 남는 건 요미가나뿐인데, 그건 세션이 아니라
@@ -291,83 +269,45 @@ export function Settings({
         <p className="setting-group-note">틀렸던 것을 훑을 때</p>
         <div className="setting">
           <label>다시보기 요미가나</label>
-          <div className="seg" role="group" aria-label="다시보기 요미가나">
-            {BROWSE_MASKS.map((o) => (
-              <button
-                key={String(o.value)}
-                type="button"
-                aria-pressed={settings.browseMask === o.value}
-                onClick={() => update({ ...settings, browseMask: o.value })}
-              >
-                {o.label}
-              </button>
-            ))}
-          </div>
-          <span className="hint">
-            가리면 읽기를 덮어 두고 「읽기 보기」로 확인해요. 다음 장으로 넘어가면 다시 가려져요.
-          </span>
+          <StepSlider
+                label="다시보기 요미가나"
+                options={BROWSE_MASKS}
+                index={BROWSE_MASKS.findIndex((o) => o.value === settings.browseMask)}
+                onPick={(i) => update({ ...settings, browseMask: BROWSE_MASKS[i]!.value })}
+              />
+          <span className="hint">가리면 「읽기 보기」로 확인해요.</span>
         </div>
 
         <h3 className="setting-group">입력</h3>
         <div className="setting">
           <label>키보드</label>
-          <div className="seg" role="group" aria-label="키보드">
-            {KEYBOARDS.map((o) => (
-              <button
-                key={o.value}
-                type="button"
-                aria-pressed={settings.keyboard === o.value}
-                onClick={() => update({ ...settings, keyboard: o.value })}
-              >
-                {o.label}
-              </button>
-            ))}
-          </div>
-          <span className="hint">
-            받아쓰기·음성 제어·외부 입력 장치처럼 기기의 입력 기능을 쓰려면 기기 키보드를
-            고르세요. 영문 키보드에서 로마자로 치면 가나로 바뀌어요.
-          </span>
+          <StepSlider
+                label="키보드"
+                options={KEYBOARDS}
+                index={KEYBOARDS.findIndex((o) => o.value === settings.keyboard)}
+                onPick={(i) => update({ ...settings, keyboard: KEYBOARDS[i]!.value })}
+              />
+          <span className="hint">받아쓰기·음성 입력은 기기 키보드로 해요.</span>
         </div>
         <div className="setting">
           <label>자판 배열</label>
-          <div className="seg" role="group" aria-label="자판 배열">
-            {KEYPAD_LAYOUTS.map((o) => (
-              <button
-                key={o}
-                type="button"
-                aria-pressed={settings.keypadLayout === o}
-                onClick={() => update({ ...settings, keypadLayout: o })}
-              >
-                {KEYPAD_LABEL[o]}
-              </button>
-            ))}
-          </div>
-          <span className="hint">
-일본어 읽기에 안 쓰이는 l·q·v·x 를 빼면 남은 키가 13% 넓어져요 (읽기 10만여 개에서 0회).
-            순서는 그대로고 자리만 한 칸씩 당겨져요.
-          </span>
+          <StepSlider
+                label="자판 배열"
+                options={KEYPAD_LAYOUTS.map((o) => ({ label: KEYPAD_LABEL[o] }))}
+                index={KEYPAD_LAYOUTS.indexOf(settings.keypadLayout)}
+                onPick={(i) => update({ ...settings, keypadLayout: KEYPAD_LAYOUTS[i]! })}
+              />
+          <span className="hint">l·q·v·x 를 빼면 남은 키가 넓어져요.</span>
         </div>
         <div className="setting">
           <label>자판 입력 피드백</label>
-          <div className="seg" role="group" aria-label="자판 입력 피드백">
-            {KEY_FEEDBACKS.map((o) => (
-              <button
-                key={o.value}
-                type="button"
-                aria-pressed={settings.keyFeedback === o.value}
-                disabled={o.value === 'haptic' && !canVibrate()}
-                onClick={() => update({ ...settings, keyFeedback: o.value })}
-              >
-                {o.label}
-              </button>
-            ))}
-          </div>
-          <span className="hint">
-            앱 자판(손가락 기기)에만 적용돼요.
-            {canVibrate()
-              ? ' 소리는 기기가 무음이면 안 들려요.'
-              : ' 이 기기는 진동을 못 써요 — iOS 는 웹에 진동 기능이 없어요. 소리도 기기가 무음이면 안 들려요.'}
-          </span>
+          <StepSlider
+                label="자판 입력 피드백"
+                options={KEY_FEEDBACKS.map((o) => ({ label: o.label, disabled: o.value === 'haptic' && !canVibrate() }))}
+                index={KEY_FEEDBACKS.findIndex((o) => o.value === settings.keyFeedback)}
+                onPick={(i) => update({ ...settings, keyFeedback: KEY_FEEDBACKS[i]!.value })}
+              />
+          <span className="hint">앱 자판에만 적용돼요.{canVibrate() ? ' 무음이면 소리는 안 나요.' : ' 이 기기는 진동을 못 써요.'}</span>
         </div>
 
         {/* 소리 (2026-10-03 사용자 지적 「tts가 너무 딱딱하다」). 음성이 하나도 없는 기기에서는 그룹째 안 보인다.
@@ -402,8 +342,7 @@ export function Settings({
               </div>
               {audioBase() !== '' && (
                 <span className="hint">
-                  음성 파일은 처음 들을 때 인터넷으로 받아 두었다가, 다시 들을 땐 저장된 파일로 들려줘요. 아직 없는 말이나
-                  받지 못했을 때는 기기 음성이 대신 읽어요. 음성 합성:{' '}
+                  없거나 못 받으면 기기 음성이 읽어요. 음성 합성:{' '}
                   {FILE_VOICES.map((v, i) => (
                     <span key={v.id}>
                       {i > 0 && ', '}
@@ -412,52 +351,29 @@ export function Settings({
                   ))}
                 </span>
               )}
-              <span className="hint">
-                기기에 설치된 음성만 나와요. 마음에 드는 게 없으면 기기의 음성 설정에서 일본어 음성을 더
-                내려받을 수 있어요. 온라인 음성은 인터넷이 없으면 소리가 안 나요.
-              </span>
+              <span className="hint">기기에 설치된 음성이에요. 온라인 음성은 인터넷이 있어야 해요.</span>
             </div>
             {!fileVoice && (
               <>
                 <div className="setting">
                   <label>발음 보정</label>
-                  <div className="seg" role="group" aria-label="발음 보정">
-                    {[
-                      { label: '켬', value: true },
-                      { label: '끔', value: false },
-                    ].map((o) => (
-                      <button
-                        key={o.label}
-                        type="button"
-                        aria-pressed={ttsPrefs.shape === o.value}
-                        onClick={() => setTtsPrefs({ ...ttsPrefs, shape: o.value })}
-                      >
-                        {o.label}
-                      </button>
-                    ))}
-                  </div>
-                  <span className="hint">
-                    장음을 길게 읽게 하고, 소리 맨 앞이 끊기는 것을 줄여 보는 실험이에요. 켜면 소리가 나기까지 조금 걸리고,
-                    기기에 따라 오히려 어색할 수 있어서 기본은 꺼 두었어요. 「들어보기」로 비교해 보세요.
-                  </span>
+                  <StepSlider
+                    label="발음 보정"
+                    options={[{ label: '끔' }, { label: '켬' }]}
+                    index={ttsPrefs.shape ? 1 : 0}
+                    onPick={(i) => setTtsPrefs({ ...ttsPrefs, shape: i === 1 })}
+                  />
+                  <span className="hint">장음을 길게 읽게 하는 실험이에요. 기본은 꺼 둬요.</span>
                 </div>
                 <div className="setting">
                   <label>속도</label>
-                  <div className="seg" role="group" aria-label="소리 속도">
-                    {RATES.map((r) => (
-                      <button
-                        key={r}
-                        type="button"
-                        aria-pressed={ttsPrefs.rate === r}
-                        onClick={() => {
-                          setTtsPrefs({ ...ttsPrefs, rate: r })
-                        }}
-                      >
-                        {RATE_LABEL[r]}
-                      </button>
-                    ))}
-                  </div>
-                  <span className="hint">바꾸고 위의 「들어보기」로 바로 들어 볼 수 있어요.</span>
+                  <StepSlider
+                    label="소리 속도"
+                    options={RATES.map((r) => ({ label: RATE_LABEL[r] }))}
+                    index={RATES.indexOf(ttsPrefs.rate)}
+                    onPick={(i) => setTtsPrefs({ ...ttsPrefs, rate: RATES[i]! })}
+                  />
+                  <span className="hint">바꾸고 「들어보기」로 들어 보세요.</span>
                 </div>
               </>
             )}
@@ -477,37 +393,23 @@ export function Settings({
         </h3>
         <div className="setting">
           <label>테마</label>
-          <div className="seg" role="group" aria-label="테마">
-            {THEMES.map((t) => (
-              <button
-                key={t.value}
-                type="button"
-                aria-pressed={theme === t.value}
-                onClick={() => setTheme(t.value)}
-              >
-                {t.label}
-              </button>
-            ))}
-          </div>
+          <StepSlider
+                label="테마"
+                options={THEMES}
+                index={THEMES.findIndex((o) => o.value === theme)}
+                onPick={(i) => setTheme(THEMES[i]!.value)}
+              />
           <span className="hint">시스템은 기기 설정을 따라요.</span>
         </div>
         <div className="setting">
           <label>글자 크기</label>
-          <div className="seg" role="group" aria-label="글자 크기">
-            {TEXT_SCALES.map((s) => (
-              <button
-                key={s.value}
-                type="button"
-                aria-pressed={textScale === s.value}
-                onClick={() => setTextScale(s.value)}
-              >
-                {s.label}
-              </button>
-            ))}
-          </div>
-          <span className="hint">
-            탭바·리포트·설정·찾기 같은 화면 글자예요. 학습 카드의 숙어·읽기는 안 바뀌어요.
-          </span>
+          <StepSlider
+                label="글자 크기"
+                options={TEXT_SCALES}
+                index={TEXT_SCALES.findIndex((o) => o.value === textScale)}
+                onPick={(i) => setTextScale(TEXT_SCALES[i]!.value)}
+              />
+          <span className="hint">탭바·리포트·설정·찾기 글자예요. 학습 카드는 안 바뀌어요.</span>
         </div>
 
     </BottomSheet>

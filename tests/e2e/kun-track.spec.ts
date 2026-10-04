@@ -156,7 +156,7 @@ test('레인지를 움직이면 값이 바뀌고 저장된다', async ({ page })
   await expect(slider).toHaveValue('0')
 
   await slider.fill('50')
-  await expect(page.locator('.slider .val')).toHaveText('50%')
+  await expect(page.locator('.setting:has(#kun-share) .slider .val')).toHaveText('50%')
   expect(
     JSON.parse((await page.evaluate(() => localStorage.getItem('yomenai:settings'))) ?? '{}')
       .kunPercent,

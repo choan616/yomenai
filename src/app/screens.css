@@ -335,13 +335,104 @@
 .slider input[type='range'] {
   flex: 1;
   min-width: 0;
-  accent-color: var(--text-dim);
 }
 .slider .val {
   font-variant-numeric: tabular-nums;
   font-size: calc(18px * var(--ui-scale));
   min-width: 3.2em;
   text-align: right;
+}
+/* 단색 range (2026-10-04) — 색 없이 글자색(--text)과 선색(--border)만 쓴다. 채워진 쪽은 --text, 남은 쪽은 --border.
+   채움 경계는 손잡이 중심에 맞춘다: 손잡이 지름 22px 만큼 안쪽에서 시작해 끝난다 (--f = 0~1) */
+.slider input[type='range'],
+.step-range {
+  --thumb: 22px;
+  -webkit-appearance: none;
+  appearance: none;
+  height: var(--thumb);
+  margin: 0;
+  background: transparent;
+  /* 세로 스침은 스크롤로 넘기고 가로 끌기만 손잡이가 받는다 — 시트 본문의 세로 스크롤과 안 부딪힌다 */
+  touch-action: pan-y;
+}
+.step-range {
+  width: 100%;
+}
+.slider input[type='range']::-webkit-slider-runnable-track,
+.step-range::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 2px;
+  background: linear-gradient(
+    to right,
+    var(--text) calc(var(--thumb) / 2 + (100% - var(--thumb)) * var(--f, 0)),
+    var(--border) 0
+  );
+}
+.slider input[type='range']::-moz-range-track,
+.step-range::-moz-range-track {
+  height: 4px;
+  border-radius: 2px;
+  background: linear-gradient(
+    to right,
+    var(--text) calc(var(--thumb) / 2 + (100% - var(--thumb)) * var(--f, 0)),
+    var(--border) 0
+  );
+}
+.slider input[type='range']::-webkit-slider-thumb,
+.step-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: var(--thumb);
+  height: var(--thumb);
+  margin-top: calc((4px - var(--thumb)) / 2);
+  border-radius: 50%;
+  border: 3px solid var(--bg);
+  background: var(--text);
+  box-shadow: 0 0 0 1px var(--border);
+}
+.slider input[type='range']::-moz-range-thumb,
+.step-range::-moz-range-thumb {
+  width: calc(var(--thumb) - 6px);
+  height: calc(var(--thumb) - 6px);
+  border-radius: 50%;
+  border: 3px solid var(--bg);
+  background: var(--text);
+  box-shadow: 0 0 0 1px var(--border);
+}
+.slider input[type='range']:focus-visible,
+.step-range:focus-visible {
+  outline: 2px solid var(--text-dim);
+  outline-offset: 4px;
+}
+/* 눈금 글자가 달린 range. 눈금은 손잡이 가능 위치(양 끝은 손잡이 반지름 안쪽)에 가운데 정렬한다 */
+.stepslider {
+  position: relative;
+  padding: 0 28px;
+}
+.step-ticks {
+  position: relative;
+  height: 34px;
+  margin-top: -2px;
+}
+.step-tick {
+  position: absolute;
+  top: 0;
+  left: calc(11px + (100% - 22px) * var(--f, 0));
+  transform: translateX(-50%);
+  height: 34px;
+  padding: 0 8px;
+  background: none;
+  border: 0;
+  white-space: nowrap;
+  font-size: calc(13px * var(--ui-scale));
+  color: var(--text-faint);
+}
+.step-tick[aria-pressed='true'] {
+  color: var(--text);
+  font-weight: 600;
+}
+.step-tick:disabled {
+  opacity: 0.4;
 }
 .seg {
   display: flex;
