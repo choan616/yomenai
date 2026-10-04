@@ -14,11 +14,10 @@ import type { Tts, TtsVoice } from './tts.ts'
 import { audioBase, FILE_VOICES, fileVoiceFor } from './voiceFiles.ts'
 
 /**
- * 재생하는 동안의 오디오 세션 종류. `transient-solo` — 명세: 「다른 소리를 멈추고 혼자 재생하며, 끝나면 멈춘 소리를 다시 잇는다」(W3C audio-session explainer).
- * `playback` 은 무음 스위치를 무시하지만 끝나도 음악이 안 이어졌다(2026-10-04 사용자 실기기 「끊긴다」 → 「재생 시에만 멈추는 선택은?」).
- * **WebKit 이 `transient-solo` 에서도 무음 스위치를 무시하는지는 확인하지 못했다.** 안 무시하면 `playback` 으로 되돌린다
+ * 재생하는 동안의 오디오 세션 종류. `playback` — 무음 스위치를 무시한다(실기기 확인). 대신 재생하는 동안 다른 앱의 음악이 멈춘다.
+ * `transient-solo`(명세상 「멈췄다가 끝나면 잇는다」)는 **무음 스위치를 따라 소리가 안 났다**(2026-10-04 실기기) — 되돌렸다
  */
-export const PLAYING_SESSION = 'transient-solo'
+export const PLAYING_SESSION = 'playback'
 
 /** 디코드한 소리를 이만큼까지 메모리에 둔다 — 같은 읽기를 연달아 누를 때 다시 받지 않게 */
 const MEMORY_MAX = 60
