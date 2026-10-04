@@ -1,7 +1,7 @@
 // 음성 파일 재생 엔진 검증 — 파일 우선, 실패하면 기기 음성, 제스처 안 resume, 요청 교체
 import { describe, expect, it, vi } from 'vitest'
 import { audioName } from '../lib/audioName.ts'
-import { createFileTts } from './fileTts.ts'
+import { createFileTts, PLAYING_SESSION } from './fileTts.ts'
 import type { Tts } from './tts.ts'
 import type { TtsPrefs } from './ttsPrefs.ts'
 import { fileVoiceFor } from './voiceFiles.ts'
@@ -222,13 +222,13 @@ describe('음성 파일 재생', () => {
 })
 
 describe('무음 스위치 (오디오 세션)', () => {
-  it('재생하기 전에 playback 으로 바꾸고, 소리가 끝나면 원래대로 되돌린다', async () => {
+  it('재생하기 전에 재생 세션으로 바꾸고, 소리가 끝나면 원래대로 되돌린다', async () => {
     const session = { type: 'auto' }
     const { tts, sources } = setup({ session })
     tts.speak('がっこう')
-    expect(session.type).toBe('playback') // resume·fetch 보다 앞, 같은 동기 구간
+    expect(session.type).toBe(PLAYING_SESSION) // resume·fetch 보다 앞, 같은 동기 구간
     await flush()
-    expect(session.type).toBe('playback') // 재생 중
+    expect(session.type).toBe(PLAYING_SESSION) // 재생 중
     ;(sources[0] as unknown as { onended: () => void }).onended()
     expect(session.type).toBe('auto')
   })
@@ -259,7 +259,7 @@ describe('무음 스위치 (오디오 세션)', () => {
     tts.speak('きっぷ')
     await flush()
     ;(sources[1] as unknown as { onended: () => void }).onended()
-    expect(session.type).toBe('auto') // 'playback' 이 아니라
+    expect(session.type).toBe('auto') // 재생 세션이 아니라
   })
 
   it('기기 음성을 고르면 세션을 건드리지 않는다', async () => {

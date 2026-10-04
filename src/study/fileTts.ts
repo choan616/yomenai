@@ -6,12 +6,19 @@
 // (읽기 듣기는 모두 버튼 클릭에서 시작한다). 파일 이름이 동기 해시라 비동기가 `await` 한 번(받기) 뒤에만 생긴다.
 //
 // **무음 스위치를 무시한다** (2026-10-04 사용자 실기기 「무음스위치에서는 재생 안 된다」 → 「의도적인 재생이라 안 나오는 게 어색하다」).
-// iOS 는 Web Audio 를 기본(ambient) 세션으로 재생해 스위치를 따른다. `navigator.audioSession.type = 'playback'` 이면 스위치를 무시한다.
+// iOS 는 Web Audio 를 기본(ambient) 세션으로 재생해 스위치를 따른다. `navigator.audioSession.type` 을 재생 세션으로 바꾸면 스위치를 무시한다(`PLAYING_SESSION`).
 // 세션은 페이지 전체가 공유해서, 자판 소리(`keyFeedback.ts`)까지 스위치를 무시하게 되지 않도록 **재생하는 동안만** 바꾸고 끝나면 되돌린다.
 import { audioName } from '../lib/audioName.ts'
 import { loadTtsPrefs, type TtsPrefs } from './ttsPrefs.ts'
 import type { Tts, TtsVoice } from './tts.ts'
 import { audioBase, FILE_VOICES, fileVoiceFor } from './voiceFiles.ts'
+
+/**
+ * 재생하는 동안의 오디오 세션 종류. `transient-solo` — 명세: 「다른 소리를 멈추고 혼자 재생하며, 끝나면 멈춘 소리를 다시 잇는다」(W3C audio-session explainer).
+ * `playback` 은 무음 스위치를 무시하지만 끝나도 음악이 안 이어졌다(2026-10-04 사용자 실기기 「끊긴다」 → 「재생 시에만 멈추는 선택은?」).
+ * **WebKit 이 `transient-solo` 에서도 무음 스위치를 무시하는지는 확인하지 못했다.** 안 무시하면 `playback` 으로 되돌린다
+ */
+export const PLAYING_SESSION = 'transient-solo'
 
 /** 디코드한 소리를 이만큼까지 메모리에 둔다 — 같은 읽기를 연달아 누를 때 다시 받지 않게 */
 const MEMORY_MAX = 60
@@ -71,7 +78,7 @@ export function createFileTts({
     if (!audioSession || savedSession !== null) return
     try {
       savedSession = audioSession.type
-      audioSession.type = 'playback'
+      audioSession.type = PLAYING_SESSION
     } catch {
       savedSession = null
     }
