@@ -2469,3 +2469,103 @@ p.rule-record {
   min-height: 44px;
   padding: 0 14px;
 }
+
+/* ── 하단 시트 (2026-10-04) — 설정이 쓴다. 탭바 위, .tabbed 안에 얹힌다 ── */
+.tabbed {
+  position: relative;
+}
+.sheet-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  background: rgba(0, 0, 0, 0.45);
+  animation: sheet-fade 160ms ease-out;
+}
+.sheet {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 21;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-bottom: 0;
+  border-radius: 16px 16px 0 0;
+  box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.25);
+  outline: none;
+  transition: height 220ms ease;
+  animation: sheet-up 240ms ease-out;
+}
+/* 높이는 부모 기준이다. 처음 높이의 계산은 BottomSheet.tsx 의 PEEK_* 와 같아야 한다 */
+.sheet.peek {
+  height: clamp(300px, 52%, calc(100% - 8px));
+}
+.sheet.full {
+  height: calc(100% - 8px);
+}
+.sheet.dragging {
+  transition: none;
+}
+/* 끌리는 곳은 이 줄뿐이다. 본문은 세로 스크롤·슬라이더 가로 조작과 부딪히지 않게 끌기를 안 받는다 */
+.sheet-top {
+  touch-action: none;
+  user-select: none;
+  cursor: grab;
+}
+.sheet-grab {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 28px;
+  padding: 0;
+  background: none;
+  border: 0;
+}
+.sheet-handle {
+  width: 40px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--text-faint);
+  opacity: 0.6;
+}
+.sheet-head {
+  padding: 0 16px 10px;
+  border-bottom: 1px solid var(--border);
+}
+.sheet-head h2 {
+  margin: 0;
+  font-size: calc(17px * var(--ui-scale));
+  font-weight: 600;
+}
+.sheet-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+/* 시트 맨 위의 행동 항목 묶음은 위에 선도 여백도 필요 없다. 처음 높이에 여러 줄이 들어가야 해서 간격을 좁힌다 */
+.sheet-body > .setting-links:first-child {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: 0;
+  gap: 14px;
+}
+@keyframes sheet-up {
+  from {
+    transform: translateY(100%);
+  }
+}
+@keyframes sheet-fade {
+  from {
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sheet,
+  .sheet-backdrop {
+    animation: none;
+    transition: none;
+  }
+}

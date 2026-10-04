@@ -27,6 +27,7 @@ import { openGuide } from './guide.ts'
 import { canVibrate } from '../study/keyFeedback.ts'
 import { KEYPAD_LABEL, type KeypadLayout } from '../study/keypadLayouts.ts'
 import { tts, type TtsVoice } from '../study/tts.ts'
+import { BottomSheet } from './BottomSheet.tsx'
 import { loadTtsPrefs, RATE_LABEL, RATES, saveTtsPrefs, type TtsPrefs } from '../study/ttsPrefs.ts'
 import { audioBase, FILE_VOICES, fileVoiceFor } from '../study/voiceFiles.ts'
 
@@ -83,10 +84,13 @@ const KEY_FEEDBACKS: { label: string; value: SettingsData['keyFeedback'] }[] = [
 
 
 export function Settings({
+  onClose,
   onFeedback,
   onBackup,
   onReview,
 }: {
+  /** 시트를 닫는다 — 설정 탭을 누르기 전 탭으로 돌아간다 (2026-10-04) */
+  onClose: () => void
   /** 뜻 검수 화면으로. 검수 모드를 켠 기기에서만 보인다 (2026-09-24) */
   onReview: () => void
   /** 테스터 피드백 화면으로 (2026-09-13) */
@@ -163,12 +167,58 @@ export function Settings({
     })
 
   return (
-    <section className="screen">
-      <div className="screen-bar">
-        <h2>설정</h2>
-      </div>
+    <BottomSheet title="설정" onClose={onClose}>
+        {/* 값을 고르는 게 아니라 다른 화면으로 가는 것들 — 시트의 처음 높이에 보인다 (2026-10-04).
+            쓰는 빈도와 시급함 순이다: 백업(안 올린 기록 뱃지)이 먼저, 안내서·피드백은 그 다음. 라벨을 따로
+            두지 않는다 — 「백업과 기록」 라벨 + 「백업과 기록 ›」 버튼으로 이름을 두 번 말하고 있었다 */}
+        <div className="setting-links">
+          <div className="setting">
+            <button type="button" className="setting-link" onClick={onBackup}>
+              <span>백업과 기록</span>
+              {/* 안 올린 기록이 있으면 여기서부터 보인다 (2026-10-01) — 동기화 버튼은 한 겹 안이라
+                  거기까지 들어가야 알면 늦다. 동기화를 안 쓰는 사람에게는 안 뜬다 */}
+              {unsynced > 0 && <span className="sync-pending">안 올린 기록 {unsynced}건</span>}
+              <span className="chev" aria-hidden="true">›</span>
+            </button>
+            <span className="hint">Drive 백업과 기록 초기화예요.</span>
+          </div>
+          {review && (
+            <div className="setting">
+              <button type="button" className="setting-link" onClick={onReview}>
+                <span>뜻 검수</span>
+                <span className="chev" aria-hidden="true">›</span>
+              </button>
+              <span className="hint">
+                한국어 뜻이 맞는지 보고 판정을 남겨요.{' '}
+                <button
+                  type="button"
+                  className="link"
+                  onClick={() => {
+                    setReview(false)
+                    saveReviewMode(false)
+                  }}
+                >
+                  검수 모드 끄기
+                </button>
+              </span>
+            </div>
+          )}
+          <div className="setting">
+            <button type="button" className="setting-link" onClick={openGuide}>
+              <span>사용 안내서</span>
+              <span className="chev" aria-hidden="true">›</span>
+            </button>
+            <span className="hint">이 앱이 다루는 것과 리포트 읽는 법이에요.</span>
+          </div>
+          <div className="setting">
+            <button type="button" className="setting-link" onClick={onFeedback}>
+              <span>피드백 보내기</span>
+              <span className="chev" aria-hidden="true">›</span>
+            </button>
+            <span className="hint">채점 기록은 안 가요. 보내기 전에 내용을 그대로 보여 드려요.</span>
+          </div>
+        </div>
 
-      <div className="screen-body">
         <h3 className="setting-group">학습</h3>
         <p className="setting-group-note">무엇을 얼마나 낼지</p>
         <div className="setting">
@@ -460,66 +510,6 @@ export function Settings({
           </span>
         </div>
 
-        {/* 값을 고르는 게 아니라 다른 화면으로 가는 것들. 라벨을 따로 두지 않는다 —
-            「백업과 기록」 라벨 + 「백업과 기록 ›」 버튼으로 이름을 두 번 말하고 있었다 */}
-        <div className="setting-links">
-        {review && (
-          <div className="setting">
-            <button type="button" className="setting-link" onClick={onReview}>
-              <span>뜻 검수</span>
-              <span className="chev" aria-hidden="true">›</span>
-            </button>
-            <span className="hint">
-              화면에 뜨는 한국어 뜻이 맞는지 봐요. 남긴 판정은 백업에 실려 나가고, 사전
-              빌드에서 반영돼요.{' '}
-              <button
-                type="button"
-                className="link"
-                onClick={() => {
-                  setReview(false)
-                  saveReviewMode(false)
-                }}
-              >
-                검수 모드 끄기
-              </button>
-            </span>
-          </div>
-        )}
-        <div className="setting">
-          <button type="button" className="setting-link" onClick={openGuide}>
-            <span>사용 안내서</span>
-            <span className="chev" aria-hidden="true">›</span>
-          </button>
-          <span className="hint">
-            이 앱이 무엇을 왜 다루는지, 리포트를 어떻게 읽는지 정리해 뒀어요.
-          </span>
-        </div>
-
-        <div className="setting">
-          <button type="button" className="setting-link" onClick={onFeedback}>
-            <span>피드백 보내기</span>
-            <span className="chev" aria-hidden="true">›</span>
-          </button>
-          <span className="hint">
-            써 보신 소감을 여쭙습니다. 채점 기록은 보내지 않고, 적으신 답과 뜻에 엄지로
-            남기신 평가가 갑니다. 무엇이 나가는지는 보내기 전에 그대로 보여드려요.
-          </span>
-        </div>
-
-        <div className="setting">
-          <button type="button" className="setting-link" onClick={onBackup}>
-            <span>백업과 기록</span>
-            {/* 안 올린 기록이 있으면 여기서부터 보인다 (2026-10-01) — 동기화 버튼은 한 겹 안이라
-                거기까지 들어가야 알면 늦다. 동기화를 안 쓰는 사람에게는 안 뜬다 */}
-            {unsynced > 0 && <span className="sync-pending">안 올린 기록 {unsynced}건</span>}
-            <span className="chev" aria-hidden="true">›</span>
-          </button>
-          <span className="hint">
-            Google Drive 백업과 학습 기록 초기화예요. 초기화는 되돌릴 수 없어서 한 겹 안에 뒀어요.
-          </span>
-        </div>
-        </div>
-      </div>
-    </section>
+    </BottomSheet>
   )
 }

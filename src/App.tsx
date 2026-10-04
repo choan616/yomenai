@@ -81,12 +81,15 @@ function Shell() {
   // 셸 화면에서 문서가 밀려 올라가면 sticky 탭바가 같이 올라간다 (2026-09-26)
   useDocumentScrollGuard()
   const [tab, setTab] = useState<Tab>('home')
+  /** 설정은 시트다 — 시트 뒤에 흐리게 깔리는 탭이자, 닫으면 돌아갈 탭 (2026-10-04) */
+  const [underTab, setUnderTab] = useState<Exclude<Tab, 'settings'>>('home')
   const [sub, setSub] = useState<Sub | null>(null)
   const [flow, setFlow] = useState<Flow | null>(null)
 
   /** 탭을 바꾸면 그 탭의 루트에서 시작한다 — 한 겹 들어간 자리는 안 들고 다닌다 */
   const goTab = (next: Tab) => {
     setTab(next)
+    if (next !== 'settings') setUnderTab(next)
     setSub(null)
   }
   const closeFlow = () => setFlow(null)
@@ -109,16 +112,27 @@ function Shell() {
         {sub ? (
           <SubScreen sub={sub} onBack={() => setSub(null)} onFound={takeFound} />
         ) : (
-          <TabRoot
-            tab={tab}
-            onSub={setSub}
-            onFlow={setFlow}
-            found={found}
-            onUsedFound={() => setFound(null)}
-          />
+          <>
+            <TabRoot
+              tab={tab === 'settings' ? underTab : tab}
+              onSub={setSub}
+              onFlow={setFlow}
+              found={found}
+              onUsedFound={() => setFound(null)}
+            />
+            {tab === 'settings' && (
+              <Settings
+                onClose={() => goTab(underTab)}
+                onFeedback={() => setSub({ kind: 'feedback' })}
+                onBackup={() => setSub({ kind: 'backup' })}
+                onReview={() => setSub({ kind: 'review' })}
+              />
+            )}
+          </>
         )}
       </div>
-      <TabBar tab={tab} onSelect={goTab} />
+      {/* 설정이 열려 있을 때 설정 탭을 또 누르면 닫는다 */}
+      <TabBar tab={tab} onSelect={(t) => goTab(t === 'settings' && tab === 'settings' ? underTab : t)} />
     </>
   )
 }
@@ -198,13 +212,7 @@ function TabRoot({
         />
       )
     case 'settings':
-      return (
-        <Settings
-          onFeedback={() => onSub({ kind: 'feedback' })}
-          onBackup={() => onSub({ kind: 'backup' })}
-          onReview={() => onSub({ kind: 'review' })}
-        />
-      )
+      return null // 설정은 시트라 Shell 이 따로 그린다
   }
 }
 
