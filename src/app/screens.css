@@ -404,10 +404,9 @@
   outline: 2px solid var(--text-dim);
   outline-offset: 4px;
 }
-/* 눈금 글자가 달린 range. 눈금은 손잡이 가능 위치(양 끝은 손잡이 반지름 안쪽)에 가운데 정렬한다 */
+/* 눈금 글자가 달린 range. 가운데 눈금은 손잡이 위치(양 끝은 손잡이 반지름 안쪽)에 가운데 정렬한다 */
 .stepslider {
   position: relative;
-  padding: 0 28px;
 }
 .step-ticks {
   position: relative;
@@ -430,6 +429,18 @@
 .step-tick[aria-pressed='true'] {
   color: var(--text);
   font-weight: 600;
+}
+/* 양 끝 눈금은 손잡이 위치에 가운데 맞추면 컨테이너 밖으로 나간다 — 끝에 붙여 정렬한다 (range 가 여백 없이 전체 폭을 쓴다) */
+.step-tick:first-child {
+  left: 0;
+  transform: none;
+  padding-left: 0;
+}
+.step-tick:last-child {
+  left: auto;
+  right: 0;
+  transform: none;
+  padding-right: 0;
 }
 .step-tick:disabled {
   opacity: 0.4;
