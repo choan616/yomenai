@@ -10656,3 +10656,11 @@ REST(`POST /user/repos`)로 한 번 더 시도하려 했으나 자동 승인 분
 `Resource not accessible by integration` 로 거절됐다(Pages 생성은 저장소 관리자 권한이 필요하다). 모바일 GitHub 앱에는 Pages 설정이 없어서
 **모바일 브라우저로 `github.com/choan616/yomenai-audio/settings/pages` 를 열고 Source 를 「GitHub Actions」로** 두는 길을 안내한다(앱 저장소와 같은 방식).
 켠 뒤에는 워크플로를 다시 돌려야 해서(`workflow_dispatch` 또는 빈 커밋 push) 내가 빈 커밋을 push 한다. 앱 push 는 그 뒤다.
+
+### 음성 파일 배포 완료와 실측 (2026-10-04)
+
+사용자가 저장소를 만들고 Pages(Source: GitHub Actions)를 켰다. 빈 커밋 push 로 워크플로가 성공했고 앱을 push 해 배포했다(`5ecba15`).
+- 배포된 음성 파일: HTTP 200, `Content-Type: audio/mp3`(audio/mpeg 가 아니다 — Web Audio 해독에는 영향 없음), `access-control-allow-origin: *`. 없는 파일은 404
+- 배포된 앱(`choan616.github.io/yomenai/`, 크롬 데스크톱): 설정 목록에 `음성 파일 · 玄野武宏`·`음성 파일 · 四国めたん` 이 자동 다음에 있고, 들어보기가 두 음성 모두 서비스 워커를 거쳐
+  200 으로 받아 재생했다. 새로고침 후 오프라인으로 바꿔도 같은 음성이 재생됐다
+- 아직 못 본 것: **iPhone 실기기**(무음 스위치·첫 재생 지연·`AudioContext.resume` 이 실제로 소리를 내는지)
