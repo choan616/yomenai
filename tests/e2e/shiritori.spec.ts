@@ -21,6 +21,7 @@ async function open(page: Page): Promise<void> {
     try {
       localStorage.setItem('yomenai:diagnosticDone', '1')
       localStorage.setItem('yomenai:welcomeSeen', '1')
+      localStorage.setItem('yomenai:unlock:shiritori', '1') // 레벨 제도 전이라 잠겨 있다 — 개발 빌드의 열쇠로 연다
     } catch {
       /* private mode */
     }
@@ -95,4 +96,19 @@ test('✕ 로 나가면 리포트로 돌아온다', async ({ page }) => {
   await page.getByRole('button', { name: '끝말잇기 나가기' }).click()
   await expect(page.getByRole('navigation', { name: '주 메뉴' })).toBeVisible()
   await expect(page.getByRole('button', { name: '리포트', exact: true })).toHaveAttribute('aria-current', 'page')
+})
+
+test('잠겨 있으면 도구 줄에 안 보인다 (레벨 제도가 생기기 전의 기본)', async ({ page }) => {
+  await page.addInitScript(() => {
+    try {
+      localStorage.setItem('yomenai:diagnosticDone', '1')
+      localStorage.setItem('yomenai:welcomeSeen', '1')
+    } catch {
+      /* private mode */
+    }
+  })
+  await page.goto('/')
+  await page.getByRole('button', { name: '리포트', exact: true }).click()
+  await expect(page.getByRole('button', { name: /읽기 규칙/ })).toBeVisible()
+  await expect(page.getByRole('button', { name: /한자 끝말잇기/ })).toHaveCount(0)
 })

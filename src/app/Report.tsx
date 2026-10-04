@@ -53,6 +53,7 @@ import {
   VOICING_LABEL,
 } from '../study/mistakeLabels.ts'
 import { Mixed } from './RuleBody.tsx'
+import { isUnlocked } from './unlocks.ts'
 import { ruleForMistake } from './rules.ts'
 import { RULE_OF_MISTAKE, type RuleId } from './rules.ts'
 
@@ -1058,11 +1059,14 @@ function ToolsSection({
         </span>
         <span className="chev">›</span>
       </button>
-      <button type="button" className="tool-row" onClick={onShiritori}>
-        <span className="tool-name">한자 끝말잇기</span>
-        <span className="tool-note">끝 한자로 이어 읽기 놀이</span>
-        <span className="chev">›</span>
-      </button>
+      {/* 레벨 제도가 생기면 특정 레벨에서 열린다 (2026-10-04) — 그때까지 잠겨 있다. unlocks.ts */}
+      {isUnlocked('shiritori') && (
+        <button type="button" className="tool-row" onClick={onShiritori}>
+          <span className="tool-name">한자 끝말잇기</span>
+          <span className="tool-note">끝 한자로 이어 읽기 놀이</span>
+          <span className="chev">›</span>
+        </button>
+      )}
     </section>
   )
 }
