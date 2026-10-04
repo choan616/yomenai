@@ -29,13 +29,6 @@ const SRC_KO = join(RAW_FONTS, 'Pretendard-Regular.woff2')
  */
 const KO_OUT = 'PrdSansKO-Regular.woff2'
 
-/**
- * 표시용 한국어 서체 (2026-10-02) — 「보여지는 쪽」 화면만 쓴다(홈·세션·진단·요약).
- * 보려고 찾아 들어가는 화면(리포트·설정·단어장·찾기)은 정보용(`SRC_KO`) 그대로다.
- * OFL 1.1, Copyright 2018 The Jua Project Authors. 저작권 줄에 예약 이름 선언이 없다
- */
-const SRC_KO_DISPLAY = join(RAW_FONTS, 'Jua-Regular.ttf')
-
 /** 같은 문자 집합으로 서브셋할 일본어 원본. lang="ja" + 100% 커버라 한국 자형 폴백이 안 난다 */
 const JP_WEIGHTS = [
   { label: 'Regular', src: join(RAW_FONTS, 'NotoSansJP-Regular.otf'), out: 'NotoSansJP-subset.woff2' },
@@ -297,31 +290,6 @@ console.log(
 if (koGap.length > 0) {
   console.error(`  ✗ 한국어 서브셋에서 누락 ${koGap.length}개: ${show(koGap)}`)
   allCovered = false
-}
-
-/**
- * 표시용 서체도 **같은 문자 집합**으로 뜬다. 화면별로 좁히면 나중에 문구를 고칠 때 그 글자가
- * 빠져 한 줄 안에서 글꼴이 갈린다 — 80KB 아끼자고 질 위험이 아니다.
- *
- * **빠지는 글자는 빌드를 멈추지 않는다.** 주아체에 없는 기호(화살표·✓·「」·중점 등)는
- * 정보용 서체로 폴백하는 게 맞다. 일본어처럼 자형을 잘못 학습하는 문제가 아니라 기호 모양이
- * 한 끗 다를 뿐이고, 표시용 서체에 없는 글자를 억지로 채울 방법도 없다
- */
-const displaySrc = readFileSync(SRC_KO_DISPLAY)
-const displayHave = charSet(displaySrc)
-const displayText = [...koTargets]
-  .filter((cp) => displayHave.has(cp))
-  .map((cp) => String.fromCodePoint(cp))
-  .join('')
-const displayOut = await subsetFont(displaySrc, displayText, { targetFormat: 'woff2' })
-writeFileSync(join(OUT_DIR, 'Jua-subset.woff2'), displayOut)
-const displayGap = [...koTargets].filter((cp) => !displayHave.has(cp))
-console.log(
-  `Jua-subset.woff2          ${(displaySrc.length / 1024).toFixed(0)} KB → ` +
-    `${(displayOut.length / 1024).toFixed(0)} KB  (글리프 ${charSet(displayOut).size}자)`,
-)
-if (displayGap.length > 0) {
-  console.log(`  · 표시용 서체에 없어 정보용으로 폴백 ${displayGap.length}개: ${show(displayGap)}`)
 }
 
 if (!allCovered) {

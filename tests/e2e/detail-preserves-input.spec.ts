@@ -88,14 +88,13 @@ test('오답 상세를 닫고 돌아오면 입력한 답이 그대로 남아 있
   if ((await more.count()) > 0) {
     await expect(more).toContainText('왜 그런가')
     await expect(more.locator('.rule-examples > li').first()).toBeVisible()
-    // 세션 안이라도 **읽어 내려가는 글**은 정보용 서체다 (2026-10-02 사용자 지적).
-    // 세션 화면은 표시용(Jua)인데 이 블록만 되돌아와야 한다
+    // 한국어는 전부 정보용 서체다 (2026-10-04 주아체를 걷었다) — 세션 안의 이 블록도, 주변 글자도 같다
     const [prose, around] = await Promise.all([
       more.evaluate((el) => getComputedStyle(el).fontFamily.split(',')[0]),
       page.locator('.study-bar .count').evaluate((el) => getComputedStyle(el).fontFamily.split(',')[0]),
     ])
     expect(prose).toContain('Prd Sans KO')
-    expect(around).toContain('Jua')
+    expect(around).toContain('Prd Sans KO')
   }
 
   await page.getByRole('button', { name: '닫기', exact: true }).click()

@@ -26,10 +26,6 @@ Prd Sans KO    (PrdSansKO-Regular.woff2)
   지금 쓰는 서브셋 도구(HarfBuzz 래퍼)가 이름 테이블을 바꾸지 못합니다. 웹에서 보이는
   이름은 CSS 쪽이라 실질은 지켜지지만, 파일을 꺼내 설치하면 원본 이름으로 보입니다.
 
-Jua            (Jua-subset.woff2)
-  Copyright 2018 The Jua Project Authors
-  SIL Open Font License 1.1 (저작권 줄에 예약 폰트 이름 선언 없음)
-
 아래는 SIL Open Font License, Version 1.1 전문입니다.
 
 This Font Software is licensed under the SIL Open Font License, Version 1.1.
