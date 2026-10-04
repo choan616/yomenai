@@ -115,3 +115,35 @@ test('파일이 없으면(404) 기기 음성이 대신 읽는다', async ({ page
   await expect.poll(async () => (await state(page)).spoken).toEqual(['がっこう'])
   expect((await state(page)).started).toBe(0)
 })
+
+test('음성 파일을 쓰는 상태에서도 기본 사전의 말은 확인 단계에 소리 버튼이 뜬다', async ({ page }) => {
+  await prepare(page, { files: 'ok' })
+  await page.goto('/')
+  const start = page.getByRole('button', { name: '세션 시작' })
+  await expect(start).toBeEnabled({ timeout: 20_000 })
+  await start.click()
+  await expect(page.locator('.headword').first()).toBeVisible({ timeout: 10_000 })
+
+  // 소개·확인 질문을 넘기며 읽기 카드에 닿는다 (tts.spec 과 같은 걸음)
+  const input = page.locator('.kana-input')
+  for (let i = 0; i < 200; i++) {
+    if (await input.isVisible().catch(() => false)) break
+    for (const name of ['알고 있었다', '봤어요']) {
+      const b = page.getByRole('button', { name, exact: true })
+      if (await b.isVisible().catch(() => false)) await b.click()
+    }
+    if (await page.getByText('세션 완료').isVisible().catch(() => false)) {
+      const home = page.getByRole('button', { name: '홈으로', exact: true })
+      if (await home.isVisible().catch(() => false)) await home.click()
+      const again = page.getByRole('button', { name: '세션 시작' })
+      if (!(await again.isVisible().catch(() => false))) break
+      await again.click()
+    }
+    await page.waitForTimeout(100)
+  }
+  await expect(input).toBeVisible({ timeout: 10_000 })
+  await input.fill('aaa')
+  await page.getByRole('button', { name: '확인' }).click()
+  // 목록을 처음 읽는 동안은 숨겼다가, 기본 사전의 말이라 곧 나타난다
+  await expect(page.getByRole('button', { name: /소리 듣기/ })).toBeVisible({ timeout: 10_000 })
+})

@@ -5,6 +5,7 @@ import { SoundIcon } from '../app/icons.tsx'
 import type { RubySegment } from '../core/ruby.ts'
 import { loadExamples, type RuntimeIdiom } from '../dict/load.ts'
 import { tts } from './tts.ts'
+import { useCanSpeak } from './useCanSpeak.ts'
 
 export function IntroCard({
   idiom,
@@ -16,6 +17,7 @@ export function IntroCard({
   ruby?: RubySegment[]
   onSeen: () => void
 }) {
+  const canSpeak = useCanSpeak(idiom.reading)
   const [sentence, setSentence] = useState<string | null>(null)
 
   // 예문은 있으면 한 줄만. 없다고 소개를 미루지 않는다
@@ -58,7 +60,7 @@ export function IntroCard({
           </p>
         )}
         {idiom.koMeaning?.definition && <p className="meaning">{idiom.koMeaning.definition}</p>}
-        {tts.available && (
+        {tts.available && canSpeak && (
           <button type="button" className="tts-btn" onClick={() => tts.speak(idiom.reading)}>
             <SoundIcon /> 소리 듣기
           </button>

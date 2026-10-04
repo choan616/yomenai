@@ -5,6 +5,7 @@ import type { RubySegment } from '../core/ruby.ts'
 import type { MeaningVerdict } from '../core/types.ts'
 import type { RuntimeIdiom } from '../dict/load.ts'
 import { tts } from './tts.ts'
+import { useCanSpeak } from './useCanSpeak.ts'
 
 interface Props {
   idiom: RuntimeIdiom
@@ -21,6 +22,7 @@ interface Props {
 }
 
 export function MeaningCard({ idiom, ruby, graded, onGrade, onNext, vote, onVote }: Props) {
+  const canSpeak = useCanSpeak(idiom.reading)
   const [revealed, setRevealed] = useState(false)
   const meaning = idiom.koMeaning?.definition?.trim()
 
@@ -57,7 +59,7 @@ export function MeaningCard({ idiom, ruby, graded, onGrade, onNext, vote, onVote
           </p>
         )}
         {/* 확인 단계(뜻 확인 후)에만 소리를 보탠다 — 문제 풀이(뜻 떠올리기) 중엔 안 준다 */}
-        {(revealed || graded) && tts.available && (
+        {(revealed || graded) && tts.available && canSpeak && (
           <button type="button" className="tts-btn" onClick={() => tts.speak(idiom.reading)}>
             <SoundIcon /> 소리 듣기
           </button>

@@ -28,6 +28,7 @@ import { Mixed, RuleBody } from './RuleBody.tsx'
 import { ruleForMistake, ruleSection, type RuleSection } from './rules.ts'
 import { loadSettings } from './settings.ts'
 import { tts } from '../study/tts.ts'
+import { useCanSpeak } from '../study/useCanSpeak.ts'
 import { useViewportLock } from '../study/useViewportLock.ts'
 
 export interface BrowseItem {
@@ -308,6 +309,7 @@ export function BrowseSlide({
   ruleOpen: boolean
   onToggleRule: () => void
 }) {
+  const canSpeak = useCanSpeak(item.reading)
   const sentence = item.sentences[exAt]
 
   return (
@@ -354,7 +356,7 @@ export function BrowseSlide({
           )}
           {item.meaning && <p className="meaning">{item.meaning}</p>}
           {memo && <p className="wl-memo">메모: {memo}</p>}
-          {tts.available && (
+          {tts.available && canSpeak && (
             <button type="button" className="tts-btn" onClick={() => tts.speak(item.reading)}>
               <SoundIcon /> 소리 듣기
             </button>

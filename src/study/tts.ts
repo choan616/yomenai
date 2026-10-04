@@ -28,6 +28,12 @@ export interface Tts {
   voices(): TtsVoice[]
   /** 음성 목록이 (비동기로) 채워지거나 바뀔 때 부른다. 돌려주는 함수가 구독 해제다 */
   onVoicesChanged(cb: () => void): () => void
+  /**
+   * 이 읽기를 지금 고른 음성으로 들려줄 수 있나 (2026-10-04 사용자 「소리가 안 나오는 단어는 소리읽기 버튼이 안 나오게」).
+   * 음성 파일은 기본 사전(밴드 0~3)의 읽기만 합성했다 — 밴드 4·조회 전용·넓힌 사전의 말은 파일이 없다.
+   * 목록을 아직 못 읽었으면 Promise 로 답한다. 기기 음성은 어떤 읽기든 된다
+   */
+  canSpeak(text: string): boolean | Promise<boolean>
 }
 
 const NOOP_TTS: Tts = {
@@ -36,6 +42,7 @@ const NOOP_TTS: Tts = {
   cancel() {},
   voices: () => [],
   onVoicesChanged: () => () => {},
+  canSpeak: () => false,
 }
 
 interface SpeechLike {
@@ -225,6 +232,7 @@ export function createWebSpeechTts(
       synth.addEventListener('voiceschanged', cb)
       return () => synth.removeEventListener?.('voiceschanged', cb)
     },
+    canSpeak: () => true,
   }
 }
 

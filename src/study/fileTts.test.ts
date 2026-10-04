@@ -29,6 +29,7 @@ function setup(
     },
     voices: () => [{ id: 'dev', name: 'Kyoko', label: 'Kyoko', online: false }],
     onVoicesChanged: () => () => {},
+    canSpeak: () => true,
   }
   const sources: { started: number; stopped: number; buffer: unknown }[] = []
   const events: string[] = []
@@ -70,6 +71,7 @@ function setup(
     fetchFn: fetchFn as unknown as typeof fetch,
     makeContext: () => ctx,
     audioSession: opts.session ?? null,
+    knownReadings: async () => new Set(['がっこう', 'きっぷ']),
   })
   return { tts, fallback, sources, urls, ctx, events, fetchFn }
 }
@@ -275,6 +277,34 @@ describe('무음 스위치 (오디오 세션)', () => {
     tts.speak('がっこう')
     await flush()
     expect(sources[0]!.started).toBe(1)
+  })
+})
+
+describe('canSpeak — 음성 파일이 없는 읽기는 버튼을 숨긴다', () => {
+  it('음성 파일을 쓰는 상태에서는 파일이 있는 읽기만 true (처음엔 Promise)', async () => {
+    const { tts } = setup()
+    const first = tts.canSpeak('がっこう')
+    expect(typeof first).toBe('object') // 목록을 처음 읽는 중
+    expect(await first).toBe(true)
+    expect(await tts.canSpeak('ひとえまぶた')).toBe(false)
+    // 목록을 읽은 뒤에는 동기로 답한다
+    expect(tts.canSpeak('きっぷ')).toBe(true)
+    expect(tts.canSpeak('ひとえまぶた')).toBe(false)
+  })
+
+  it('가타카나로 적힌 정규화 전 읽기도 NFC 로 맞춰 본다', async () => {
+    const { tts } = setup()
+    expect(await tts.canSpeak('がっこう'.normalize('NFD'))).toBe(true)
+  })
+
+  it('기기 음성을 고르면 어떤 읽기든 true', () => {
+    const { tts } = setup({ voice: 'Kyoko' })
+    expect(tts.canSpeak('ひとえまぶた')).toBe(true)
+  })
+
+  it('음성 파일 주소가 꺼진 환경에서도 true (기기 음성이 읽는다)', () => {
+    const { tts } = setup({ base: '' })
+    expect(tts.canSpeak('ひとえまぶた')).toBe(true)
   })
 })
 

@@ -45,6 +45,13 @@ export interface FileTtsDeps {
   makeContext?: () => ContextLike | null
   /** 오디오 세션 (iOS 16.4+ Safari). 없으면 건드리지 않는다 */
   audioSession?: { type: string } | null
+  /** 음성 파일이 있는 읽기 전부. 테스트가 가짜를 넣는다. 기본은 기본 사전의 읽기 */
+  knownReadings?: () => Promise<Set<string>>
+}
+
+const defaultKnown = async (): Promise<Set<string>> => {
+  const { loadBaseIdioms } = await import('../dict/load.ts')
+  return new Set((await loadBaseIdioms()).map((r) => r.reading.normalize('NFC').trim()))
 }
 
 const defaultContext = (): ContextLike | null => {
@@ -62,6 +69,7 @@ export function createFileTts({
   fetchFn = (...a) => fetch(...a),
   makeContext = defaultContext,
   audioSession = defaultSession(),
+  knownReadings = defaultKnown,
 }: FileTtsDeps): Tts {
   let ctx: ContextLike | null | undefined
   let current: SourceLike | null = null
@@ -91,6 +99,10 @@ export function createFileTts({
     }
     savedSession = null
   }
+
+  /** 음성 파일이 있는 읽기. 처음 물을 때 한 번 읽는다 */
+  let known: Set<string> | null = null
+  let knownLoading: Promise<Set<string>> | null = null
 
   const stopCurrent = (): void => {
     if (!current) return
@@ -182,5 +194,13 @@ export function createFileTts({
       return [...files, ...fallback.voices()]
     },
     onVoicesChanged: (cb) => fallback.onVoicesChanged(cb),
+    canSpeak(text: string) {
+      // 기기 음성을 고른 상태면(또는 음성 파일을 안 쓰는 환경이면) 어떤 읽기든 읽는다
+      if (!fileVoiceFor(readPrefs().voice, base())) return fallback.canSpeak(text)
+      const t = text.normalize('NFC').trim()
+      if (known) return known.has(t)
+      knownLoading ??= knownReadings().then((s) => (known = s))
+      return knownLoading.then((s) => s.has(t))
+    },
   }
 }

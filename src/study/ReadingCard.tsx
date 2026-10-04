@@ -13,6 +13,7 @@ import { MistakeDetail } from './MistakeDetail.tsx'
 import { mistakeHint, mistakeLabel, RULE_MISTAKES } from './mistakeLabels.ts'
 import { Mixed } from '../app/RuleBody.tsx'
 import { tts } from './tts.ts'
+import { useCanSpeak } from './useCanSpeak.ts'
 
 interface Props {
   idiom: RuntimeIdiom
@@ -36,6 +37,7 @@ export function ReadingCard({
   onPass,
   onNext,
 }: Props) {
+  const canSpeak = useCanSpeak(fb?.expected ?? '')
   const [detail, setDetail] = useState(false)
 
   // 다음 카드로 넘어갈 때 오답 상세 뷰를 닫는다 (effect 로 setState 하지 않으려고 핸들러에서)
@@ -140,7 +142,7 @@ export function ReadingCard({
                 <Mixed text={mistakeHint(fb.mistakeType, fb.voicing)} />
               </p>
             )}
-            {tts.available && (
+            {tts.available && canSpeak && (
               <button type="button" className="tts-btn" onClick={() => tts.speak(fb.expected)}>
                 <SoundIcon /> 소리 듣기
               </button>
