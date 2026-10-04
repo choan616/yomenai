@@ -10,8 +10,28 @@
  * - 구분자 뒤에 홀로 남은 마침표는 버린다 (`가느다람;.(몸매가)` 같은 번역 잡음)
  * - 끝에 매달린 구분자와 공백은 잘라낸다 (`의류;` → `의류`)
  */
+/**
+ * 번역기가 글자 하나를 UTF-8 바이트 토큰으로 흘린 것을 되살린다 (2026-10-04 사용자 「華奢 가<0xEB><0x83><0x98>픔」).
+ *
+ * 로컬 LLM 이 드문 한글(냘·닢·엾 …)을 못 내고 `<0xEB><0x83><0x98>` 처럼 바이트를 그대로 적는다. 바이트가 곧 UTF-8 이라
+ * **붙은 토큰 묶음을 해독하면 원래 글자가 나온다** — 짐작이 아니라 복원이다. 해독이 안 되는 묶음(잘린 바이트 등)은 그대로 둔다.
+ * 그 경우는 `build-korean-meaning-worklist` 의 `latin` 깃발이 계속 잡는다.
+ */
+export function repairByteTokens(text: string): string {
+  return text
+    .replace(/<0xEB><0xB3>(?=짚)/g, '볏') // 마지막 바이트가 빠진 것 — 볏(EB B3 8F)짚. 앞 두 바이트가 B3xx 대로 좁히고 뒤 글자가 단어를 정한다
+    .replace(/(?:<0x[0-9A-Fa-f]{2}>)+/g, (run) => {
+      const bytes = Uint8Array.from(run.match(/[0-9A-Fa-f]{2}(?=>)/g)!, (h) => parseInt(h, 16))
+      try {
+        return new TextDecoder('utf-8', { fatal: true }).decode(bytes)
+      } catch {
+        return run
+      }
+    })
+}
+
 export function normalizeDefinition(definition: string): string {
-  return definition
+  return repairByteTokens(definition)
     .replace(/\s*;\s*\.?\s*/g, ', ')
     .replace(/[,;\s]+$/, '')
     .trim()

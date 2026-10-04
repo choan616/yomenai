@@ -22,6 +22,7 @@ import { join } from 'node:path'
 import { gunzipSync } from 'node:zlib'
 import { XMLParser } from 'fast-xml-parser'
 import { DICT_DIR, findRawFile, isKanjiOnly } from './lib/dict.ts'
+import { repairByteTokens } from './lib/meaning.ts'
 
 const OUT_DIR = join(import.meta.dirname, '..', 'public', 'dict')
 
@@ -150,7 +151,7 @@ for (const entry of doc.JMdict.entry) {
   if (readings.length === 0) continue
 
   const senses = asArray(entry.sense as El | El[] | undefined)
-  const ko = koWide[id]?.ko?.trim()
+  const ko = koWide[id]?.ko ? repairByteTokens(koWide[id]!.ko.trim()) : undefined
   const reviewed = wideReview[id]
   out.push({
     id,

@@ -9,6 +9,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { pairId } from '../src/lib/onyomi.ts'
 import { DICT_DIR } from './lib/dict.ts'
+import { repairByteTokens } from './lib/meaning.ts'
 import { buildSiblings, type MeaningOverride } from './lib/siblings.ts'
 import type { Extras } from './build-extra-readings.ts'
 
@@ -129,7 +130,7 @@ function slim(m: KoClass['koMeaning']): RuntimeIdiom['koMeaning'] {
 function fallbackMeaning(id: string): RuntimeIdiom['koMeaning'] {
   const m = koMeaningById[id]
   if (!m?.ko) return null
-  return { definition: m.ko, source: 'llm', verified: false }
+  return { definition: repairByteTokens(m.ko), source: 'llm', verified: false }
 }
 
 const base: RuntimeIdiom[] = []
