@@ -103,9 +103,9 @@ test('도착했을 때 글자 폭이 홈 제목과 같다 — 자간이 어긋�
   expect(Math.abs(widths[widths.length - 1]! - title)).toBeLessThan(1)
 })
 
-test('같은 날 다시 열면 같은 이야기를 빠르게 보인다 — 전체판보다 훨씬 짧다', async ({ page }) => {
+test('같은 날 다시 열면 정적판이 뜬다 — 「読めない」가 가만히 떠 있다가 사라진다', async ({ page }) => {
   await prepare(page, true)
-  // 「ない」 칸의 폭을 프레임마다 기록한다 — 빠른 판도 「読めない？」로 시작해야 한다(앞의 질문 없이 「読める！」만 보이면 되돌림이 부정으로 읽힌다)
+  // 「ない」 칸의 폭을 프레임마다 기록한다 — 정적판은 「読めない」 그대로이고 한 번도 움직이지 않는다(「読める」로 바뀌었다 돌아가는 변화가 없다)
   await page.addInitScript(() => {
     ;(window as unknown as { __nai: number[] }).__nai = []
     const tick = () => {
@@ -124,15 +124,19 @@ test('같은 날 다시 열면 같은 이야기를 빠르게 보인다 — 전�
   await page.reload()
   await expect(page.locator('.intro')).toBeVisible()
   await expect(page.locator('html')).toHaveAttribute('data-intro', '1')
+  // 물음표·느낌표는 보이지 않는다 — 「読めない」만 있다
+  await expect(page.locator('.intro-mark')).toBeHidden()
   const t1 = Date.now()
   await expect(page.locator('.intro')).toHaveCount(0, { timeout: 8_000 })
   const quick = Date.now() - t1
   await expect(page.locator('.home h1')).toBeVisible()
-  const nai = await page.evaluate(() => (window as unknown as { __nai: number[] }).__nai)
+  // 걷어내는 순간의 숨김(display:none) 프레임은 폭 0 이라 뺀다
+  const nai = (await page.evaluate(() => (window as unknown as { __nai: number[] }).__nai)).filter((w) => w > 0)
   expect(nai.length).toBeGreaterThan(10)
-  expect(Math.max(...nai)).toBeGreaterThan(20) // 빠른 판도 「ない」(読めない)에서 출발한다
-  expect(quick).toBeLessThan(full * 0.6)
-  expect(quick).toBeLessThan(3_500)
+  expect(Math.min(...nai)).toBeGreaterThan(20) // 「ない」가 처음부터 끝까지 그대로 있다
+  expect(Math.max(...nai) - Math.min(...nai)).toBeLessThan(1) // 폭이 변하지 않는다 = 움직임이 없다
+  expect(quick).toBeLessThan(full * 0.4)
+  expect(quick).toBeLessThan(2_500)
 })
 
 test('탭하면 바로 건너뛴다', async ({ page }) => {

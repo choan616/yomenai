@@ -11,10 +11,12 @@ import { useEffect, useLayoutEffect, useRef } from 'react'
 export const INTRO_SLOW = 2
 
 /**
- * 같은 날 다시 열 때의 빠른 판 속도 (약 1.7초). **같은 이야기를 빠르게** 한다 — 「読めない？ → 読める！ → 앱 이름」을 통째로 줄인다.
- * 읽힌 뒤(「読める！」)부터 시작하면 읽힘이 도로 「読めない」가 되는 것처럼 보여 부정적이었다 (2026-10-05 사용자). 앞의 질문이 있어야 되돌림이 이름으로 읽힌다
+ * 같은 날 다시 열 때의 **정적판** (2026-10-05 사용자 「압축판은 너무 빠르다. 정적인 인트로가 나을 것 같다」).
+ * 「読めない」 로고가 가만히 떠 있다가 홈으로 사라진다. 움직임이 없으니 「読める → 読めない」로 읽히는 변화도 없고,
+ * 압축판처럼 정신없이 지나가지도 않는다. 가운데에 바로 떠서(나타나는 시간이 없다) 기다림을 늘리지 않는다
  */
-const QUICK_SLOW = 0.6
+const STATIC_HOLD_MS = 700
+const STATIC_FADE_MS = 400
 
 export function Intro({ mode = 'full', onDone }: { mode?: 'full' | 'quick'; onDone: () => void }) {
   const quick = mode === 'quick'
@@ -44,7 +46,7 @@ export function Intro({ mode = 'full', onDone }: { mode?: 'full' | 'quick'; onDo
       return
     }
     const W = word.current!
-    const t = (ms: number) => ms * (quick ? QUICK_SLOW : INTRO_SLOW)
+    const t = (ms: number) => ms * INTRO_SLOW
     const anims: Animation[] = []
     const timers: number[] = []
     let ended = false
@@ -77,6 +79,22 @@ export function Intro({ mode = 'full', onDone }: { mode?: 'full' | 'quick'; onDo
       f.onfinish = end
     }
 
+    if (quick) {
+      // 정적판 — 로고가 가만히 떠 있다가 홈 위로 사라진다. 홈 제목은 사라지기 시작하는 순간부터 보인다(크로스페이드)
+      timers.push(
+        window.setTimeout(() => {
+          delete document.documentElement.dataset.intro
+          const f = root.current!.animate([{ opacity: 1 }, { opacity: 0 }], { duration: STATIC_FADE_MS, fill: 'forwards', easing: 'ease-out' })
+          f.onfinish = end
+        }, STATIC_HOLD_MS),
+      )
+      return () => {
+        ended = true
+        timers.forEach((id) => window.clearTimeout(id))
+        anims.forEach((a) => a.cancel())
+        delete document.documentElement.dataset.intro
+      }
+    }
     // 0~600ms: 흐릿하게 등장, ？ 만 흔들린다
     A(W, [{ opacity: 0, filter: 'blur(6px)', color: FAINT }, { opacity: 1, filter: 'blur(2px)', color: FAINT }], { duration: t(450) })
     A(q.current!, [{ transform: 'rotate(0)' }, { transform: 'rotate(-9deg)' }, { transform: 'rotate(8deg)' }, { transform: 'rotate(-4deg)' }, { transform: 'rotate(0)' }], { duration: t(560), delay: t(150), easing: 'ease-in-out' })
@@ -166,7 +184,7 @@ export function Intro({ mode = 'full', onDone }: { mode?: 'full' | 'quick'; onDo
         ref={word}
         lang="ja"
         // 처음엔 투명 — 효과가 도는 첫 그림 뒤에야 애니메이션이 붙는데, 그 전 한 프레임에 글자가 그대로 보이면 안 된다
-        style={{ opacity: 0 }}
+        style={quick ? { color: 'var(--text)' } : { opacity: 0 }}
       >
         <span className="intro-rubywrap">
           <span ref={k}>読</span>
@@ -181,7 +199,7 @@ export function Intro({ mode = 'full', onDone }: { mode?: 'full' | 'quick'; onDo
         <span className="intro-clip" ref={ru} style={{ maxWidth: 0, opacity: 0 }}>
           る
         </span>
-        <span className="intro-mark" ref={mark} lang="ko">
+        <span className="intro-mark" ref={mark} lang="ko" style={quick ? { display: 'none' } : undefined}>
           <span ref={q}>
             ?
           </span>
