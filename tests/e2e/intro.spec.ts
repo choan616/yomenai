@@ -103,9 +103,9 @@ test('도착했을 때 글자 폭이 홈 제목과 같다 — 자간이 어긋�
   expect(Math.abs(widths[widths.length - 1]! - title)).toBeLessThan(1)
 })
 
-test('같은 날 다시 열면 빠른 판이 뜬다 — 전체판보다 훨씬 짧다', async ({ page }) => {
+test('같은 날 다시 열면 같은 이야기를 빠르게 보인다 — 전체판보다 훨씬 짧다', async ({ page }) => {
   await prepare(page, true)
-  // 「ない」 칸의 폭을 프레임마다 기록한다 — 빠른 판에서는 한 번도 펴지면 안 된다(읽힌 「る」가 「ない」로 돌아가면 안 된다)
+  // 「ない」 칸의 폭을 프레임마다 기록한다 — 빠른 판도 「読めない？」로 시작해야 한다(앞의 질문 없이 「読める！」만 보이면 되돌림이 부정으로 읽힌다)
   await page.addInitScript(() => {
     ;(window as unknown as { __nai: number[] }).__nai = []
     const tick = () => {
@@ -124,15 +124,13 @@ test('같은 날 다시 열면 빠른 판이 뜬다 — 전체판보다 훨씬 �
   await page.reload()
   await expect(page.locator('.intro')).toBeVisible()
   await expect(page.locator('html')).toHaveAttribute('data-intro', '1')
-  // 빠른 판은 「読める！」에서 시작한다 — 흐릿한 「？」 단계가 없다
-  await expect(page.locator('.intro-word')).toContainText('る')
   const t1 = Date.now()
   await expect(page.locator('.intro')).toHaveCount(0, { timeout: 8_000 })
   const quick = Date.now() - t1
   await expect(page.locator('.home h1')).toBeVisible()
   const nai = await page.evaluate(() => (window as unknown as { __nai: number[] }).__nai)
   expect(nai.length).toBeGreaterThan(10)
-  expect(Math.max(...nai)).toBeLessThan(1) // 빠른 판은 「ない」로 돌아가지 않는다
+  expect(Math.max(...nai)).toBeGreaterThan(20) // 빠른 판도 「ない」(読めない)에서 출발한다
   expect(quick).toBeLessThan(full * 0.6)
   expect(quick).toBeLessThan(3_500)
 })

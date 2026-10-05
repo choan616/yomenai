@@ -10,8 +10,11 @@ import { useEffect, useLayoutEffect, useRef } from 'react'
 /** 시안의 1.6초를 늘린 배율. 1.6 → 2 (2026-10-05 사용자 「조금 느려도 좋겠다」) */
 export const INTRO_SLOW = 2
 
-/** 같은 날 다시 열 때의 빠른 판은 늘리지 않고 원래 속도로 간다 (약 1.7초) */
-const QUICK_SLOW = 1
+/**
+ * 같은 날 다시 열 때의 빠른 판 속도 (약 1.7초). **같은 이야기를 빠르게** 한다 — 「読めない？ → 読める！ → 앱 이름」을 통째로 줄인다.
+ * 읽힌 뒤(「読める！」)부터 시작하면 읽힘이 도로 「読めない」가 되는 것처럼 보여 부정적이었다 (2026-10-05 사용자). 앞의 질문이 있어야 되돌림이 이름으로 읽힌다
+ */
+const QUICK_SLOW = 0.6
 
 export function Intro({ mode = 'full', onDone }: { mode?: 'full' | 'quick'; onDone: () => void }) {
   const quick = mode === 'quick'
@@ -74,11 +77,6 @@ export function Intro({ mode = 'full', onDone }: { mode?: 'full' | 'quick'; onDo
       f.onfinish = end
     }
 
-    if (quick) {
-      // 빠른 판 — 이미 읽힌 「読める！」에서 시작한다. 첫 번째 판의 앞 절반(흐림→읽힘)을 건너뛴다.
-      // 시작 상태는 아래 JSX 의 인라인 스타일이 정한다(효과는 첫 그림 뒤에 도니, 여기서 바꾸면 한 프레임 「読めない」가 보인다)
-      A(W, [{ opacity: 0 }, { opacity: 1 }], { duration: t(200) })
-    } else {
     // 0~600ms: 흐릿하게 등장, ？ 만 흔들린다
     A(W, [{ opacity: 0, filter: 'blur(6px)', color: FAINT }, { opacity: 1, filter: 'blur(2px)', color: FAINT }], { duration: t(450) })
     A(q.current!, [{ transform: 'rotate(0)' }, { transform: 'rotate(-9deg)' }, { transform: 'rotate(8deg)' }, { transform: 'rotate(-4deg)' }, { transform: 'rotate(0)' }], { duration: t(560), delay: t(150), easing: 'ease-in-out' })
@@ -90,21 +88,11 @@ export function Intro({ mode = 'full', onDone }: { mode?: 'full' | 'quick'; onDo
     A(W, [{ filter: 'blur(2px)', color: FAINT }, { filter: 'none', color: INK }], { duration: t(420), delay: t(620) })
     // 후리가나 よ
     A(rt.current!, [{ opacity: 0, transform: 'translateY(.3em)' }, { opacity: 1, transform: 'none' }], { duration: t(320), delay: t(1080) })
-    }
 
     // 읽힌 뒤 잠시 두었다가 홈 제목 자리로 — 도착 위치는 그 순간에 잰다(홈 배치가 그 사이 바뀌었을 수 있다)
-    const T = quick ? t(700) : t(1650)
+    const T = t(1650)
     timers.push(
       window.setTimeout(() => {
-        if (quick) {
-          // 빠른 판은 「読める！」에서 끝난다 — 홈 제목 「読めない」로 되돌아가지 않는다 (2026-10-05 사용자 「yomeru 가 yomenai 가 돼 버린다」).
-          // 앞의 「読めない？」 없이 읽힘만 보인 뒤 다시 「ない」로 돌아가면 읽힌 것이 도로 못 읽는 것이 된 것처럼 보인다.
-          // 그래서 그냥 사라지며 그 아래의 홈이 드러난다(홈 제목은 이 순간부터 보인다)
-          delete document.documentElement.dataset.intro
-          const f = root.current!.animate([{ opacity: 1 }, { opacity: 0 }], { duration: t(380), fill: 'forwards', easing: 'ease-out' })
-          f.onfinish = end
-          return
-        }
         const title = document.querySelector<HTMLElement>('.home h1')
         const tn = title?.firstChild
         const visible = title && tn && title.getClientRects().length > 0
@@ -178,26 +166,26 @@ export function Intro({ mode = 'full', onDone }: { mode?: 'full' | 'quick'; onDo
         ref={word}
         lang="ja"
         // 처음엔 투명 — 효과가 도는 첫 그림 뒤에야 애니메이션이 붙는데, 그 전 한 프레임에 글자가 그대로 보이면 안 된다
-        style={quick ? { opacity: 0, color: 'var(--text)' } : { opacity: 0 }}
+        style={{ opacity: 0 }}
       >
         <span className="intro-rubywrap">
           <span ref={k}>読</span>
-          <span className="intro-rt" ref={rt} style={{ opacity: quick ? 1 : 0 }}>
+          <span className="intro-rt" ref={rt} style={{ opacity: 0 }}>
             よ
           </span>
         </span>
         <span>め</span>
-        <span className="intro-clip" ref={nai} style={quick ? { maxWidth: 0, opacity: 0 } : undefined}>
+        <span className="intro-clip" ref={nai}>
           ない
         </span>
-        <span className="intro-clip" ref={ru} style={quick ? { maxWidth: '1.2em', opacity: 1 } : { maxWidth: 0, opacity: 0 }}>
+        <span className="intro-clip" ref={ru} style={{ maxWidth: 0, opacity: 0 }}>
           る
         </span>
         <span className="intro-mark" ref={mark} lang="ko">
-          <span ref={q} style={quick ? { opacity: 0 } : undefined}>
+          <span ref={q}>
             ?
           </span>
-          <span ref={e} style={{ opacity: quick ? 1 : 0 }}>
+          <span ref={e} style={{ opacity: 0 }}>
             !
           </span>
         </span>
