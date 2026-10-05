@@ -31,6 +31,14 @@
   font-style: normal;
   font-display: swap;
 }
+/* 굵은 글씨용 진짜 Bold (2026-10-05). 없을 때는 600 이상이 브라우저가 Regular 를 덧칠한 가짜 볼드였다 */
+@font-face {
+  font-family: 'Prd Sans KO';
+  src: url('/fonts/PrdSansKO-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
 
 :root {
   /* 일본어 — CLAUDE.md: 한국어 폰트나 generic sans 만 남기지 않는다.

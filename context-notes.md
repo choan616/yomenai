@@ -10820,3 +10820,10 @@ REST(`POST /user/repos`)로 한 번 더 시도하려 했으나 자동 승인 분
    문구를 줄였다 — 음독 맵 `20/2607쌍 숙달`(예전 `한자 읽기 …`), 다시보기 `무작위 26장 · 유형별`, 취약 음독 `8개`. 이 문구를 읽던 e2e 정규식 둘을 맞췄다
 3. 「요약 카드의 폰트가 Pretendard 가 아닌 것처럼」 → 실측으로 확인: 글꼴은 `Prd Sans KO`(Pretendard 서브셋)가 맞고 로드됐다. **원인은 굵기였다** — 타일 값을 650 으로 줘서 Regular 하나뿐인 서브셋을 브라우저가 덧칠해 굵게 만든 가짜 볼드였다.
    400 으로 낮추고(크기 26px 로 키워 위계는 크기가 맡는다) 해결했다. 앱의 다른 600 굵기 자리(화면 제목 등)도 같은 가짜 볼드다 — 진짜 Bold 서브셋(약 100KB)을 추가할지는 사용자가 정한다(다시 제안은 요청 때)
+
+**진짜 Bold 서브셋 추가 (2026-10-05, 사용자 「추가하라」).** 앞 절의 가짜 볼드 원인을 없앤다. `Pretendard-Bold.woff2`(원본 791KB, Regular 와 같은 orioncactus/pretendard `static/woff2/` 출처 — Regular 를 같은 URL 에서 받아 byte 단위로 대조해 같은 출처임을 확인)를
+Regular 와 **같은 문자 집합**으로 떠 `PrdSansKO-Bold.woff2`(98KB, 글리프 1,319자)를 만들었다. `build-fonts.ts` 가 두 벌을 한 루프로 뜨고 둘 다 100% 커버를 검증한다.
+- `fonts.css` 에 같은 `Prd Sans KO` 이름으로 `font-weight: 700` 선언을 더했다 → 600 이상 굵기는 이제 진짜 Bold 다(화면 제목·처방 제목·타일 값). 600 과 700 사이는 구분이 없다(둘 다 Bold 로 뜬다)
+- 타일 값은 승인한 시안대로 700, 24px 로 되돌렸다
+- OFL: Regular 와 같은 예약 이름 처리(CSS `font-family` 는 `Prd Sans KO`, 파일 안 이름 테이블은 원본 그대로 — 한계는 `LICENSES.txt` 에 이미 있다). 목록에 Bold 파일을 더했다
+- 프리로드는 Regular 만 유지한다(Bold 까지 얹으면 일본어 Bold 때처럼 첫 화면이 무거워진다). Bold 는 `font-display: swap` 으로 늦게 들어온다

@@ -15,6 +15,11 @@ const OUT_DIR = join(import.meta.dirname, '..', 'public', 'fonts')
  * 정보용 한국어 서체의 **원본**. 서브셋 산출물은 이름을 바꿔 내보낸다 — 아래 `KO_OUT` 주석 참조
  */
 const SRC_KO = join(RAW_FONTS, 'Pretendard-Regular.woff2')
+/**
+ * 굵은 글씨용 원본 (2026-10-05 사용자 「추가하라」). Regular 하나뿐일 때는 600 이상이 브라우저가 덧칠한 **가짜 볼드**가 돼
+ * 큰 숫자·제목이 Pretendard 같지 않게 보였다. 같은 저장소(orioncactus/pretendard) `static/woff2/Pretendard-Bold.woff2`
+ */
+const SRC_KO_BOLD = join(RAW_FONTS, 'Pretendard-Bold.woff2')
 
 /**
  * 서브셋 산출물의 이름 (2026-10-02). **원본 이름을 그대로 못 쓴다.**
@@ -28,6 +33,7 @@ const SRC_KO = join(RAW_FONTS, 'Pretendard-Regular.woff2')
  * 한다 — `public/fonts/LICENSES.txt` 에 그 사실을 적어 둔다
  */
 const KO_OUT = 'PrdSansKO-Regular.woff2'
+const KO_OUT_BOLD = 'PrdSansKO-Bold.woff2'
 
 /** 같은 문자 집합으로 서브셋할 일본어 원본. lang="ja" + 100% 커버라 한국 자형 폴백이 안 난다 */
 const JP_WEIGHTS = [
@@ -271,25 +277,31 @@ if (wideTargets.size > 0) {
   console.log(`  → ${WIDE_CSS}  (${(statSync(WIDE_CSS).size / 1024).toFixed(1)} KB)`)
 }
 
-const koSrc = readFileSync(SRC_KO)
-const koHave = charSet(koSrc)
 const koTargets = koreanTargets()
-const koText = [...koTargets]
-  .filter((cp) => koHave.has(cp))
-  .map((cp) => String.fromCodePoint(cp))
-  .join('')
-const koOut = await subsetFont(koSrc, koText, { targetFormat: 'woff2' })
-writeFileSync(join(OUT_DIR, KO_OUT), koOut)
+// Regular·Bold 를 **같은 문자 집합**으로 뜬다 — 굵기가 다르다고 글자가 빠지면 한 줄 안에서 글꼴이 갈린다
+for (const [srcPath, outName] of [
+  [SRC_KO, KO_OUT],
+  [SRC_KO_BOLD, KO_OUT_BOLD],
+] as const) {
+  const koSrc = readFileSync(srcPath)
+  const koHave = charSet(koSrc)
+  const koText = [...koTargets]
+    .filter((cp) => koHave.has(cp))
+    .map((cp) => String.fromCodePoint(cp))
+    .join('')
+  const koOut = await subsetFont(koSrc, koText, { targetFormat: 'woff2' })
+  writeFileSync(join(OUT_DIR, outName), koOut)
 
-const koOutSet = charSet(koOut)
-const koGap = [...koTargets].filter((cp) => koHave.has(cp) && !koOutSet.has(cp))
-console.log(
-  `\n${KO_OUT}  ${(koSrc.length / 1024).toFixed(0)} KB → ` +
-    `${(koOut.length / 1024).toFixed(0)} KB  (글리프 ${koOutSet.size}자)`,
-)
-if (koGap.length > 0) {
-  console.error(`  ✗ 한국어 서브셋에서 누락 ${koGap.length}개: ${show(koGap)}`)
-  allCovered = false
+  const koOutSet = charSet(koOut)
+  const koGap = [...koTargets].filter((cp) => koHave.has(cp) && !koOutSet.has(cp))
+  console.log(
+    `\n${outName}  ${(koSrc.length / 1024).toFixed(0)} KB → ` +
+      `${(koOut.length / 1024).toFixed(0)} KB  (글리프 ${koOutSet.size}자)`,
+  )
+  if (koGap.length > 0) {
+    console.error(`  ✗ ${outName} 서브셋에서 누락 ${koGap.length}개: ${show(koGap)}`)
+    allCovered = false
+  }
 }
 
 if (!allCovered) {

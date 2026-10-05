@@ -11,7 +11,7 @@ Noto Sans JP   (NotoSansJP-subset.woff2, NotoSansJP-Bold-subset.woff2,
   파일(data/raw/fonts/NotoSansJP-LICENSE.txt) 둘 다 OFL 전문만 담고 있고 별도의 저작권 줄이나
   예약 폰트 이름 선언이 없습니다. 확인한 사실만 적습니다.
 
-Prd Sans KO    (PrdSansKO-Regular.woff2)
+Prd Sans KO    (PrdSansKO-Regular.woff2 · PrdSansKO-Bold.woff2)
   Pretendard 를 이 앱이 쓰는 글자만 남겨 서브셋한 것입니다.
   Copyright (c) 2021, Kil Hyung-jin (https://github.com/orioncactus/pretendard),
   with Reserved Font Name 'Pretendard'.

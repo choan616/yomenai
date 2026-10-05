@@ -2803,11 +2803,10 @@ p.rule-record {
 .tile-chev {
   font-size: calc(16px * var(--ui-scale));
 }
-/* 굵기를 400 으로 둔다 — 한국어 서체(Prd Sans KO)는 Regular 서브셋 하나뿐이라 600 이상은 브라우저가 글자를 덧칠해 굵게 만든 가짜 볼드가 되고,
-   큰 숫자에서 Pretendard 같지 않게 보인다 (2026-10-05 사용자 지적). 위계는 크기로 준다 */
+/* 진짜 Bold(PrdSansKO-Bold)가 생겨서 시안대로 굵게 둔다 (2026-10-05). Regular 하나뿐일 때는 600 이상이 가짜 볼드였다 */
 .tile-v {
-  font-size: calc(26px * var(--ui-scale));
-  font-weight: 400;
+  font-size: calc(24px * var(--ui-scale));
+  font-weight: 700;
   font-variant-numeric: tabular-nums;
 }
 .tile-v.warn {

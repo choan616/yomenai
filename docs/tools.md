@@ -166,7 +166,7 @@ GitHub Actions 가 배포한다.
 npm run build:fonts    # data/raw/fonts/ → public/fonts/
 ```
 
-원본 셋(`NotoSansJP-Regular.otf`·`NotoSansJP-Bold.otf`·`Pretendard-Regular.woff2`)이
+원본 넷(`NotoSansJP-Regular.otf`·`NotoSansJP-Bold.otf`·`Pretendard-Regular.woff2`·`Pretendard-Bold.woff2`)이
 `data/raw/fonts/` 에 있어야 한다. (주아체는 2026-10-04 에 걷었다 — 한국어는 정보용 한 서체다.)
 
 | 파일 | 크기 | 담는 것 |
@@ -174,8 +174,9 @@ npm run build:fonts    # data/raw/fonts/ → public/fonts/
 | `NotoSansJP-subset` | 496KB | 숙어·읽기에 나오는 문자 + 가나 전 구간 |
 | `NotoSansJP-Bold-subset` | 508KB | 같은 문자 집합 (합성 볼드는 자형을 왜곡한다) |
 | `PrdSansKO-Regular` | 97KB | **사전의 뜻·한국 한자음 + 소스·안내서의 UI 문구** + 라틴/기호 |
+| `PrdSansKO-Bold` | 98KB | 같은 문자 집합 — 600 이상 굵기가 가짜 볼드가 되지 않게 (2026-10-05). 원본은 `https://github.com/orioncactus/pretendard` 의 `packages/pretendard/dist/web/static/woff2/Pretendard-Bold.woff2` |
 
-**`PrdSansKO-Regular` 는 Pretendard 서브셋이다.** Pretendard 는 OFL 예약 폰트 이름을 선언했고
+**`PrdSansKO-Regular`·`PrdSansKO-Bold` 는 Pretendard 서브셋이다.** Pretendard 는 OFL 예약 폰트 이름을 선언했고
 OFL 은 서브셋을 수정본으로 보므로, 사용자에게 보이는 이름(웹에서는 `font-family`)에 원본 이름을
 쓸 수 없다. 근거와 남은 한계(파일 안 이름 테이블은 원본 그대로)는 `public/fonts/LICENSES.txt`
 에 적어 뒀다.
