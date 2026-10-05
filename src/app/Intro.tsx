@@ -4,42 +4,12 @@
 // 하루 첫 실행에만 뜨고(`introState.ts`) 탭하면 바로 넘어간다. 모션을 줄인 기기에서는 뜨지 않는다.
 // 장식이라 낭독에서 숨긴다. 홈 제목은 도착할 때까지 가려 둔다(`html[data-intro]`) — 움직이는 로고와 겹쳐 보이지 않게.
 //
+// 같은 날 다시 열 때의 짧은 판(압축판·정적판)은 두지 않는다 — 써 보니 필요 없었다 (context-notes 2026-10-05).
 // 「？」「！」는 일본어 서브셋(Noto Sans JP)에 없어서 한국어 서체(Pretendard Bold)의 ASCII 로 그린다. 문장부호라 자형 학습 문제가 아니다.
 import { useEffect, useLayoutEffect, useRef } from 'react'
 
 /** 시안의 1.6초를 늘린 배율. 1.6 → 2 (2026-10-05 사용자 「조금 느려도 좋겠다」) */
 export const INTRO_SLOW = 2
-
-/**
- * 같은 날 다시 열 때의 **정적판** (2026-10-05 사용자 「압축판은 너무 빠르다. 정적인 인트로가 나을 것 같다」).
- * 「読めない」 로고가 가만히 떠 있다가 홈으로 사라진다. 움직임이 없으니 「読める → 読めない」로 읽히는 변화도 없고,
- * 압축판처럼 정신없이 지나가지도 않는다. 바로 떠서(나타나는 시간이 없다) 기다림을 늘리지 않고, **홈 제목 자리에** 떠서 사라질 때 움직임이 없다
- */
-const STATIC_HOLD_MS = 600
-const STATIC_FADE_MS = 400
-
-/**
- * 로고를 홈 제목 첫 글자 자리·같은 크기로 옮긴다. 제목이 없으면 false(그대로 가운데에 둔다).
- * 홈 제목은 로딩 중에 한 번 움직인다(실측: 약 0.45초에 세로 137 → 188px, 미리보기 계산이 끝나며 가운데 정렬이 바뀐다) —
- * 그래서 **제목 자리가 가라앉은 뒤에** 불러야 한다
- */
-function alignToTitle(W: HTMLElement, k: HTMLElement): boolean {
-  const title = document.querySelector<HTMLElement>('.home h1')
-  const tn = title?.firstChild
-  if (!title || !tn || title.getClientRects().length === 0) return false
-  const range = document.createRange()
-  range.setStart(tn, 0)
-  range.setEnd(tn, 1)
-  const target = range.getBoundingClientRect()
-  W.style.position = 'fixed'
-  W.style.left = '0px'
-  W.style.top = '0px'
-  W.style.fontSize = getComputedStyle(title).fontSize
-  const kr = k.getBoundingClientRect()
-  W.style.left = `${target.left - kr.left}px`
-  W.style.top = `${target.top - kr.top}px`
-  return true
-}
 
 /** 홈 제목 자리가 이만큼(ms) 안 움직이면 가라앉은 것으로 본다 */
 const SETTLE_MS = 200
@@ -48,8 +18,7 @@ const SETTLE_MAX_MS = 1500
 /** 이보다 오래 걸린 프레임은 멈춤으로 센다 */
 const STALL_MS = 40
 
-export function Intro({ mode = 'full', onDone }: { mode?: 'full' | 'quick'; onDone: () => void }) {
-  const quick = mode === 'quick'
+export function Intro({ onDone }: { onDone: () => void }) {
   const root = useRef<HTMLDivElement>(null)
   const word = useRef<HTMLDivElement>(null)
   const k = useRef<HTMLSpanElement>(null)
@@ -111,9 +80,15 @@ export function Intro({ mode = 'full', onDone }: { mode?: 'full' | 'quick'; onDo
 
     // 시작할 때 메인 스레드가 가장 바쁘다(React 마운트·사전 읽기·미리보기 계산). 실측: 인트로 첫 0.4초에 프레임이 190ms·90ms 멈췄고,
     // CPU 를 4배 느리게 하면 첫 1.3초에 160~250ms 멈춤이 다섯 번이었다. 그 사이에 첫 애니메이션이 돌면 시작이 덜컥거린다
-    // (2026-10-05 사용자 「인트로가 시작하는 순간에도 덜컥거림이 뵌다」). 그래서 **홈 제목 자리가 150ms 동안 안 움직일 때까지**
+    // (2026-10-05 사용자 「인트로가 시작하는 순간에도 덜컥거림이 뵌다」). 그래서 **글꼴이 오고 홈 제목 자리가 200ms 동안 안 움직일 때까지**
     // (최대 1.5초) 바탕만 보이다가 그 뒤에 시작한다 — 시작 일은 대개 끝나 있고, 제목의 최종 자리도 안다
+    // 글꼴도 기다린다 (2026-10-05 사용자 「로딩 시 폰트 로딩이 문제인지 덜컥거렸다」) — 일본어 굵은 글꼴이 도중에 바뀌어 들어오면 글자 폭이 변한다
     let raf = 0
+    let fontsReady = false
+    const markReady = () => {
+      fontsReady = true
+    }
+    void document.fonts.load('700 64px "Noto Sans JP"', '読めない').then(markReady, markReady)
     const waitSettled = (go: () => void) => {
       const t0 = performance.now()
       let lastTop = Number.NaN
@@ -129,35 +104,12 @@ export function Intro({ mode = 'full', onDone }: { mode?: 'full' | 'quick'; onDo
           lastTop = top
           since = now
         }
-        if (now - since >= SETTLE_MS || now - t0 >= SETTLE_MAX_MS) go()
+        if ((fontsReady && now - since >= SETTLE_MS) || now - t0 >= SETTLE_MAX_MS) go()
         else raf = requestAnimationFrame(tick)
       }
       raf = requestAnimationFrame(tick)
     }
 
-    if (quick) {
-      // 정적판 — 홈 제목 자리가 가라앉길 기다렸다가(그동안 바탕만 보인다) 그 자리에 로고를 띄우고, 머문 뒤 홈 위로 사라진다.
-      // 홈 제목은 사라지기 시작하는 순간부터 보인다 — 같은 자리·같은 크기라 제목은 가만히 있고 나머지 홈만 드러난다
-      const show = () => {
-        alignToTitle(W, k.current!)
-        W.style.visibility = 'visible'
-        timers.push(
-          window.setTimeout(() => {
-            delete document.documentElement.dataset.intro
-            const f = root.current!.animate([{ opacity: 1 }, { opacity: 0 }], { duration: STATIC_FADE_MS, fill: 'forwards', easing: 'ease-out' })
-            f.onfinish = end
-          }, STATIC_HOLD_MS),
-        )
-      }
-      waitSettled(show)
-      return () => {
-        ended = true
-        window.cancelAnimationFrame(raf)
-        timers.forEach((id) => window.clearTimeout(id))
-        anims.forEach((a) => a.cancel())
-        delete document.documentElement.dataset.intro
-      }
-    }
     const runFull = () => {
     // 0~600ms: 흐릿하게 등장, ？ 만 흔들린다
     // 시작 애니메이션은 opacity·filter 만 — 컴포지터에서 도는 것만 쓴다(color 가 키프레임에 끼면 메인 스레드로 내려가 멈춤이 그대로 보인다).
@@ -236,7 +188,7 @@ export function Intro({ mode = 'full', onDone }: { mode?: 'full' | 'quick'; onDo
       anims.forEach((a) => a.cancel())
       delete document.documentElement.dataset.intro
     }
-  }, [onDone, quick])
+  }, [onDone])
 
   // 탭하거나 키를 누르면 건너뛴다
   useEffect(() => {
@@ -254,7 +206,7 @@ export function Intro({ mode = 'full', onDone }: { mode?: 'full' | 'quick'; onDo
         ref={word}
         lang="ja"
         // 처음엔 투명 — 효과가 도는 첫 그림 뒤에야 애니메이션이 붙는데, 그 전 한 프레임에 글자가 그대로 보이면 안 된다
-        style={quick ? { color: 'var(--text)', visibility: 'hidden' } : { opacity: 0 }}
+        style={{ opacity: 0 }}
       >
         <span className="intro-rubywrap">
           <span ref={k}>読</span>
@@ -269,7 +221,7 @@ export function Intro({ mode = 'full', onDone }: { mode?: 'full' | 'quick'; onDo
         <span className="intro-clip" ref={ru} style={{ maxWidth: 0, opacity: 0 }}>
           る
         </span>
-        <span className="intro-mark" ref={mark} lang="ko" style={quick ? { display: 'none' } : undefined}>
+        <span className="intro-mark" ref={mark} lang="ko">
           <span ref={q}>
             ?
           </span>

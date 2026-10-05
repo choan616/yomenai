@@ -103,57 +103,16 @@ test('도착했을 때 글자 폭이 홈 제목과 같다 — 자간이 어긋�
   expect(Math.abs(widths[widths.length - 1]! - title)).toBeLessThan(1)
 })
 
-test('같은 날 다시 열면 정적판이 뜬다 — 「読めない」가 가만히 떠 있다가 사라진다', async ({ page }) => {
+test('같은 날 다시 열면 인트로가 안 뜬다 — 홈이 바로 보인다', async ({ page }) => {
   await prepare(page, true)
-  // 「ない」 칸의 폭을 프레임마다 기록한다 — 정적판은 「読めない」 그대로이고 한 번도 움직이지 않는다(「読める」로 바뀌었다 돌아가는 변화가 없다)
-  await page.addInitScript(() => {
-    ;(window as unknown as { __nai: number[] }).__nai = []
-    const tick = () => {
-      const el = document.querySelector('.intro-word .intro-clip')
-      // 보이기 전(바탕만 보이는 동안 자리를 잡는다)에는 기록하지 않는다
-      const shown = el && getComputedStyle(document.querySelector('.intro-word')!).visibility !== 'hidden'
-      if (el && shown) (window as unknown as { __nai: number[] }).__nai.push(el.getBoundingClientRect().width)
-      requestAnimationFrame(tick)
-    }
-    requestAnimationFrame(tick)
-  })
   await page.goto('/')
   await expect(page.locator('.intro')).toBeVisible()
-  const t0 = Date.now()
   await expect(page.locator('.intro')).toHaveCount(0, { timeout: 15_000 })
-  const full = Date.now() - t0
 
   await page.reload()
-  await expect(page.locator('.intro')).toBeVisible()
-  await expect(page.locator('html')).toHaveAttribute('data-intro', '1')
-  // 물음표·느낌표는 보이지 않는다 — 「読めない」만 있다
-  await expect(page.locator('.intro-mark')).toBeHidden()
-  // 홈 제목 자리가 가라앉은 뒤에야 로고가 뜬다(그동안은 바탕만 보인다)
-  await expect(page.locator('.intro-word')).toBeVisible()
-  // 로고가 홈 제목 자리에 같은 크기로 떠 있다 — 사라질 때 제목이 가만히 있고 움직임이 안 보인다
-  const gap = await page.evaluate(() => {
-    const h = document.querySelector('.home h1')!
-    const r = document.createRange()
-    r.setStart(h.firstChild!, 0)
-    r.setEnd(h.firstChild!, 1)
-    const t = r.getBoundingClientRect()
-    const k = document.querySelector('.intro-word span span')!.getBoundingClientRect()
-    return { dx: k.left - t.left, dy: k.top - t.top, dh: k.height - t.height }
-  })
-  expect(Math.abs(gap.dx)).toBeLessThan(1)
-  expect(Math.abs(gap.dy)).toBeLessThan(1.5)
-  expect(Math.abs(gap.dh)).toBeLessThan(1.5)
-  const t1 = Date.now()
-  await expect(page.locator('.intro')).toHaveCount(0, { timeout: 8_000 })
-  const quick = Date.now() - t1
   await expect(page.locator('.home h1')).toBeVisible()
-  // 걷어내는 순간의 숨김(display:none) 프레임은 폭 0 이라 뺀다
-  const nai = (await page.evaluate(() => (window as unknown as { __nai: number[] }).__nai)).filter((w) => w > 0)
-  expect(nai.length).toBeGreaterThan(10)
-  expect(Math.min(...nai)).toBeGreaterThan(20) // 「ない」가 처음부터 끝까지 그대로 있다
-  expect(Math.max(...nai) - Math.min(...nai)).toBeLessThan(1) // 폭이 변하지 않는다 = 움직임이 없다
-  expect(quick).toBeLessThan(full * 0.4)
-  expect(quick).toBeLessThan(2_500)
+  await expect(page.locator('.intro')).toHaveCount(0)
+  await expect(page.locator('html')).not.toHaveAttribute('data-intro', '1')
 })
 
 test('탭하면 바로 건너뛴다', async ({ page }) => {
