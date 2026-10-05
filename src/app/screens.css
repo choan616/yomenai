@@ -2889,6 +2889,12 @@ p.rule-record {
 .intro-word > * {
   display: inline-block;
 }
+/* 글자를 담은 칸마다 자간을 부모에서 물려받게 한다 — 안 그러면 칸 하나하나에 전역 `:lang(ja)` 규칙(-0.02em)이 직접 걸려
+   홈 제목(-0.04em)보다 헐겁게 그려져, 도착했을 때 폭이 3.5px 달랐다 (2026-10-05 사용자 「자간 차이가 있는 것 같다」, 측정) */
+.intro .intro-word > span:not(.intro-mark),
+.intro .intro-word .intro-rubywrap > span:not(.intro-rt) {
+  letter-spacing: inherit;
+}
 .intro-clip {
   overflow: hidden;
   vertical-align: bottom;

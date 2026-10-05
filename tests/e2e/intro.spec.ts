@@ -73,6 +73,36 @@ test('끝 장면에서 로고가 홈 제목 자리에 내려앉는다 (도착 �
   await expect(page.locator('.intro')).toHaveCount(0, { timeout: 12_000 })
 })
 
+test('도착했을 때 글자 폭이 홈 제목과 같다 — 자간이 어긋나지 않는다', async ({ page }) => {
+  await prepare(page, true)
+  // 마지막으로 보인 프레임의 글자 칸들 오른쪽 끝을 계속 기록한다
+  await page.addInitScript(() => {
+    ;(window as unknown as { __w: number[] }).__w = []
+    const tick = () => {
+      const w = document.querySelector('.intro-word')
+      if (w) {
+        const spans = [...w.querySelectorAll(':scope > span')].filter((e) => !e.classList.contains('intro-mark'))
+        const first = spans[0]!.getBoundingClientRect()
+        const last = spans[spans.length - 1]!.getBoundingClientRect()
+        if (first.height > 0) (window as unknown as { __w: number[] }).__w.push(last.right - first.left)
+      }
+      requestAnimationFrame(tick)
+    }
+    requestAnimationFrame(tick)
+  })
+  await page.goto('/')
+  await expect(page.locator('.intro')).toHaveCount(0, { timeout: 15_000 })
+  const title = await page.locator('.home h1').evaluate((el) => {
+    const r = document.createRange()
+    r.selectNodeContents(el)
+    const b = r.getBoundingClientRect()
+    return b.right - b.left
+  })
+  const widths = await page.evaluate(() => (window as unknown as { __w: number[] }).__w)
+  // 같은 자간이면 도착한 프레임의 폭이 제목 폭과 1px 안쪽이다 (전에는 3.5px 넓었다)
+  expect(Math.abs(widths[widths.length - 1]! - title)).toBeLessThan(1)
+})
+
 test('같은 날 다시 열면 인트로가 안 뜬다', async ({ page }) => {
   await prepare(page, true)
   await page.goto('/')
