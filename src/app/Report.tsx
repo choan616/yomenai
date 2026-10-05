@@ -383,11 +383,10 @@ function ReportBody({
                 진함 · {Math.round(DOMINANT_SHARE * 100)}% 이상
               </p>
             )}
-    
-            {/* 다시보기 진입 (사용자 지시 2026-09-18) — 분포 바로 아래다. 「무작위」와 「1등 유형만」이
-                같은 성격의 선택이라 한 줄에 양쪽으로 둔다. 2026-10-01 제목을 따로 달던 섹션을
-                분포 안으로 합쳤다 — 분포를 보고 바로 누르는 버튼이라 제목 하나만큼 덜 산만하다 */}
-            {report.frequent.length > 0 && (
+          </section> },
+    browse: { title: '다시보기', content: <section>
+              <p className="section-title">다시보기</p>
+            {report.frequent.length > 0 ? (
               <div className="browse-entry">
                 <p className="browse-lead">채점 없이 한 장씩 넘겨 봐요. 들어갈 때마다 섞여요.</p>
                 <div className="browse-pair">
@@ -409,8 +408,10 @@ function ReportBody({
                   )}
                 </div>
               </div>
+            ) : (
+              <p className="empty">다시 볼 것이 아직 없어요.</p>
             )}
-          </section> },
+            </section> },
     weak: { title: '취약 음독', content: <section className="weak-onyomi">
               <details open>
                 <summary className="section-title">
@@ -507,9 +508,9 @@ function ReportBody({
           </button>
         )}
         {report.frequent.length > 0 && (
-          <button type="button" className="tool-row" onClick={() => setSheet('mist')}>
+          <button type="button" className="tool-row" onClick={() => setSheet('browse')}>
             <span className="tool-name">다시보기</span>
-            <span className="tool-note">채점 없이 한 장씩 넘겨 봐요</span>
+            <span className="tool-note">무작위 {Math.min(report.frequent.length, BROWSE_N)}장 · 유형별</span>
             <span className="chev">›</span>
           </button>
         )}
@@ -1110,9 +1111,10 @@ function ToolsSection({
   return (
     <section className="tools">
       <p className="section-title">{title}</p>
+      <div className="tool-list">
       <button type="button" className="tool-row" onClick={onRules}>
         <span className="tool-name">읽기 규칙</span>
-        <span className="tool-note">음운 변화의 지도 · 내가 틀린 기록</span>
+        <span className="tool-note">음운 변화의 지도</span>
         <span className="chev">›</span>
       </button>
       <button type="button" className="tool-row" onClick={onOnyomi}>
@@ -1123,8 +1125,8 @@ function ToolsSection({
             (`screen-cache.spec.ts` 가 그걸 못 박는다) */}
         <span className="tool-note">
           {onyomi === null
-            ? '(한자, 음독) 쌍 숙달 현황'
-            : `한자 읽기 ${onyomi.mastered}/${onyomi.total}쌍 숙달`}
+            ? '쌍 숙달 현황'
+            : `${onyomi.mastered}/${onyomi.total}쌍 숙달`}
         </span>
         <span className="chev">›</span>
       </button>
@@ -1133,12 +1135,13 @@ function ToolsSection({
         <button type="button" className="tool-row" onClick={onShiritori}>
           <span className="tool-name">한자 끝말잇기</span>
           <span className="tool-note">
-            {record.plays > 0 ? `최고 ${record.best}개 · ${record.plays}판` : '끝 한자로 이어 읽기 놀이'}
+            {record.plays > 0 ? `최고 ${record.best}개 · ${record.plays}판` : '끝 한자로 이어 읽기'}
           </span>
           <span className="chev">›</span>
         </button>
       )}
       {children}
+      </div>
     </section>
   )
 }

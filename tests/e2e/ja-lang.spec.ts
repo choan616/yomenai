@@ -6,7 +6,7 @@
 //
 // 판정 범위는 앱 자신의 `JA_RUN`(src/app/ja.ts)과 같다. 한글 호환 자모(ㄱ·ㄹ)는 범위 밖이다.
 import { expect, test, type Page } from '@playwright/test'
-import { openMist } from './report-sheets.js'
+import { openBrowse } from './report-sheets.js'
 
 interface Scan {
   /** `lang="ja"` 밖에 있는 자리들 + 화면에 글자 그대로 찍힌 마크다운 */
@@ -132,7 +132,7 @@ test('화면에 뜬 일본어가 모두 lang="ja" 안에 있다', async ({ page 
   await page.getByRole('button', { name: /돌아가기/ }).first().click()
   await expect(page.locator('.summary')).toBeVisible({ timeout: 20_000 })
 
-  await openMist(page)
+  await openBrowse(page)
   await page.getByRole('button', { name: /다시보기 \d+장/ }).click()
   await expect(page.locator('.browse-slide').first()).toBeVisible({ timeout: 20_000 })
   const tag = page.locator('.browse-slide').first().locator('.rule-tag')

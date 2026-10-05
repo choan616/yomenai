@@ -4,7 +4,7 @@
 // replay 를 지나 리포트 화면까지 이어진 것이다. 카드가 「반탁」이라 부르는 오답을
 // 리포트가 「연탁」이라 부르던 자리다.
 import { expect, test } from '@playwright/test'
-import { openMist } from './report-sheets.js'
+import { closeSheet, openBrowse, openMist } from './report-sheets.js'
 
 /** 心配 しんぱい 를 しんはい 로 — 반탁 자리 */
 const SHINPAI = '1360930'
@@ -80,7 +80,9 @@ test('리포트 분포가 반탁·연탁을 따로 세고 이름 없는 오답�
   await expect(rows.last()).toContainText('넘김')
   await expect(rows.last().locator('.bar-num')).toHaveText('1')
 
-  // 다시보기 진입 둘 — 한 줄에 무작위 / 1등 유형별 (사용자 지시 2026-09-18)
+  // 다시보기 진입 둘 — 한 줄에 무작위 / 1등 유형별 (사용자 지시 2026-09-18). 지금은 다시보기 시트에 있다 (2026-10-05)
+  await closeSheet(page)
+  await openBrowse(page)
   const pair = page.locator('.browse-pair')
   await expect(pair.getByRole('button', { name: /무작위 다시보기/ })).toBeVisible()
   const byType = pair.getByRole('button', { name: /오답 유형별 다시보기/ })
@@ -155,6 +157,8 @@ test('이름 없는 오답이 1등이면 그 숙어들만 모아 다시본다', 
   // 정렬에 들어 1등이 된다 — 맨 아래 고정이던 「기타」와 다른 점이다
   await expect(bars.locator('.bar-row').first()).toContainText('잘못 읽기')
 
+  await closeSheet(page)
+  await openBrowse(page)
   const byType = page.locator('.browse-pair').getByRole('button', { name: /오답 유형별 다시보기/ })
   await expect(byType).toContainText('잘못 읽기')
   await byType.click()

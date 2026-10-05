@@ -4,7 +4,7 @@
 // 반탁 오답을 심는다. 저장된 유형은 RENDAKU 하나뿐이라, 배지가 「반탁」으로 뜨면
 // 갈래를 답으로 다시 매기는 길(voicingByEvent)이 화면까지 이어진 것이다.
 import { expect, test } from '@playwright/test'
-import { openMist } from './report-sheets.js'
+import { openBrowse } from './report-sheets.js'
 
 /** 心配 しんぱい 를 しんはい 로 — 반탁 자리 (src/core/mistakes.test.ts 와 같은 케이스) */
 const SHINPAI = '1360930'
@@ -51,7 +51,7 @@ test('다시보기 배지가 그 숙어를 틀린 규칙을 가리킨다', async
   await page.reload()
 
   await page.getByRole('button', { name: '리포트', exact: true }).click()
-  await openMist(page)
+  await openBrowse(page)
   await page.getByRole('button', { name: /다시보기 \d+장/ }).click()
   const slide = page.locator('.browse-slide').filter({ hasText: '心配' })
   await expect(slide).toHaveCount(1, { timeout: 20_000 })

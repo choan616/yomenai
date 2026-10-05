@@ -11,8 +11,14 @@ async function openTile(page: Page, nth: number): Promise<void> {
 export const openLevel = (page: Page): Promise<void> => openTile(page, 0)
 /** 학습한 날 시트 — 달력은 처음부터 열려 있다 */
 export const openDays = (page: Page): Promise<void> => openTile(page, 2)
-/** 오답 유형 시트 — 분포 막대·다시보기 진입 */
+/** 오답 유형 시트 — 분포 막대 */
 export const openMist = (page: Page): Promise<void> => openTile(page, 3)
+
+/** 다시보기 시트 — 「더 보기」 줄로 연다. 무작위·유형별 다시보기 진입이 든다 */
+export async function openBrowse(page: Page): Promise<void> {
+  await page.locator('.tools').getByRole('button', { name: /^다시보기/ }).click()
+  await expect(page.getByRole('dialog')).toBeVisible()
+}
 
 /** 취약 음독 시트 — 「더 보기」 줄로 연다 */
 export async function openWeak(page: Page): Promise<void> {

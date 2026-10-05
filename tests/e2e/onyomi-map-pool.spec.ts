@@ -79,7 +79,7 @@ test('리포트와 음독 맵이 서로의 수치를 같은 값으로 인용한�
   await expect(page.locator('.ladder')).toBeVisible()
   const idioms = num(await page.locator('.ladder-total').innerText(), /^(\d+)개$/)
   const note = await page.locator('.tools .tool-row').nth(1).innerText()
-  const m = /한자 읽기 (\d+)\/(\d+)쌍 숙달/.exec(note)
+  const m = /(\d+)\/(\d+)쌍 숙달/.exec(note)
   expect(m, '도구 행이 쌍 수치를 든다: ' + note).not.toBeNull()
   const [mastered, total] = [Number(m![1]), Number(m![2])]
 

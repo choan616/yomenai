@@ -3,7 +3,7 @@
 // 타일은 한눈에 읽는 요약이고, 눌러서 상세(표·달력·분포)를 하단 시트로 연다. 문구 규칙은 화면 문구와 같다:
 // 「끊김은 말하지 않는다」(streak.ts) — 현재 연속이 없을 때 「끊겼다」는 말을 하지 않고 이번 달 학습일로 대신 말한다.
 
-export type SheetKind = 'level' | 'days' | 'mist' | 'weak'
+export type SheetKind = 'level' | 'days' | 'mist' | 'browse' | 'weak'
 
 export interface Tile {
   /** 누르면 열 시트 */

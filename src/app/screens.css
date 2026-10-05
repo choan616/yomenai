@@ -1943,17 +1943,39 @@ p.rule-record {
   flex-direction: column;
   gap: 8px;
 }
-.tool-row {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 2px 10px;
-  min-height: var(--tap);
-  padding: 10px 14px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
+/* 도구/더 보기 — 한 상자 안에 줄이 선으로 나뉜다. 이름은 왼쪽, 짧은 수치는 오른쪽 한 줄 (2026-10-05 시안 모양) */
+.tool-list {
   background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+}
+.tool-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: var(--tap);
+  padding: 8px 14px;
+  border: 0;
+  border-top: 1px solid var(--border);
+  background: none;
   color: var(--text);
   text-align: left;
+}
+.tool-list > .tool-row:first-child {
+  border-top: 0;
+}
+.tool-row .tool-name {
+  flex: 1;
+  min-width: 0;
+}
+.tool-row .tool-note {
+  flex: none;
+  white-space: nowrap;
+}
+.tool-row .chev {
+  color: var(--text-faint);
 }
 .tool-name {
   font-size: calc(15px * var(--ui-scale));
@@ -1962,12 +1984,6 @@ p.rule-record {
   grid-column: 1;
   color: var(--text-dim);
   font-size: calc(12px * var(--ui-scale));
-}
-.tool-row .chev {
-  grid-row: 1 / span 2;
-  grid-column: 2;
-  align-self: center;
-  color: var(--text-faint);
 }
 
 /* ── 카메라로 찾기 (2026-09-23) ──
@@ -2787,10 +2803,11 @@ p.rule-record {
 .tile-chev {
   font-size: calc(16px * var(--ui-scale));
 }
+/* 굵기를 400 으로 둔다 — 한국어 서체(Prd Sans KO)는 Regular 서브셋 하나뿐이라 600 이상은 브라우저가 글자를 덧칠해 굵게 만든 가짜 볼드가 되고,
+   큰 숫자에서 Pretendard 같지 않게 보인다 (2026-10-05 사용자 지적). 위계는 크기로 준다 */
 .tile-v {
-  font-size: calc(24px * var(--ui-scale));
-  font-weight: 650;
-  letter-spacing: -0.01em;
+  font-size: calc(26px * var(--ui-scale));
+  font-weight: 400;
   font-variant-numeric: tabular-nums;
 }
 .tile-v.warn {

@@ -95,7 +95,8 @@ test('타일을 누르면 상세가 하단 시트로 열리고 Esc 로 닫힌다
   await page.locator('.summary .tile').nth(3).click()
   await expect(dialog).toHaveAccessibleName('오답 유형')
   await expect(page.locator('.bars')).toBeVisible()
-  await expect(page.getByRole('button', { name: /무작위 다시보기/ })).toBeVisible()
+  // 다시보기 진입은 오답 유형 시트가 아니라 다시보기 시트에 있다 (2026-10-05)
+  await expect(page.getByRole('button', { name: /무작위 다시보기/ })).toHaveCount(0)
   // 바깥(배경)을 눌러도 닫힌다
   await page.locator('.sheet-backdrop').click({ position: { x: 20, y: 40 } })
   await expect(dialog).toHaveCount(0)
@@ -109,7 +110,9 @@ test('더 보기 줄: 읽기 규칙·음독 맵은 화면으로, 취약 음독·
   await expect(more.getByRole('button', { name: /음독 맵/ })).toBeVisible()
 
   await more.getByRole('button', { name: /^다시보기/ }).click()
-  await expect(page.getByRole('dialog')).toHaveAccessibleName('오답 유형')
+  await expect(page.getByRole('dialog')).toHaveAccessibleName('다시보기')
+  await expect(page.getByRole('button', { name: /무작위 다시보기/ })).toBeVisible()
+  await expect(page.locator('.bars')).toHaveCount(0)
   await closeSheet(page)
 
   // 취약 음독이 있으면 줄이 나오고, 시트에서는 목록이 처음부터 펼쳐져 있다

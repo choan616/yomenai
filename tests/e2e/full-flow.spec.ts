@@ -1,6 +1,6 @@
 // 전체 흐름 완주 검증 — 진입 진단 → 세션 → 리포트. IndexedDB 를 비워 결정론 확보 (PLAN §9)
 import { expect, test, type Page } from '@playwright/test'
-import { openLevel, openMist, closeSheet } from './report-sheets.js'
+import { openLevel, openMist, openBrowse, closeSheet } from './report-sheets.js'
 
 test.setTimeout(180_000)
 
@@ -114,7 +114,9 @@ test('진입 진단 → 세션 → 리포트 전체 흐름을 완주한다', asy
   await expect(page.locator('.rx-list > li').first()).toBeVisible()
   await openMist(page)
   await expect(page.getByText('오답 유형 분포')).toBeVisible()
-  // 다시보기 진입 둘은 분포 아래 한 줄에 있다 (2026-09-18)
+  await closeSheet(page)
+  // 다시보기 진입 둘은 다시보기 시트에 한 줄로 있다 (2026-09-18 → 2026-10-05 시트로)
+  await openBrowse(page)
   await expect(page.locator('.browse-pair')).toBeVisible()
   await expect(page.getByRole('button', { name: /무작위 다시보기/ })).toBeVisible()
   await closeSheet(page)

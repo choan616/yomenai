@@ -178,7 +178,7 @@ test('연속 기록이 28일에 닿으면 도구 줄에 열린다 (열쇠 없이
 test('27일이면 아직 잠겨 있다', async ({ page }) => {
   await reportAfterSeed(page, 27)
   // 기록 계산이 끝났다는 신호 — 음독 맵 줄의 수치가 채워진다. 그 전에는 어차피 잠겨 있어서 이걸 기다려야 안 열린다는 검사가 의미 있다
-  await expect(page.getByText(/한자 읽기 \d+\/\d+쌍 숙달/)).toBeVisible({ timeout: 20_000 })
+  await expect(page.getByText(/\d+\/\d+쌍 숙달/)).toBeVisible({ timeout: 20_000 })
   await expect(page.getByRole('button', { name: /한자 끝말잇기/ })).toHaveCount(0)
 })
 

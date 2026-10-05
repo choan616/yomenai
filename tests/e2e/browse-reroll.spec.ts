@@ -3,7 +3,7 @@
 // 후보가 화면 한 벌(30장)보다 많아야 「다른 30개」가 뜬다. 무작위로 풀어서는 그만큼
 // 안 쌓이므로 **기록을 심는다** (`contrast-session.spec.ts` 와 같은 이유).
 import { expect, test } from '@playwright/test'
-import { openMist } from './report-sheets.js'
+import { openBrowse } from './report-sheets.js'
 
 // 한 손 조작 전제의 폭에서 본다 — 버튼 셋이 들어가는지는 넓은 화면에서 안 드러난다
 test.use({ hasTouch: true, isMobile: true, viewport: { width: 375, height: 667 } })
@@ -45,7 +45,7 @@ test('마지막 장에서 다른 30개를 부르거나 돌아간다', async ({ p
 
   await page.reload()
   await page.getByRole('button', { name: '리포트', exact: true }).click()
-  await openMist(page)
+  await openBrowse(page)
   await page.getByRole('button', { name: /다시보기 \d+장/ }).click()
 
   const slides = page.locator('.browse-slide')
@@ -139,7 +139,7 @@ test('후보가 적어 겹쳐도 첫 장으로 돌아온다', async ({ page }) =
 
   await page.reload()
   await page.getByRole('button', { name: '리포트', exact: true }).click()
-  await openMist(page)
+  await openBrowse(page)
   await page.getByRole('button', { name: /다시보기 \d+장/ }).click()
 
   const slides = page.locator('.browse-slide')
