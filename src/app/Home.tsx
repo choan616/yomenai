@@ -200,6 +200,10 @@ export function Home({
 
   return (
     <main className="home">
+      {/* 큰 「読」 — 장식이라 낭독에서 숨기고, 일본어라 lang 을 명시한다. 래퍼가 .home 안에서 잘라 스크롤 범위를 안 늘린다 */}
+      <div className="home-mark" aria-hidden="true">
+        <span lang="ja">読</span>
+      </div>
       <h1 lang="ja">読めない</h1>
       <p className="tagline">일본어 한자, 당황하지 말자!</p>
 

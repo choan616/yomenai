@@ -1905,9 +1905,9 @@ p.rule-record {
 }
 /* 현재 탭은 색만으로 구분하지 않는다 (PLAN §7) — 굵기와 윗줄을 같이 쓴다 */
 .tabbar-item.on {
-  color: var(--text);
+  color: var(--accent);
   font-weight: 600;
-  box-shadow: inset 0 2px 0 var(--text);
+  box-shadow: inset 0 2px 0 var(--accent);
 }
 
 /* 리포트 하단의 도구 둘 — 음독 맵·읽기 규칙 (2026-09-17, 홈 메뉴가 탭으로 내려오면서) */

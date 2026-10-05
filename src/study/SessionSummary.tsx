@@ -17,6 +17,7 @@ import { loadSettings, QUICK_SESSION_LIMIT } from '../app/settings.ts'
 import { WeekStrip } from '../app/WeekStrip.tsx'
 import { summaryLine } from '../app/weekLine.tsx'
 import { MISTAKE_LABEL } from './mistakeLabels.ts'
+import { DONUT_GAP, donutArcs } from './summaryDonut.ts'
 
 /** 화면에 얹을 때 필요한 이름까지 붙인 "읽히는 문장" */
 interface ReadableView {
@@ -91,9 +92,12 @@ export function SessionSummary({
     <div className="centered summary-screen">
       <h2>세션 완료</h2>
 
-      <p className="summary-num">
-        {done.correct} <span className="summary-slash">/</span> {done.total}
-      </p>
+      <div className="summary-hero">
+        <SummaryBadge correct={done.correct} total={done.total} />
+        <p className="summary-num">
+          {done.correct} <span className="summary-slash">/</span> {done.total}
+        </p>
+      </div>
 
       <dl className="summary-stats">
         <div>
@@ -129,6 +133,38 @@ export function SessionSummary({
       <button type="button" className="btn-primary" onClick={onExit}>
         홈으로
       </button>
+    </div>
+  )
+}
+
+/** 도넛 지름 구성 — CSS(`.summary-donut`)의 크기와 맞춘다 */
+const DONUT_R = 56
+const DONUT_CIRC = 2 * Math.PI * DONUT_R
+
+/**
+ * 「読」 배지를 둘러싼 도넛 (2026-10-05 디자인 시안). 맞은 몫은 강조색 호, 틀린 몫은 옅은 朱 호 — 틀린 것을 숨기지 않는다.
+ * **끊어진 눈금이 아니라 이어진 호다.** 바깥으로 뻗는 방사 눈금은 욱일기를, 한 줄 알약은 캐러셀 인디케이터를 닮는다는
+ * 지적으로 둘 다 걷었다(사용자 2026-10-05). 숫자(아래 `.summary-num`)가 같은 말을 글자로 한다
+ */
+function SummaryBadge({ correct, total }: { correct: number; total: number }) {
+  const { right, wrong } = donutArcs(correct, total, DONUT_CIRC)
+  const arc = (len: number, from: number) => ({
+    strokeDasharray: `${len} ${DONUT_CIRC}`,
+    strokeDashoffset: -from,
+    '--len': len,
+  }) as React.CSSProperties
+  // 두 호 사이 틈의 절반씩을 호 양 끝에 나눠 갖는다 — 맞은 호는 틈의 절반만큼 띄워 시작하고 틀린 호는 맞은 호 바로 뒤에서 이어진다
+  const start = right > 0 && wrong > 0 ? DONUT_GAP / 2 : 0
+  return (
+    <div className="summary-badge" aria-hidden="true">
+      <svg className="summary-donut" viewBox="0 0 132 132">
+        <circle className="donut-track" cx="66" cy="66" r={DONUT_R} />
+        {right > 0 && <circle className="donut-arc" cx="66" cy="66" r={DONUT_R} style={arc(right, start)} />}
+        {wrong > 0 && <circle className="donut-arc miss" cx="66" cy="66" r={DONUT_R} style={arc(wrong, start + right + DONUT_GAP)} />}
+      </svg>
+      <span className="summary-seal" lang="ja">
+        読
+      </span>
     </div>
   )
 }
