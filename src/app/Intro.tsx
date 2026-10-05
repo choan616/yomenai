@@ -14,6 +14,7 @@ export const INTRO_SLOW = 2
 const QUICK_SLOW = 1
 
 export function Intro({ mode = 'full', onDone }: { mode?: 'full' | 'quick'; onDone: () => void }) {
+  const quick = mode === 'quick'
   const root = useRef<HTMLDivElement>(null)
   const word = useRef<HTMLDivElement>(null)
   const k = useRef<HTMLSpanElement>(null)
@@ -40,7 +41,6 @@ export function Intro({ mode = 'full', onDone }: { mode?: 'full' | 'quick'; onDo
       return
     }
     const W = word.current!
-    const quick = mode === 'quick'
     const t = (ms: number) => ms * (quick ? QUICK_SLOW : INTRO_SLOW)
     const anims: Animation[] = []
     const timers: number[] = []
@@ -75,13 +75,8 @@ export function Intro({ mode = 'full', onDone }: { mode?: 'full' | 'quick'; onDo
     }
 
     if (quick) {
-      // 빠른 판 — 이미 읽힌 「読める！」에서 시작한다. 첫 번째 판의 앞 절반(흐림→읽힘)을 건너뛴다
-      nai.current!.style.cssText = 'max-width:0;opacity:0'
-      ru.current!.style.cssText = 'max-width:1.2em;opacity:1'
-      q.current!.style.opacity = '0'
-      e.current!.style.opacity = '1'
-      rt.current!.style.opacity = '1'
-      W.style.color = INK
+      // 빠른 판 — 이미 읽힌 「読める！」에서 시작한다. 첫 번째 판의 앞 절반(흐림→읽힘)을 건너뛴다.
+      // 시작 상태는 아래 JSX 의 인라인 스타일이 정한다(효과는 첫 그림 뒤에 도니, 여기서 바꾸면 한 프레임 「読めない」가 보인다)
       A(W, [{ opacity: 0 }, { opacity: 1 }], { duration: t(200) })
     } else {
     // 0~600ms: 흐릿하게 등장, ？ 만 흔들린다
@@ -98,9 +93,18 @@ export function Intro({ mode = 'full', onDone }: { mode?: 'full' | 'quick'; onDo
     }
 
     // 읽힌 뒤 잠시 두었다가 홈 제목 자리로 — 도착 위치는 그 순간에 잰다(홈 배치가 그 사이 바뀌었을 수 있다)
-    const T = quick ? t(520) : t(1650)
+    const T = quick ? t(700) : t(1650)
     timers.push(
       window.setTimeout(() => {
+        if (quick) {
+          // 빠른 판은 「読める！」에서 끝난다 — 홈 제목 「読めない」로 되돌아가지 않는다 (2026-10-05 사용자 「yomeru 가 yomenai 가 돼 버린다」).
+          // 앞의 「読めない？」 없이 읽힘만 보인 뒤 다시 「ない」로 돌아가면 읽힌 것이 도로 못 읽는 것이 된 것처럼 보인다.
+          // 그래서 그냥 사라지며 그 아래의 홈이 드러난다(홈 제목은 이 순간부터 보인다)
+          delete document.documentElement.dataset.intro
+          const f = root.current!.animate([{ opacity: 1 }, { opacity: 0 }], { duration: t(380), fill: 'forwards', easing: 'ease-out' })
+          f.onfinish = end
+          return
+        }
         const title = document.querySelector<HTMLElement>('.home h1')
         const tn = title?.firstChild
         const visible = title && tn && title.getClientRects().length > 0
@@ -156,7 +160,7 @@ export function Intro({ mode = 'full', onDone }: { mode?: 'full' | 'quick'; onDo
       anims.forEach((a) => a.cancel())
       delete document.documentElement.dataset.intro
     }
-  }, [onDone, mode])
+  }, [onDone, quick])
 
   // 탭하거나 키를 누르면 건너뛴다
   useEffect(() => {
@@ -169,23 +173,31 @@ export function Intro({ mode = 'full', onDone }: { mode?: 'full' | 'quick'; onDo
 
   return (
     <div className="intro" ref={root} aria-hidden="true" onPointerDown={() => finish.current()}>
-      <div className="intro-word" ref={word} lang="ja">
+      <div
+        className="intro-word"
+        ref={word}
+        lang="ja"
+        // 처음엔 투명 — 효과가 도는 첫 그림 뒤에야 애니메이션이 붙는데, 그 전 한 프레임에 글자가 그대로 보이면 안 된다
+        style={quick ? { opacity: 0, color: 'var(--text)' } : { opacity: 0 }}
+      >
         <span className="intro-rubywrap">
           <span ref={k}>読</span>
-          <span className="intro-rt" ref={rt} style={{ opacity: 0 }}>
+          <span className="intro-rt" ref={rt} style={{ opacity: quick ? 1 : 0 }}>
             よ
           </span>
         </span>
         <span>め</span>
-        <span className="intro-clip" ref={nai}>
+        <span className="intro-clip" ref={nai} style={quick ? { maxWidth: 0, opacity: 0 } : undefined}>
           ない
         </span>
-        <span className="intro-clip" ref={ru} style={{ maxWidth: 0, opacity: 0 }}>
+        <span className="intro-clip" ref={ru} style={quick ? { maxWidth: '1.2em', opacity: 1 } : { maxWidth: 0, opacity: 0 }}>
           る
         </span>
         <span className="intro-mark" ref={mark} lang="ko">
-          <span ref={q}>?</span>
-          <span ref={e} style={{ opacity: 0 }}>
+          <span ref={q} style={quick ? { opacity: 0 } : undefined}>
+            ?
+          </span>
+          <span ref={e} style={{ opacity: quick ? 1 : 0 }}>
             !
           </span>
         </span>

@@ -105,6 +105,16 @@ test('도착했을 때 글자 폭이 홈 제목과 같다 — 자간이 어긋�
 
 test('같은 날 다시 열면 빠른 판이 뜬다 — 전체판보다 훨씬 짧다', async ({ page }) => {
   await prepare(page, true)
+  // 「ない」 칸의 폭을 프레임마다 기록한다 — 빠른 판에서는 한 번도 펴지면 안 된다(읽힌 「る」가 「ない」로 돌아가면 안 된다)
+  await page.addInitScript(() => {
+    ;(window as unknown as { __nai: number[] }).__nai = []
+    const tick = () => {
+      const el = document.querySelector('.intro-word .intro-clip')
+      if (el) (window as unknown as { __nai: number[] }).__nai.push(el.getBoundingClientRect().width)
+      requestAnimationFrame(tick)
+    }
+    requestAnimationFrame(tick)
+  })
   await page.goto('/')
   await expect(page.locator('.intro')).toBeVisible()
   const t0 = Date.now()
@@ -120,6 +130,9 @@ test('같은 날 다시 열면 빠른 판이 뜬다 — 전체판보다 훨씬 �
   await expect(page.locator('.intro')).toHaveCount(0, { timeout: 8_000 })
   const quick = Date.now() - t1
   await expect(page.locator('.home h1')).toBeVisible()
+  const nai = await page.evaluate(() => (window as unknown as { __nai: number[] }).__nai)
+  expect(nai.length).toBeGreaterThan(10)
+  expect(Math.max(...nai)).toBeLessThan(1) // 빠른 판은 「ない」로 돌아가지 않는다
   expect(quick).toBeLessThan(full * 0.6)
   expect(quick).toBeLessThan(3_500)
 })
