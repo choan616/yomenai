@@ -729,19 +729,19 @@ button.tag {
     stroke-dasharray: 0 400;
   }
 }
-/* 가운데 배지 — 둥근 사각형(squircle)에 흰 「読」. 일본어라 서체는 일본어 스택을 쓴다 */
+/* 가운데 배지 — 온전한 원에 흰 「読」 (2026-10-05 사용자 「온전한 원형태가 좋겠다」). 일본어라 서체는 일본어 스택을 쓴다 */
 .summary-seal {
-  width: 64px;
-  height: 64px;
+  width: 72px;
+  height: 72px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 22px;
+  border-radius: 50%;
   background: var(--accent);
   color: var(--on-accent);
   font-family: var(--font-ja);
   font-weight: 700;
-  font-size: 38px;
+  font-size: 42px;
   line-height: 1;
   box-shadow: 0 8px 18px color-mix(in oklab, var(--accent) 30%, transparent);
   animation: seal-in 420ms cubic-bezier(0.3, 1.4, 0.5, 1) 120ms both;
