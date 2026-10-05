@@ -73,6 +73,8 @@ test('요약 — 도넛이 그려지고 「読」 배지가 일본어로 표시�
   await expect(page.locator('.summary-donut .donut-track')).toHaveCount(1)
   expect(await page.locator('.summary-donut .donut-arc').count()).toBeGreaterThan(0)
   await expect(page.locator('.summary-tick')).toHaveCount(0)
+  // 카드 수(3)만큼 구분선이 서서 연달아 맞은 것도 장수가 읽힌다
+  await expect(page.locator('.summary-donut .donut-sep')).toHaveCount(3)
   const seal = page.locator('.summary-seal')
   await expect(seal).toHaveText('読')
   await expect(seal).toHaveAttribute('lang', 'ja')

@@ -713,6 +713,17 @@ button.tag {
   opacity: 0.55;
   animation-delay: 650ms;
 }
+/* 두 몫의 경계를 가르는 가는 선 — 바탕색이라 호를 살짝 가른 틈으로 읽힌다. 호가 그려진 뒤에 나타난다 */
+.donut-sep {
+  stroke: var(--bg);
+  stroke-width: 12;
+  animation: sep-in 200ms ease-out 1000ms both;
+}
+@keyframes sep-in {
+  from {
+    opacity: 0;
+  }
+}
 @keyframes donut-in {
   from {
     stroke-dasharray: 0 400;
