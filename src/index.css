@@ -37,6 +37,7 @@
   --accent: #93a5c9;
   --accent-soft: color-mix(in oklab, var(--accent) 14%, transparent);
   --accent-shade: color-mix(in oklab, var(--accent) 68%, black);
+  --accent-edge: color-mix(in oklab, var(--accent) 84%, black);
   --on-accent: var(--bg);
 
   /* 밴드 색 (2026-09-22 사용자 지시 "색상으로 밴드구역을 구분하라").
