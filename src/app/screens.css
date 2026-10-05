@@ -2884,6 +2884,7 @@ p.rule-record {
   /* 홈 제목(.home h1)과 같은 자간이라야 도착했을 때 글자가 겹쳐 맞는다 */
   letter-spacing: -0.04em;
   color: var(--text-faint);
+  will-change: transform;
 }
 .intro-word > * {
   display: inline-block;
