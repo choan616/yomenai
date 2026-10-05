@@ -10,7 +10,10 @@ import { useEffect, useLayoutEffect, useRef } from 'react'
 /** 시안의 1.6초를 늘린 배율. 1.6 → 2 (2026-10-05 사용자 「조금 느려도 좋겠다」) */
 export const INTRO_SLOW = 2
 
-export function Intro({ onDone }: { onDone: () => void }) {
+/** 같은 날 다시 열 때의 빠른 판은 늘리지 않고 원래 속도로 간다 (약 1.7초) */
+const QUICK_SLOW = 1
+
+export function Intro({ mode = 'full', onDone }: { mode?: 'full' | 'quick'; onDone: () => void }) {
   const root = useRef<HTMLDivElement>(null)
   const word = useRef<HTMLDivElement>(null)
   const k = useRef<HTMLSpanElement>(null)
@@ -37,7 +40,8 @@ export function Intro({ onDone }: { onDone: () => void }) {
       return
     }
     const W = word.current!
-    const t = (ms: number) => ms * INTRO_SLOW
+    const quick = mode === 'quick'
+    const t = (ms: number) => ms * (quick ? QUICK_SLOW : INTRO_SLOW)
     const anims: Animation[] = []
     const timers: number[] = []
     let ended = false
@@ -70,6 +74,16 @@ export function Intro({ onDone }: { onDone: () => void }) {
       f.onfinish = end
     }
 
+    if (quick) {
+      // 빠른 판 — 이미 읽힌 「読める！」에서 시작한다. 첫 번째 판의 앞 절반(흐림→읽힘)을 건너뛴다
+      nai.current!.style.cssText = 'max-width:0;opacity:0'
+      ru.current!.style.cssText = 'max-width:1.2em;opacity:1'
+      q.current!.style.opacity = '0'
+      e.current!.style.opacity = '1'
+      rt.current!.style.opacity = '1'
+      W.style.color = INK
+      A(W, [{ opacity: 0 }, { opacity: 1 }], { duration: t(200) })
+    } else {
     // 0~600ms: 흐릿하게 등장, ？ 만 흔들린다
     A(W, [{ opacity: 0, filter: 'blur(6px)', color: FAINT }, { opacity: 1, filter: 'blur(2px)', color: FAINT }], { duration: t(450) })
     A(q.current!, [{ transform: 'rotate(0)' }, { transform: 'rotate(-9deg)' }, { transform: 'rotate(8deg)' }, { transform: 'rotate(-4deg)' }, { transform: 'rotate(0)' }], { duration: t(560), delay: t(150), easing: 'ease-in-out' })
@@ -81,9 +95,10 @@ export function Intro({ onDone }: { onDone: () => void }) {
     A(W, [{ filter: 'blur(2px)', color: FAINT }, { filter: 'none', color: INK }], { duration: t(420), delay: t(620) })
     // 후리가나 よ
     A(rt.current!, [{ opacity: 0, transform: 'translateY(.3em)' }, { opacity: 1, transform: 'none' }], { duration: t(320), delay: t(1080) })
+    }
 
     // 읽힌 뒤 잠시 두었다가 홈 제목 자리로 — 도착 위치는 그 순간에 잰다(홈 배치가 그 사이 바뀌었을 수 있다)
-    const T = t(1650)
+    const T = quick ? t(520) : t(1650)
     timers.push(
       window.setTimeout(() => {
         const title = document.querySelector<HTMLElement>('.home h1')
@@ -141,7 +156,7 @@ export function Intro({ onDone }: { onDone: () => void }) {
       anims.forEach((a) => a.cancel())
       delete document.documentElement.dataset.intro
     }
-  }, [onDone])
+  }, [onDone, mode])
 
   // 탭하거나 키를 누르면 건너뛴다
   useEffect(() => {

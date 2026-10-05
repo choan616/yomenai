@@ -14,6 +14,9 @@ async function open(page: Page): Promise<void> {
   await page.goto('/')
   await expect(page.getByRole('button', { name: '세션 시작' })).toBeVisible({ timeout: 20_000 })
   await page.getByRole('button', { name: '설정', exact: true }).click()
+  // 올라오는 애니메이션이 끝난 뒤에야 핸들 위치가 확정이다 — 움직이는 중에 재면 끌기가 엉뚱한 곳(배경)을 눌러 시트가 닫힌다
+  await expect(page.getByRole('dialog')).toBeVisible()
+  await page.evaluate(() => Promise.all(document.getAnimations().map((a) => a.finished.catch(() => undefined))))
 }
 
 const sheet = (page: Page) => page.getByRole('dialog', { name: '설정' })

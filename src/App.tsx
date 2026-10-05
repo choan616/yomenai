@@ -13,7 +13,7 @@ import { Report } from './app/Report.tsx'
 import { Settings } from './app/Settings.tsx'
 import { Shiritori } from './app/Shiritori.tsx'
 import { Intro } from './app/Intro.tsx'
-import { introDue, markIntroShown } from './app/introState.ts'
+import { introMode, markIntroShown, type IntroMode } from './app/introState.ts'
 import { dateKey } from './core/attendance.ts'
 import { Browse } from './app/Browse.tsx'
 import { Search } from './app/Search.tsx'
@@ -84,9 +84,9 @@ export default function App() {
 function Shell() {
   // 셸 화면에서 문서가 밀려 올라가면 sticky 탭바가 같이 올라간다 (2026-09-26)
   useDocumentScrollGuard()
-  // 시작 인트로 — 하루 첫 실행에만 (introState.ts). 모션을 줄인 기기에서는 안 뜬다
-  const [intro, setIntro] = useState(() =>
-    introDue(dateKey(Date.now()), {
+  // 시작 인트로 — 하루 첫 실행은 전체판, 같은 날 다시 열면 빠른 판 (introState.ts). 모션을 줄인 기기에서는 안 뜬다
+  const [intro, setIntro] = useState<IntroMode | null>(() =>
+    introMode(dateKey(Date.now()), {
       reducedMotion: window.matchMedia('(prefers-reduced-motion: reduce)').matches,
       dev: import.meta.env.DEV,
     }),
@@ -95,7 +95,7 @@ function Shell() {
   useEffect(() => {
     if (intro) markIntroShown(dateKey(Date.now()))
   }, [intro])
-  const endIntro = useCallback(() => setIntro(false), [])
+  const endIntro = useCallback(() => setIntro(null), [])
   const [tab, setTab] = useState<Tab>('home')
   /** 설정은 시트다 — 시트 뒤에 흐리게 깔리는 탭이자, 닫으면 돌아갈 탭 (2026-10-04) */
   const [underTab, setUnderTab] = useState<Exclude<Tab, 'settings'>>('home')
@@ -124,7 +124,7 @@ function Shell() {
 
   return (
     <>
-      {intro && <Intro onDone={endIntro} />}
+      {intro && <Intro mode={intro} onDone={endIntro} />}
       <div className="tabbed">
         {sub ? (
           <SubScreen sub={sub} onBack={() => setSub(null)} onFound={takeFound} />
@@ -146,7 +146,7 @@ function Shell() {
                 onIntro={() => {
                   // 홈 제목 자리로 내려앉는 장면이라 홈에서 재생한다
                   goTab('home')
-                  setIntro(true)
+                  setIntro('full')
                 }}
               />
             )}

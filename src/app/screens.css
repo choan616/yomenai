@@ -1302,33 +1302,6 @@ button.cal-cell[aria-pressed='true'] .cal-dot {
 
 /* ── 달력의 의미 층 (2026-09-30) — 달 요약·연속 기록·표식·날짜 상세 ──
    새 색은 안 들인다. 이정표는 `--attend` 고리, 밴드 도달은 무채 화살표 */
-/* 제목줄 오른쪽 토글 (2026-10-01) — 취약 음독의 접힘과 같은 › 회전 문법 */
-.cal-section-title {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-.cal-toggle {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 2px 0 2px 8px;
-  background: none;
-  border: 0;
-  font: inherit;
-  letter-spacing: normal;
-  color: var(--text-dim);
-  cursor: pointer;
-}
-.cal-chev {
-  display: inline-block;
-  font-size: calc(16px * var(--ui-scale));
-  line-height: 1;
-  transition: transform 160ms ease-out;
-}
-.cal-toggle[aria-expanded='true'] .cal-chev {
-  transform: rotate(90deg);
-}
 #cal-body {
   margin-top: 4px;
 }

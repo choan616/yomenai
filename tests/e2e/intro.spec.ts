@@ -103,14 +103,25 @@ test('도착했을 때 글자 폭이 홈 제목과 같다 — 자간이 어긋�
   expect(Math.abs(widths[widths.length - 1]! - title)).toBeLessThan(1)
 })
 
-test('같은 날 다시 열면 인트로가 안 뜬다', async ({ page }) => {
+test('같은 날 다시 열면 빠른 판이 뜬다 — 전체판보다 훨씬 짧다', async ({ page }) => {
   await prepare(page, true)
   await page.goto('/')
   await expect(page.locator('.intro')).toBeVisible()
-  await expect(page.locator('.intro')).toHaveCount(0, { timeout: 12_000 })
+  const t0 = Date.now()
+  await expect(page.locator('.intro')).toHaveCount(0, { timeout: 15_000 })
+  const full = Date.now() - t0
+
   await page.reload()
+  await expect(page.locator('.intro')).toBeVisible()
+  await expect(page.locator('html')).toHaveAttribute('data-intro', '1')
+  // 빠른 판은 「読める！」에서 시작한다 — 흐릿한 「？」 단계가 없다
+  await expect(page.locator('.intro-word')).toContainText('る')
+  const t1 = Date.now()
+  await expect(page.locator('.intro')).toHaveCount(0, { timeout: 8_000 })
+  const quick = Date.now() - t1
   await expect(page.locator('.home h1')).toBeVisible()
-  await expect(page.locator('.intro')).toHaveCount(0)
+  expect(quick).toBeLessThan(full * 0.6)
+  expect(quick).toBeLessThan(3_500)
 })
 
 test('탭하면 바로 건너뛴다', async ({ page }) => {

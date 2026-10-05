@@ -220,7 +220,7 @@ export function Settings({
               <span>인트로 다시 보기</span>
               <span className="chev" aria-hidden="true">›</span>
             </button>
-            <span className="hint">하루 첫 실행에 나오는 장면이에요.</span>
+            <span className="hint">앱을 열 때 나오는 장면이에요.</span>
           </div>
         </div>
 

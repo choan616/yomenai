@@ -40,7 +40,6 @@ import { loadKanji, loadPairs } from '../dict/load.ts'
 import { loadStudyPool, withRuntimePairs } from '../dict/pool.ts'
 import { loadSettings, QUICK_SESSION_LIMIT } from './settings.ts'
 import { mistakeContextFromKanji } from '../dict/mistakeContext.ts'
-import { isCalendarOpen, setCalendarOpen } from './calendarOpen.ts'
 import { homeLine } from './weekLine.tsx'
 import { loadPairIndex } from '../dict/pairIndex.ts'
 import { BAND_NOTE, type Band } from '../lib/bands.ts'
@@ -329,7 +328,6 @@ function ReportBody({
   const sheets: Record<SheetKind, { title: string; content: React.ReactNode }> = {
     level: { title: '수준', content: <LevelSection level={level} reviews={report.totalReviews} accuracy={accuracy} /> },
     days: { title: '학습한 날', content: <CalendarSection
-            forceOpen
             attendance={attendance}
             sessionLimit={sessionLimit}
             streak={streak}
@@ -732,10 +730,7 @@ function CalendarSection({
   streak,
   reach,
   onQuick,
-  forceOpen = false,
 }: {
-  /** 시트 안에서는 처음부터 열어 둔다 — 시트를 연 이유가 달력이다 (2026-10-05) */
-  forceOpen?: boolean
   attendance: Map<string, DayRecord>
   sessionLimit: number
   streak: StreakRecord
@@ -743,7 +738,6 @@ function CalendarSection({
   onQuick: () => void
 }) {
   const now = new Date()
-  const [open, setOpen] = useState(() => forceOpen || isCalendarOpen())
   const [view, setView] = useState({ y: now.getFullYear(), m: now.getMonth() + 1 })
   const todayKey = dateKey(now.getTime())
   // 처음엔 오늘을 펼쳐 둔다 — 오늘 기록이 없으면 아무것도 안 펼친다
@@ -770,34 +764,12 @@ function CalendarSection({
   const lead =
     records ?? (thisMonth.cards > 0 ? `이번 달 ${thisMonth.days}일 · ${thisMonth.cards}장` : null)
 
-  const toggle = () => {
-    setCalendarOpen(!open)
-    setOpen(!open)
-  }
-
   return (
     <section className="attendance">
-      {/* 제목·접힘 (2026-10-01 사용자 제안). 「얼마나 꾸준히」는 아니라고 했다 — 칸이
-          말하는 건 "배운 날"이라 「학습한 날」. 접힌 채로 연속 기록 문구만 먼저 보이고,
-          달력은 토글로 연다. 연 상태는 기기에 기억한다(calendarOpen.ts) */}
-      <p className="section-title cal-section-title">
-        학습한 날
-        <button
-          type="button"
-          className="cal-toggle"
-          aria-expanded={open}
-          aria-controls="cal-body"
-          onClick={toggle}
-        >
-          달력
-          {/* 화살표는 이름에 안 섞는다 — ::after 로 두면 버튼 이름이 「달력 ›」가 된다 */}
-          <span className="cal-chev" aria-hidden="true">
-            ›
-          </span>
-        </button>
-      </p>
+      {/* 달력은 시트 안에서 늘 펼쳐져 있다 (2026-10-05). 전에는 접어 두고 연속 기록 문구만 먼저 보였지만,
+          요약은 이제 리포트 맨 위 타일이 말한다 — 접힘과 그 기억(calendarOpen.ts)은 쓸모가 없어져 걷었다 */}
+      <p className="section-title">학습한 날</p>
       {lead && <p className="cal-records">{lead}</p>}
-      {open && (
         <div id="cal-body">
         <div className="cal-header">
           <p className="report-lead cal-title">
@@ -910,7 +882,6 @@ function CalendarSection({
           </span>
         </p>
         </div>
-      )}
     </section>
   )
 }
