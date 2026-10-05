@@ -143,6 +143,11 @@ function Shell() {
                 onFeedback={() => setSub({ kind: 'feedback' })}
                 onBackup={() => setSub({ kind: 'backup' })}
                 onReview={() => setSub({ kind: 'review' })}
+                onIntro={() => {
+                  // 홈 제목 자리로 내려앉는 장면이라 홈에서 재생한다
+                  goTab('home')
+                  setIntro(true)
+                }}
               />
             )}
           </>

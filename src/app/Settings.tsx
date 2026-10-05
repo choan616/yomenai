@@ -87,6 +87,7 @@ const KEY_FEEDBACKS: { label: string; value: SettingsData['keyFeedback'] }[] = [
 export function Settings({
   onClose,
   onFeedback,
+  onIntro,
   onBackup,
   onReview,
 }: {
@@ -96,6 +97,8 @@ export function Settings({
   onReview: () => void
   /** 테스터 피드백 화면으로 (2026-09-13) */
   onFeedback: () => void
+  /** 시작 인트로를 다시 본다 (2026-10-05 사용자 「한 번 짧게 봐서 다시 못 보니 모르겠다」). 홈으로 가서 재생한다 */
+  onIntro: () => void
   /** 백업·초기화 화면으로 (2026-09-22) */
   onBackup: () => void
 }) {
@@ -211,6 +214,13 @@ export function Settings({
               <span className="chev" aria-hidden="true">›</span>
             </button>
             <span className="hint">채점 기록은 안 가요. 보내기 전에 내용을 그대로 보여 드려요.</span>
+          </div>
+          <div className="setting">
+            <button type="button" className="setting-link" onClick={onIntro}>
+              <span>인트로 다시 보기</span>
+              <span className="chev" aria-hidden="true">›</span>
+            </button>
+            <span className="hint">하루 첫 실행에 나오는 장면이에요.</span>
           </div>
         </div>
 

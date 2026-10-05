@@ -56,10 +56,16 @@ export function BottomSheet({
     return { parentH, peek: Math.min(fullH, Math.max(PEEK_MIN, parentH * PEEK_RATIO)), full: fullH }
   }
 
+  // 끄는 동안의 움직임은 **window 에서** 받는다 (2026-10-05). 마우스는 포인터가 시트 밖(뒤쪽 배경)으로 나가면
+  // 이벤트가 그쪽으로 가서 이 줄의 핸들러가 못 받았다. 포인터 캡처는 쓰지 않는다 — 걸면 뒤따르는 클릭이
+  // 핸들 버튼이 아니라 이 줄로 가서 탭이 안 먹는다 (앞 절의 첫 버그)
+  const stopListening = useRef<() => void>(() => {})
+  useEffect(() => () => stopListening.current(), [])
+
   const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    stopListening.current()
     const m = metrics()
-    // 캡처는 움직이기 시작할 때 건다 — 처음부터 걸면 클릭이 핸들 버튼이 아니라 이 줄로 가서 탭이 안 먹는다
-    drag.current = {
+    const d: Drag = {
       startY: e.clientY,
       startH: sheetRef.current?.offsetHeight ?? m.peek,
       peek: m.peek,
@@ -69,34 +75,40 @@ export function BottomSheet({
       velocity: 0,
       moved: false,
     }
-  }
+    drag.current = d
 
-  const onPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
-    const d = drag.current
-    if (!d) return
-    if (!d.moved && Math.abs(e.clientY - d.startY) < MOVE_SLOP) return
-    if (!d.moved) e.currentTarget.setPointerCapture(e.pointerId)
-    d.moved = true
-    const dt = e.timeStamp - d.lastT
-    if (dt > 0) d.velocity = (d.lastY - e.clientY) / dt
-    d.lastY = e.clientY
-    d.lastT = e.timeStamp
-    setDragH(Math.min(d.full, Math.max(0, d.startH + (d.startY - e.clientY))))
-  }
-
-  const endDrag = (e: React.PointerEvent<HTMLDivElement>) => {
-    const d = drag.current
-    if (!d) return
-    if (e.currentTarget.hasPointerCapture(e.pointerId)) e.currentTarget.releasePointerCapture(e.pointerId)
-    if (d.moved) {
-      const h = Math.min(d.full, Math.max(0, d.startH + (d.startY - e.clientY)))
-      const snap = nextSnap(h, d.peek, d.full, d.velocity)
-      setDragH(null)
-      if (snap === 'close') onClose()
-      else setFull(snap === 'full')
+    const move = (ev: PointerEvent) => {
+      if (!d.moved && Math.abs(ev.clientY - d.startY) < MOVE_SLOP) return
+      d.moved = true
+      const dt = ev.timeStamp - d.lastT
+      if (dt > 0) d.velocity = (d.lastY - ev.clientY) / dt
+      d.lastY = ev.clientY
+      d.lastT = ev.timeStamp
+      setDragH(Math.min(d.full, Math.max(0, d.startH + (d.startY - ev.clientY))))
     }
-    // 클릭 이벤트가 바로 뒤따른다 — 끈 뒤의 클릭은 토글로 안 센다 (아래 onClick)
-    window.setTimeout(() => (drag.current = null), 0)
+    const up = (ev: PointerEvent) => {
+      stopListening.current()
+      if (d.moved) {
+        const h = Math.min(d.full, Math.max(0, d.startH + (d.startY - ev.clientY)))
+        const snap = nextSnap(h, d.peek, d.full, d.velocity)
+        setDragH(null)
+        if (snap === 'close') onClose()
+        else setFull(snap === 'full')
+      }
+      // 클릭 이벤트가 바로 뒤따른다 — 끈 뒤의 클릭은 토글로 안 센다 (아래 onClick)
+      window.setTimeout(() => {
+        if (drag.current === d) drag.current = null
+      }, 0)
+    }
+    window.addEventListener('pointermove', move)
+    window.addEventListener('pointerup', up)
+    window.addEventListener('pointercancel', up)
+    stopListening.current = () => {
+      window.removeEventListener('pointermove', move)
+      window.removeEventListener('pointerup', up)
+      window.removeEventListener('pointercancel', up)
+      stopListening.current = () => {}
+    }
   }
 
   return (
@@ -115,9 +127,6 @@ export function BottomSheet({
         <div
           className="sheet-top"
           onPointerDown={onPointerDown}
-          onPointerMove={onPointerMove}
-          onPointerUp={endDrag}
-          onPointerCancel={endDrag}
         >
           <button
             type="button"

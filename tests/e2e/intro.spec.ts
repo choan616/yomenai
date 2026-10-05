@@ -92,6 +92,25 @@ test('탭하면 바로 건너뛴다', async ({ page }) => {
   await expect(page.locator('.home h1')).toBeVisible()
 })
 
+test('설정의 「인트로 다시 보기」로 언제든 다시 본다 (하루 한 번 제한과 별개)', async ({ page }) => {
+  await prepare(page, false)
+  await page.goto('/')
+  await expect(page.locator('.home h1')).toBeVisible()
+  await expect(page.locator('.intro')).toHaveCount(0)
+
+  await page.getByRole('button', { name: '설정', exact: true }).click()
+  await page.getByRole('button', { name: /인트로 다시 보기/ }).click()
+  await expect(page.locator('.intro')).toBeVisible()
+  await expect(page.getByRole('dialog')).toHaveCount(0) // 설정 시트는 닫혀 있다
+  await expect(page.locator('.intro')).toHaveCount(0, { timeout: 12_000 })
+  await expect(page.locator('.home h1')).toBeVisible()
+
+  // 몇 번이든 된다
+  await page.getByRole('button', { name: '설정', exact: true }).click()
+  await page.getByRole('button', { name: /인트로 다시 보기/ }).click()
+  await expect(page.locator('.intro')).toBeVisible()
+})
+
 test('모션을 줄이는 기기에서는 안 뜬다', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' })
   await prepare(page, true)
