@@ -53,6 +53,9 @@ import {
   VOICING_LABEL,
 } from '../study/mistakeLabels.ts'
 import { Mixed } from './RuleBody.tsx'
+import { BottomSheet } from './BottomSheet.tsx'
+import { RxRail } from './RxRail.tsx'
+import { summaryTiles, type SheetKind } from './reportSummary.ts'
 import { loadShiritoriRecord } from './shiritoriRecord.ts'
 import { isUnlocked } from './unlocks.ts'
 import { ruleForMistake } from './rules.ts'
@@ -312,161 +315,210 @@ function ReportBody({
   /** 탁음 바구니에 갈래가 둘 이상 섞여 있나 — 처방의 숫자가 묶인 값임을 밝혀야 한다 */
   const voicingMixed = Object.values(voicing).filter((n) => n > 0).length > 1
 
-  return (
-    <>
-      {/* 배치는 중요도 순이다 (2026-10-01 사용자 지적 「다시 조금 산만해졌다」).
-          어디쯤인가(수준) → 학습한 날(접힘, 연속 기록 문구만) → 무엇을 할까(처방) →
-          왜(분포, 바로 다시보기로) → 도구 → 취약 음독(접힘). 학습한 날은 사용자 지시로
-          수준 바로 아래 — 접혀 있어 한 줄만 차지한다. 취약 음독은 처방이 파급력 큰 것을 이미 골라 올리므로
-          원본 목록은 접어 둔다 — 「눈이 가지 않는다」 */}
-      <LevelSection level={level} reviews={report.totalReviews} accuracy={accuracy} />
-
-      <CalendarSection
-        attendance={attendance}
-        sessionLimit={sessionLimit}
-        streak={streak}
-        reach={reach}
-        onQuick={onQuick}
-      />
-
-      <section className="rx">
-        <p className="section-title">다음에 볼 것</p>
-        {prescriptions.length === 0 ? (
-          <p className="empty">지금은 특별히 짚을 게 없어요. 하던 대로 가면 돼요.</p>
-        ) : (
-          <ol className="rx-list">
-            {prescriptions.map((p, i) => (
-              <li key={rxKey(p)} style={{ '--i': i } as React.CSSProperties}>
-                <span className="rx-num" aria-hidden="true">
-                  {i + 1}
-                </span>
-                <div className="rx-body">
-                  <RxItem
-                    p={p}
-                    voicing={topVoicing}
-                    mixed={voicingMixed}
-                    onFocus={onFocus}
-                    onRule={onRule}
-                  />
-                </div>
-              </li>
-            ))}
-          </ol>
-        )}
-      </section>
-
-      <section>
-        <p className="section-title">오답 유형 분포</p>
-        {rows.length === 0 && passed === 0 ? (
-          <p className="empty">오답이 없어요.</p>
-        ) : (
-          <div className="bars">
-            {rows.map((m, i) => (
-              <div className="bar-row" key={m.key} style={{ '--i': i } as React.CSSProperties}>
-                <span>{m.label}</span>
-                <span className="bar-track">
-                  <span
-                    className={`bar-fill ${mistakeSeverity(m.count / report.totalWrong)}`}
-                    style={{ width: `${(m.count / maxCount) * 100}%` }}
-                    aria-hidden="true"
-                  />
-                </span>
-                <span className="bar-num">{m.count}</span>
-              </div>
-            ))}
-            {/* 넘김은 **등수와 무관하게 맨 아래** (2026-09-18). 이름이 없는 게 아니라 답이
-                없는 것이라 다시 볼 것도 없다 — 정렬에 끼우면 다시보기가 못 가리킬 행이 1등이 된다.
-                색도 오답 계통(--ng)이 아니라 무채로 — severity 클래스가 없으면 기본값(불투명
-                --ng)이 돼 아무 것도 안 틀렸는데 제일 진하게 보이는 문제가 있었다(사용자 지적) */}
-            {passed > 0 && (
-              <div className="bar-row" style={{ '--i': rows.length } as React.CSSProperties}>
-                <span>{PASSED_LABEL}</span>
-                <span className="bar-track">
-                  <span
-                    className="bar-fill passed"
-                    style={{ width: `${(passed / maxCount) * 100}%` }}
-                    aria-hidden="true"
-                  />
-                </span>
-                <span className="bar-num">{passed}</span>
+  const [sheet, setSheet] = useState<SheetKind | null>(null)
+  const thisMonth = monthSummary(new Date().getFullYear(), new Date().getMonth() + 1, attendance)
+  const tiles = summaryTiles({
+    level,
+    reviews: report.totalReviews,
+    accuracy,
+    streak,
+    month: { days: thisMonth.days, cards: thisMonth.cards },
+    top: top ? { label: top.label, count: top.count } : null,
+    totalWrong: report.totalWrong,
+  })
+  const sheets: Record<SheetKind, { title: string; content: React.ReactNode }> = {
+    level: { title: '수준', content: <LevelSection level={level} reviews={report.totalReviews} accuracy={accuracy} /> },
+    days: { title: '학습한 날', content: <CalendarSection
+            forceOpen
+            attendance={attendance}
+            sessionLimit={sessionLimit}
+            streak={streak}
+            reach={reach}
+            onQuick={onQuick}
+          /> },
+    mist: { title: '오답 유형', content: <section>
+            <p className="section-title">오답 유형 분포</p>
+            {rows.length === 0 && passed === 0 ? (
+              <p className="empty">오답이 없어요.</p>
+            ) : (
+              <div className="bars">
+                {rows.map((m, i) => (
+                  <div className="bar-row" key={m.key} style={{ '--i': i } as React.CSSProperties}>
+                    <span>{m.label}</span>
+                    <span className="bar-track">
+                      <span
+                        className={`bar-fill ${mistakeSeverity(m.count / report.totalWrong)}`}
+                        style={{ width: `${(m.count / maxCount) * 100}%` }}
+                        aria-hidden="true"
+                      />
+                    </span>
+                    <span className="bar-num">{m.count}</span>
+                  </div>
+                ))}
+                {/* 넘김은 **등수와 무관하게 맨 아래** (2026-09-18). 이름이 없는 게 아니라 답이
+                    없는 것이라 다시 볼 것도 없다 — 정렬에 끼우면 다시보기가 못 가리킬 행이 1등이 된다.
+                    색도 오답 계통(--ng)이 아니라 무채로 — severity 클래스가 없으면 기본값(불투명
+                    --ng)이 돼 아무 것도 안 틀렸는데 제일 진하게 보이는 문제가 있었다(사용자 지적) */}
+                {passed > 0 && (
+                  <div className="bar-row" style={{ '--i': rows.length } as React.CSSProperties}>
+                    <span>{PASSED_LABEL}</span>
+                    <span className="bar-track">
+                      <span
+                        className="bar-fill passed"
+                        style={{ width: `${(passed / maxCount) * 100}%` }}
+                        aria-hidden="true"
+                      />
+                    </span>
+                    <span className="bar-num">{passed}</span>
+                  </div>
+                )}
               </div>
             )}
-          </div>
-        )}
-        {/* 막대 색 3단 (2026-09-18, 사용자 요청) — 오답의 몇 %를 차지하는 유형인지로 나눈다.
-            같은 --ng 계통 안에서 옅음(안심) → 진함(주의)만 바뀐다. 새 색상을 안 들인다(PLAN §7) */}
-        {rows.length > 0 && (
-          <p className="mistake-severity-caption">
-            옅음 · 오답의 {Math.round(MISTAKE_SHARE_MID * 100)}% 미만
-            <span className="dim"> · </span>
-            진함 · {Math.round(DOMINANT_SHARE * 100)}% 이상
-          </p>
-        )}
+            {/* 막대 색 3단 (2026-09-18, 사용자 요청) — 오답의 몇 %를 차지하는 유형인지로 나눈다.
+                같은 --ng 계통 안에서 옅음(안심) → 진함(주의)만 바뀐다. 새 색상을 안 들인다(PLAN §7) */}
+            {rows.length > 0 && (
+              <p className="mistake-severity-caption">
+                옅음 · 오답의 {Math.round(MISTAKE_SHARE_MID * 100)}% 미만
+                <span className="dim"> · </span>
+                진함 · {Math.round(DOMINANT_SHARE * 100)}% 이상
+              </p>
+            )}
+    
+            {/* 다시보기 진입 (사용자 지시 2026-09-18) — 분포 바로 아래다. 「무작위」와 「1등 유형만」이
+                같은 성격의 선택이라 한 줄에 양쪽으로 둔다. 2026-10-01 제목을 따로 달던 섹션을
+                분포 안으로 합쳤다 — 분포를 보고 바로 누르는 버튼이라 제목 하나만큼 덜 산만하다 */}
+            {report.frequent.length > 0 && (
+              <div className="browse-entry">
+                <p className="browse-lead">채점 없이 한 장씩 넘겨 봐요. 들어갈 때마다 섞여요.</p>
+                <div className="browse-pair">
+                  <button type="button" className="btn" onClick={onBrowse}>
+                    무작위 다시보기
+                    <span className="sub">{Math.min(report.frequent.length, BROWSE_N)}장</span>
+                  </button>
+                  {top !== undefined && (
+                    <button
+                      type="button"
+                      className="btn"
+                      onClick={() => onBrowseMistake(top.type, top.voicing, top.label)}
+                    >
+                      오답 유형별 다시보기
+                      <span className="sub">
+                        {top.label}
+                      </span>
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
+          </section> },
+    weak: { title: '취약 음독', content: <section className="weak-onyomi">
+              <details open>
+                <summary className="section-title">
+                  취약 음독 <span className="weak-count">{report.weakOnyomi.length}</span>
+                </summary>
+                <ul className="rows">
+                  {report.weakOnyomi.map((w, i) => (
+                    <li key={w.pairId} style={{ '--i': i } as React.CSSProperties}>
+                      <span className="st learning" aria-hidden="true">
+                        ◐
+                      </span>
+                      <span className="r-main" lang="ja">
+                        {w.kanji}
+                      </span>
+                      <span className="r-sub r-ja" lang="ja">
+                        {w.base}
+                      </span>
+                      <span className="r-sub">{w.kind === 'on' ? '음' : '훈'}</span>
+                      <span className="r-tail">
+                        {Math.round(w.rate * 100)}% · {w.wrong}/{w.seen}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </details>
+            </section> },
+  }
 
-        {/* 다시보기 진입 (사용자 지시 2026-09-18) — 분포 바로 아래다. 「무작위」와 「1등 유형만」이
-            같은 성격의 선택이라 한 줄에 양쪽으로 둔다. 2026-10-01 제목을 따로 달던 섹션을
-            분포 안으로 합쳤다 — 분포를 보고 바로 누르는 버튼이라 제목 하나만큼 덜 산만하다 */}
-        {report.frequent.length > 0 && (
-          <div className="browse-entry">
-            <p className="browse-lead">채점 없이 한 장씩 넘겨 봐요. 들어갈 때마다 섞여요.</p>
-            <div className="browse-pair">
-              <button type="button" className="btn" onClick={onBrowse}>
-                무작위 다시보기
-                <span className="sub">{Math.min(report.frequent.length, BROWSE_N)}장</span>
-              </button>
-              {top !== undefined && (
-                <button
-                  type="button"
-                  className="btn"
-                  onClick={() => onBrowseMistake(top.type, top.voicing, top.label)}
-                >
-                  오답 유형별 다시보기
-                  <span className="sub">
-                    {top.label}
-                  </span>
-                </button>
-              )}
-            </div>
-          </div>
-        )}
+  return (
+    <>
+      {/* 요약 먼저, 상세는 시트로 (2026-10-05 사용자 「리포트는 정보가 너무 많아서 정리가 필요」 → 시안 승인).
+          타일 넷이 첫 화면에 한눈에 들어오고, 누르면 표·달력·분포가 하단 시트로 올라온다.
+          「다음에 볼 것」은 같은 모양의 순위 카드라 옆으로 미는 줄이고, 나머지는 「더 보기」 한 묶음이다 */}
+      <section className="summary" aria-label="요약">
+        {tiles.map((tile) => (
+          <button
+            key={tile.label}
+            type="button"
+            className="tile"
+            onClick={() => setSheet(tile.sheet)}
+            aria-haspopup="dialog"
+          >
+            <span className="tile-k">
+              {tile.label}
+              <span className="tile-chev" aria-hidden="true">
+                ›
+              </span>
+            </span>
+            <span className={'tile-v' + (tile.warn ? ' warn' : '')}>{tile.value}</span>
+            <span className="tile-s">{tile.sub}</span>
+          </button>
+        ))}
       </section>
 
+      <section className="rx rx-rail">
+          <p className="section-title">다음에 볼 것</p>
+          {prescriptions.length === 0 ? (
+            <p className="empty">지금은 특별히 짚을 게 없어요. 하던 대로 가면 돼요.</p>
+          ) : (
+            <RxRail count={prescriptions.length}>
+              {prescriptions.map((p, i) => (
+                <li key={rxKey(p)} style={{ '--i': i } as React.CSSProperties}>
+                  <span className="rx-num" aria-hidden="true">
+                    {i + 1}
+                  </span>
+                  <div className="rx-body">
+                    <RxItem
+                      p={p}
+                      voicing={topVoicing}
+                      mixed={voicingMixed}
+                      onFocus={onFocus}
+                      onRule={onRule}
+                    />
+                  </div>
+                </li>
+              ))}
+            </RxRail>
+          )}
+        </section>
+
       <ToolsSection
+        title="더 보기"
         onyomi={onyomi}
         onOnyomi={onOnyomi}
         onShiritori={onShiritori}
         streak={streak}
         onRules={() => onRule(null)}
-      />
+      >
+        {report.weakOnyomi.length > 0 && (
+          <button type="button" className="tool-row" onClick={() => setSheet('weak')}>
+            <span className="tool-name">취약 음독</span>
+            <span className="tool-note">{report.weakOnyomi.length}개</span>
+            <span className="chev">›</span>
+          </button>
+        )}
+        {report.frequent.length > 0 && (
+          <button type="button" className="tool-row" onClick={() => setSheet('mist')}>
+            <span className="tool-name">다시보기</span>
+            <span className="tool-note">채점 없이 한 장씩 넘겨 봐요</span>
+            <span className="chev">›</span>
+          </button>
+        )}
+      </ToolsSection>
 
-      {/* 취약 음독 — 접어 둔다 (2026-10-01). 비어 있으면 섹션째로 없다 */}
-      {report.weakOnyomi.length > 0 && (
-        <section className="weak-onyomi">
-          <details>
-            <summary className="section-title">
-              취약 음독 <span className="weak-count">{report.weakOnyomi.length}</span>
-            </summary>
-            <ul className="rows">
-              {report.weakOnyomi.map((w, i) => (
-                <li key={w.pairId} style={{ '--i': i } as React.CSSProperties}>
-                  <span className="st learning" aria-hidden="true">
-                    ◐
-                  </span>
-                  <span className="r-main" lang="ja">
-                    {w.kanji}
-                  </span>
-                  <span className="r-sub r-ja" lang="ja">
-                    {w.base}
-                  </span>
-                  <span className="r-sub">{w.kind === 'on' ? '음' : '훈'}</span>
-                  <span className="r-tail">
-                    {Math.round(w.rate * 100)}% · {w.wrong}/{w.seen}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </details>
-        </section>
+      {sheet && (
+        <BottomSheet title={sheets[sheet].title} onClose={() => setSheet(null)}>
+          <div className="report sheet-report">{sheets[sheet].content}</div>
+        </BottomSheet>
       )}
     </>
   )
@@ -679,7 +731,10 @@ function CalendarSection({
   streak,
   reach,
   onQuick,
+  forceOpen = false,
 }: {
+  /** 시트 안에서는 처음부터 열어 둔다 — 시트를 연 이유가 달력이다 (2026-10-05) */
+  forceOpen?: boolean
   attendance: Map<string, DayRecord>
   sessionLimit: number
   streak: StreakRecord
@@ -687,7 +742,7 @@ function CalendarSection({
   onQuick: () => void
 }) {
   const now = new Date()
-  const [open, setOpen] = useState(isCalendarOpen)
+  const [open, setOpen] = useState(() => forceOpen || isCalendarOpen())
   const [view, setView] = useState({ y: now.getFullYear(), m: now.getMonth() + 1 })
   const todayKey = dateKey(now.getTime())
   // 처음엔 오늘을 펼쳐 둔다 — 오늘 기록이 없으면 아무것도 안 펼친다
@@ -1034,7 +1089,13 @@ function ToolsSection({
   onShiritori,
   streak,
   onRules,
+  title = '도구',
+  children,
 }: {
+  /** 제목 — 리포트 본문에서는 「더 보기」다 (2026-10-05) */
+  title?: string
+  /** 도구 줄 뒤에 붙는 줄 (취약 음독·다시보기 — 시트를 연다) */
+  children?: React.ReactNode
   /** 계산 전에는 `null` 이다 — 이 묶음은 기록이 없어도, 재생이 끝나기 전에도 보인다 */
   onyomi: OnyomiMasterySummary | null
   onOnyomi: () => void
@@ -1048,7 +1109,7 @@ function ToolsSection({
   const record = loadShiritoriRecord()
   return (
     <section className="tools">
-      <p className="section-title">도구</p>
+      <p className="section-title">{title}</p>
       <button type="button" className="tool-row" onClick={onRules}>
         <span className="tool-name">읽기 규칙</span>
         <span className="tool-note">음운 변화의 지도 · 내가 틀린 기록</span>
@@ -1077,6 +1138,7 @@ function ToolsSection({
           <span className="chev">›</span>
         </button>
       )}
+      {children}
     </section>
   )
 }

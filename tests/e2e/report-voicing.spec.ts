@@ -4,6 +4,7 @@
 // replay 를 지나 리포트 화면까지 이어진 것이다. 카드가 「반탁」이라 부르는 오답을
 // 리포트가 「연탁」이라 부르던 자리다.
 import { expect, test } from '@playwright/test'
+import { openMist } from './report-sheets.js'
 
 /** 心配 しんぱい 를 しんはい 로 — 반탁 자리 */
 const SHINPAI = '1360930'
@@ -63,6 +64,7 @@ test('리포트 분포가 반탁·연탁을 따로 세고 이름 없는 오답�
   await page.reload()
 
   await page.getByRole('button', { name: '리포트', exact: true }).click()
+  await openMist(page)
   const bars = page.locator('.bars')
   await expect(bars).toBeVisible({ timeout: 20_000 })
 
@@ -147,6 +149,7 @@ test('이름 없는 오답이 1등이면 그 숙어들만 모아 다시본다', 
   await page.reload()
 
   await page.getByRole('button', { name: '리포트', exact: true }).click()
+  await openMist(page)
   const bars = page.locator('.bars')
   await expect(bars).toBeVisible({ timeout: 20_000 })
   // 정렬에 들어 1등이 된다 — 맨 아래 고정이던 「기타」와 다른 점이다

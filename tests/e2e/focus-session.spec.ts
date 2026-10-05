@@ -1,5 +1,6 @@
 // 리포트 처방 → 집중 세션 진입 검증 (Phase 10). 취약 음독이 잡힐 만큼 표본을 쌓은 뒤 본다
 import { expect, test, type Page } from '@playwright/test'
+import { openWeak, closeSheet } from './report-sheets.js'
 
 test.setTimeout(240_000)
 
@@ -78,12 +79,12 @@ test('리포트의 처방에서 집중 세션으로 바로 들어간다', async 
 
   await page.getByRole('button', { name: '리포트', exact: true }).click()
   await expect(page.locator('.report')).toBeVisible()
-  // 취약 음독은 맨 아래에 접혀 있다 (2026-10-01) — 눌러야 목록이 펼쳐진다
+  // 취약 음독은 「더 보기」 줄의 시트 안에 있다 (2026-10-05) — 시트에서는 목록이 처음부터 펼쳐져 있다
+  await openWeak(page)
   const weak = page.locator('.weak-onyomi')
   await expect(weak.locator('summary')).toContainText('취약 음독')
-  await expect(weak.locator('.rows')).toBeHidden()
-  await weak.locator('summary').click()
   await expect(weak.locator('.rows li').first()).toBeVisible()
+  await closeSheet(page)
 
   const run = page.locator('.rx-run').first()
   await expect(run).toBeVisible()

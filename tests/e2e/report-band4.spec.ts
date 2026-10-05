@@ -3,6 +3,7 @@
 // 사전 밖·밴드 4 표현까지 뜻을 검수하게 되면서 그 줄도 볼 값이 생겼다. 다만 **총계·그래프·경계 판정에는
 // 안 넣는다** — 2026-09-26 판단 그대로다. 그래서 숫자는 흐리게(`dim`) 두고 설명이 말한다.
 import { expect, test } from '@playwright/test'
+import { openLevel } from './report-sheets.js'
 
 test('밴드 4 줄은 숙지 값을 흐리게 내고, 총계에는 안 들어간다', async ({ page }) => {
   test.setTimeout(120_000)
@@ -35,6 +36,7 @@ test('밴드 4 줄은 숙지 값을 흐리게 내고, 총계에는 안 들어간
   )
   await page.reload()
   await page.getByRole('button', { name: '리포트', exact: true }).click()
+  await openLevel(page)
 
   const row = page.locator('.ladder tbody tr').filter({ hasText: '밴드 4' })
   await expect(row).toBeVisible({ timeout: 60_000 })

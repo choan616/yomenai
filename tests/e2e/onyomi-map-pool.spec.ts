@@ -5,6 +5,7 @@
 // 기본값이 `kunPercent: 0`(훈독 끔)이라, 훈독 숙어에서만 오는 쌍이 영영 「미학습」으로
 // 분모에 앉아 숙달 비율을 낮추고 있었다.
 import { expect, test, type Page } from '@playwright/test'
+import { closeSheet, openLevel } from './report-sheets.js'
 
 /** 배포된 사전에서 쌍 수를 센다 — 화면이 읽는 것과 같은 파일이라야 검사가 뜻이 있다 */
 async function pairCounts(page: Page): Promise<{ all: number; onOnly: number }> {
@@ -74,6 +75,7 @@ test('리포트와 음독 맵이 서로의 수치를 같은 값으로 인용한�
 
   // ── 리포트 — 표현 총계와, 도구 행이 든 쌍 수치
   await page.getByRole('button', { name: '리포트' }).click()
+  await openLevel(page)
   await expect(page.locator('.ladder')).toBeVisible()
   const idioms = num(await page.locator('.ladder-total').innerText(), /^(\d+)개$/)
   const note = await page.locator('.tools .tool-row').nth(1).innerText()
@@ -81,6 +83,7 @@ test('리포트와 음독 맵이 서로의 수치를 같은 값으로 인용한�
   expect(m, '도구 행이 쌍 수치를 든다: ' + note).not.toBeNull()
   const [mastered, total] = [Number(m![1]), Number(m![2])]
 
+  await closeSheet(page)
   // ── 음독 맵 — 같은 쌍 수치와, 표현 쪽을 병기한 줄
   await page.getByRole('button', { name: /음독 맵/ }).click()
   await expect(page.locator('.stat-big')).toBeVisible()

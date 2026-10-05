@@ -2759,3 +2759,90 @@ p.rule-record {
   color: var(--text);
   font-weight: 600;
 }
+
+/* ── 리포트 요약 타일·처방 카드 줄 (2026-10-05) — 요약을 먼저, 상세는 시트로 ── */
+.summary {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.tile {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 4px;
+  min-height: 92px;
+  padding: 14px;
+  text-align: left;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+}
+.tile-k {
+  display: flex;
+  justify-content: space-between;
+  font-size: calc(12px * var(--ui-scale));
+  color: var(--text-faint);
+}
+.tile-chev {
+  font-size: calc(16px * var(--ui-scale));
+}
+.tile-v {
+  font-size: calc(24px * var(--ui-scale));
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+}
+.tile-v.warn {
+  color: var(--ng);
+}
+.tile-s {
+  font-size: calc(12px * var(--ui-scale));
+  color: var(--text-dim);
+}
+
+/* 「다음에 볼 것」 — 같은 모양의 순위 카드를 옆으로 민다. 카드 폭을 84% 로 둬서 다음 카드가 가장자리에 비친다 */
+.rx-rail .rx-list {
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  margin: 0 -16px;
+  padding: 0 16px 4px;
+  list-style: none;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-padding: 0 16px;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+.rx-rail .rx-list::-webkit-scrollbar {
+  display: none;
+}
+.rx-rail .rx-list > li {
+  flex: 0 0 84%;
+  min-width: 0;
+  scroll-snap-align: start;
+}
+.rx-dots {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 10px;
+}
+.rx-dots i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--border);
+  transition: width 150ms, background 150ms;
+}
+.rx-dots i.on {
+  width: 16px;
+  border-radius: 3px;
+  background: var(--text);
+}
+@media (prefers-reduced-motion: reduce) {
+  .rx-dots i {
+    transition: none;
+  }
+}

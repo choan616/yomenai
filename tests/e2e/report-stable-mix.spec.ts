@@ -5,6 +5,7 @@
 // 이 검사는 두 가지를 못 박는다 — 세그먼트 합이 100% 라는 것과, **출제를 늘려도 막대가
 // 안 짧아진다**는 것.
 import { expect, test } from '@playwright/test'
+import { openLevel } from './report-sheets.js'
 
 /** 밴드 0 · 음독. 셋을 숙지 상태로 만든다 */
 const BAND0 = ['1000220', '1150680', '1150710']
@@ -77,6 +78,7 @@ test('요약 막대가 숙지한 표현을 밴드별로 나누고, 출제가 늘
   ])
   await page.reload()
   await page.getByRole('button', { name: '리포트' }).click()
+  await openLevel(page)
   await expect(page.locator('.mix-bar')).toBeVisible()
 
   // 숙지 4개 — 밴드 0 이 셋, 밴드 1 이 하나
@@ -119,6 +121,7 @@ test('요약 막대가 숙지한 표현을 밴드별로 나누고, 출제가 늘
   )
   await page.reload()
   await page.getByRole('button', { name: '리포트' }).click()
+  await openLevel(page)
   await expect(page.locator('.mix-bar')).toBeVisible()
 
   await expect(page.locator('.ladder-total')).toHaveText('4개')
@@ -157,6 +160,7 @@ test('흔들리는 밴드는 밴드 색을 잃지 않고 사선만 덧입는다'
   ])
   await page.reload()
   await page.getByRole('button', { name: '리포트' }).click()
+  await openLevel(page)
   await expect(page.locator('.mix-bar')).toBeVisible()
 
   const shaky = page.locator('.mix-seg.band-shaky')

@@ -4,6 +4,7 @@
 // 날짜 오프셋만 쓰고 월 경계는 안 따진다(report-attendance 와 같은 허용 오차). 단 월 경계를
 // 타는 단언(달력 칸)은 이번 달 안의 날짜로만 한다.
 import { expect, test, type Page } from '@playwright/test'
+import { openDays } from './report-sheets.js'
 
 async function seedDay(page: Page, daysAgo: number, count: number, wrong = 0) {
   await page.evaluate(
@@ -107,7 +108,7 @@ test('요약 — 이번 세션이 오늘 칸을 채우면 그 칸이 차오른�
   // 짧은 세션 진입로는 리포트 달력의 오늘 칸이다 (2026-10-02) — 홈에서 「3장만」을 걷어냈다.
   // 어제까지 하루 이어졌으니 유도 문구가 그 이어짐으로 말한다
   await page.getByRole('button', { name: '리포트', exact: true }).click()
-  await page.getByRole('button', { name: '달력', exact: true }).click()
+  await openDays(page)
   await page.locator('button.cal-cell[data-today]').click()
   await expect(page.locator('.cal-nudge')).toContainText('3장이면 2일째로 이어져요')
   await page.locator('.cal-nudge').getByRole('button', { name: /3장만/ }).click()
@@ -141,7 +142,7 @@ test('리포트 — 연속 기록·달 요약·날짜 상세', async ({ page }) 
   for (let d = 0; d <= 6; d++) await seedDay(page, d, 4, d === 0 ? 1 : 0)
   await page.reload()
   await page.getByRole('button', { name: '리포트' }).click()
-  await page.getByRole('button', { name: '달력', exact: true }).click()
+  await openDays(page)
   await expect(page.locator('.cal-grid')).toBeVisible()
 
   await expect(page.locator('.cal-records')).toHaveText('지금 7일째 · 1주 연속 1번')
@@ -163,29 +164,8 @@ test('리포트 — 기록 없는 날은 누를 수 없다', async ({ page }) =>
   await seedDay(page, 0, 3)
   await page.reload()
   await page.getByRole('button', { name: '리포트' }).click()
-  await page.getByRole('button', { name: '달력', exact: true }).click()
+  await openDays(page)
   await expect(page.locator('.cal-grid')).toBeVisible()
   // 누를 수 있는 칸은 기록이 있는 오늘 하나뿐이다
   await expect(page.locator('.cal-grid button.cal-cell')).toHaveCount(1)
-})
-
-test('리포트 — 학습한 날은 접힌 채로 문구만, 토글로 연 상태는 다시 들어와도 기억한다', async ({ page }) => {
-  await boot(page)
-  for (let d = 0; d <= 2; d++) await seedDay(page, d, 3)
-  await page.reload()
-  await page.getByRole('button', { name: '리포트' }).click()
-
-  const toggle = page.getByRole('button', { name: '달력', exact: true })
-  await expect(page.locator('.attendance .section-title')).toContainText('학습한 날')
-  await expect(page.locator('.cal-records')).toHaveText('지금 3일째')
-  await expect(toggle).toHaveAttribute('aria-expanded', 'false')
-  await expect(page.locator('.cal-grid')).toHaveCount(0)
-  // 수준 바로 아래다
-  await expect(page.locator('.report .screen-body > section').nth(1)).toHaveClass(/attendance/)
-
-  await toggle.click()
-  await expect(page.locator('.cal-grid')).toBeVisible()
-  await page.reload()
-  await page.getByRole('button', { name: '리포트' }).click()
-  await expect(page.locator('.cal-grid')).toBeVisible()
 })

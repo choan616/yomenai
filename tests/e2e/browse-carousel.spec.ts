@@ -1,6 +1,7 @@
 // 다시보기 검증 — 리포트에서 들어가 캐러셀로 넘겨 본다 (사용자 요청 2026-09-12).
 // 손가락 제스처 자체는 브라우저 몫이라, 여기선 스냅 설정과 스크롤↔머리말 동기화를 본다.
 import { expect, test, type Page } from '@playwright/test'
+import { openMist } from './report-sheets.js'
 
 test.use({ hasTouch: true })
 test.setTimeout(240_000)
@@ -77,6 +78,7 @@ test('다시보기가 스냅되는 캐러셀이다', async ({ page }) => {
   }
   await page.getByRole('button', { name: '홈으로' }).click()
   await page.getByRole('button', { name: '리포트', exact: true }).click()
+  await openMist(page)
   const enter = page.getByRole('button', { name: /다시보기 \d+장/ })
   const label = await enter.innerText()
   const total = Number(/(\d+)장/.exec(label)?.[1])
@@ -191,10 +193,12 @@ test('다시보기가 스냅되는 캐러셀이다', async ({ page }) => {
     await expect(slides).toHaveCount(total)
     return slides.locator('.headword').allInnerTexts()
   }
+  await openMist(page)
   await page.getByRole('button', { name: /다시보기 \d+장/ }).click()
   const runA = await order()
   await page.getByRole('button', { name: '다시보기 나가기' }).click()
   await expect(page.locator('.report')).toBeVisible()
+  await openMist(page)
   await page.getByRole('button', { name: /다시보기 \d+장/ }).click()
   const runB = await order()
   expect(runA).toHaveLength(total)

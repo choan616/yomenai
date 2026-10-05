@@ -6,6 +6,7 @@
 //
 // 판정 범위는 앱 자신의 `JA_RUN`(src/app/ja.ts)과 같다. 한글 호환 자모(ㄱ·ㄹ)는 범위 밖이다.
 import { expect, test, type Page } from '@playwright/test'
+import { openMist } from './report-sheets.js'
 
 interface Scan {
   /** `lang="ja"` 밖에 있는 자리들 + 화면에 글자 그대로 찍힌 마크다운 */
@@ -117,8 +118,8 @@ test('화면에 뜬 일본어가 모두 lang="ja" 안에 있다', async ({ page 
   await scan(page, '홈', found, false)
 
   await page.getByRole('button', { name: '리포트', exact: true }).click()
-  await expect(page.locator('.bars')).toBeVisible({ timeout: 20_000 })
-  // 분포는 유형 이름(한국어), 처방은 30회 미만이라 일본어가 안 뜬다. 이동은 .bars 가 지킨다
+  await expect(page.locator('.summary')).toBeVisible({ timeout: 20_000 })
+  // 분포는 유형 이름(한국어), 처방은 30회 미만이라 일본어가 안 뜬다. 이동은 .summary 가 지킨다
   await scan(page, '리포트', found, false)
 
   await page.getByRole('button', { name: /읽기 규칙/ }).click()
@@ -129,8 +130,9 @@ test('화면에 뜬 일본어가 모두 lang="ja" 안에 있다', async ({ page 
   await scan(page, '읽기 규칙(전 절 펼침)', found)
 
   await page.getByRole('button', { name: /돌아가기/ }).first().click()
-  await expect(page.locator('.bars')).toBeVisible({ timeout: 20_000 })
+  await expect(page.locator('.summary')).toBeVisible({ timeout: 20_000 })
 
+  await openMist(page)
   await page.getByRole('button', { name: /다시보기 \d+장/ }).click()
   await expect(page.locator('.browse-slide').first()).toBeVisible({ timeout: 20_000 })
   const tag = page.locator('.browse-slide').first().locator('.rule-tag')
@@ -138,7 +140,7 @@ test('화면에 뜬 일본어가 모두 lang="ja" 안에 있다', async ({ page 
   await scan(page, '다시보기(규칙 펼침)', found)
 
   await page.getByRole('button', { name: /돌아가기/ }).first().click()
-  await expect(page.locator('.bars')).toBeVisible({ timeout: 20_000 })
+  await expect(page.locator('.summary')).toBeVisible({ timeout: 20_000 })
   await page.getByRole('button', { name: /음독 맵/ }).click()
   // 리포트에도 .section-title 이 있어 그걸로 보면 이동을 안 해도 통과한다 — 이 화면만의 것으로 본다
   await expect(page.locator('.stat-big')).toBeVisible({ timeout: 20_000 })

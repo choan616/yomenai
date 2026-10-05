@@ -8,6 +8,7 @@
 // (2026-10-01·02 에 실제로 걸렸다). 그래서 브라우저 시계를 월중 날짜로 **고정**한다 — 언제 돌려도 같다.
 // 다른 e2e(report-stable-mix)도 날짜 상대 오프셋을 쓰지만 이 테스트처럼 칸 하나하나를 짚지는 않는다.
 import { expect, test, type Page } from '@playwright/test'
+import { openDays } from './report-sheets.js'
 
 /** `daysAgo`일 전 로컬 정오에 채점 `count`개를 심는다. 자정 근처 실행에서도 날짜가
  *  안 흔들리게 정오로 고정한다 */
@@ -81,7 +82,7 @@ test('매일 학습 달력 — 문턱에 따라 none/touched/full로 갈린다',
 
   await page.reload()
   await page.getByRole('button', { name: '리포트' }).click()
-  await page.getByRole('button', { name: '달력', exact: true }).click()
+  await openDays(page)
   await expect(page.locator('.cal-grid')).toBeVisible()
 
   const today = await dateKeyForDaysAgo(page, 0)
@@ -108,7 +109,7 @@ test('이전 달로 넘어가면 그 달 기록을, 다음 달 버튼은 이번 
 
   await page.reload()
   await page.getByRole('button', { name: '리포트' }).click()
-  await page.getByRole('button', { name: '달력', exact: true }).click()
+  await openDays(page)
   await expect(page.locator('.cal-grid')).toBeVisible()
 
   // 이번 달에서는 다음 달로 못 간다 — 텅 빈 미래 달을 보여줄 이유가 없다
@@ -139,7 +140,7 @@ test('오늘 칸이 비어 있으면 눌러 짧은 세션으로 가고, 지난 �
   await seedDay(page, 1, 3)
   await page.reload()
   await page.getByRole('button', { name: '리포트' }).click()
-  await page.getByRole('button', { name: '달력', exact: true }).click()
+  await openDays(page)
   await expect(page.locator('.cal-grid')).toBeVisible()
 
   const dayBefore = await dateKeyForDaysAgo(page, 2)
@@ -164,7 +165,7 @@ test('오늘 칸을 이미 채운 날에는 유도가 없다', async ({ page }) 
   await seedDay(page, 0, 3)
   await page.reload()
   await page.getByRole('button', { name: '리포트' }).click()
-  await page.getByRole('button', { name: '달력', exact: true }).click()
+  await openDays(page)
   // 오늘 기록이 있으면 달력이 처음부터 그 날을 펼친다 — 누르지 않아도 상세가 떠 있다
   await expect(page.locator('.cal-detail')).toBeVisible()
   await expect(page.locator('.cal-nudge')).toHaveCount(0)
@@ -229,6 +230,6 @@ test('세션을 중간에 나가도 넘긴 카드는 남아 오늘 칸이 채워
 
   await page.getByRole('button', { name: '세션 나가기' }).click()
   await page.getByRole('button', { name: '리포트' }).click()
-  await page.getByRole('button', { name: '달력', exact: true }).click()
+  await openDays(page)
   await expect(page.locator('.cal-cell[data-today]')).toHaveAttribute('data-tier', 'touched')
 })

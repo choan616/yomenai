@@ -3,6 +3,7 @@
 // 저장된 유형은 RENDAKU 하나뿐이다. 화면에 「청탁 미구분」이 뜨면 답으로 다시 매기는 길이
 // 배지·규칙 화면·리포트 분포까지 이어진 것이다. 연탁이라고 부르던 자리였다.
 import { expect, test, type Page } from '@playwright/test'
+import { closeSheet, openMist } from './report-sheets.js'
 
 /** 愛好 あいこう 를 あいごう 로 — 好는 コウ 다. 규칙이 아니라 원형이 청음인 자리 */
 const AIKOU = '1150680'
@@ -52,6 +53,7 @@ async function seed(page: Page) {
 test('청탁 오답이 연탁이 아니라 청탁 미구분으로 불린다', async ({ page }) => {
   await seed(page)
   await page.getByRole('button', { name: '리포트', exact: true }).click()
+  await openMist(page)
 
   // 분포 — 저장은 RENDAKU 인데 갈래 이름으로 뜬다
   const bars = page.locator('.bars')
@@ -62,6 +64,7 @@ test('청탁 오답이 연탁이 아니라 청탁 미구분으로 불린다', as
   await expect(bars.locator('.bar-row').filter({ hasText: '연탁' })).toHaveCount(0)
 
   // 규칙 화면 — 그 절이 이 숙어를 기록으로 들고 있다
+  await closeSheet(page)
   await page.getByRole('button', { name: /읽기 규칙/ }).click()
   const section = page.locator('.rule-block').filter({ hasText: '탁음인지 아닌지는' })
   await expect(section).toHaveCount(1)
@@ -74,6 +77,7 @@ test('청탁 오답이 연탁이 아니라 청탁 미구분으로 불린다', as
 test('다시보기 배지도 청탁 미구분을 가리킨다', async ({ page }) => {
   await seed(page)
   await page.getByRole('button', { name: '리포트', exact: true }).click()
+  await openMist(page)
   await page.getByRole('button', { name: /다시보기 \d+장/ }).click()
   const slide = page.locator('.browse-slide').filter({ hasText: '愛好' })
   await expect(slide).toHaveCount(1, { timeout: 20_000 })

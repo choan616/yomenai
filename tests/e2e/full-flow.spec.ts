@@ -1,5 +1,6 @@
 // 전체 흐름 완주 검증 — 진입 진단 → 세션 → 리포트. IndexedDB 를 비워 결정론 확보 (PLAN §9)
 import { expect, test, type Page } from '@playwright/test'
+import { openLevel, openMist, closeSheet } from './report-sheets.js'
 
 test.setTimeout(180_000)
 
@@ -57,6 +58,7 @@ test('진입 진단 → 세션 → 리포트 전체 흐름을 완주한다', asy
   await page.getByRole('button', { name: '진단 리포트 보기' }).click()
   await expect(page.locator('.report')).toBeVisible()
   // 수준 — 밴드 사다리와 한 줄 판정 (Phase 10)
+  await openLevel(page)
   await expect(page.getByText('지금 수준')).toBeVisible()
   // 진단 결과에 따라 "밴드 N까지 안정" 또는 "아직 말할 만큼 안 풀었어요" 중 하나가 온다
   await expect(page.locator('.level .report-lead')).not.toBeEmpty()
@@ -106,13 +108,16 @@ test('진입 진단 → 세션 → 리포트 전체 흐름을 완주한다', asy
     )
   expect(cols.length).toBeGreaterThanOrEqual(3)
   for (const row of cols) expect(row).toEqual(cols[0])
+  await closeSheet(page)
   // 처방 — 진단 직후는 표본이 적어 "더 봐야 한다"가 뜬다
   await expect(page.getByText('다음에 볼 것')).toBeVisible()
   await expect(page.locator('.rx-list > li').first()).toBeVisible()
+  await openMist(page)
   await expect(page.getByText('오답 유형 분포')).toBeVisible()
   // 다시보기 진입 둘은 분포 아래 한 줄에 있다 (2026-09-18)
   await expect(page.locator('.browse-pair')).toBeVisible()
   await expect(page.getByRole('button', { name: /무작위 다시보기/ })).toBeVisible()
+  await closeSheet(page)
   // 취약 음독은 접힌 채다 — 진단 직후처럼 비었으면 섹션째로 없다 (2026-10-01)
   await expect(page.locator('.weak-onyomi details[open]')).toHaveCount(0)
   // 도구는 본문 맨 아래로 내려갔다 (2026-10-01)
@@ -163,7 +168,9 @@ test('진입 진단 → 세션 → 리포트 전체 흐름을 완주한다', asy
   await page.getByRole('button', { name: '홈으로' }).click()
   await page.getByRole('button', { name: '리포트', exact: true }).click()
   await expect(page.locator('.report')).toBeVisible()
+  await openMist(page)
   await expect(page.getByText('오답 유형 분포')).toBeVisible()
+  await closeSheet(page)
   // 세션까지 마쳐 표본이 30회를 넘었으니 처방이 "더 봐야 한다"가 아닌 실제 항목으로 바뀐다
   expect(await page.locator('.rx-list > li').count()).toBeGreaterThanOrEqual(1)
 })

@@ -3,6 +3,7 @@
 // 기록을 심어 후보를 만든다. 무작위로 풀어서 쌓으면 카드 수가 들쭉날쭉해 「옆 카드는
 // 그대로 가려져 있다」를 못 본다.
 import { expect, test, type Page } from '@playwright/test'
+import { openMist } from './report-sheets.js'
 
 test.use({ hasTouch: true, isMobile: true, viewport: { width: 375, height: 667 } })
 
@@ -39,6 +40,7 @@ async function seed(page: Page): Promise<void> {
 
 async function openBrowse(page: Page): Promise<void> {
   await page.getByRole('button', { name: '리포트', exact: true }).click()
+  await openMist(page)
   await page.getByRole('button', { name: /다시보기 \d+장/ }).click()
   await expect(page.locator('.browse-slide').first()).toBeVisible({ timeout: 20_000 })
 }
