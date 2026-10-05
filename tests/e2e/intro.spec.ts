@@ -110,7 +110,9 @@ test('같은 날 다시 열면 정적판이 뜬다 — 「読めない」가 가
     ;(window as unknown as { __nai: number[] }).__nai = []
     const tick = () => {
       const el = document.querySelector('.intro-word .intro-clip')
-      if (el) (window as unknown as { __nai: number[] }).__nai.push(el.getBoundingClientRect().width)
+      // 보이기 전(바탕만 보이는 동안 자리를 잡는다)에는 기록하지 않는다
+      const shown = el && getComputedStyle(document.querySelector('.intro-word')!).visibility !== 'hidden'
+      if (el && shown) (window as unknown as { __nai: number[] }).__nai.push(el.getBoundingClientRect().width)
       requestAnimationFrame(tick)
     }
     requestAnimationFrame(tick)
@@ -126,6 +128,21 @@ test('같은 날 다시 열면 정적판이 뜬다 — 「読めない」가 가
   await expect(page.locator('html')).toHaveAttribute('data-intro', '1')
   // 물음표·느낌표는 보이지 않는다 — 「読めない」만 있다
   await expect(page.locator('.intro-mark')).toBeHidden()
+  // 홈 제목 자리가 가라앉은 뒤에야 로고가 뜬다(그동안은 바탕만 보인다)
+  await expect(page.locator('.intro-word')).toBeVisible()
+  // 로고가 홈 제목 자리에 같은 크기로 떠 있다 — 사라질 때 제목이 가만히 있고 움직임이 안 보인다
+  const gap = await page.evaluate(() => {
+    const h = document.querySelector('.home h1')!
+    const r = document.createRange()
+    r.setStart(h.firstChild!, 0)
+    r.setEnd(h.firstChild!, 1)
+    const t = r.getBoundingClientRect()
+    const k = document.querySelector('.intro-word span span')!.getBoundingClientRect()
+    return { dx: k.left - t.left, dy: k.top - t.top, dh: k.height - t.height }
+  })
+  expect(Math.abs(gap.dx)).toBeLessThan(1)
+  expect(Math.abs(gap.dy)).toBeLessThan(1.5)
+  expect(Math.abs(gap.dh)).toBeLessThan(1.5)
   const t1 = Date.now()
   await expect(page.locator('.intro')).toHaveCount(0, { timeout: 8_000 })
   const quick = Date.now() - t1
