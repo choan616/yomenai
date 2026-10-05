@@ -1,0 +1,101 @@
+// 시작 인트로 — 하루 첫 실행에만 뜨고, 홈 제목 자리로 내려앉으며, 탭하면 건너뛰고, 모션을 줄이면 안 뜬다 (2026-10-05)
+// 개발 서버에서는 기본으로 꺼져 있다(다른 스펙이 시작 화면을 바로 만지므로). 열쇠 `yomenai:intro=1` 로 켠다.
+import { expect, test, type Page } from '@playwright/test'
+
+async function prepare(page: Page, on: boolean): Promise<void> {
+  await page.addInitScript((on) => {
+    try {
+      localStorage.setItem('yomenai:diagnosticDone', '1')
+      localStorage.setItem('yomenai:welcomeSeen', '1')
+      if (on) localStorage.setItem('yomenai:intro', '1')
+    } catch {
+      /* private mode */
+    }
+  }, on)
+}
+
+test('기본(개발 빌드)에서는 인트로가 없다 — 다른 스펙이 시작 화면을 바로 만진다', async ({ page }) => {
+  await prepare(page, false)
+  await page.goto('/')
+  await expect(page.locator('.home h1')).toBeVisible()
+  await expect(page.locator('.intro')).toHaveCount(0)
+})
+
+test('뜨는 동안 홈 제목은 가려지고, 끝나면 제목이 보이고 인트로는 사라진다', async ({ page }) => {
+  await prepare(page, true)
+  await page.goto('/')
+  await expect(page.locator('.intro')).toBeVisible()
+  await expect(page.locator('html')).toHaveAttribute('data-intro', '1')
+  await expect(page.locator('.home h1')).toBeHidden() // visibility:hidden
+  // 장식이라 낭독에서 숨긴다
+  await expect(page.locator('.intro')).toHaveAttribute('aria-hidden', 'true')
+
+  await expect(page.locator('.intro')).toHaveCount(0, { timeout: 12_000 })
+  await expect(page.locator('html')).not.toHaveAttribute('data-intro', /.*/)
+  await expect(page.locator('.home h1')).toBeVisible()
+  await expect(page.locator('.home h1')).toHaveText('読めない')
+})
+
+test('끝 장면에서 로고가 홈 제목 자리에 내려앉는다 (도착 직전 위치 확인)', async ({ page }) => {
+  await prepare(page, true)
+  await page.goto('/')
+  await expect(page.locator('.intro')).toBeVisible()
+  const h1 = page.locator('.home h1')
+  const target = (await h1.evaluate((el) => {
+    const r = document.createRange()
+    r.setStart(el.firstChild!, 0)
+    r.setEnd(el.firstChild!, 1)
+    const b = r.getBoundingClientRect()
+    return { left: b.left, top: b.top }
+  })) as { left: number; top: number }
+  // 움직임이 끝나기 직전까지 기다렸다가 読 글자가 목표 점에 와 있는지 본다
+  await expect(page.locator('.intro-word')).toHaveCSS('transform', /matrix/, { timeout: 12_000 })
+  await page.waitForFunction(
+    () => {
+      const w = document.querySelector('.intro-word') as HTMLElement | null
+      if (!w) return true
+      const m = new DOMMatrix(getComputedStyle(w).transform)
+      return m.a < 0.72 // 크기 비율이 44/64 = 0.6875 에 가까워졌다
+    },
+    null,
+    { timeout: 12_000 },
+  )
+  const near = await page.evaluate(() => {
+    const k = document.querySelector('.intro-word span span') as HTMLElement | null
+    if (!k) return null
+    const b = k.getBoundingClientRect()
+    return { left: b.left, top: b.top }
+  })
+  if (near) {
+    expect(Math.abs(near.left - target.left)).toBeLessThan(40)
+    expect(Math.abs(near.top - target.top)).toBeLessThan(40)
+  }
+  await expect(page.locator('.intro')).toHaveCount(0, { timeout: 12_000 })
+})
+
+test('같은 날 다시 열면 인트로가 안 뜬다', async ({ page }) => {
+  await prepare(page, true)
+  await page.goto('/')
+  await expect(page.locator('.intro')).toBeVisible()
+  await expect(page.locator('.intro')).toHaveCount(0, { timeout: 12_000 })
+  await page.reload()
+  await expect(page.locator('.home h1')).toBeVisible()
+  await expect(page.locator('.intro')).toHaveCount(0)
+})
+
+test('탭하면 바로 건너뛴다', async ({ page }) => {
+  await prepare(page, true)
+  await page.goto('/')
+  await expect(page.locator('.intro')).toBeVisible()
+  await page.locator('.intro').click()
+  await expect(page.locator('.intro')).toHaveCount(0, { timeout: 2_000 })
+  await expect(page.locator('.home h1')).toBeVisible()
+})
+
+test('모션을 줄이는 기기에서는 안 뜬다', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  await prepare(page, true)
+  await page.goto('/')
+  await expect(page.locator('.home h1')).toBeVisible()
+  await expect(page.locator('.intro')).toHaveCount(0)
+})

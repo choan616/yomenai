@@ -3,7 +3,7 @@
 // 라우터는 여전히 안 쓴다. 대신 **탭이 자리를 기억한다** — 전에는 화면마다 「어디서 왔는지」
 // 를 상태로 들고 다녔고(`browseFrom`·`rulesFrom`), 그게 셋이 되면서 상태 기반 전환이
 // 한계에 왔다는 신호였다 (context-notes 2026-09-14 「지켜볼 신호」 2·3·4).
-import { useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import './study/study.css'
 import './app/screens.css'
 import { Diagnostic } from './app/Diagnostic.tsx'
@@ -12,6 +12,9 @@ import { OnyomiMap } from './app/OnyomiMap.tsx'
 import { Report } from './app/Report.tsx'
 import { Settings } from './app/Settings.tsx'
 import { Shiritori } from './app/Shiritori.tsx'
+import { Intro } from './app/Intro.tsx'
+import { introDue, markIntroShown } from './app/introState.ts'
+import { dateKey } from './core/attendance.ts'
 import { Browse } from './app/Browse.tsx'
 import { Search } from './app/Search.tsx'
 import { CameraFind, type CameraFound } from './app/CameraFind.tsx'
@@ -81,6 +84,18 @@ export default function App() {
 function Shell() {
   // 셸 화면에서 문서가 밀려 올라가면 sticky 탭바가 같이 올라간다 (2026-09-26)
   useDocumentScrollGuard()
+  // 시작 인트로 — 하루 첫 실행에만 (introState.ts). 모션을 줄인 기기에서는 안 뜬다
+  const [intro, setIntro] = useState(() =>
+    introDue(dateKey(Date.now()), {
+      reducedMotion: window.matchMedia('(prefers-reduced-motion: reduce)').matches,
+      dev: import.meta.env.DEV,
+    }),
+  )
+  // 보였다고 기록하는 건 효과에서 — 초기화 함수에서 하면 StrictMode 의 두 번 호출이 둘째를 지운다
+  useEffect(() => {
+    if (intro) markIntroShown(dateKey(Date.now()))
+  }, [intro])
+  const endIntro = useCallback(() => setIntro(false), [])
   const [tab, setTab] = useState<Tab>('home')
   /** 설정은 시트다 — 시트 뒤에 흐리게 깔리는 탭이자, 닫으면 돌아갈 탭 (2026-10-04) */
   const [underTab, setUnderTab] = useState<Exclude<Tab, 'settings'>>('home')
@@ -109,6 +124,7 @@ function Shell() {
 
   return (
     <>
+      {intro && <Intro onDone={endIntro} />}
       <div className="tabbed">
         {sub ? (
           <SubScreen sub={sub} onBack={() => setSub(null)} onFound={takeFound} />
