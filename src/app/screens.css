@@ -2781,6 +2781,7 @@ p.rule-record {
   font-size: calc(24px * var(--ui-scale));
   font-weight: 700;
   font-variant-numeric: tabular-nums;
+  letter-spacing: -0.05em;
 }
 .tile-v.warn {
   color: var(--ng);
@@ -2812,11 +2813,51 @@ p.rule-record {
   min-width: 0;
   scroll-snap-align: start;
 }
+/* 점 줄 + (마우스 기기에서만) 양옆 화살표 */
+.rx-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 10px;
+}
 .rx-dots {
   display: flex;
   justify-content: center;
   gap: 6px;
-  margin-top: 10px;
+}
+.rx-arrow {
+  display: none;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--text);
+}
+.rx-arrow.prev .icon {
+  transform: scaleX(-1);
+}
+.rx-arrow:disabled {
+  opacity: 0.35;
+}
+.rx-arrow:not(:disabled):active {
+  transform: translateY(1px);
+}
+/* 터치 기기는 밀어서 넘기니 화살표를 안 보인다 */
+@media (hover: hover) and (pointer: fine) {
+  .rx-arrow {
+    display: inline-flex;
+  }
+}
+/* 키보드로 줄에 닿았을 때만 고리를 보인다 */
+.rx-rail .rx-list:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: var(--radius);
 }
 .rx-dots i {
   width: 6px;

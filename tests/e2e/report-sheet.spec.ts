@@ -131,3 +131,40 @@ test('다음에 볼 것은 옆으로 미는 카드 줄이다 (스냅)', async ({
   expect(await list.evaluate((el) => getComputedStyle(el).scrollSnapType)).toContain('x')
   expect(await list.evaluate((el) => getComputedStyle(el).flexDirection)).toBe('row')
 })
+
+test('다음에 볼 것 — 마우스 기기에서는 화살표로, 키보드로는 ←/→ 로 넘긴다', async ({ page }) => {
+  // 읽기 30개 이상이어야 처방이 선다 — 8일 × 4 = 32개
+  await seed(page, 8)
+  const list = page.locator('.rx-rail .rx-list')
+  await expect(list).toBeVisible()
+  expect(await list.locator('> li').count()).toBeGreaterThanOrEqual(2)
+  const prev = page.getByRole('button', { name: '이전 카드' })
+  const next = page.getByRole('button', { name: '다음 카드' })
+  // 처음에는 이전이 막혀 있다
+  await expect(prev).toBeDisabled()
+  await expect(next).toBeEnabled()
+  await next.click()
+  await expect.poll(() => list.evaluate((el) => el.scrollLeft)).toBeGreaterThan(50)
+  await expect(prev).toBeEnabled()
+  await prev.click()
+  await expect.poll(() => list.evaluate((el) => el.scrollLeft)).toBeLessThan(5)
+  await expect(prev).toBeDisabled()
+  // 키보드: 줄에 포커스를 두고 →
+  await list.focus()
+  await page.keyboard.press('ArrowRight')
+  await expect.poll(() => list.evaluate((el) => el.scrollLeft)).toBeGreaterThan(50)
+  await page.keyboard.press('ArrowLeft')
+  await expect.poll(() => list.evaluate((el) => el.scrollLeft)).toBeLessThan(5)
+})
+
+test('다음에 볼 것 — 터치 기기에서는 화살표를 안 보인다', async ({ browser }) => {
+  const ctx = await browser.newContext({ hasTouch: true, isMobile: true, viewport: { width: 390, height: 780 } })
+  const page = await ctx.newPage()
+  await seed(page, 8)
+  await expect(page.locator('.rx-rail .rx-list')).toBeVisible()
+  // 점 줄(=카드가 둘 이상)은 있는데 화살표만 안 보인다
+  await expect(page.locator('.rx-dots')).toBeVisible()
+  await expect(page.locator('.rx-arrow')).toHaveCount(2)
+  await expect(page.locator('.rx-arrow').first()).toBeHidden()
+  await ctx.close()
+})
