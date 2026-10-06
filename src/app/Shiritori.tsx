@@ -176,10 +176,15 @@ export function Shiritori({ onExit }: { onExit: () => void }) {
         <div className="centered summary-screen shiritori-over" role="status">
           <h2>끝말잇기 완료</h2>
           <div className="summary-hero">
-            <p className="summary-num">{mine}</p>
-            <p className="shiritori-why">
-              {over.reason === 'win' ? '개를 이었어요. 앱이 더 이을 말이 없어요' : '개를 이었어요'}
+            {/* 승패를 먼저 말한다 (사용자 지시 2026-10-06) — 그만하기는 내가 더 못 이은 것이고,
+                앱이 못 이어 끝난 판은 내가 이긴 것이다 */}
+            <p className="shiritori-verdict">
+              {over.reason === 'win' ? '내가 이겼어요' : '내가 졌어요'}
             </p>
+            <p className="shiritori-count">
+              <b className="summary-num">{mine}</b>개를 이었어요
+            </p>
+            {over.reason === 'win' && <p className="shiritori-why">더 이을 말이 없어요</p>}
           </div>
           {over.reason === 'giveup' && over.examples.length > 0 && (
             <p className="shiritori-examples">

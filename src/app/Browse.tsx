@@ -231,15 +231,6 @@ export function Browse({
         <span className="count">
           {at + 1} / {items.length}
         </span>
-        {/* 담기는 머리말 바 우측에 따로 선다 (사용자 지시 2026-10-06) — 넘김 줄과 섞지 않는다.
-            지금 장에만 걸리고, 마지막 장을 포함해 어느 장에서나 뜬다 */}
-        <StarAddButton
-          on={starred.has(items[at]?.id ?? '')}
-          onToggle={() => {
-            const id = items[at]?.id
-            if (id !== undefined) toggleStar(id)
-          }}
-        />
       </header>
 
       <main
@@ -257,6 +248,7 @@ export function Browse({
           <BrowseSlide
             item={item}
             filterLabel={filter?.label}
+            star={{ on: starred.has(item.id), onToggle: () => toggleStar(item.id) }}
             mask={mask}
             masked={mask && !(index === at && revealed)}
             onToggleMask={() => setRevealed((v) => !v)}
@@ -310,6 +302,7 @@ export function BrowseSlide({
   tag,
   note,
   memo,
+  star,
   mask,
   masked,
   onToggleMask,
@@ -327,6 +320,12 @@ export function BrowseSlide({
   note?: string
   /** 단어장 카드의 메모. 뜻 아래에 읽기만 보인다 */
   memo?: string
+  /**
+   * 단어장에 담기 (2026-10-06 사용자 지시). 카드 맨 아래 예문 버튼 오른쪽에 선다 —
+   * 머리말 바에 뒀더니 눈에 안 띄었다. **단어장 카드 보기는 안 준다** (이미 담은 것들이고
+   * 「카드에는 관리 기능이 없다」 2026-10-01)
+   */
+  star?: { on: boolean; onToggle: () => void }
   /** 가림 기능을 쓰는가 (설정). 버튼을 낼지가 여기서 갈린다 */
   mask: boolean
   /** 지금 덮여 있나 */
@@ -394,14 +393,17 @@ export function BrowseSlide({
               {sentence}
             </p>
           )}
-          {item.sentences.length > 1 && (
-            <button
-              type="button"
-              className="browse-ex-more"
-              onClick={onNextEx}
-            >
-              다음 예문 <span className="dim">{exAt + 1}/{item.sentences.length}</span>
-            </button>
+          {/* 카드 맨 아래 한 줄 — 예문 넘김과 담기가 나란히 선다 (사용자 지시 2026-10-06).
+              예문이 하나뿐이면 담기만, 담기가 없으면 예문만 남는다 */}
+          {(item.sentences.length > 1 || star) && (
+            <div className="browse-card-actions">
+              {item.sentences.length > 1 && (
+                <button type="button" className="browse-ex-more" onClick={onNextEx}>
+                  다음 예문 <span className="dim">{exAt + 1}/{item.sentences.length}</span>
+                </button>
+              )}
+              {star && <StarAddButton on={star.on} onToggle={star.onToggle} />}
+            </div>
           )}
           {item.rule !== null && ruleOpen && (
             <div className="browse-rule">

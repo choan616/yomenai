@@ -27,6 +27,9 @@ async function open(page: Page): Promise<void> {
     }
   })
   await page.goto('/')
+  // 홈이 설 때까지 기다린다 — 사전이 큰 데다 전체 스펙을 이어 돌리면 첫 그림이 늦어,
+  // 바로 탭을 누르면 클릭이 테스트 제한(120초)까지 기다리다 깨진다 (2026-10-06 실측)
+  await expect(page.getByRole('button', { name: '세션 시작' })).toBeVisible({ timeout: 60_000 })
   await page.getByRole('button', { name: '리포트', exact: true }).click()
   await page.getByRole('button', { name: /한자 끝말잇기/ }).click()
   await expect(page.locator('.chain-item')).toHaveCount(1, { timeout: 20_000 })
@@ -52,12 +55,16 @@ test('끝 한자로 시작하는 말의 읽기를 치면 이어지고 앱이 답
   await page.locator('.kana-input').fill(mine.reading)
   await page.locator('.kana-input').press('Enter')
 
-  // 첫 말(앱) → 내 말 → 앱의 답. 앱이 이을 말이 없으면 내 말에서 끝나고 결과가 뜬다
+  // 첫 말(앱) → 내 말 → 앱의 답. **앱이 이을 말이 없으면 그 자리에서 판이 끝나고
+  // 결과 화면이 놀이 화면을 덮는다** (2026-10-06) — 말 목록도 머리말 개수도 그때는 없다
+  const over = page.locator('.shiritori-over')
+  if ((await over.count()) > 0) {
+    await expect(over.locator('.summary-num')).toHaveText('1')
+    return
+  }
   await expect(page.locator('.chain-item.me .chain-word')).toHaveText(mine.headword)
   await expect(page.locator('.chain-item.me .chain-reading')).toHaveText(mine.reading)
-  const n = await page.locator('.chain-item').count()
-  expect(n === 3 || n === 2).toBe(true)
-  if (n === 3) await expect(page.locator('.shiritori-over')).toHaveCount(0)
+  await expect(page.locator('.chain-item')).toHaveCount(3)
   await expect(page.locator('.count')).toHaveText('1개')
 })
 
@@ -101,17 +108,26 @@ test('판이 끝나면 결과 화면이 뜨고, 나온 말을 카드로 보며 �
   )!
   await page.locator('.kana-input').fill(mine.reading)
   await page.locator('.kana-input').press('Enter')
-  await expect(page.locator('.count')).toHaveText('1개')
-  if ((await page.getByRole('button', { name: '그만하기' }).count()) > 0) {
+  // 앱이 못 이으면 그 자리에서 끝나 결과 화면이 덮는다 — 아직 놀고 있을 때만 개수를 잰다
+  const quit = (await page.getByRole('button', { name: '그만하기' }).count()) > 0
+  if (quit) {
+    await expect(page.locator('.count')).toHaveText('1개')
     await page.getByRole('button', { name: '그만하기' }).click()
   }
 
   // 결과는 별도 화면이다 — 놀이 화면(말 목록·입력)은 접힌다
   const over = page.locator('.shiritori-over')
   await expect(over.getByRole('heading', { name: '끝말잇기 완료' })).toBeVisible()
-  await expect(over.locator('.summary-num')).toHaveText('1')
   await expect(page.locator('.chain-item')).toHaveCount(0)
   await expect(page.locator('.kana-input')).toHaveCount(0)
+
+  // 승패를 먼저 말하고, 이은 수는 한 문장이다 (2026-10-06)
+  // 내가 그만둔 판은 졌고, 앱이 못 이어 끝난 판은 이겼다
+  await expect(over.locator('.shiritori-verdict')).toHaveText(quit ? '내가 졌어요' : '내가 이겼어요')
+  await expect(over.locator('.shiritori-count')).toHaveText('1개를 이었어요')
+  await expect(over.locator('.summary-num')).toHaveText('1')
+  await expect(over.locator('.shiritori-why')).toHaveCount(quit ? 0 : 1)
+  if (!quit) await expect(over.locator('.shiritori-why')).toHaveText('더 이을 말이 없어요')
 
   // 나온 말 카드 — 이어진 말 전부가 순서대로, 뜻과 함께
   const cards = await page.getByRole('button', { name: /나온 말 \d+개 보기/ }).innerText()
@@ -122,13 +138,27 @@ test('판이 끝나면 결과 화면이 뜨고, 나온 말을 카드로 보며 �
   await expect(page.locator('.browse-slide').first().locator('.tag').first()).toHaveText('앱이 낸 말')
   await expect(page.locator('.browse-slide').first().locator('.meaning')).toBeVisible()
 
-  // 담기 — 지금 장을 단어장에 넣는다
-  const add = page.getByRole('button', { name: '단어장에 담기' })
+  // 담기 — 카드마다 제 버튼이 카드 맨 아래에 있다
+  const first = page.locator('.browse-slide').first()
+  const add = first.getByRole('button', { name: '단어장에 담기' })
   await expect(add).toHaveText('+ 단어장')
   await add.click()
-  await expect(page.getByRole('button', { name: '단어장에서 빼기' })).toHaveText('담았어요')
+  await expect(first.getByRole('button', { name: '단어장에서 빼기' })).toHaveText('담았어요')
 
-  // ✕ 로 결과로 돌아오고, 담은 말은 단어장에 있다
+  // 마지막 장의 주 버튼은 「닫기」다 (2026-10-06) — 누르면 결과로 돌아온다
+  await page.evaluate((count) => {
+    const el = document.querySelector('.wl-deck .browse-track')
+    if (el === null) throw new Error('.browse-track 없음')
+    el.scrollLeft = (count - 1) * el.clientWidth
+  }, n)
+  await expect(page.locator('.wl-deck .count')).toContainText(`${n} / ${n}`)
+  await expect(page.getByRole('button', { name: '다음 ›' })).toHaveCount(0)
+  await page.getByRole('button', { name: '닫기', exact: true }).click()
+  await expect(over.getByRole('heading', { name: '끝말잇기 완료' })).toBeVisible()
+
+  // ✕ 로도 결과로 돌아온다
+  await page.getByRole('button', { name: /나온 말 \d+개 보기/ }).click()
+  await expect(page.locator('.wl-deck .browse-slide').first()).toBeVisible({ timeout: 60_000 })
   await page.getByRole('button', { name: '카드 닫기' }).click()
   await expect(over.getByRole('heading', { name: '끝말잇기 완료' })).toBeVisible()
   await page.getByRole('button', { name: '나가기', exact: true }).click()
@@ -235,10 +265,11 @@ test('이은 개수가 기록으로 남아 결과 화면과 리포트 도구 줄
   const mine = starts.find((w) => w.reading.length >= 2 && starts.filter((x) => x.reading === w.reading).length === 1)!
   await page.locator('.kana-input').fill(mine.reading)
   await page.locator('.kana-input').press('Enter')
-  await expect(page.locator('.count')).toHaveText('1개')
 
-  // 앱이 이을 말이 없어 이미 끝났으면 바로 결과, 아니면 그만하기로 끝낸다
+  // 앱이 이을 말이 없으면 그 자리에서 판이 끝나 **결과 화면이 놀이 화면을 덮는다**
+  // (2026-10-06) — 머리말의 개수는 그때 사라지므로 아직 놀고 있을 때만 잰다
   if ((await page.getByRole('button', { name: '그만하기' }).count()) > 0) {
+    await expect(page.locator('.count')).toHaveText('1개')
     await page.getByRole('button', { name: '그만하기' }).click()
   }
   await expect(page.locator('.shiritori-record')).toHaveText('새 기록이에요! 최고 1개 · 1판')

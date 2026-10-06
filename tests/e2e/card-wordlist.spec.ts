@@ -62,26 +62,34 @@ test('다시보기에서 담으면 단어장에 들어간다', async ({ page }) 
       [...el.querySelectorAll('ruby')].map((r) => r.firstChild?.textContent ?? '').join(''),
     )
 
-  // 담기는 머리말 바 우측이다 — 아래 넘김 줄에는 없다
-  const bar = page.locator('.browse-screen .study-bar')
-  const add = bar.getByRole('button', { name: '단어장에 담기' })
+  // 담기는 카드 안 맨 아래다 — 머리말 바에도 아래 넘김 줄에도 없다
+  const slide = page.locator('.browse-slide').first()
+  const add = slide.getByRole('button', { name: '단어장에 담기' })
   await expect(add).toHaveText('+ 단어장')
   await expect(nav.getByRole('button', { name: /단어장에/ })).toHaveCount(0)
-  const barBox = (await bar.boundingBox())!
+  await expect(page.locator('.study-bar').getByRole('button', { name: /단어장에/ })).toHaveCount(0)
+
   const addBox = (await add.boundingBox())!
-  // 바의 오른쪽 끝에 붙어 있고(패딩 16px), 글자 수가 바뀌어도 폭이 안 흔들린다
-  expect(Math.round(barBox.x + barBox.width - (addBox.x + addBox.width))).toBeLessThanOrEqual(17)
-  expect(addBox.y).toBeLessThan(100)
+  const ex = slide.locator('.browse-ex-more')
+  if ((await ex.count()) > 0) {
+    // 예문이 여럿인 카드 — 예문 버튼 오른쪽, 같은 줄이다
+    const exBox = (await ex.boundingBox())!
+    expect(addBox.x).toBeGreaterThan(exBox.x)
+    expect(Math.abs(addBox.y - exBox.y)).toBeLessThanOrEqual(2)
+  }
 
   await add.click()
-  const added = bar.getByRole('button', { name: '단어장에서 빼기' })
+  const added = slide.getByRole('button', { name: '단어장에서 빼기' })
   await expect(added).toHaveText('담았어요')
+  // 글자 수가 바뀌어도 줄이 들썩이지 않는다
   expect((await added.boundingBox())!.width).toBe(addBox.width)
 
-  // 다음 장은 안 담긴 상태다 — 담기는 지금 장에만 걸린다
+  // 다음 장은 안 담긴 상태다 — 담기는 카드마다 제 것이다
   await nav.getByRole('button', { name: '다음 ›' }).click()
   await expect(page.locator('.browse-screen .count')).toContainText('2 / ')
-  await expect(bar.getByRole('button', { name: '단어장에 담기' })).toBeVisible()
+  await expect(
+    page.locator('.browse-slide').nth(1).getByRole('button', { name: '단어장에 담기' }),
+  ).toBeVisible()
 
   // 단어장에 그 말이 있다 (요미가나를 뺀 한자 표기로 찾는다)
   await page.getByRole('button', { name: '다시보기 나가기' }).click()
@@ -100,7 +108,6 @@ test('마지막 장에서도 담을 수 있고, 아래 줄은 「다음」이 �
   await openBrowse(page)
 
   const nav = page.locator('.browse-nav')
-  const bar = page.locator('.browse-screen .study-bar')
   const count = page.locator('.browse-screen .count')
 
   // 마지막 장이 아닌 곳 — 「다음」이 줄 오른쪽 끝까지 간다
@@ -117,11 +124,12 @@ test('마지막 장에서도 담을 수 있고, 아래 줄은 「다음」이 �
   }, total)
   await expect(count).toContainText(`${total} / ${total}`)
 
-  // 마지막 장 — 아래 줄은 전과 같고(다른 N개·돌아가기), 담기는 위에 그대로 있다
+  // 마지막 장 — 아래 줄은 전과 같고(다른 N개·돌아가기), 담기는 카드 안에 그대로 있다
   await expect(nav.getByRole('button', { name: '돌아가기' })).toBeVisible()
   await expect(nav.getByRole('button', { name: /단어장에/ })).toHaveCount(0)
-  await bar.getByRole('button', { name: '단어장에 담기' }).click()
-  await expect(bar.getByRole('button', { name: '단어장에서 빼기' })).toBeVisible()
+  const last = page.locator('.browse-slide').nth(total - 1)
+  await last.getByRole('button', { name: '단어장에 담기' }).click()
+  await expect(last.getByRole('button', { name: '단어장에서 빼기' })).toBeVisible()
 })
 
 test('단어장 카드 보기에는 담기가 없다', async ({ page }) => {

@@ -8,7 +8,6 @@
 // 관리(메모 고치기·빼기·묶음 옮기기)는 리스트에만 둔다. 카드를 넘기다 잘못 누르면 안 되므로.
 import { useRef, useState } from 'react'
 import { BrowseSlide, type BrowseItem } from './Browse.tsx'
-import { StarAddButton } from './StarAddButton.tsx'
 
 export interface WordCard {
   item: BrowseItem
@@ -64,15 +63,6 @@ export function WordCards({
         <span className="count">
           {at + 1} / {cards.length}
         </span>
-        {star && (
-          <StarAddButton
-            on={star.has(cards[at]?.item.id ?? '')}
-            onToggle={() => {
-              const id = cards[at]?.item.id
-              if (id !== undefined) star.toggle(id)
-            }}
-          />
-        )}
       </header>
 
       <main
@@ -89,6 +79,7 @@ export function WordCards({
             key={c.item.id}
             item={c.item}
             tag={c.tag}
+            {...(star ? { star: { on: star.has(c.item.id), onToggle: () => star.toggle(c.item.id) } } : {})}
             note={c.note}
             {...(c.memo ? { memo: c.memo } : {})}
             mask
@@ -107,14 +98,22 @@ export function WordCards({
           <button type="button" className="btn" disabled={at === 0} onClick={() => move(-1)}>
             ‹ 이전
           </button>
-          <button
-            type="button"
-            className="btn-primary"
-            disabled={at === cards.length - 1}
-            onClick={() => move(1)}
-          >
-            다음 ›
-          </button>
+          {/* 마지막 장에서는 「닫기」다 (사용자 지시 2026-10-06) — 끌 데가 있는 전체화면 덱에만.
+              단어장 카드 보기는 제 머리말로 돌아가므로 전처럼 비활성 「다음」이 선다 */}
+          {onClose && at === cards.length - 1 ? (
+            <button type="button" className="btn-primary" onClick={onClose}>
+              닫기
+            </button>
+          ) : (
+            <button
+              type="button"
+              className="btn-primary"
+              disabled={at === cards.length - 1}
+              onClick={() => move(1)}
+            >
+              다음 ›
+            </button>
+          )}
         </div>
       </div>
     </div>
