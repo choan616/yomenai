@@ -6,6 +6,16 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { nextSnap } from './sheetSnap.ts'
 
+/**
+ * 지금 열려 있는 시트 — **한 번에 하나다** (2026-10-06 사용자 신고).
+ *
+ * 설정은 탭이면서 시트라, 리포트의 시트가 열린 채 설정 탭을 누르면 둘이 같은 자리에 겹쳐 섰다.
+ * 탭을 옮겨도 밑에 깔린 탭은 그대로 살아 있어(App 의 `underTab`) 제 시트를 들고 있기 때문이다.
+ * 나중에 열린 쪽이 앞서 열린 쪽을 닫는다 — 닫는 길은 그 시트가 준 `onClose` 라 그쪽 상태도
+ * 같이 정리된다. 부모끼리 서로를 알 필요가 없고, 시트가 느는 만큼 저절로 지켜진다
+ */
+let openSheet: { close: () => void } | null = null
+
 /** 전체 높이일 때 위에 남기는 틈 — 뒤 화면이 있다는 표시 */
 const TOP_GAP = 8
 /** 처음 높이 = 부모 높이의 이 비율 (CSS 의 `clamp` 와 같아야 한다) */
@@ -39,6 +49,22 @@ export function BottomSheet({
   const [full, setFull] = useState(false)
   /** 끄는 동안의 높이(px). 아니면 null — CSS 높이를 쓴다 */
   const [dragH, setDragH] = useState<number | null>(null)
+
+  /** 늘 최신 onClose 를 가리킨다 — 아래 effect 는 한 번만 돌기 때문이다 */
+  const closeRef = useRef(onClose)
+  useEffect(() => {
+    closeRef.current = onClose
+  }, [onClose])
+
+  // 열리면서 앞서 열려 있던 시트를 닫는다 (위 openSheet 주석)
+  useEffect(() => {
+    const mine = { close: () => closeRef.current() }
+    openSheet?.close()
+    openSheet = mine
+    return () => {
+      if (openSheet === mine) openSheet = null
+    }
+  }, [])
 
   // 열리면 시트로 포커스를 옮긴다. Esc 로 닫는다
   useEffect(() => {
