@@ -64,6 +64,15 @@ export function WordCards({
         <span className="count">
           {at + 1} / {cards.length}
         </span>
+        {star && (
+          <StarAddButton
+            on={star.has(cards[at]?.item.id ?? '')}
+            onToggle={() => {
+              const id = cards[at]?.item.id
+              if (id !== undefined) star.toggle(id)
+            }}
+          />
+        )}
       </header>
 
       <main
@@ -94,7 +103,7 @@ export function WordCards({
       </main>
 
       <div className="card-bottom browse-nav">
-        <div className={`answer-row${star ? ' with-add' : ''}`}>
+        <div className="answer-row">
           <button type="button" className="btn" disabled={at === 0} onClick={() => move(-1)}>
             ‹ 이전
           </button>
@@ -106,15 +115,6 @@ export function WordCards({
           >
             다음 ›
           </button>
-          {star && (
-            <StarAddButton
-              on={star.has(cards[at]?.item.id ?? '')}
-              onToggle={() => {
-                const id = cards[at]?.item.id
-                if (id !== undefined) star.toggle(id)
-              }}
-            />
-          )}
         </div>
       </div>
     </div>

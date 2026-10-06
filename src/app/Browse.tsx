@@ -231,6 +231,15 @@ export function Browse({
         <span className="count">
           {at + 1} / {items.length}
         </span>
+        {/* 담기는 머리말 바 우측에 따로 선다 (사용자 지시 2026-10-06) — 넘김 줄과 섞지 않는다.
+            지금 장에만 걸리고, 마지막 장을 포함해 어느 장에서나 뜬다 */}
+        <StarAddButton
+          on={starred.has(items[at]?.id ?? '')}
+          onToggle={() => {
+            const id = items[at]?.id
+            if (id !== undefined) toggleStar(id)
+          }}
+        />
       </header>
 
       <main
@@ -265,7 +274,7 @@ export function Browse({
           오른쪽으로 빈 채 남아 쏠려 보여서(2026-09-21 사용자 지적), 열을 글자 폭으로 두고
           가운데가 남는 자리를 먹게 했다 — 이전 버튼은 어느 장에서도 같은 자리다 */}
       <div className="card-bottom browse-nav">
-        <div className={`answer-row${last ? ' last' : ' with-add'}`}>
+        <div className={`answer-row${last ? ' last' : ''}`}>
           <button type="button" className="btn" disabled={at === 0} onClick={() => move(-1)}>
             ‹ 이전
           </button>
@@ -277,18 +286,6 @@ export function Browse({
             <button type="button" className="btn-primary" onClick={() => move(1)}>
               다음 ›
             </button>
-          )}
-          {/* 담기는 「다음」 오른쪽 (사용자 지시 2026-10-06). 지금 장에만 걸린다.
-              **마지막 장에는 안 낸다** — 거기엔 「다음」 대신 「다른 N개」와 「돌아가기」가 서고,
-              375px 폭에 버튼 넷(399px)이 안 들어간다(실측 2026-10-06) */}
-          {!last && (
-            <StarAddButton
-              on={starred.has(items[at]?.id ?? '')}
-              onToggle={() => {
-                const id = items[at]?.id
-                if (id !== undefined) toggleStar(id)
-              }}
-            />
           )}
           {last && (
             <button type="button" className="btn" onClick={onExit}>
