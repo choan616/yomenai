@@ -27,6 +27,8 @@ import { mistakeLabel } from '../study/mistakeLabels.ts'
 import { Mixed, RuleBody } from './RuleBody.tsx'
 import { ruleForMistake, ruleSection, type RuleSection } from './rules.ts'
 import { loadSettings } from './settings.ts'
+import { appendStar } from './star.ts'
+import { StarAddButton } from './StarAddButton.tsx'
 import { tts } from '../study/tts.ts'
 import { useCanSpeak } from '../study/useCanSpeak.ts'
 import { useViewportLock } from '../study/useViewportLock.ts'
@@ -99,6 +101,11 @@ export function Browse({
   const [revealed, setRevealed] = useState(false)
   /** 가림을 쓸지. 들어올 때 한 번 읽어 고정한다 — 넘기는 도중에 규칙이 바뀌면 안 된다 */
   const [mask] = useState(() => loadSettings().browseMask)
+  /**
+   * 단어장에 담아 둔 숙어 (2026-10-06). 목록과 같이 이벤트를 접어 받고, 담거나 뺄 때는 로그를
+   * 다시 읽지 않고 이 집합의 한 칸만 갈아 끼운다 — append-only 라 덧붙인 결과가 곧 그 변화다
+   */
+  const [starred, setStarred] = useState<ReadonlySet<string>>(() => new Set())
   // 장이 바뀌면 렌더 중에 자리를 되돌린다. effect 로 하면 한 번 그린 뒤 다시 그리게 된다
   const [exCard, setExCard] = useState(0)
   if (exCard !== at) {
@@ -133,15 +140,14 @@ export function Browse({
         const verdictOf = verdictByEvent(wrong, ctx, (id) => byId.get(id)?.headword)
         const worst = mistakeOfIdiom(wrong, verdictOf)
         // 후보는 전량을 만들어 두고 뽑기만 여기서 한다 — 넘기는 도중에 목록이 바뀌면 안 된다
+        // 담아 둔 것은 어느 목록이든 알아야 한다 — 접기는 한 번만 하고 둘이 같이 쓴다
+        const state = replay(events, { pairsOf: (id) => byId.get(id)?.pairIds ?? [] })
         const rows = (
           filter
             ? filter.type === null
               ? frequentIdiomsUnnamed(events, verdictOf, nameOf)
               : frequentIdiomsByMistake(wrong, verdictOf, filter.type, filter.voicing, nameOf)
-            : frequentIdioms(
-                replay(events, { pairsOf: (id) => byId.get(id)?.pairIds ?? [] }),
-                nameOf,
-              )
+            : frequentIdioms(state, nameOf)
         )
         const lookup = ctx.lookup
         const enriched: BrowseItem[] = rows.map((r) => ({
@@ -155,6 +161,7 @@ export function Browse({
         setAll(enriched)
         setItems(first)
         setShown(new Set(first.map((it) => it.id)))
+        setStarred(state.starred)
       } catch (e) {
         if (alive) setError(e instanceof Error ? e.message : String(e))
       }
@@ -185,6 +192,18 @@ export function Browse({
   const hasOthers = all.length > items.length
   /** 마지막 장에서만 「돌아가기」가 는다 */
   const last = at === items.length - 1
+
+  /** 지금 장을 담거나 뺀다. 화면은 기다리지 않고 바로 바뀐다 */
+  const toggleStar = (id: string) => {
+    const on = !starred.has(id)
+    setStarred((prev) => {
+      const next = new Set(prev)
+      if (on) next.add(id)
+      else next.delete(id)
+      return next
+    })
+    void appendStar(id, on)
+  }
 
   const reroll = () => {
     const next = pickBrowseMore(all, shown)
@@ -246,7 +265,7 @@ export function Browse({
           오른쪽으로 빈 채 남아 쏠려 보여서(2026-09-21 사용자 지적), 열을 글자 폭으로 두고
           가운데가 남는 자리를 먹게 했다 — 이전 버튼은 어느 장에서도 같은 자리다 */}
       <div className="card-bottom browse-nav">
-        <div className={`answer-row${last ? ' last' : ''}`}>
+        <div className={`answer-row${last ? ' last' : ' with-add'}`}>
           <button type="button" className="btn" disabled={at === 0} onClick={() => move(-1)}>
             ‹ 이전
           </button>
@@ -258,6 +277,18 @@ export function Browse({
             <button type="button" className="btn-primary" onClick={() => move(1)}>
               다음 ›
             </button>
+          )}
+          {/* 담기는 「다음」 오른쪽 (사용자 지시 2026-10-06). 지금 장에만 걸린다.
+              **마지막 장에는 안 낸다** — 거기엔 「다음」 대신 「다른 N개」와 「돌아가기」가 서고,
+              375px 폭에 버튼 넷(399px)이 안 들어간다(실측 2026-10-06) */}
+          {!last && (
+            <StarAddButton
+              on={starred.has(items[at]?.id ?? '')}
+              onToggle={() => {
+                const id = items[at]?.id
+                if (id !== undefined) toggleStar(id)
+              }}
+            />
           )}
           {last && (
             <button type="button" className="btn" onClick={onExit}>

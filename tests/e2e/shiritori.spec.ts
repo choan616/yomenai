@@ -91,6 +91,52 @@ test('힌트는 표기만 보이고, 그만하기는 읽기까지 보이며, 다
   await expect(page.locator('.shiritori-over')).toHaveCount(0)
 })
 
+test('판이 끝나면 결과 화면이 뜨고, 나온 말을 카드로 보며 단어장에 담는다', async ({ page }) => {
+  test.setTimeout(120_000)
+  await open(page)
+  const need = tail(await lastWord(page))
+  const starts = BASE.filter((w) => [...w.headword][0] === need)
+  const mine = starts.find(
+    (w) => w.reading.length >= 2 && starts.filter((x) => x.reading === w.reading).length === 1,
+  )!
+  await page.locator('.kana-input').fill(mine.reading)
+  await page.locator('.kana-input').press('Enter')
+  await expect(page.locator('.count')).toHaveText('1개')
+  if ((await page.getByRole('button', { name: '그만하기' }).count()) > 0) {
+    await page.getByRole('button', { name: '그만하기' }).click()
+  }
+
+  // 결과는 별도 화면이다 — 놀이 화면(말 목록·입력)은 접힌다
+  const over = page.locator('.shiritori-over')
+  await expect(over.getByRole('heading', { name: '끝말잇기 완료' })).toBeVisible()
+  await expect(over.locator('.summary-num')).toHaveText('1')
+  await expect(page.locator('.chain-item')).toHaveCount(0)
+  await expect(page.locator('.kana-input')).toHaveCount(0)
+
+  // 나온 말 카드 — 이어진 말 전부가 순서대로, 뜻과 함께
+  const cards = await page.getByRole('button', { name: /나온 말 \d+개 보기/ }).innerText()
+  const n = Number(cards.match(/\d+/)![0])
+  expect(n).toBeGreaterThanOrEqual(2)
+  await page.getByRole('button', { name: /나온 말 \d+개 보기/ }).click()
+  await expect(page.locator('.wl-deck .browse-slide')).toHaveCount(n, { timeout: 60_000 })
+  await expect(page.locator('.browse-slide').first().locator('.tag').first()).toHaveText('앱이 낸 말')
+  await expect(page.locator('.browse-slide').first().locator('.meaning')).toBeVisible()
+
+  // 담기 — 지금 장을 단어장에 넣는다
+  const add = page.getByRole('button', { name: '단어장에 담기' })
+  await expect(add).toHaveText('+ 단어장')
+  await add.click()
+  await expect(page.getByRole('button', { name: '단어장에서 빼기' })).toHaveText('담았어요')
+
+  // ✕ 로 결과로 돌아오고, 담은 말은 단어장에 있다
+  await page.getByRole('button', { name: '카드 닫기' }).click()
+  await expect(over.getByRole('heading', { name: '끝말잇기 완료' })).toBeVisible()
+  await page.getByRole('button', { name: '나가기', exact: true }).click()
+  await page.getByRole('button', { name: '찾기', exact: true }).click()
+  await page.getByRole('button', { name: /^단어장/ }).click()
+  await expect(page.locator('.review-row')).toHaveCount(1, { timeout: 60_000 })
+})
+
 test('✕ 로 나가면 리포트로 돌아온다', async ({ page }) => {
   await open(page)
   await page.getByRole('button', { name: '끝말잇기 나가기' }).click()

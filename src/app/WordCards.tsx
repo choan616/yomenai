@@ -8,6 +8,7 @@
 // 관리(메모 고치기·빼기·묶음 옮기기)는 리스트에만 둔다. 카드를 넘기다 잘못 누르면 안 되므로.
 import { useRef, useState } from 'react'
 import { BrowseSlide, type BrowseItem } from './Browse.tsx'
+import { StarAddButton } from './StarAddButton.tsx'
 
 export interface WordCard {
   item: BrowseItem
@@ -18,7 +19,20 @@ export interface WordCard {
   memo?: string
 }
 
-export function WordCards({ cards }: { cards: readonly WordCard[] }) {
+export function WordCards({
+  cards,
+  star,
+  onClose,
+}: {
+  cards: readonly WordCard[]
+  /**
+   * 담기를 쓸 때만 준다 (2026-10-06, 끝말잇기 말 카드). **단어장 카드 보기는 안 준다** —
+   * 이미 담은 것들이고, 카드에 관리 기능을 두지 않는다는 결정이 그대로다 (2026-10-01)
+   */
+  star?: { has: (id: string) => boolean; toggle: (id: string) => void }
+  /** 전체화면으로 쓸 때의 나가기. 탭 안에 끼워 쓰는 단어장은 제 머리말이 있어 안 준다 */
+  onClose?: () => void
+}) {
   const track = useRef<HTMLElement | null>(null)
   const [at, setAt] = useState(0)
   const [exIndex, setExIndex] = useState(0)
@@ -41,6 +55,11 @@ export function WordCards({ cards }: { cards: readonly WordCard[] }) {
   return (
     <div className="wl-deck">
       <header className="study-bar">
+        {onClose && (
+          <button type="button" className="link" onClick={onClose} aria-label="카드 닫기">
+            ✕
+          </button>
+        )}
         <progress value={at + 1} max={cards.length} />
         <span className="count">
           {at + 1} / {cards.length}
@@ -75,7 +94,7 @@ export function WordCards({ cards }: { cards: readonly WordCard[] }) {
       </main>
 
       <div className="card-bottom browse-nav">
-        <div className="answer-row">
+        <div className={`answer-row${star ? ' with-add' : ''}`}>
           <button type="button" className="btn" disabled={at === 0} onClick={() => move(-1)}>
             ‹ 이전
           </button>
@@ -87,6 +106,15 @@ export function WordCards({ cards }: { cards: readonly WordCard[] }) {
           >
             다음 ›
           </button>
+          {star && (
+            <StarAddButton
+              on={star.has(cards[at]?.item.id ?? '')}
+              onToggle={() => {
+                const id = cards[at]?.item.id
+                if (id !== undefined) star.toggle(id)
+              }}
+            />
+          )}
         </div>
       </div>
     </div>

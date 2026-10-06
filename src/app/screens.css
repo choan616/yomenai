@@ -997,6 +997,16 @@
 .browse-nav .answer-row.last {
   grid-template-columns: auto 1fr auto;
 }
+/* 담기가 붙은 줄 — 「다음」 오른쪽에 글자 폭으로 한 칸 는다 (2026-10-06 사용자 지시).
+   「‹ 이전」의 자리와 폭은 그대로라 엄지는 같은 데 머문다 */
+.browse-nav .answer-row.with-add {
+  grid-template-columns: auto 1fr auto;
+}
+/* 담은 상태 — 면을 옅게 채워 「들어 있다」를 말한다. 주 동작과 겹치지 않게 테두리만 강조색이다 */
+.wl-add.on {
+  background: var(--accent-soft);
+  border-color: var(--accent-edge);
+}
 /* 다음 예문 — 예문이 여럿일 때만 뜬다. 소리 듣기(.tts-btn)와 같은 무게로 (사용자 요청 2026-09-12) */
 /* 요미가나 가림막 (2026-09-21 사용자 요청) — 스크래치 카드처럼 덮었다가 눌러서 벗긴다.
    **자리를 그대로 두는 게 핵심이다.** rt 를 숨기거나 빼면 벗기는 순간 한자가 내려앉는다.
@@ -2335,7 +2345,8 @@ p.rule-record {
   .wl-cards-mode .screen-body {
     flex: 0 0 auto;
   }
-  .wl-deck {
+  /* 단어장 안에 끼워 쓸 때만 높이를 묶는다 — 전체화면 덱(끝말잇기)은 화면을 다 쓴다 (2026-10-06) */
+  .wl-cards-mode .wl-deck {
     flex: 0 0 auto;
     height: min(680px, calc(100dvh - 60px));
   }
@@ -2708,8 +2719,7 @@ p.rule-record {
   font-size: calc(13px * var(--ui-scale));
   color: var(--text-faint);
 }
-.shiritori-ask,
-.shiritori-over {
+.shiritori-ask {
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -2729,7 +2739,8 @@ p.rule-record {
   color: var(--text-dim);
 }
 .shiritori-msg,
-.shiritori-over p {
+.shiritori-over .shiritori-why,
+.shiritori-over .shiritori-examples {
   margin: 0;
   font-size: calc(14px * var(--ui-scale));
   color: var(--text-dim);
@@ -2746,8 +2757,14 @@ p.rule-record {
   flex: 1;
 }
 .shiritori-over .shiritori-record {
+  margin: 0;
   color: var(--text);
   font-weight: 600;
+}
+/* 결과 화면의 두 버튼 — 화면 폭을 다 먹지 않게 통계 띠와 같은 폭으로 묶는다 */
+.shiritori-over .shiritori-actions {
+  width: 100%;
+  max-width: 360px;
 }
 
 /* ── 리포트 요약 타일·처방 카드 줄 (2026-10-05) — 요약을 먼저, 상세는 시트로 ── */
