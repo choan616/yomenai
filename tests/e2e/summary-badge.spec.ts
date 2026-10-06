@@ -73,8 +73,15 @@ test('요약 — 도넛이 그려지고 「読」 배지가 일본어로 표시�
   await expect(page.locator('.summary-donut .donut-track')).toHaveCount(1)
   expect(await page.locator('.summary-donut .donut-arc').count()).toBeGreaterThan(0)
   await expect(page.locator('.summary-tick')).toHaveCount(0)
-  // 카드 수(3)만큼 구분선이 서서 연달아 맞은 것도 장수가 읽힌다
+  // 카드 수(3)만큼 호와 구분선이 선다 — 푼 순서대로 하나씩(연달아 맞은 것도 장수가 읽힌다)
+  await expect(page.locator('.summary-donut .donut-arc')).toHaveCount(3)
   await expect(page.locator('.summary-donut .donut-sep')).toHaveCount(3)
+  // 정답 호 수·오답 호 수가 위 숫자(맞은 수 / 전체)와 같고, 가운데 배지는 많은 쪽 색이다
+  const nums = (await page.locator('.summary-num').innerText()).match(/\d+/g)!.map(Number)
+  const [right, all] = [nums[0]!, nums[1]!]
+  await expect(page.locator('.summary-donut .donut-arc:not(.miss)')).toHaveCount(right)
+  await expect(page.locator('.summary-donut .donut-arc.miss')).toHaveCount(all - right)
+  await expect(page.locator('.summary-seal')).toHaveClass(all - right > right ? /miss/ : /ok/)
   const seal = page.locator('.summary-seal')
   await expect(seal).toHaveText('読')
   await expect(seal).toHaveAttribute('lang', 'ja')

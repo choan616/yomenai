@@ -101,6 +101,18 @@ describe('buildSessionSummary — 기본 수치', () => {
     expect(r.correct).toBe(2)
   })
 
+  it('푼 순서대로의 정오를 기억한다 (도넛이 그 순서로 칠한다)', () => {
+    const s = session(T0, [
+      { idiomId: 'a' },
+      { idiomId: 'b', correct: false, mistakeType: 'SOKUON' },
+      { idiomId: 'a' },
+      { idiomId: 'b', correct: false, mistakeType: 'SOKUON' },
+    ])
+    expect(buildSessionSummary(input([], s)).results).toEqual([true, false, true, false])
+    // 들어오는 순서가 섞여도 시간순이다
+    expect(buildSessionSummary(input([], [...s].reverse())).results).toEqual([true, false, true, false])
+  })
+
   it('최다 오답 유형을 고른다', () => {
     const s = session(T0, [
       { idiomId: 'a', correct: false, mistakeType: 'SOKUON' },

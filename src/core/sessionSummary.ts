@@ -25,6 +25,8 @@ export type Finding =
 export interface SessionSummary {
   total: number
   correct: number
+  /** 푼 순서대로의 정오(true = 정답). 요약의 도넛이 이 순서로 색을 칠한다 */
+  results: boolean[]
   /** 이번 세션에 *처음* 맞힌 (한자, 음독) 쌍 수 */
   newPairs: number
   /** 이번 세션 최다 오답 유형 */
@@ -70,6 +72,7 @@ export function buildSessionSummary(input: SummaryInput): SessionSummary {
   )
   const total = reviews.length
   const correct = reviews.filter((e) => e.correct).length
+  const results = [...reviews].sort(compareEvents).map((e) => e.correct)
 
   const topMistake = topMistakeOf(reviews)
   const all = [...input.prior, ...input.session]
@@ -79,6 +82,7 @@ export function buildSessionSummary(input: SummaryInput): SessionSummary {
   return {
     total,
     correct,
+    results,
     newPairs: newPairs.length,
     topMistake,
     trend,
