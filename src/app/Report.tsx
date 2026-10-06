@@ -318,12 +318,14 @@ function ReportBody({
   const thisMonth = monthSummary(new Date().getFullYear(), new Date().getMonth() + 1, attendance)
   const tiles = summaryTiles({
     level,
-    reviews: report.totalReviews,
-    accuracy,
     streak,
     month: { days: thisMonth.days, cards: thisMonth.cards },
     top: top ? { label: top.label, count: top.count } : null,
     totalWrong: report.totalWrong,
+    weak:
+      report.weakOnyomi.length > 0
+        ? { count: report.weakOnyomi.length, topRate: Math.max(...report.weakOnyomi.map((w) => w.rate)) }
+        : null,
   })
   const sheets: Record<SheetKind, { title: string; content: React.ReactNode }> = {
     level: { title: '수준', content: <LevelSection level={level} reviews={report.totalReviews} accuracy={accuracy} /> },
@@ -415,6 +417,7 @@ function ReportBody({
                 <summary className="section-title">
                   취약 음독 <span className="weak-count">{report.weakOnyomi.length}</span>
                 </summary>
+                {report.weakOnyomi.length === 0 && <p className="empty">아직 약한 음독이 없어요.</p>}
                 <ul className="rows">
                   {report.weakOnyomi.map((w, i) => (
                     <li key={w.pairId} style={{ '--i': i } as React.CSSProperties}>
@@ -498,13 +501,7 @@ function ReportBody({
         streak={streak}
         onRules={() => onRule(null)}
       >
-        {report.weakOnyomi.length > 0 && (
-          <button type="button" className="tool-row" onClick={() => setSheet('weak')}>
-            <span className="tool-name">취약 음독</span>
-            <span className="tool-note">{report.weakOnyomi.length}개</span>
-            <span className="chev">›</span>
-          </button>
-        )}
+        {/* 취약 음독 줄은 요약 타일로 올라갔다 (2026-10-06) — 같은 시트를 여는 입구가 둘이면 같은 내용이 두 번 나온다 */}
         {report.frequent.length > 0 && (
           <button type="button" className="tool-row" onClick={() => setSheet('browse')}>
             <span className="tool-name">다시보기</span>

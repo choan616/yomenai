@@ -61,11 +61,12 @@ test('요약 타일 넷이 첫 화면에 있고 값이 채워져 있다', async 
   await seed(page, 5)
   const tiles = page.locator('.summary .tile')
   await expect(tiles.nth(0)).toContainText('수준')
-  await expect(tiles.nth(1)).toContainText('전체 정답률')
-  await expect(tiles.nth(1)).toContainText('75%')
-  await expect(tiles.nth(2)).toContainText('학습한 날')
-  await expect(tiles.nth(2)).toContainText('5일째')
-  await expect(tiles.nth(3)).toContainText('많이 틀린 유형')
+  await expect(tiles.nth(1)).toContainText('학습한 날')
+  await expect(tiles.nth(1)).toContainText('5일째')
+  await expect(tiles.nth(2)).toContainText('많이 틀린 유형')
+  await expect(tiles.nth(3)).toContainText('취약 음독')
+  // 같은 내용이 두 번 나오지 않는다 — 정답률 타일은 없고, 타일 넷이 서로 다른 시트를 연다 (2026-10-06)
+  await expect(page.locator('.summary')).not.toContainText('전체 정답률')
   // 넷이 모두 첫 화면(스크롤 없이) 안에 든다
   for (let i = 0; i < 4; i++) {
     const b = (await tiles.nth(i).boundingBox())!
@@ -82,17 +83,12 @@ test('타일을 누르면 상세가 하단 시트로 열리고 Esc 로 닫힌다
   await expect(page.locator('.ladder')).toBeVisible()
   await closeSheet(page)
 
-  // 정답률 타일도 수준 시트를 연다 (정답률은 수준 구역 안에 있다)
   await page.locator('.summary .tile').nth(1).click()
-  await expect(dialog).toHaveAccessibleName('수준')
-  await closeSheet(page)
-
-  await page.locator('.summary .tile').nth(2).click()
   await expect(dialog).toHaveAccessibleName('학습한 날')
   await expect(page.locator('.cal-grid')).toBeVisible() // 시트 안의 달력은 처음부터 열려 있다
   await closeSheet(page)
 
-  await page.locator('.summary .tile').nth(3).click()
+  await page.locator('.summary .tile').nth(2).click()
   await expect(dialog).toHaveAccessibleName('오답 유형')
   await expect(page.locator('.bars')).toBeVisible()
   // 다시보기 진입은 오답 유형 시트가 아니라 다시보기 시트에 있다 (2026-10-05)
@@ -115,13 +111,18 @@ test('더 보기 줄: 읽기 규칙·음독 맵은 화면으로, 취약 음독·
   await expect(page.locator('.bars')).toHaveCount(0)
   await closeSheet(page)
 
-  // 취약 음독이 있으면 줄이 나오고, 시트에서는 목록이 처음부터 펼쳐져 있다
-  const weak = more.getByRole('button', { name: /^취약 음독/ })
-  if ((await weak.count()) > 0) {
-    await weak.click()
-    await expect(page.getByRole('dialog')).toHaveAccessibleName('취약 음독')
-    await expect(page.locator('.weak-onyomi .rows li').first()).toBeVisible()
-  }
+  // 취약 음독은 요약 타일로 올라갔다 — 더 보기에는 같은 줄이 없다 (같은 시트의 입구가 둘이면 같은 내용이 두 번 나온다)
+  await expect(more.getByRole('button', { name: /^취약 음독/ })).toHaveCount(0)
+})
+
+test('취약 음독 타일은 취약 음독 시트를 연다', async ({ page }) => {
+  await seed(page, 5)
+  await page.locator('.summary .tile').nth(3).click()
+  await expect(page.getByRole('dialog')).toHaveAccessibleName('취약 음독')
+  // 취약 음독이 있으면 목록이, 없으면 없다는 말이 선다 — 빈 시트는 없다
+  const rows = page.locator('.weak-onyomi .rows li')
+  if ((await rows.count()) > 0) await expect(rows.first()).toBeVisible()
+  else await expect(page.locator('.weak-onyomi .empty')).toBeVisible()
 })
 
 test('다음에 볼 것은 옆으로 미는 카드 줄이다 (스냅)', async ({ page }) => {

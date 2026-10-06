@@ -1,20 +1,21 @@
-// 리포트 요약 타일 문구 검증 — 수준·정답률·학습한 날·많이 틀린 유형, 값이 없을 때
+// 리포트 요약 타일 문구 검증 — 수준·학습한 날·많이 틀린 유형·취약 음독, 값이 없을 때
 import { describe, expect, it } from 'vitest'
 import { summaryTiles, type TileInput } from './reportSummary.ts'
 
 const base: TileInput = {
   level: { solidThrough: null, edge: 0 },
-  reviews: 162,
-  accuracy: 67,
   streak: { current: 8, longest: 8 },
   month: { days: 12, cards: 90 },
   top: { label: '음독 선택', count: 29 },
   totalWrong: 53,
+  weak: { count: 6, topRate: 0.75 },
 }
 
 describe('summaryTiles', () => {
-  it('넷이고 순서가 수준·정답률·학습한 날·많이 틀린 유형이다', () => {
-    expect(summaryTiles(base).map((t) => t.label)).toEqual(['수준', '전체 정답률', '학습한 날', '많이 틀린 유형'])
+  it('넷이고 순서가 수준·학습한 날·많이 틀린 유형·취약 음독이다 (같은 시트를 여는 타일이 둘 없다)', () => {
+    const tiles = summaryTiles(base)
+    expect(tiles.map((t) => t.label)).toEqual(['수준', '학습한 날', '많이 틀린 유형', '취약 음독'])
+    expect(new Set(tiles.map((t) => t.sheet)).size).toBe(4)
   })
 
   it('경계가 있으면 그 밴드가 흔들린다고 말한다', () => {
@@ -31,37 +32,41 @@ describe('summaryTiles', () => {
     expect(t.value).toBe('—')
   })
 
-  it('정답률 타일은 수준 시트를 연다 (정답률은 수준 구역 안에 있다)', () => {
-    expect(summaryTiles(base)[1]).toMatchObject({ value: '67%', sub: '읽기 162회', sheet: 'level' })
-  })
-
   it('연속 중이면 일수를, 최장이 더 길면 최장도 말한다', () => {
-    expect(summaryTiles(base)[2]).toMatchObject({ value: '8일째', sub: '이어 가는 중', sheet: 'days' })
-    expect(summaryTiles({ ...base, streak: { current: 3, longest: 20 } })[2]).toMatchObject({
+    expect(summaryTiles(base)[1]).toMatchObject({ value: '8일째', sub: '이어 가는 중', sheet: 'days' })
+    expect(summaryTiles({ ...base, streak: { current: 3, longest: 20 } })[1]).toMatchObject({
       value: '3일째',
       sub: '최장 20일',
     })
   })
 
   it('연속이 없으면 끊겼다고 말하지 않고 이번 달 학습일로 말한다', () => {
-    const t = summaryTiles({ ...base, streak: { current: 0, longest: 20 } })[2]!
+    const t = summaryTiles({ ...base, streak: { current: 0, longest: 20 } })[1]!
     expect(t.value).toBe('이번 달 12일')
     expect(t.sub).toBe('90장')
     expect(JSON.stringify(t)).not.toMatch(/끊/)
   })
 
   it('이번 달 기록도 없으면 빈 칸이다', () => {
-    const t = summaryTiles({ ...base, streak: { current: 0, longest: 0 }, month: { days: 0, cards: 0 } })[2]!
+    const t = summaryTiles({ ...base, streak: { current: 0, longest: 0 }, month: { days: 0, cards: 0 } })[1]!
     expect(t).toMatchObject({ value: '—', sub: '아직 없어요' })
   })
 
   it('1등 오답 유형과 몫을 보인다', () => {
-    expect(summaryTiles(base)[3]).toMatchObject({ value: '음독 선택', sub: '29회 · 오답의 55%', warn: true, sheet: 'mist' })
+    expect(summaryTiles(base)[2]).toMatchObject({ value: '음독 선택', sub: '29회 · 오답의 55%', warn: true, sheet: 'mist' })
   })
 
   it('오답이 없으면 짚을 게 없다고 말한다', () => {
-    const t = summaryTiles({ ...base, top: null, totalWrong: 0 })[3]!
+    const t = summaryTiles({ ...base, top: null, totalWrong: 0 })[2]!
     expect(t).toMatchObject({ value: '없어요' })
     expect(t.warn).toBeUndefined()
+  })
+
+  it('취약 음독은 개수와 가장 높은 오답률을 보이고 취약 음독 시트를 연다', () => {
+    expect(summaryTiles(base)[3]).toMatchObject({ value: '6개', sub: '최고 오답률 75%', sheet: 'weak' })
+  })
+
+  it('취약 음독이 없으면 없다고 말한다', () => {
+    expect(summaryTiles({ ...base, weak: null })[3]).toMatchObject({ value: '없어요', sheet: 'weak' })
   })
 })

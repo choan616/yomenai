@@ -22,15 +22,14 @@ interface LevelLike {
 
 export interface TileInput {
   level: LevelLike
-  reviews: number
-  /** 0~100 */
-  accuracy: number
   streak: { current: number; longest: number }
   /** 이번 달 학습일·장수 */
   month: { days: number; cards: number }
   /** 1등 오답 유형. 분류된 오답이 없으면 null */
   top: { label: string; count: number } | null
   totalWrong: number
+  /** 취약 음독 수와 그중 가장 높은 오답률(0~1). 없으면 null */
+  weak: { count: number; topRate: number } | null
 }
 
 export function summaryTiles(i: TileInput): Tile[] {
@@ -41,13 +40,6 @@ export function summaryTiles(i: TileInput): Tile[] {
       : solidThrough !== null
         ? { sheet: 'level', label: '수준', value: `밴드 ${solidThrough}`, sub: '안정이에요' }
         : { sheet: 'level', label: '수준', value: '—', sub: '아직 기록이 적어요' }
-
-  const accuracy: Tile = {
-    sheet: 'level',
-    label: '전체 정답률',
-    value: `${i.accuracy}%`,
-    sub: `읽기 ${i.reviews}회`,
-  }
 
   const days: Tile =
     i.streak.current >= 2
@@ -77,5 +69,10 @@ export function summaryTiles(i: TileInput): Tile[] {
       }
     : { sheet: 'mist', label: '오답 유형', value: '없어요', sub: '지금은 짚을 게 없어요' }
 
-  return [level, accuracy, days, mist]
+  // 전체 정답률 타일은 걷었다 — 수준 시트를 그대로 열어 같은 내용이 두 번 나왔다 (2026-10-06 사용자 확인). 정답률은 수준 시트 안에 남는다
+  const weak: Tile = i.weak
+    ? { sheet: 'weak', label: '취약 음독', value: `${i.weak.count}개`, sub: `최고 오답률 ${Math.round(i.weak.topRate * 100)}%` }
+    : { sheet: 'weak', label: '취약 음독', value: '없어요', sub: '아직 약한 음독이 없어요' }
+
+  return [level, days, mist, weak]
 }
