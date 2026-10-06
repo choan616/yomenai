@@ -1755,6 +1755,7 @@ button.cal-cell[aria-pressed='true'] .cal-dot {
 .rule-block {
   border: 1px solid var(--border);
   border-radius: var(--radius);
+  background-color: var(--surface);
   overflow: hidden;
 }
 .rule-head {
