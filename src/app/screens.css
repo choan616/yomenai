@@ -2802,6 +2802,16 @@ p.rule-record {
 .tile-v[data-shade='2'] {
   --tile-ink: 85%;
 }
+/* 이름 앞의 코스 아이콘 — 글자 크기(1em)를 따라가 글자 크기 설정에서도 같이 커진다. 색은 글자색(먹 농도) 그대로 */
+.tile-v[data-shade] {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.tile-v[data-shade] .icon {
+  width: 1.1em;
+  height: 1.1em;
+}
 .tile-s {
   font-size: calc(12px * var(--ui-scale));
   color: var(--text-dim);

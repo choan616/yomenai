@@ -61,6 +61,10 @@ test('요약 타일 넷이 첫 화면에 있고 값이 채워져 있다', async 
   await seed(page, 5)
   const tiles = page.locator('.summary .tile')
   await expect(tiles.nth(0)).toContainText('수준')
+  // 수준 타일에는 코스 아이콘이 이름 앞에 선다 — 장식이라 낭독에서는 숨기고, 이름은 글자로 남는다
+  await expect(tiles.nth(0).locator('.tile-v svg.icon')).toBeVisible()
+  await expect(tiles.nth(0).locator('.tile-v svg.icon')).toHaveAttribute('aria-hidden', 'true')
+  await expect(tiles.nth(1).locator('.tile-v svg')).toHaveCount(0)
   await expect(tiles.nth(1)).toContainText('학습한 날')
   await expect(tiles.nth(1)).toContainText('5일째')
   await expect(tiles.nth(2)).toContainText('많이 틀린 유형')

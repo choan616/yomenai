@@ -54,6 +54,7 @@ import {
 import { Mixed } from './RuleBody.tsx'
 import { BottomSheet } from './BottomSheet.tsx'
 import { RxRail } from './RxRail.tsx'
+import { CourseIcon } from './icons.tsx'
 import { summaryTiles, type SheetKind } from './reportSummary.ts'
 import { loadShiritoriRecord } from './shiritoriRecord.ts'
 import { isUnlocked } from './unlocks.ts'
@@ -462,6 +463,7 @@ function ReportBody({
               </span>
             </span>
             <span className={'tile-v' + (tile.warn ? ' warn' : '')} data-shade={tile.shade}>
+              {tile.shade !== undefined && <CourseIcon band={tile.shade} />}
               {tile.value}
             </span>
             <span className="tile-s">{tile.sub}</span>
