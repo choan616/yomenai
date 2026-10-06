@@ -1,7 +1,7 @@
 {
  "_meta": {
   "note": "사전 밖(넓힌 사전) 표현의 뜻 검수 결과. build-wide-dict.ts 가 번역 초안 위에 얹는다",
-  "count": 7
+  "count": 9
  },
  "byId": {
   "1201170": {
@@ -19,6 +19,11 @@
    "source": "llm",
    "verified": true
   },
+  "1573370": {
+   "definition": "망설임, 주저함",
+   "source": "llm",
+   "verified": true
+  },
   "1584590": {
    "definition": "전례 없는, 전례가 없는",
    "source": "llm",
@@ -31,6 +36,11 @@
   },
   "1735210": {
    "definition": "적대심, 원한",
+   "source": "llm",
+   "verified": true
+  },
+  "1784380": {
+   "definition": "말문이 막힘, 멍함",
    "source": "llm",
    "verified": true
   },

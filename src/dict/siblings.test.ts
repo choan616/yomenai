@@ -27,6 +27,11 @@ describe.runIf(ready)('읽기 형제 항목', () => {
   const all = [...base, ...band4]
   const byId = new Map(all.map((r) => [r.id, r]))
   const siblings = all.filter((r) => r.id.includes('-'))
+  const overrides = (
+    JSON.parse(readFileSync(join('data', 'dict', 'korean-meaning-sibling-overrides.json'), 'utf8')) as {
+      byId: Record<string, { definition: string; source: string; verified: boolean }>
+    }
+  ).byId
 
   it('형제 항목이 있다 — 빌드가 형제를 안 만들면 이 파일 전체가 헛돈다', () => {
     expect(siblings.length).toBeGreaterThan(100)
@@ -55,10 +60,12 @@ describe.runIf(ready)('읽기 형제 항목', () => {
     }
   })
 
-  it('형제마다 한국어 뜻이 있고 초안(llm)이며 아직 검수 전이다', () => {
+  it('형제마다 한국어 뜻이 있고, 덮어쓰기 기록의 뜻·출처·검수 표시를 그대로 싣는다', () => {
+    // 뜻은 전부 `korean-meaning-sibling-overrides.json` 에서 온다 — 빌드가 검수 표시를 지어내지
+    // 않는지를 본다. 앱 뜻 검수를 거친 형제는 그 파일에서 verified 가 true 로 바뀐다 (2026-10-06 첫 사례)
     for (const s of siblings) {
       expect(s.koMeaning?.definition?.trim(), `${s.id} 뜻이 비었다`).toBeTruthy()
-      expect(s.koMeaning).toMatchObject({ source: 'llm', verified: false })
+      expect(s.koMeaning, `${s.id} 가 덮어쓰기 기록과 다르다`).toEqual(overrides[s.id])
     }
   })
 

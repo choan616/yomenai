@@ -1,0 +1,97 @@
+﻿verdict	cat	fix	tier	flags	manual	headword	reading	glossEn	llm_ko	stdict_def	manual_reason	category	classSource	band	id
+o			4			異議	いぎ	objection; dissent; protest	이의, 반대	다른 의견이나 논의.		2	default	0	1157580
+o			4			一目	ひとめ	glance; look; glimpse; complete view	한눈, 훑어봄	한쪽 눈.		2	default	1	1166950
+o			4			汚名	おめい	bad name; bad reputation; disgrace; dishonour	오명, 누명	더러워진 이름이나 명예.		2	default	1	1179130
+o			4			穏便	おんびん	gentle; peaceable; amicable; quiet	온화함, 평온함	‘온편하다’의 어근.		2	default	3	1183620
+x		위해, 해악, 손해	4			危害	きがい	injury; harm; danger	해악, 손해	위험과 재해를 아울러 이르는 말.		2	default	2	1218440
+o			4			欠如	けつじょ	lack; absence; shortage; deficiency	결핍, 부족	마땅히 있어야 할 것이 빠져서 없거나 모자람.		2	default	1	1254060
+o			4			潔癖	けっぺき	fastidiousness; love of cleanliness; uprightness; integrity	깔끔함, 청결 강박, 청렴함	유난스럽게 깨끗한 것을 좋아하는 성벽(性癖).		2	default	3	1254470
+o			4			後方	こうほう	rear; back; behind	뒤쪽, 후방	향하고 있는 방향과 반대되는 방향.		2	default	0	1270100
+o			4			鎖骨	さこつ	collarbone; clavicle	쇄골	뼈를 부숨.		2	default	3	1291750
+o			4			在籍	ざいせき	being enrolled (at a school); being registered; being a member (of a team, organization, etc.)	재적, 소속	학적, 병적 따위의 명부(名簿)에 이름이 올라 있음.		2	default	1	1296530
+o			4			作業	さぎょう	work; operation; task	작업, 업무	일을 함. 또는 그 일.		2	default	0	1297540
+o			4			指示	しじ	indication; denotation; designation; instructions	지시, 안내	가리켜 보임.		2	default	0	1309800
+o			4			施錠	せじょう	locking	잠금	자물쇠를 채워 문을 잠금.		2	default	3	1310390
+o			4			自暴自棄	じぼうじき	desperation; despair; self-abandonment	자포자기, 절망	절망에 빠져 자신을 스스로 포기하고 돌아보지 아니함.		2	default	3	1318670
+o			4			銃口	じゅうこう	gun point; muzzle	총구	총알이 나가는 총의 앞쪽 끝부분.		2	default	3	1337040
+o			4			殉職	じゅんしょく	dying at one's post; being killed in the line of duty	직무 중 사망	직무를 다하다가 목숨을 잃음.		2	default	3	1341470
+x		일본술 쇼추	4			焼酎	しょうちゅう	shōchū; Japanese spirit distilled from sweet potatoes, rice, etc.	소주	작은 배.		2	default	3	1350670
+o			4			親指	おやゆび	thumb; big toe	엄지손가락	서로 잘 알고 가깝게 지내는 사람.		2	default	1	1365190
+o			4			身元	みもと	(one's) identity; background; upbringing; birth (and parentage)	신분, 출신 배경	개인의 성장 과정과 관련된 자료. 곧 신분이나 평소 행실, 주소, 원적(原籍), 직업 따위를 이른다.		2	default	0	1365670
+o			4			人相	にんそう	looks; countenance; facial features; physiognomy	인상, 얼굴 생김새	사람 얼굴의 생김새. 또는 그 얼굴의 근육이나 눈살 따위.		2	default	3	1368530
+o			4			水筒	すいとう	canteen; flask; water bottle; thermos	물통	먹는 물을 담아 가지고 다니는 그릇. 병같이 생겼으며 끈이 달려 있어 메고 다닐 수 있게 되어 있는데, 등산이나 소풍을 갈 때에 흔히 사용한다.		2	default	3	1371910
+o			4			制圧	せいあつ	gaining total control (of people or counties); suppression; oppression; control	제압, 억압, 통제	위력이나 위엄으로 세력이나 기세 따위를 억눌러서 통제함.		2	default	1	1374640
+o			4			羨望	せんぼう	envy	선망	부러워하여 바람.		2	default	3	1391960
+o			4			前提	ぜんてい	condition; assumption; prerequisite; hypothesis	전제, 가정	어떠한 사물이나 현상을 이루기 위하여 먼저 내세우는 것.		2	default	0	1393680
+o			4			端的	たんてき	frank; direct; plain; straightforward	간결한, 직설적인	곧바르고 명백한 것.		2	default	1	1418940
+o			4			痛手	いたで	serious wound; hard blow	큰 타격, 치명타	물이 통하여 흐름. 또는 그렇게 되게 함.		2	default	1	1432780
+o			4			怒号	どごう	angry roar; bellow	분노의 포효	성내어 소리를 지름. 또는 그 소리.		2	default	3	1445710
+o			4			日常	にちじょう	everyday; daily; ordinary; usual	일상, 평상시	날마다 반복되는 생활.		2	default	0	1464180
+x		만용, 무모함, 맹목적인 용기	4			蛮勇	ばんゆう	foolhardiness; recklessness; savage valour; savage valor	무모함, 맹목적인 용기	분별없이 함부로 날뛰는 용맹.		2	default	3	1482580
+o			4			弁舌	べんぜつ	speech; eloquence; manner of speaking; manner of expression	말솜씨, 언변	말을 잘하는 재주.		2	default	3	1513040
+o			4			報道	ほうどう	report (of news); reporting; news; information	보도, 뉴스	대중 전달 매체를 통하여 일반 사람들에게 새로운 소식을 알림. 또는 그 소식.		2	default	0	1515730
+o			4			法曹	ほうそう	legal profession; judicial officer; lawyer; attorney	법조계, 법률가	일반적으로 법률 사무에 종사하는 사람. 특히 재판관, 검찰관, 변호사 따위의 법률 실무에 종사하는 사람을 이른다.		2	default	3	1517360
+o			4			棒状	ぼうじょう	cylinder or rod-shaped	막대 모양의, 원통형	가늘고 긴 막대기 모양. 또는 그 막대기와 비슷한 형상.		2	default	3	1519780
+o			4			目下	めした	subordinate; subordinates; inferior; inferiors	아래의, 아랫사람	눈앞의 형편 아래.		2	default	1	1535320
+o			4			優位	ゆうい	predominance; superiority; ascendancy; advantage	우위, 우세	남보다 나은 위치나 수준.		2	default	0	1539100
+o			5			冷酷	れいこく	cruelty; coldheartedness; relentless; ruthless	냉혹함, 무자비함			3	default	3	1556980
+o			4			人影	ひとかげ	figure of a person; figures of people; shadow of a person	사람의 그림자	사람의 그림자나 자취.		2	default	2	1580660
+o			4			人数	にんずう	the number of people; many people; a large number of people	인원수	사람의 수효.		2	default	0	1580700
+o			4			水鳥	みずとり	waterfowl; water bird; shorebird	물새	생활 조건이 물과 밀접한 관계가 있는 새를 통틀어 이르는 말.		2	default	1	1580800
+o			4			植木	うえき	garden plant; garden tree; potted plant	화분, 정원 식물	나무를 심음. 또는 그 나무.		2	default	1	1587970
+o			4			区画	くかく	division; section; compartment; block	구획, 구역	언어 장애인이나 청각 장애인이 특수한 교육을 받아 상대가 말하는 입술 모양 따위로 그 뜻을 알아듣고, 자기도 그렇게 소리 내어 말함.		2	default	1	1592110
+o			4			制御	せいぎょ	control (of a machine, device, etc.); control (over an opponent, one's emotions, etc.); governing; management	제어, 통제, 관리	상대편을 억눌러서 제 마음대로 다룸.		2	default	0	1595970
+o			4			出入口	でいりぐち	exit and entrance	출입구	나갔다가 들어왔다가 하는 어귀나 문.		2	default	1	1598540
+o			4			引合	ひきあい	reference; example; instance; inquiry (about a product, business deal, etc.)	문의, 참고, 끌어당김	관아에서 쓰는 인(印)을 넣어 두던 상자.		2	default	1	1601470
+x		기술, 기법, 수입	4			取口	とりくち	technique; techniques	기술, 기법	나팔, 피리, 취관(吹管) 따위에서 입김을 불어 넣는 구멍.		2	default	1	1658980
+x		거꾸로 쥐는 것, 뒤집어 씌움	4			逆手	さかて	underhand grip (e.g. in gymnastics, etc.); cross-handed grip (e.g. in golf, etc.); using one's hands backwards from their conventional positioning; reverse grip (e.g. of a sword)	역방향, 역이용	증권 거래소에서, 매도(賣渡)와 매수(買受)를 나타내는 손짓을 뒤바꾸거나 값을 올렸다 내렸다 하여 거래를 교란하는 일.		2	default	1	1693370
+o			4			火口	ひぐち	burner; nozzle; origin of a fire	화구, 불꽃이 나오는 곳	불을 때는 아궁이의 아가리.		2	default	1	1724250
+o			4			大船	おおぶね	large boat	큰 배	바다에서 쓰는 큰 배.		2	default	1	1786650
+o			4			隠蔽	いんぺい	concealment; hiding; covering up; suppression	은폐, 숨김			2	default	4	1170850
+x		세상 물정에 밝음, 산전수전을 다 겪음	4			海千山千	うみせんやません	cunning and experienced in the ways of the world; crafty and worldly-wise; sly old (fox)	세상 물정에 밝음, 영리함			2	default	4	1201560
+o			4			喉仏	のどぼとけ	Adam's apple; laryngeal prominence	목젖, 갑상연골 돌출부			2	default	4	1677730
+o			4			殉職者	じゅんしょくしゃ	person who has died at his post (in the performance of his duties)	직무 수행 중 사망한 사람			2	default	4	1938190
+x		총천연색	4			総天然色	そうてんねんしょく	Technicolor	전원색			2	default	4	2832986
+o			4			敵対行為	てきたいこうい	hostile act	적대 행위			2	default	4	2826184
+o			4			内鍵	うちかぎ	internal lock	내부 잠금장치			2	default	4	2213450
+o			4			壁際	かべぎわ	close to the wall; alongside the wall	벽가, 벽 옆			2	default	4	2522780
+?			4			故障	こしょう	fault; trouble; breakdown; failure	고장, 결함	기구나 기계가 제대로 움직이지 못하게 되는 기능상의 장애.		2	default	0	1267180
+?			1		Y(2)	古典	こてん	classic (work, esp. book); the classics	고전	옛날의 의식(儀式)이나 법식(法式).	일본어의 '古典'은 문학/예술 작품의 고전이라는 뜻이지만, 한국 표준국어대사전의 해당 표제어는 의식이나 법식이라는 전혀 다른 뜻을 지닌 동형이의어입니다.	2	manual	0	1265860
+?			4			固定	こてい	fixing (in place); being fixed (in place); securing; anchoring	고정, 고정함	한번 정한 대로 변경하지 아니함.		2	default	0	1266650
+?			4			苦情	くじょう	complaint; troubles; objection; grievance	불만, 고충	괴로운 심정이나 사정.		2	default	0	1244520
+?			4			高層	こうそう	high-rise (building); multistory; multistoried; tall	고층, 높은 곳	여러 층으로 된 것의 높은 층.		2	default	0	1283690
+?			1	cat-mismatch	Y(1)	高値	たかね	high price	높은 가격	비싼 값.		2	default	0	1283760
+?			4			困難	こんなん	difficulty; hardship; trouble; distress	어려움, 곤란	→ 곤란.		2	default	0	1289620
+?			4			昆虫	こんちゅう	insect; bug	곤충	곤충강에 속한 동물을 통틀어 이르는 말.		2	default	0	1289980
+?			4			骨格	こっかく	skeleton; skeletal structure; build; frame	골격, 뼈대	동물의 체형(體型)을 이루고 몸을 지탱하는 뼈.		2	default	0	1288570
+?			4			骨子	こっし	main point; gist; essentials; bones (e.g. of an idea)	골자, 요점	말이나 일의 내용에서 중심이 되는 줄기를 이루는 것.		2	default	0	1288600
+?			4			骨髄	こつずい	bone marrow; medulla; heart's core; depths of one's heart	골수, 핵심	뼈의 중심부인 골수 공간(骨髓空間)에 가득 차 있는 결체질(結締質)의 물질. 적색수(赤色髓)와 황색수(黃色髓)가 있는데, 적색수는 적혈구와 백혈구를 만들고, 황색수는 양분의 저장을 맡는다.		2	default	0	1288610
+?			3		Y(1)	空間	くうかん	space; room; airspace	공간, 공간적 영역	아무것도 없는 빈 곳.	일본어의 '공간'은 물리적 공간이나 공중을 뜻하는 반면, 한국 표준국어대사전의 '공간 (5)'은 철저히 비어있는 빈 곳을 지칭하는 고유한 의미로 쓰임이 갈린다.	1	manual	0	1245450
+?			4			空軍	くうぐん	air force	공군	주로 공중에서 공격과 방어의 임무를 수행하는 군대.		2	default	0	1245520
+?			4			供給	きょうきゅう	supply; provision; service	공급, 제공	요구나 필요에 따라 물품 따위를 제공함.		2	default	0	1233630
+?			4			共同	きょうどう	cooperation; collaboration; association; partnership	협동, 공동	둘 이상의 사람이나 단체가 함께 일을 하거나, 같은 자격으로 관계를 가짐.		2	default	0	1591660
+?			4			共同体	きょうどうたい	cooperative body; cooperative system; collective; community	공동체	생활이나 행동 또는 목적 따위를 같이하는 집단.		2	default	0	1235040
+?			4			公立	こうりつ	public (institution)	공립	지방 자치 단체가 세워서 운영함. 또는 그런 시설.		2	default	0	1275000
+?			4			公明	こうめい	fairness; openness; impartiality; Komeito (Japanese political party)	공명, 공정함	‘공명하다’의 어근.		2	default	0	1274850
+?			4			公募	こうぼ	public appeal (e.g. for contributions); public advertisement (of a post); open recruitment; public offering (of securities)	공모, 공개 모집	일반에게 널리 공개하여 모집함.		2	default	0	1274680
+?			4			公務員	こうむいん	public employee; government employee; public-sector worker; public servant	공무원	국가 또는 지방 공공 단체의 사무를 맡아보는 사람. 사무 범위에 따라 국가 공무원과 지방 공무원으로 나누며, 선임 및 근무 방법에 따라 일반직과 별정직으로 나눈다.		2	default	0	1274820
+?			4			公民	こうみん	citizen; civics (school subject)	시민	국가 사회의 일원으로서 그 나라 헌법에 의한 모든 권리와 의무를 가지는 자유민. =시민.		2	default	0	1274750
+?			4			攻防	こうぼう	offense and defense; offence and defence	공방	서로 공격하고 방어함.		2	default	0	1279250
+?			4			空白	くうはく	blank space (in a document); blank; void; gap	빈칸, 공백	종이나 책 따위에서 글씨나 그림이 없는 빈 곳.		2	default	0	1245950
+?			1		Y(2)	工夫	くふう	devising (a way); contriving; inventing; thinking up	재주, 꾀, 아이디어	학문이나 기술을 배우고 익힘.	일본어의 'くふう'는 '생각해 내기/발명'을 뜻하는 반면 한국 표준국어대사전의 '공부 (1)'는 '학문이나 기술을 배우고 익힘'을 뜻하므로 핵심 의미가 다릅니다.	2	manual	0	1278220
+?			4			公費	こうひ	public expense; public funds; public money; public expenditure	공비, 공적 자금	관청이나 공공 단체에서 쓰는 비용.		2	default	0	1274540
+?			1		Y(2)	公社	こうしゃ	public corporation	공사	국가적 사업을 수행하기 위하여 설립된 공공 기업체의 하나. 정부가 전액 출자하는 공법인으로서, 정부의 감독을 받으며 공과금이 면제된다. 한국 수자원 공사, 한국 토지 주택 공사, 한국 관광 공사 따위가 있다.	일본어의 '공사'는 일반적 공공기관을 지칭하는 반면, 한국 표준국어대사전의 '공사 (公社)'는 정부 전액 출자 및 공과금 면제 등 특수한 법적·재정적 조건을 갖춘 특정 유형의 공법인을 의미하여 핵심 정의가 다릅니다.	2	manual	0	1273860
+?			4			工事	こうじ	construction work	공사	토목이나 건축 따위의 일.		2	default	0	1278130
+?			4			公算	こうさん	probability; likelihood	개연성, 확률	어떤 상태가 되거나 어떤 일이 일어날 수 있는 확실성의 정도.		2	default	0	1273720
+?			1		Y(2)	共産	きょうさん	communism; Communist Party	공산주의	재산을 공동으로 관리하고 소유함.	일본어의 '共産'은 정치 체제나 정당 (공산주의/공산당) 을 지칭하는 반면, 한국 표준국어대사전의 '공산'은 재산을 공동으로 소유·관리하는 일반적인 경제 행위를 뜻하므로 핵심 의미가 갈린다.	2	manual	0	1234430
+?			4			共産党	きょうさんとう	Communist Party	공산당	마르크스·레닌주의를 신봉하는 공산주의자들로 구성된 정당. 최종 목적은 계급 착취가 없는 공산주의 사회의 실현이지만, 각국의 공산주의 운동에 대한 정치적·사상적 지원을 그 당면 과제로 삼는다.		2	default	0	1234550
+?			4			共産主義	きょうさんしゅぎ	communism	공산주의	마르크스와 레닌에 의하여 체계화된 프롤레타리아 혁명 이론에 입각한 사상. 재산의 공동 소유가 옳다고 주장하며 생산 수단의 사회화와 무계급 사회를 지향한다.		2	default	0	1234490
+?			4			公選	こうせん	public election; election by popular vote	공선	일반 국민이 선거로 뽑음. 또는 그 선거.		2	default	0	1274180
+?			4			攻勢	こうせい	offensive (movement); aggression	공세	공격하는 태세. 또는 그런 세력.		2	default	0	1279240
+?			4			控訴	こうそ	appeal to a higher court; intermediate appeal	항소	‘항소’의 전 용어.		2	default	0	1279090
+?			4			供述	きょうじゅつ	affidavit; deposition; testimony	진술, 증언	형사 소송에서, 당사자·증인·감정인이 관계 사항을 구술 또는 서면으로 알리는 일.		2	default	0	1233720
+?			4			空襲	くうしゅう	air-raid	공습	‘공중 습격’을 줄여 이르는 말.		2	default	0	1245650
+?			4			公示	こうじ	public announcement; official notice; edict	공지, 공표	일정한 내용을 공개적으로 게시하여 일반에게 널리 알림. 또는 그렇게 알리는 글.		2	default	0	1273810
+?			4			公式	こうしき	official; formal; formula (e.g. mathematical); official (social media) account (of a company, organization, etc.)	공식의, 정식의	국가적이나 사회적으로 인정된 공적인 방식.		2	default	0	1273820
+?			4			公式戦	こうしきせん	official match; regular game; regular-season game; formal match	공식 경기	공식적으로 하는 시합이나 경기.		2	default	0	1631160
+?			4			公約	こうやく	public commitment; public promise; campaign pledge; official vow	공약, 공적인 약속	정부, 정당, 입후보자 등이 어떤 일에 대하여 국민에게 실행할 것을 약속함. 또는 그런 약속.		2	default	0	1274880

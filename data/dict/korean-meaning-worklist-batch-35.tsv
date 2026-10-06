@@ -1,0 +1,41 @@
+﻿verdict	cat	fix	tier	flags	manual	headword	reading	glossEn	llm_ko	stdict_def	manual_reason	category	classSource	band	id
+o			5			経済研究所	けいざいけんきゅうじょ	economic research institute	경제연구소			3	default	1	1630510
+o			5			総領事	そうりょうじ	consul general	총영사			3	default	1	1401870
+o			5			緑色	みどりいろ	green; green color	녹색			3	default	1	1555320
+o			5			緑地	りょくち	green tract of land; green space	녹지			3	default	1	1555370
+o			5			緑化	りょっか	greening (i.e. planting to increase greenery); tree planting; afforestation	녹화, 녹지 조성			3	default	1	1644860
+o			5			霊園	れいえん	(garden) cemetery; park-style cemetery; memorial park	묘지, 추모 공원			3	default	1	1557750
+o			5			黒木	くろき	unbarked lumber	껍질을 벗기지 않은 목재, 원목			3	default	1	1288170
+o			5			高瀬	たかせ	shallow river; shallows; flatboat; river boat	얕은 강, 갯벌			3	default	2	1809690
+o			5			管制官	かんせいかん	(air traffic) controller	(공항의) 관제사			3	default	2	1614240
+o			5			冠婚葬祭	かんこんそうさい	important ceremonial occasions in family relationships	관혼상제			3	default	2	1210260
+o	3		5			堀川	ほりかわ	canal	수로			3	default	2	1522090
+o			5			屈託	くったく	worry; care; concern; ennui	근심, 걱정			3	default	2	1246630
+o			5			近代詩	きんだいし	modern poetry; modern-style poetry	근대시			3	default	2	1780400
+o			5			今日的	こんにちてき	modern; up-to-date	현대의, 최신의			3	default	2	1289420
+o			5			起訴猶予	きそゆうよ	suspension of indictment; leaving charge on the file	기소유예			3	default	2	1614560
+o			5			基準法	きじゅんほう	basic law	기준법			3	default	2	1614420
+o			5			年刊	ねんかん	annual publication	연간 간행물			3	default	2	1468360
+o			5			年男	としおとこ	man born in a year with the same Chinese zodiac sign as the current year	띠가 같은 해에 태어난 남자			3	default	2	1468990
+o			5			年表	ねんぴょう	chronological table	연표			3	default	2	1582890
+o			5			年賀	ねんが	New Year's greetings; New Year's call; New Year's gift	신년 축하			3	default	2	1468240
+o			5			大時代	おおじだい	old-fashioned; antiquated; anachronistic	구시대적, 시대에 뒤떨어진			3	default	2	1786510
+o			5			得意先	とくいさき	(regular) customer; client; patron; clientele	단골손님, 단골객			3	default	2	1454530
+o			5			落胆	らくたん	discouragement; despondency; dejection; disappointment	낙담, 실망			3	default	2	1548820
+o			5			落度	おちど	mistake; error; fault; slip	실수, 착오			3	default	2	1548610
+o			5			落書	らくがき	scrawl; scribble; graffiti; doodle	낙서			3	default	2	1548770
+o			5			落葉	おちば	fallen leaves; leaf litter; falling leaves; leaf fall	낙엽			3	default	2	1585070
+o			5			卵巣	らんそう	ovary	난소			3	default	2	1549260
+o			5			浪費	ろうひ	waste; extravagance	낭비, 사치			3	default	2	1560800
+o			5			冷淡	れいたん	cool; indifferent; apathetic; half-hearted	냉담함, 무관심			3	default	2	1557150
+o			5			略歴	りゃくれき	brief personal record; short curriculum vitae; short CV	약력			3	default	2	1552070
+o			5			旅先	たびさき	destination; place one stays during a trip	여행지			3	default	2	1553220
+o			5			連峰	れんぽう	mountain range	연달아 있는 봉우리			3	default	2	1559780
+o			5			連作	れんさく	planting a field with the same crop each year; repeated cultivation; monocropping; collaborative literary work	연작, 단일 작물 재배			3	default	2	1644150
+o			5			連発	れんぱつ	occurring in succession; doing in succession; series (of incidents); spate	연속 발생, 연발			3	default	2	1559760
+o			5			連関	れんかん	connection; relation; linkage	연관, 관계			3	default	2	1782000
+o			5			劣化	れっか	deterioration (in quality, performance, etc.); degradation; worsening; (visible) aging	노후화, 열화			3	default	2	1558420
+o			5			劣悪	れつあく	poor (quality, conditions, etc.); bad; inferior; poor-quality	열악함, 좋지 않음			3	default	2	1558410
+o			5			令状	れいじょう	warrant; summons; written order	영장, 소환장			3	default	2	1556200
+o			5			旅団	りょだん	brigade	(군사용어) 여단			3	default	2	1553230
+o			5			老女	ろうじょ	elderly woman; senior lady-in-waiting	노년 여성, 나이 든 여자			3	default	2	1840410

@@ -1,0 +1,50 @@
+﻿verdict	cat	fix	tier	flags	manual	headword	reading	glossEn	llm_ko	stdict_def	manual_reason	category	classSource	band	id
+o			4			記述	きじゅつ	description; account	기술, 서술	대상이나 과정의 내용과 특징을 있는 그대로 열거하거나 기록하여 서술함. 또는 그런 기록.		2	default	0	1223280
+o			4			光栄	こうえい	honour; honor; glory; privilege	영광, 영예	빛나고 아름다운 영예.		2	default	1	1272870
+o			4			主張	しゅちょう	claim; insistence; assertion; advocacy	주장, 주장함	자기의 의견이나 주의를 굳게 내세움. 또는 그런 의견이나 주의.		2	default	0	1325910
+o			4			人間性	にんげんせい	humanity; human nature	인간성, 인간 본성	인간의 본성.		2	default	1	1366920
+o			1		Y(2)	尋問	じんもん	questioning; interrogation; examination (of a witness)	심문, 조사	방문하여 찾아봄.	일본어의 '尋問'은 수사적 질문 (interrogation) 을 의미하는 반면, 한국 표준국어대사전의 '심문'은 방문하여 찾아보는 행위를 뜻하므로 핵심 의미가 갈린다.	2	manual	0	1369980
+o			4			妥当	だとう	valid; proper; right; appropriate	타당함, 적절함	‘타당하다’의 어근.		2	default	3	1408540
+x		죽음에 이름, 치명적인	4			致死	ちし	lethal; fatal	치명적인, 사형의	죽음에 이름. 또는 죽게 함.		2	default	2	1421910
+o			1	cat-mismatch	Y(3)	憤慨	ふんがい	indignation; resentment	분개, 분노	부기(簿記)에서, 거래 내용을 차변(借邊)과 대변(貸邊)으로 나누어 적는 일.		2	default	2	1504650
+o			4			無理筋	むりすじ	unreasonable idea; illogical plan; illogical move (in shogi or go)	무리한 생각, 비논리적인 수			2	default	4	2835428
+o			4			警官	けいかん	police officer; policeman; constable	경찰관, 경관	‘경찰 공무원’을 일상적으로 이르는 말.		2	default	0	1252330
+o			4			競技	きょうぎ	game; match; contest; competition	경기, 시합	일정한 규칙 아래 기량과 기술을 겨룸. 또는 그런 일.		2	default	0	1234080
+o			1		Y(2)	京都	きょうと	Kyoto (city, prefecture)	일본의 도시 교토	한 나라의 중앙 정부가 있는 곳.	일본어의 '京都'는 특정 도시 이름으로 고유명사화되어 쓰이는 반면, 한국 표준국어대사전의 '경도'는 중앙 정부가 있는 곳이라는 일반적 정의를 가진 명사이므로 핵심 뜻과 쓰임이 갈랐다.	2	manual	0	1652350
+o			1	cat-mismatch	Y(1)	競馬	けいば	horse racing	경마	일정한 거리를 말을 타고 달려 빠르기를 겨루는 경기.		2	default	0	1234210
+o			4			警報	けいほう	warning; alarm; alert	경보, 경고	화재나 공습 따위의 위험이 닥쳐올 때 경계하도록 미리 알리는 일. 또는 그 보도나 신호.		2	default	0	1252520
+o			4			警備	けいび	defense; defence; guard; policing	경비, 방어	도난, 재난, 침략 따위를 염려하여 사고가 나지 않도록 미리 살피고 지키는 일.		2	default	0	1252490
+o			4			更新	こうしん	renewal; update; replacement; renovation	갱신, 업데이트, 개조	이미 있던 것을 고쳐 새롭게 함.		2	default	0	1279370
+o			1		Y(2)	警視庁	けいしちょう	Metropolitan Police Department (Tokyo)	일본의 경시청	대한 제국 때에, 한성부와 경기도의 경찰 및 소방 업무를 맡아보던 관청. 융희 원년(1907)에 이전의 경무청을 고친 것으로 융희 4년(1910)에 일제에 강점되기 전까지 두었다.	일본어의 '경시청'은 현재 도쿄도 경찰청을 지칭하는 반면, 한국 사전의 '경시청'은 일제 강점기 이전 대한제국의 관청을 의미하여 시대와 주체가 달라 동형이의에 해당합니다.	2	manual	0	1252450
+o			1		Y(2)	警察	けいさつ	police; police officer; police station; self-appointed enforcer (of a rule, standard, etc.)	경찰	경계하여 살핌.	일본어의 '警察'은 조직이나 직책을 지칭하는 명사 (경찰서, 경찰관) 로 쓰이는 반면, 한국 표준국어대사전의 '경찰'은 '경계하여 살핌'이라는 동사적 행위나 개념을 뜻하므로 핵심 의미가 갈린다.	2	manual	0	1252390
+o			4			硬派	こうは	hard-liners; diehards; hawks; (young) man with traditionally masculine interests	강경파, 남성적인 취향의 사람	강경하게 의견을 주장하거나 행동하는 파.		2	default	0	1280640
+o			4			傾向	けいこう	tendency; trend; inclination	경향, 추세	현상이나 사상, 행동 따위가 어떤 방향으로 기울어짐.		2	default	0	1249470
+o			4			競争	きょうそう	competition; contest; rivalry; race	경쟁, 겨룸	같은 목적에 대하여 이기거나 앞서려고 서로 겨룸.		2	default	0	1234140
+o			4			景気	けいき	business conditions; the market; economic activity; economic climate	경기, 경제 상황	매매나 거래에 나타나는 호황·불황 따위의 경제 활동 상태.		2	default	0	1250830
+o			4			敬称	けいしょう	honorific title; honorific term of address	경칭, 존칭	공경하는 뜻으로 부르는 칭호. 각하(閣下), 선생, 귀하 따위가 있다.		2	default	0	1250760
+o		경관, 경치	3		Y(1)	景観	けいかん	scenery	경관	산이나 들, 강, 바다 따위의 자연이나 지역의 풍경.	일본어의 '景観'은 시각적 풍경 (scenery) 을 뜻하는 반면, 한국 표준국어대사전의 '경관 (4)'은 사회·경제적 관점에서의 '관찰 대상이나 현상'이라는 더 넓은 추상적 의미를 지니므로 핵심 의미가 갈린다.	1	manual	0	1250820
+o			4			階級	かいきゅう	(social) class; rank; grade	계급, 등급	사회나 일정한 조직 내에서의 지위, 관직 따위의 단계.		2	default	0	1203040
+o			4			契機	けいき	opportunity; chance; trigger; cause	계기, 기회	어떤 일이 일어나거나 변화하도록 만드는 결정적인 원인이나 기회.		2	default	0	1250180
+o			4			階段	かいだん	stairs; stairway; staircase	계단	사람이 오르내리기 위하여 건물이나 비탈에 만든 층층대.		2	default	0	1203090
+o			4			計算	けいさん	calculation; computation; reckoning; counting	계산, 계산함	수를 헤아림.		2	default	0	1252140
+o			4			契約	けいやく	contract; compact; agreement	계약, 협정	관련되는 사람이나 조직체 사이에서 서로 지켜야 할 의무에 대하여 글이나 말로 정하여 둠. 또는 그런 약속.		2	default	0	1250190
+o			4			季節	きせつ	season; time of year	계절	규칙적으로 되풀이되는 자연 현상에 따라서 일 년을 구분한 것. 일반적으로 온대 지방은 기온의 차이를 기준으로 하여 봄, 여름, 가을, 겨울의 네 계절로 나누고, 열대 지방에서는 강우량을 기준으로 하여 건기와 우기로 나눈다. 천문학적으로는 춘분, 하지, 추분, 동지로 나눈다.		2	default	0	1222840
+o			4			系統	けいとう	system; lineage; ancestry; family line	계통, 계열, 흐름	일정한 체계에 따라 서로 관련되어 있는 부분들의 통일적 조직.		2	default	0	1251030
+o			1		Y(2)	計画	けいかく	plan; project; schedule; scheme	계획	관학 유생의 평소 성적을 따져서 시험의 등급을 정하던 일.	일본어의 '계획'은 사전적 의미인 '일정이나 방법을 미리 세우는 것'을 뜻하지만, 한국 표준국어대사전의 해당 표제어는 관학 유생의 성적 등급 정하기라는 특수한 역사적 용례만을 지칭하므로 두 단어의 핵심 의미가 다릅니다.	2	manual	0	1252090
+o			4			顧客	こきゃく	customer; client; patron	고객	상점 따위에 물건을 사러 오는 손님.		2	default	0	1578540
+o			4			考古学	こうこがく	archaeology; archeology	고고학	유물과 유적을 통하여 옛 인류의 생활, 문화 따위를 연구하는 학문.		2	default	0	1281120
+o			4			高校	こうこう	senior high school; high school	고등학교	중학교를 졸업한 사람에게 고등 보통 교육과 실업 교육을 실시하는 학교. 인문계와 실업계의 두 종류가 있고 수업 연한은 3년이다.		2	default	0	1283500
+o			4			高校生	こうこうせい	senior high school student	고등학생	고등학교에 다니는 학생.		2	default	0	1283510
+o			4			古代	こだい	ancient times; distant past; antiquity	고대	옛 시대.		2	default	0	1265760
+o			4			高度	こうど	altitude; height; elevation; high-degree	고도, 높이, 높은 정도	평균 해수면 따위를 0으로 하여 측정한 대상 물체의 높이.		2	default	0	1283830
+o			4			高等	こうとう	high class; high grade	고등, 높은 등급	등급이나 수준, 정도 따위가 높음. 또는 그런 정도.		2	default	0	1283850
+o			4			高騰	こうとう	sharp rise (in prices); steep rise; substantial increase; soaring	급등, 급상승	물건값이 뛰어오름.		2	default	0	1283870
+o			4			孤立	こりつ	isolation; being alone; being friendless	고립, 외로움	다른 사람과 어울리어 사귀지 아니하거나 다른 사람의 도움을 받지 못하여 외따로 떨어짐.		2	default	0	1266860
+o			4			顧問	こもん	adviser; advisor; consultant; counselor	고문, 자문	의견을 물음.		2	default	0	1267880
+o			4			告別	こくべつ	farewell; leave-taking	고별, 작별	같이 있던 사람과 헤어지면서 작별을 알림.		2	default	0	1286080
+o			4			古墳	こふん	ancient burial mound; barrow; tumulus	고분, 고대에 만들어진 무덤	고대에 만들어진 무덤.		2	default	0	1266100
+o			4			高速	こうそく	high-speed; rapid; express; highway	고속, 빠름	매우 빠른 속도.		2	default	0	1283700
+o			4			告示	こくじ	notice; bulletin	공고, 게시	글로 써서 게시하여 널리 알림. 주로 행정 기관에서 일반 국민들을 대상으로 어떤 내용을 알리는 경우를 이른다.		2	default	0	1286010
+o			4			雇用	こよう	employment; hire	고용	임금을 주고 일을 시킴.		2	default	0	1267860
+o			4			固有	こゆう	characteristic (of); peculiar (to); inherent (in); endemic	고유의, 고유한	본래부터 가지고 있는 특유한 것.		2	default	0	1266730
+o			4			故人	こじん	the deceased; the departed; old friend; longtime acquaintance	고인, 돌아가신 분	죽은 사람.		2	default	0	1267190
