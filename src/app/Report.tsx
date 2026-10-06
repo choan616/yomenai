@@ -461,7 +461,9 @@ function ReportBody({
                 ›
               </span>
             </span>
-            <span className={'tile-v' + (tile.warn ? ' warn' : '')}>{tile.value}</span>
+            <span className={'tile-v' + (tile.warn ? ' warn' : '')} data-shade={tile.shade}>
+              {tile.value}
+            </span>
             <span className="tile-s">{tile.sub}</span>
           </button>
         ))}

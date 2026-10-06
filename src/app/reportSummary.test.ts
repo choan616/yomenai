@@ -22,6 +22,13 @@ describe('summaryTiles', () => {
     expect(summaryTiles(base)[0]).toMatchObject({ value: '산책로', sub: '흔들려요', sheet: 'level' })
   })
 
+  it('코스 이름의 농도 단계는 코스 번호를 따른다 — 경계가 있으면 경계, 없으면 안정 구간', () => {
+    expect(summaryTiles(base)[0]!.shade).toBe(0)
+    expect(summaryTiles({ ...base, level: { solidThrough: 1, edge: 2 } })[0]!.shade).toBe(2)
+    expect(summaryTiles({ ...base, level: { solidThrough: 3, edge: null } })[0]!.shade).toBe(3)
+    expect(summaryTiles({ ...base, level: { solidThrough: null, edge: null } })[0]!.shade).toBeUndefined()
+  })
+
   it('경계가 없고 안정 구간만 있으면 안정이다', () => {
     const t = summaryTiles({ ...base, level: { solidThrough: 2, edge: null } })[0]!
     expect(t).toMatchObject({ value: '중턱', sub: '안정이에요' })

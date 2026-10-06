@@ -2786,6 +2786,22 @@ p.rule-record {
 .tile-v.warn {
   color: var(--ng);
 }
+/* 코스 이름의 먹 농도 (2026-10-06 사용자 「진하기를 단계로 구분하여 산책로~정상까지」). 오를수록 진하다.
+   **수준은 산책로~능선(0~3)만 재서 정상(4)은 타일에 거의 안 뜬다** — 그래서 실제로 나오는 넷이 옅음 → 가장 진함을 다 쓰고,
+   정상은 능선과 같은 가장 진한 먹이다. 가장 옅은 단계도 큰 글자 기준(3:1)을 넘는다(e2e) */
+.tile-v[data-shade] {
+  --tile-ink: 100%;
+  color: color-mix(in oklab, var(--text) var(--tile-ink), var(--surface));
+}
+.tile-v[data-shade='0'] {
+  --tile-ink: 55%;
+}
+.tile-v[data-shade='1'] {
+  --tile-ink: 70%;
+}
+.tile-v[data-shade='2'] {
+  --tile-ink: 85%;
+}
 .tile-s {
   font-size: calc(12px * var(--ui-scale));
   color: var(--text-dim);

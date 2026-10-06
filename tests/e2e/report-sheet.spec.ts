@@ -169,3 +169,37 @@ test('다음에 볼 것 — 터치 기기에서는 화살표를 안 보인다', 
   await expect(page.locator('.rx-arrow').first()).toBeHidden()
   await ctx.close()
 })
+
+test('수준 타일의 코스 이름은 오를수록 진하고, 가장 옅어도 큰 글자 대비를 넘는다 (밝은·어두운 테마)', async ({ page }) => {
+  await seed(page, 5)
+  for (const scheme of ['light', 'dark'] as const) {
+    await page.emulateMedia({ colorScheme: scheme })
+    const contrasts = await page.evaluate(() => {
+      const tile = document.querySelector('.summary .tile') as HTMLElement
+      const v = tile.querySelector('.tile-v') as HTMLElement
+      const rgb = (css: string): [number, number, number] => {
+        const c = document.createElement('canvas').getContext('2d')!
+        c.fillStyle = '#000'
+        c.fillStyle = css
+        c.fillRect(0, 0, 1, 1)
+        const d = c.getImageData(0, 0, 1, 1).data
+        return [d[0]!, d[1]!, d[2]!]
+      }
+      const lum = ([r, g, b]: [number, number, number]) => {
+        const f = (x: number) => ((x /= 255) <= 0.03928 ? x / 12.92 : ((x + 0.055) / 1.055) ** 2.4)
+        return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b)
+      }
+      const bg = lum(rgb(getComputedStyle(tile).backgroundColor))
+      return [0, 1, 2, 3, 4].map((n) => {
+        v.setAttribute('data-shade', String(n))
+        const l = lum(rgb(getComputedStyle(v).color))
+        return (Math.max(l, bg) + 0.05) / (Math.min(l, bg) + 0.05)
+      })
+    })
+    // 오를수록 진하다(바탕과의 대비가 커진다) — 정상(4)은 능선(3)과 같은 가장 진한 먹이다
+    for (let i = 1; i <= 3; i++) expect(contrasts[i]!, `${scheme} ${i}`).toBeGreaterThan(contrasts[i - 1]!)
+    expect(contrasts[4]).toBeCloseTo(contrasts[3]!, 1)
+    // 가장 옅은 산책로도 큰 글자 기준(3:1)을 넘는다
+    expect(contrasts[0]!, `${scheme} 산책로`).toBeGreaterThanOrEqual(3)
+  }
+})

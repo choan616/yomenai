@@ -15,6 +15,8 @@ export interface Tile {
   sub: string
   /** 값을 오답 색으로 */
   warn?: boolean
+  /** 값(코스 이름)의 먹 농도 단계 — 코스 번호 그대로다. 오를수록 진하다 (`.tile-v[data-shade]`) */
+  shade?: number
 }
 
 interface LevelLike {
@@ -38,9 +40,9 @@ export function summaryTiles(i: TileInput): Tile[] {
   const { solidThrough, edge } = i.level
   const level: Tile =
     edge !== null
-      ? { sheet: 'level', label: '수준', value: bandName(edge), sub: '흔들려요' }
+      ? { sheet: 'level', label: '수준', value: bandName(edge), sub: '흔들려요', shade: edge }
       : solidThrough !== null
-        ? { sheet: 'level', label: '수준', value: bandName(solidThrough), sub: '안정이에요' }
+        ? { sheet: 'level', label: '수준', value: bandName(solidThrough), sub: '안정이에요', shade: solidThrough }
         : { sheet: 'level', label: '수준', value: '—', sub: '아직 기록이 적어요' }
 
   const days: Tile =
