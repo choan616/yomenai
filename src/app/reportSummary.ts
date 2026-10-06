@@ -38,11 +38,21 @@ export interface TileInput {
 
 export function summaryTiles(i: TileInput): Tile[] {
   const { solidThrough, edge } = i.level
+  // 수준은 **안정적으로 읽는 가장 높은 코스**다 — 흔들리는 코스가 아니다 (2026-10-06 사용자 「흔들리면 수준은 그 이전 단계가 아닌가」).
+  // 흔들리는 코스(경계)는 부제로 따로 말한다. 안정이 없는데 경계가 둘째 코스 이상이면 그 바로 아래를 수준으로 본다 —
+  // 산책로(0)는 신규 도입에서 기본으로 건너뛰는 쉬운 말이라 따로 재지 않기 때문이다(PLAN §4, `minBand`)
+  const course = solidThrough ?? (edge !== null && edge > 0 ? edge - 1 : null)
   const level: Tile =
-    edge !== null
-      ? { sheet: 'level', label: '수준', value: bandName(edge), sub: '흔들려요', shade: edge }
-      : solidThrough !== null
-        ? { sheet: 'level', label: '수준', value: bandName(solidThrough), sub: '안정이에요', shade: solidThrough }
+    course !== null
+      ? {
+          sheet: 'level',
+          label: '수준',
+          value: bandName(course),
+          sub: edge !== null ? `경계 ${bandName(edge)}` : '안정이에요',
+          shade: course,
+        }
+      : edge !== null
+        ? { sheet: 'level', label: '수준', value: '—', sub: `경계 ${bandName(edge)}` }
         : { sheet: 'level', label: '수준', value: '—', sub: '아직 기록이 적어요' }
 
   const days: Tile =

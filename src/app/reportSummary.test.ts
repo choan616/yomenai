@@ -18,13 +18,31 @@ describe('summaryTiles', () => {
     expect(new Set(tiles.map((t) => t.sheet)).size).toBe(4)
   })
 
-  it('경계가 있으면 그 밴드가 흔들린다고 말한다', () => {
-    expect(summaryTiles(base)[0]).toMatchObject({ value: '산책로', sub: '흔들려요', sheet: 'level' })
+  it('수준은 안정적으로 읽는 가장 높은 코스이고, 흔들리는 코스는 부제로 경계라고 말한다', () => {
+    expect(summaryTiles({ ...base, level: { solidThrough: 2, edge: 3 } })[0]).toMatchObject({
+      value: '중턱',
+      sub: '경계 능선',
+      shade: 2,
+      sheet: 'level',
+    })
   })
 
-  it('코스 이름의 농도 단계는 코스 번호를 따른다 — 경계가 있으면 경계, 없으면 안정 구간', () => {
-    expect(summaryTiles(base)[0]!.shade).toBe(0)
-    expect(summaryTiles({ ...base, level: { solidThrough: 1, edge: 2 } })[0]!.shade).toBe(2)
+  it('안정이 없고 경계가 둘째 코스 이상이면 그 바로 아래를 수준으로 본다 (산책로는 따로 재지 않는다)', () => {
+    expect(summaryTiles({ ...base, level: { solidThrough: null, edge: 1 } })[0]).toMatchObject({
+      value: '산책로',
+      sub: '경계 뒷산',
+      shade: 0,
+    })
+  })
+
+  it('첫 코스부터 흔들리면 수준을 말하지 않고 경계만 말한다', () => {
+    const t = summaryTiles(base)[0]!
+    expect(t).toMatchObject({ value: '—', sub: '경계 산책로' })
+    expect(t.shade).toBeUndefined()
+  })
+
+  it('코스 이름의 농도 단계는 보이는 수준의 코스 번호를 따른다', () => {
+    expect(summaryTiles({ ...base, level: { solidThrough: 1, edge: 2 } })[0]!.shade).toBe(1)
     expect(summaryTiles({ ...base, level: { solidThrough: 3, edge: null } })[0]!.shade).toBe(3)
     expect(summaryTiles({ ...base, level: { solidThrough: null, edge: null } })[0]!.shade).toBeUndefined()
   })

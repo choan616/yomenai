@@ -61,10 +61,9 @@ test('요약 타일 넷이 첫 화면에 있고 값이 채워져 있다', async 
   await seed(page, 5)
   const tiles = page.locator('.summary .tile')
   await expect(tiles.nth(0)).toContainText('수준')
-  // 수준 타일에는 코스 그림이 오른쪽 아래에 선다 — 장식이라 낭독에서는 숨기고, 이름은 글자로 남는다
-  await expect(tiles.nth(0).locator('.tile-art svg.icon')).toBeVisible()
-  await expect(tiles.nth(0).locator('.tile-art')).toHaveAttribute('aria-hidden', 'true')
-  await expect(tiles.nth(1).locator('.tile-art')).toHaveCount(0)
+  // 첫 코스부터 흔들리는 기록이라 수준은 아직 말하지 않고(그림도 없다) 경계만 말한다
+  await expect(tiles.nth(0)).toContainText('경계 산책로')
+  await expect(tiles.nth(0).locator('.tile-art')).toHaveCount(0)
   await expect(tiles.nth(1)).toContainText('학습한 날')
   await expect(tiles.nth(1)).toContainText('5일째')
   await expect(tiles.nth(2)).toContainText('많이 틀린 유형')
@@ -208,9 +207,86 @@ test('수준 타일의 코스 이름은 오를수록 진하고, 가장 옅어도
   }
 })
 
+/** 산책로 셋을 숙지 상태(안정)로 — 옛 간격으로 다섯 번 맞힌 기록. 뒷산은 `shaky` 면 최근에 계속 틀린 기록으로 흔들리게 한다 */
+async function seedLevel(page: Page, shaky: boolean): Promise<void> {
+  await page.addInitScript(() => {
+    try {
+      localStorage.setItem('yomenai:diagnosticDone', '1')
+      localStorage.setItem('yomenai:welcomeSeen', '1')
+    } catch {
+      /* private mode */
+    }
+  })
+  await page.goto('/')
+  await expect(page.getByRole('button', { name: '세션 시작' })).toBeVisible({ timeout: 20_000 })
+  await page.evaluate(
+    ([shaky, day]) =>
+      new Promise<void>((res, rej) => {
+        const rows: { idiomId: string; days: number[]; correct: boolean }[] = [
+          ...['1000220', '1150680', '1150710'].map((idiomId) => ({ idiomId, days: [60, 45, 30, 15, 2], correct: true })),
+          shaky
+            ? { idiomId: '1012210', days: [1, 2, 3, 4, 5, 6], correct: false }
+            : { idiomId: '1012210', days: [60, 45, 30, 15, 2], correct: true },
+        ]
+        const req = indexedDB.open('yomenai')
+        req.onsuccess = () => {
+          const store = req.result.transaction('events', 'readwrite')
+          const os = store.objectStore('events')
+          rows.forEach((r, ri) =>
+            r.days.forEach((d, i) =>
+              os.put({
+                id: `lv-${ri}-${i}`,
+                userId: 'local',
+                deviceId: 'e2e',
+                at: Date.now() - d * day,
+                idiomId: r.idiomId,
+                cardType: 'reading',
+                mistakeType: r.correct ? null : 'ONYOMI_CHOICE',
+                deletedAt: null,
+                type: 'review',
+                grade: r.correct ? 3 : 1,
+                answer: 'x',
+                expected: 'x',
+                correct: r.correct,
+                elapsedMs: 1000,
+              }),
+            ),
+          )
+          store.oncomplete = () => res()
+          store.onerror = () => rej(new Error('심기 실패'))
+        }
+        req.onerror = () => rej(new Error('DB 열기 실패'))
+      }),
+    [shaky, 86_400_000] as const,
+  )
+  await page.reload()
+  await page.getByRole('button', { name: '리포트', exact: true }).click()
+  await expect(page.locator('.summary .tile')).toHaveCount(4, { timeout: 20_000 })
+}
+
+test('수준 타일은 안정적으로 읽는 코스를 말하고, 흔들리는 코스는 경계로 따로 말한다', async ({ page }) => {
+  await seedLevel(page, true)
+  const tile = page.locator('.summary .tile').first()
+  // 산책로는 안정, 뒷산이 흔들린다 — 수준은 흔들리는 뒷산이 아니라 그 이전인 산책로다
+  await expect(tile.locator('.tile-v')).toHaveText('산책로')
+  await expect(tile.locator('.tile-s')).toHaveText('경계 뒷산')
+  // 그림은 수준(산책로)의 것이고 장식이라 낭독에서 숨긴다
+  await expect(tile.locator('.tile-art svg.icon')).toBeVisible()
+  await expect(tile.locator('.tile-art')).toHaveAttribute('aria-hidden', 'true')
+  await expect(tile.locator('.tile-art')).toHaveAttribute('data-shade', '0')
+  await expect(page.locator('.summary .tile').nth(1).locator('.tile-art')).toHaveCount(0)
+})
+
+test('모두 안정이면 가장 높은 안정 코스와 안정이에요를 말한다', async ({ page }) => {
+  await seedLevel(page, false)
+  const tile = page.locator('.summary .tile').first()
+  await expect(tile.locator('.tile-v')).toHaveText('뒷산')
+  await expect(tile.locator('.tile-s')).toHaveText('안정이에요')
+})
+
 test('코스 그림은 이름·부제·› 와 안 겹친다 (보통·큰 글자)', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 })
-  await seed(page, 5)
+  await seedLevel(page, true)
   for (const scale of ['md', 'lg'] as const) {
     await page.evaluate((s) => document.documentElement.setAttribute('data-text-scale', s), scale)
     const tile = page.locator('.summary .tile').first()
