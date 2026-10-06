@@ -17,7 +17,7 @@ import { loadSettings, QUICK_SESSION_LIMIT } from '../app/settings.ts'
 import { WeekStrip } from '../app/WeekStrip.tsx'
 import { summaryLine } from '../app/weekLine.tsx'
 import { MISTAKE_LABEL } from './mistakeLabels.ts'
-import { DONUT_SEP, donutSegments, sealTone } from './summaryDonut.ts'
+import { DONUT_SEP, donutSegments } from './summaryDonut.ts'
 
 /** 화면에 얹을 때 필요한 이름까지 붙인 "읽히는 문장" */
 interface ReadableView {
@@ -143,7 +143,8 @@ const DONUT_CIRC = 2 * Math.PI * DONUT_R
 
 /**
  * 「読」 배지를 둘러싼 도넛 (2026-10-05 디자인 시안). **푼 순서대로** 카드마다 호 하나 — 정답은 강조색, 오답은 朱.
- * 정·오·정·오 로 풀었으면 파랑·빨강·파랑·빨강 으로 선다(2026-10-06 사용자). 가운데 배지는 많은 쪽 색을 따른다(`sealTone`).
+ * 정·오·정·오 로 풀었으면 파랑·빨강·파랑·빨강 으로 선다(2026-10-06 사용자). **가운데 배지는 늘 강조색이다** —
+ * 오답이 많으면 붉게 칠하던 것은 걷었다(2026-10-06 사용자 철회, 국기로 읽힌다).
  * 끊어진 눈금이 아니라 이어진 호이고 경계에만 가는 구분선을 긋는다 — 바깥으로 뻗는 방사 눈금은 욱일기를,
  * 한 줄 알약은 캐러셀 인디케이터를 닮는다는 지적으로 둘 다 걷었다(사용자 2026-10-05). 숫자(아래 `.summary-num`)가 같은 말을 글자로 한다
  */
@@ -165,7 +166,7 @@ function SummaryBadge({ results }: { results: boolean[] }) {
           <circle key={at} className="donut-sep" cx="66" cy="66" r={DONUT_R} style={sep(at, i)} />
         ))}
       </svg>
-      <span className={`summary-seal ${sealTone(results)}`} lang="ja">
+      <span className="summary-seal" lang="ja">
         読
       </span>
     </div>

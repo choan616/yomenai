@@ -1,5 +1,8 @@
-// 세션 요약의 도넛 — 카드를 푼 순서대로 정답·오답 호를 잇고, 가운데 배지의 색을 정한다
-// (2026-10-05 디자인 시안, 2026-10-06 사용자 「정오 순서를 기억해서 도넛 색을 노출」 · 「가운데 원은 오답이 많으면 빨강, 정답이 많으면 파랑」)
+// 세션 요약의 도넛 — 카드를 푼 순서대로 정답·오답 호를 잇는다
+// (2026-10-05 디자인 시안, 2026-10-06 사용자 「정오 순서를 기억해서 도넛 색을 노출」)
+//
+// **가운데 배지는 늘 강조색이다.** 오답이 많으면 붉게 칠하던 것을 걷었다 (2026-10-06 사용자 철회) —
+// 흰 바탕 가운데의 붉은 원이 일본 국기로 읽힐 소지가 있다. 정오는 둘레의 호가 이미 말한다
 
 /** 구분선의 두께(px) */
 export const DONUT_SEP = 2
@@ -36,10 +39,4 @@ export function donutSegments(results: boolean[], circ: number): { arcs: DonutAr
     else arcs.push({ from: i * unit, len: unit, ok })
   }
   return { arcs, seps: arcs.length > 1 ? arcs.map((a) => a.from) : [] }
-}
-
-/** 가운데 배지의 색 — 오답이 정답보다 많으면 `miss`(빨강), 아니면 `ok`(강조색). 같으면 정답 쪽이다 */
-export function sealTone(results: boolean[]): 'ok' | 'miss' {
-  const right = results.filter(Boolean).length
-  return results.length - right > right ? 'miss' : 'ok'
 }

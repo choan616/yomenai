@@ -747,9 +747,6 @@ button.tag {
   animation: seal-in 420ms cubic-bezier(0.3, 1.4, 0.5, 1) 120ms both;
 }
 /* 오답이 정답보다 많은 세션 — 가운데도 오답 색 (2026-10-06 사용자) */
-.summary-seal.miss {
-  --seal: var(--ng);
-}
 @keyframes seal-in {
   from {
     opacity: 0;

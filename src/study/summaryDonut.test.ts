@@ -1,6 +1,6 @@
 // 요약 도넛 — 푼 순서대로 정오 호가 서고, 가운데 배지는 많은 쪽 색을 따른다
 import { describe, expect, it } from 'vitest'
-import { DONUT_MAX_SEGMENTS, donutSegments, sealTone } from './summaryDonut.ts'
+import { DONUT_MAX_SEGMENTS, donutSegments } from './summaryDonut.ts'
 
 const C = 100
 
@@ -45,20 +45,5 @@ describe('donutSegments', () => {
 
   it('카드가 많고 결과가 하나뿐이면 구분선이 없다', () => {
     expect(donutSegments(Array(DONUT_MAX_SEGMENTS + 5).fill(true), C).seps).toEqual([])
-  })
-})
-
-describe('sealTone', () => {
-  it('오답이 많으면 miss', () => {
-    expect(sealTone([false, false, true])).toBe('miss')
-  })
-  it('정답이 많으면 ok', () => {
-    expect(sealTone([true, true, false])).toBe('ok')
-  })
-  it('같으면 ok — 반반일 때 빨갛게 몰아세우지 않는다', () => {
-    expect(sealTone([true, false])).toBe('ok')
-  })
-  it('기록이 없으면 ok', () => {
-    expect(sealTone([])).toBe('ok')
   })
 })
