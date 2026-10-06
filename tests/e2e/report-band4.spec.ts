@@ -38,7 +38,7 @@ test('밴드 4 줄은 숙지 값을 흐리게 내고, 총계에는 안 들어간
   await page.getByRole('button', { name: '리포트', exact: true }).click()
   await openLevel(page)
 
-  const row = page.locator('.ladder tbody tr').filter({ hasText: '밴드 4' })
+  const row = page.locator('.ladder tbody tr').filter({ hasText: '정상' })
   await expect(row).toBeVisible({ timeout: 60_000 })
   // 열 순서는 출제 · 숙지 · 최근 정답률
   const mastered = row.locator('td').nth(1)

@@ -20,7 +20,7 @@ import { LOCAL_USER_ID, appendEvent, listEvents } from '../db/events.ts'
 import { db } from '../db/schema.ts'
 import { loadBand4Idioms, loadBaseIdioms, type RuntimeIdiom } from '../dict/load.ts'
 import { loadWideDict } from '../dict/wide.ts'
-import type { Band } from '../lib/bands.ts'
+import { bandName, type Band } from '../lib/bands.ts'
 
 /** 한 화면에 내는 수. 검수는 몰아서 하는 일이라 넉넉히 두되 무한정은 아니다 */
 const PAGE = 40
@@ -316,7 +316,7 @@ function ReviewRow({
           {row.it.reading}
         </span>
         <span className="review-why dim">
-          {row.why} · {row.it.band === null ? '사전 밖' : `밴드 ${row.it.band}`}
+          {row.why} · {row.it.band === null ? '사전 밖' : bandName(row.it.band)}
         </span>
       </div>
       <p className="review-def">{row.it.koMeaning?.definition}</p>

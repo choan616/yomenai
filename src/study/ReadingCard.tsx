@@ -5,6 +5,7 @@ import { SoundIcon } from '../app/icons.tsx'
 import type { Confidence } from '../core/scheduler.ts'
 import { diffAnswer } from '../core/answerDiff.ts'
 import { toHiragana } from '../lib/readings.ts'
+import { bandName } from '../lib/bands.ts'
 import { loadExamples } from '../dict/load.ts'
 import type { RuntimeIdiom } from '../dict/load.ts'
 import type { ReadingFeedback } from './useStudySession.ts'
@@ -65,11 +66,11 @@ export function ReadingCard({
               <span aria-hidden="true">{fb.correct ? '✓' : '✗'}</span>
               {fb.correct ? '정답' : '오답'}
             </span>
-            <span className="tag muted band-tag">밴드 {idiom.band}</span>
+            <span className="tag muted band-tag">{bandName(idiom.band)}</span>
           </>
         ) : (
           <>
-            <span className="tag">읽기 · 밴드 {idiom.band}</span>
+            <span className="tag">읽기 · {bandName(idiom.band)}</span>
             {/* 「읽기 둘」 표시를 헤더 태그로 옮겼다 (2026-09-14). 본문에 같은 정보를
                 문장으로 또 적으면 카드가 넘쳐 내부 스크롤이 생기고, 그 스크롤이
                 눈에 잘 안 띈다는 지적(사용자) — 문장 대신 태그 한 줄로 줄인다 */}

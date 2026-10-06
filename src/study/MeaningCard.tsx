@@ -4,6 +4,7 @@ import { SoundIcon, ThumbDownIcon, ThumbUpIcon } from '../app/icons.tsx'
 import type { RubySegment } from '../core/ruby.ts'
 import type { MeaningVerdict } from '../core/types.ts'
 import type { RuntimeIdiom } from '../dict/load.ts'
+import { bandName } from '../lib/bands.ts'
 import { tts } from './tts.ts'
 import { useCanSpeak } from './useCanSpeak.ts'
 
@@ -29,7 +30,7 @@ export function MeaningCard({ idiom, ruby, graded, onGrade, onNext, vote, onVote
   return (
     <div className={`card ${graded ? 'feedback is-ng' : ''}`}>
       <div className="card-head">
-        <span className="tag">뜻 · 밴드 {idiom.band}</span>
+        <span className="tag">뜻 · {bandName(idiom.band)}</span>
         {/* 「미검수」는 사전 빌드의 `verified` 다. 엄지 위를 누른 뒤에는 **내가 봤으니**
             떼어 준다 — 다음 빌드에서 진짜 verified 가 될 때까지의 임시 표시다 */}
         {idiom.koMeaning && !idiom.koMeaning.verified && vote !== 'ok' && (

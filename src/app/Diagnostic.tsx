@@ -8,7 +8,7 @@ import {
   type BandEstimate,
 } from '../core/diagnostic.ts'
 import { isCorrectReading, recordReadingAnswer } from '../core/session.ts'
-import { BAND_LABEL, type Band } from '../lib/bands.ts'
+import { BAND_LABEL, bandName, type Band } from '../lib/bands.ts'
 import { getDeviceId } from '../db/device.ts'
 import { LOCAL_USER_ID, appendEvent, listEvents } from '../db/events.ts'
 import { db } from '../db/schema.ts'
@@ -158,7 +158,7 @@ export function Diagnostic({ onDone, onExit }: { onDone: () => void; onExit: () 
         {/* 적응형이라 총 문항 수를 미리 못 준다 (Phase 9-B). 밴드 안에서의 진행만 보여준다 */}
         <progress value={inBand - 1} max={DIAGNOSTIC_PER_BAND} />
         <span className="count">
-          밴드 {q?.band ?? '-'} · {inBand}
+          {q ? bandName(q.band) : '-'} · {inBand}
         </span>
       </header>
 
@@ -166,7 +166,7 @@ export function Diagnostic({ onDone, onExit }: { onDone: () => void; onExit: () 
         {q && phase === 'ask' && (
           <div className="card">
             <div className="card-head">
-              <span className="tag">진입 진단 · 밴드 {q.band}</span>
+              <span className="tag">진입 진단 · {bandName(q.band)}</span>
             </div>
             <div className="card-body">
               <p className="headword" lang="ja">
@@ -205,8 +205,8 @@ function ResultView({
       <div className="screen-body">
         <p className="report-lead">
           {firstShaky
-            ? `밴드 ${firstShaky.band}부터 읽기가 조금 흔들리네요. 여기서 시작할게요.`
-            : '표본 구간은 안정적이에요. 밴드 1부터 순서대로 볼게요.'}
+            ? `${bandName(firstShaky.band)}부터 읽기가 조금 흔들리네요. 여기서 시작할게요.`
+            : `표본 구간은 안정적이에요. ${bandName(1)}부터 순서대로 볼게요.`}
         </p>
 
         <div className="bars">
@@ -214,7 +214,7 @@ function ResultView({
             const pct = b.seen > 0 ? Math.round((b.correct / b.seen) * 100) : 0
             return (
               <div className="bar-row" key={b.band} title={BAND_LABEL[b.band]}>
-                <span>밴드 {b.band}</span>
+                <span>{bandName(b.band)}</span>
                 <span className="bar-track">
                   <span
                     className="bar-fill ok"
@@ -228,7 +228,7 @@ function ResultView({
           })}
         </div>
         <p className="stat-line">
-          {summary.map((b) => `밴드 ${b.band} ${b.correct}/${b.seen}`).join(' · ')}
+          {summary.map((b) => `${bandName(b.band)} ${b.correct}/${b.seen}`).join(' · ')}
         </p>
 
         <div className="answer-row">

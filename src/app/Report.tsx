@@ -42,7 +42,7 @@ import { loadSettings, QUICK_SESSION_LIMIT } from './settings.ts'
 import { mistakeContextFromKanji } from '../dict/mistakeContext.ts'
 import { homeLine } from './weekLine.tsx'
 import { loadPairIndex } from '../dict/pairIndex.ts'
-import { BAND_NOTE, type Band } from '../lib/bands.ts'
+import { BAND_NOTE, bandName, bandNameIga, type Band } from '../lib/bands.ts'
 import {
   MISTAKE_LABEL,
   mistakeHint,
@@ -536,10 +536,10 @@ const BAND_STATUS_LABEL: Record<BandRow['status'], string> = {
 function levelHeadline(level: LevelProfile): string {
   const { solidThrough, edge } = level
   if (edge !== null && solidThrough !== null) {
-    return `밴드 ${solidThrough}까지 안정, 밴드 ${edge}가 경계예요`
+    return `${bandName(solidThrough)}까지 안정, ${bandNameIga(edge)} 경계예요`
   }
-  if (edge !== null) return `밴드 ${edge}부터 흔들려요`
-  if (solidThrough !== null) return `밴드 ${solidThrough}까지 안정이에요. 아직 벽을 안 만났어요`
+  if (edge !== null) return `${bandName(edge)}부터 흔들려요`
+  if (solidThrough !== null) return `${bandName(solidThrough)}까지 안정이에요. 아직 벽을 안 만났어요`
   return '아직 수준을 말할 만큼 안 풀었어요'
 }
 
@@ -570,7 +570,7 @@ function LevelSection({
           상태라 표본이 흔들면 같이 뒤집히는데, 수준은 쌓인 것이라 그러면 안 된다.
           정답률은 표의 한 열로 내려 경계선을 긋는 데만 쓴다 */}
       <div className="ladder-head">
-        <p className="ladder-title">밴드별 숙지한 표현</p>
+        <p className="ladder-title">코스별 숙지한 표현</p>
         <p className="ladder-total">{totalStable}개</p>
       </div>
 
@@ -582,7 +582,7 @@ function LevelSection({
       <table className="ladder">
         <thead>
           <tr>
-            <th scope="col">밴드</th>
+            <th scope="col">코스</th>
             {/* 앞의 둘은 **표현 개수**, 마지막은 **채점 횟수의 비율**이다. 제목이 그걸
                 안 말하면 「출제 3 · 정답률 71%」 같은 줄이 산수가 틀린 것처럼 보인다
                 (2026-09-26 사용자 지적) */}
@@ -606,7 +606,7 @@ function LevelSection({
               )}
               <tr className={`band-${b.status}`}>
                 <th scope="row">
-                  밴드 {b.band}
+                  {bandName(b.band)}
                   <span className="dim"> {BAND_NOTE[b.band]}</span>
                   {/* 판정은 왼쪽 줄로만 보인다 (2026-09-23 사용자 선택). 도형은 읽어 주지
                       못하므로 이름은 글자로 남긴다 */}
@@ -636,7 +636,7 @@ function LevelSection({
           부족({LEVEL_MIN_SEEN}회 미만)
         </li>
         <li>
-          수준은 밴드 0~{LEVEL_MAX_BAND}만 재요. 밴드 4는 담은 것만 들어와서 표에만 나오고(흐린 숫자) 합계·
+          수준은 {bandName(0)}~{bandName(LEVEL_MAX_BAND)}만 재요. {bandName(4)}은 담은 것만 들어와서 표에만 나오고(흐린 숫자) 합계·
           그래프에는 안 넣어요
         </li>
       </ul>
@@ -693,7 +693,7 @@ function StableMix({ bands, total }: { bands: readonly BandRow[]; total: number 
         {parts.map((b) => (
           <span key={b.band} className={`mix-key band-${b.status}`}>
             <span className="mix-dot" aria-hidden="true" data-band={b.band} />
-            밴드 {b.band} {Math.round((b.stable / total) * 100)}%
+            {bandName(b.band)} {Math.round((b.stable / total) * 100)}%
           </span>
         ))}
       </p>
@@ -875,7 +875,7 @@ function CalendarSection({
             <span className="cal-key" data-milestone /> 연속 달성
           </span>
           <span>
-            <span className="cal-key-reach">↑</span> 밴드 안정 도달
+            <span className="cal-key-reach">↑</span> 코스 안정 도달
           </span>
         </p>
         </div>
@@ -918,7 +918,7 @@ function DayDetail({
       {(milestone || band !== undefined) && (
         <p className="cal-detail-tags">
           {milestone && <span>{milestoneLabel(milestone.days)} 달성</span>}
-          {band !== undefined && <span>밴드 {band} 안정 도달</span>}
+          {band !== undefined && <span>{bandName(band)} 안정 도달</span>}
         </p>
       )}
     </div>
@@ -1033,7 +1033,7 @@ function RxItem({
       return (
         <>
           <p className="rx-title">
-            밴드 {p.band}
+            {bandName(p.band)}
             <span className="dim"> {BAND_NOTE[p.band]}</span>
           </p>
           <p className="rx-why">

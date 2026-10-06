@@ -49,7 +49,7 @@ function composeAnswers(a: Answers): string {
   return [
     `[얼마나 썼나] ${a.usage || '-'}`,
     `[가장 큰 오답 유형] ${a.topMistake || '-'}`,
-    `[밴드 사다리] ${a.ladder || '-'}`,
+    `[코스 사다리] ${a.ladder || '-'}`,
     `[처음 30문항] ${a.firstThirty || '-'}`,
     `[알아 두기 카드] ${a.intro || '-'}`,
     `[계속 쓰고 싶은지] ${a.keep || '-'}`,
@@ -211,7 +211,7 @@ export function Feedback({ onBack }: { onBack: () => void }) {
             </div>
 
             <div className="setting">
-              <label>리포트의 밴드 사다리가 체감과 맞나요</label>
+              <label>리포트의 코스 사다리(수준 표)가 체감과 맞나요</label>
               <div className="fb-choices">
                 {LADDER.map((v) => (
                   <button

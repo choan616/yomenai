@@ -60,15 +60,15 @@ test('진입 진단 → 세션 → 리포트 전체 흐름을 완주한다', asy
   // 수준 — 밴드 사다리와 한 줄 판정 (Phase 10)
   await openLevel(page)
   await expect(page.getByText('지금 수준')).toBeVisible()
-  // 진단 결과에 따라 "밴드 N까지 안정" 또는 "아직 말할 만큼 안 풀었어요" 중 하나가 온다
+  // 진단 결과에 따라 "○○까지 안정" 또는 "아직 말할 만큼 안 풀었어요" 중 하나가 온다
   await expect(page.locator('.level .report-lead')).not.toBeEmpty()
   await expect(page.locator('.level .stat-line')).toContainText('읽기')
   await expect(page.locator('.level .stat-line')).toContainText('정답률')
   expect(await page.locator('.ladder tbody tr').count()).toBeGreaterThanOrEqual(3)
   // 표의 머리글이 무엇을 재는지 말한다 (2026-09-23) — 열이 맞아야 밴드끼리 비교가 된다
-  await expect(page.locator('.ladder thead th')).toHaveText(['밴드', '출제', '숙지', '최근 정답률'])
+  await expect(page.locator('.ladder thead th')).toHaveText(['코스', '출제', '숙지', '최근 정답률'])
   // 큰 숫자는 정답률이 아니라 붙은 숙어 개수다 (2026-09-19). 정답률은 표의 한 열이다
-  await expect(page.locator('.ladder-title')).toHaveText('밴드별 숙지한 표현')
+  await expect(page.locator('.ladder-title')).toHaveText('코스별 숙지한 표현')
   await expect(page.locator('.ladder-caption')).toContainText('숙지')
   // 이름이 포함 범위를 말해야 한다 — 틀린 것·넘긴 것이 들어가고 소개만 본 건 빠진다 (2026-09-20)
   await expect(page.locator('.ladder-caption')).toContainText('틀린 것·넘긴 것도')
@@ -88,7 +88,7 @@ test('진입 진단 → 세션 → 리포트 전체 흐름을 완주한다', asy
     })
     expect(Math.abs(sum - 1)).toBeLessThanOrEqual(0.02)
     // 범례가 막대의 값을 글자로 준다 — 막대는 aria-hidden 이라 읽히는 건 이 줄이다
-    await expect(page.locator('.mix-legend')).toHaveText(/밴드 d+ d+%/)
+    await expect(page.locator('.mix-legend')).toHaveText(/(산책로|뒷산|중턱|능선) \d+%/)
     // 총계가 요약 막대의 분모다
     await expect(page.locator('.ladder-total')).toHaveText(/^d+개$/)
   }

@@ -51,7 +51,35 @@ export const BAND_LABEL: Record<Band, string> = {
 }
 
 /**
- * 밴드 옆에 병기하는 짧은 설명. UI 라벨은 자체 밴드명("밴드 2")을 쓰고 JLPT 는 설명에만
+ * 화면에 보이는 밴드 이름 (2026-10-06 사용자 「밴드라는 명칭을 이해하기 쉽게」 → 「A(등산)」).
+ * 번호만 있으면 높을수록 좋은지 낮을수록 좋은지 안 읽혔다. 위로 오를수록 드물고 어려운 말이다 —
+ * 수준이 높다는 건 더 높은 데까지 안정적으로 읽는다는 뜻이다. 묶어 부를 때는 「코스」라 한다.
+ * 코드 안의 `band` 번호·기록·주석은 그대로고, 화면 문구만 이 이름을 거친다.
+ * 기각: 「단계」(어느 쪽이 좋은지 안 읽힘), 「레벨」(나중의 레벨 제도와 충돌), JLPT 급 이름(PLAN §4 — 근사라서)
+ */
+export const BAND_NAME: Record<Band, string> = {
+  0: '산책로',
+  1: '뒷산',
+  2: '중턱',
+  3: '능선',
+  4: '정상',
+}
+
+/** 화면용 이름. 범위 밖 번호가 들어와도 깨지지 않게 번호로 돌려준다 */
+export function bandName(band: number): string {
+  return BAND_NAME[band as Band] ?? `밴드 ${band}`
+}
+
+/** 이름 뒤에 붙는 주격 조사 — 받침이 없으면 「가」, 있으면 「이」 (산책로가 · 뒷산이) */
+export function bandNameIga(band: number): string {
+  const name = bandName(band)
+  const code = name.charCodeAt(name.length - 1) - 0xac00
+  const open = code >= 0 && code <= 11171 && code % 28 === 0
+  return `${name}${open ? '가' : '이'}`
+}
+
+/**
+ * 밴드 옆에 병기하는 짧은 설명. UI 라벨은 자체 이름(`BAND_NAME`)을 쓰고 JLPT 는 설명에만
  * 둔다는 PLAN §4 규칙을 지키기 위한 것이다. `BAND_LABEL` 은 nf 코드까지 있어 화면엔 길다.
  */
 export const BAND_NOTE: Record<Band, string> = {

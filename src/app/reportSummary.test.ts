@@ -19,12 +19,12 @@ describe('summaryTiles', () => {
   })
 
   it('경계가 있으면 그 밴드가 흔들린다고 말한다', () => {
-    expect(summaryTiles(base)[0]).toMatchObject({ value: '밴드 0', sub: '흔들려요', sheet: 'level' })
+    expect(summaryTiles(base)[0]).toMatchObject({ value: '산책로', sub: '흔들려요', sheet: 'level' })
   })
 
   it('경계가 없고 안정 구간만 있으면 안정이다', () => {
     const t = summaryTiles({ ...base, level: { solidThrough: 2, edge: null } })[0]!
-    expect(t).toMatchObject({ value: '밴드 2', sub: '안정이에요' })
+    expect(t).toMatchObject({ value: '중턱', sub: '안정이에요' })
   })
 
   it('기록이 적으면 수준을 말하지 않는다', () => {

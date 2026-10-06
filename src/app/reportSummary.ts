@@ -3,6 +3,8 @@
 // 타일은 한눈에 읽는 요약이고, 눌러서 상세(표·달력·분포)를 하단 시트로 연다. 문구 규칙은 화면 문구와 같다:
 // 「끊김은 말하지 않는다」(streak.ts) — 현재 연속이 없을 때 「끊겼다」는 말을 하지 않고 이번 달 학습일로 대신 말한다.
 
+import { bandName } from '../lib/bands.ts'
+
 export type SheetKind = 'level' | 'days' | 'mist' | 'browse' | 'weak'
 
 export interface Tile {
@@ -36,9 +38,9 @@ export function summaryTiles(i: TileInput): Tile[] {
   const { solidThrough, edge } = i.level
   const level: Tile =
     edge !== null
-      ? { sheet: 'level', label: '수준', value: `밴드 ${edge}`, sub: '흔들려요' }
+      ? { sheet: 'level', label: '수준', value: bandName(edge), sub: '흔들려요' }
       : solidThrough !== null
-        ? { sheet: 'level', label: '수준', value: `밴드 ${solidThrough}`, sub: '안정이에요' }
+        ? { sheet: 'level', label: '수준', value: bandName(solidThrough), sub: '안정이에요' }
         : { sheet: 'level', label: '수준', value: '—', sub: '아직 기록이 적어요' }
 
   const days: Tile =

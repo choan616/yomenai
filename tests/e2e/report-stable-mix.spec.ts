@@ -83,8 +83,8 @@ test('요약 막대가 숙지한 표현을 밴드별로 나누고, 출제가 늘
 
   // 숙지 4개 — 밴드 0 이 셋, 밴드 1 이 하나
   await expect(page.locator('.ladder-total')).toHaveText('4개')
-  await expect(page.locator('.mix-legend')).toContainText('밴드 0 75%')
-  await expect(page.locator('.mix-legend')).toContainText('밴드 1 25%')
+  await expect(page.locator('.mix-legend')).toContainText('산책로 75%')
+  await expect(page.locator('.mix-legend')).toContainText('뒷산 25%')
 
   const before = await segments(page)
   expect(before).toHaveLength(2)
@@ -196,7 +196,7 @@ test('흔들리는 밴드는 밴드 색을 잃지 않고 사선만 덧입는다'
   )
   expect(rules.filter(Boolean).length).toBeGreaterThanOrEqual(1)
 
-  // **큰 글자에서도 밴드 이름이 한 줄이다.** 「밴드 2 N2~N1 경계」가 가장 길다 —
+  // **큰 글자에서도 밴드 이름이 한 줄이다.** 「중턱 N2~N1 경계」가 가장 길다 —
   // 접히면 표의 열이 어긋나 정리한 이유가 사라진다
   await page.evaluate(() => document.documentElement.setAttribute('data-text-scale', 'lg'))
   const lines = await page
