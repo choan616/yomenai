@@ -463,10 +463,14 @@ function ReportBody({
               </span>
             </span>
             <span className={'tile-v' + (tile.warn ? ' warn' : '')} data-shade={tile.shade}>
-              {tile.shade !== undefined && <CourseIcon band={tile.shade} />}
               {tile.value}
             </span>
             <span className="tile-s">{tile.sub}</span>
+            {tile.shade !== undefined && (
+              <span className="tile-art" data-shade={tile.shade} aria-hidden="true">
+                <CourseIcon band={tile.shade} />
+              </span>
+            )}
           </button>
         ))}
       </section>

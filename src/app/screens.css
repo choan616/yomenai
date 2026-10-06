@@ -2802,15 +2802,33 @@ p.rule-record {
 .tile-v[data-shade='2'] {
   --tile-ink: 85%;
 }
-/* 이름 앞의 코스 아이콘 — 글자 크기(1em)를 따라가 글자 크기 설정에서도 같이 커진다. 색은 글자색(먹 농도) 그대로 */
-.tile-v[data-shade] {
-  display: flex;
-  align-items: center;
-  gap: 6px;
+/* 코스 그림 — 타일 오른쪽 아래에 크게 (2026-10-06 사용자 시안). 이름보다 한 걸음 옅어서 이름이 앞에 선다.
+   오른쪽 위의 › 와 안 겹치게 아래에 붙이고, 글자는 왼쪽 열에 둔다 */
+.tile {
+  position: relative;
 }
-.tile-v[data-shade] .icon {
-  width: 1.1em;
-  height: 1.1em;
+.tile-art {
+  --art-ink: 85%;
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  width: 60px;
+  height: 60px;
+  color: color-mix(in oklab, var(--text) var(--art-ink), var(--surface));
+  pointer-events: none;
+}
+.tile-art[data-shade='0'] {
+  --art-ink: 45%;
+}
+.tile-art[data-shade='1'] {
+  --art-ink: 58%;
+}
+.tile-art[data-shade='2'] {
+  --art-ink: 72%;
+}
+.tile-art .icon {
+  width: 100%;
+  height: 100%;
 }
 .tile-s {
   font-size: calc(12px * var(--ui-scale));

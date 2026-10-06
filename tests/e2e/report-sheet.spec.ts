@@ -61,10 +61,10 @@ test('요약 타일 넷이 첫 화면에 있고 값이 채워져 있다', async 
   await seed(page, 5)
   const tiles = page.locator('.summary .tile')
   await expect(tiles.nth(0)).toContainText('수준')
-  // 수준 타일에는 코스 아이콘이 이름 앞에 선다 — 장식이라 낭독에서는 숨기고, 이름은 글자로 남는다
-  await expect(tiles.nth(0).locator('.tile-v svg.icon')).toBeVisible()
-  await expect(tiles.nth(0).locator('.tile-v svg.icon')).toHaveAttribute('aria-hidden', 'true')
-  await expect(tiles.nth(1).locator('.tile-v svg')).toHaveCount(0)
+  // 수준 타일에는 코스 그림이 오른쪽 아래에 선다 — 장식이라 낭독에서는 숨기고, 이름은 글자로 남는다
+  await expect(tiles.nth(0).locator('.tile-art svg.icon')).toBeVisible()
+  await expect(tiles.nth(0).locator('.tile-art')).toHaveAttribute('aria-hidden', 'true')
+  await expect(tiles.nth(1).locator('.tile-art')).toHaveCount(0)
   await expect(tiles.nth(1)).toContainText('학습한 날')
   await expect(tiles.nth(1)).toContainText('5일째')
   await expect(tiles.nth(2)).toContainText('많이 틀린 유형')
@@ -205,5 +205,34 @@ test('수준 타일의 코스 이름은 오를수록 진하고, 가장 옅어도
     expect(contrasts[4]).toBeCloseTo(contrasts[3]!, 1)
     // 가장 옅은 산책로도 큰 글자 기준(3:1)을 넘는다
     expect(contrasts[0]!, `${scheme} 산책로`).toBeGreaterThanOrEqual(3)
+  }
+})
+
+test('코스 그림은 이름·부제·› 와 안 겹친다 (보통·큰 글자)', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 })
+  await seed(page, 5)
+  for (const scale of ['md', 'lg'] as const) {
+    await page.evaluate((s) => document.documentElement.setAttribute('data-text-scale', s), scale)
+    const tile = page.locator('.summary .tile').first()
+    // 글자가 차지하는 실제 영역으로 잰다 — 블록 상자는 타일 폭만큼 늘어나 있어 그림과 늘 겹쳐 보인다
+    const rects = await tile.evaluate((el) => {
+      const r = (sel: string) => {
+        const range = document.createRange()
+        range.selectNodeContents(el.querySelector(sel)!)
+        const b = range.getBoundingClientRect()
+        return { x: b.x, y: b.y, width: b.width, height: b.height }
+      }
+      const a = el.querySelector('.tile-art')!.getBoundingClientRect()
+      return { art: { x: a.x, y: a.y, width: a.width, height: a.height }, v: r('.tile-v'), s: r('.tile-s'), chev: r('.tile-chev') }
+    })
+    const art = rects.art
+    for (const [name, o] of [['이름', rects.v], ['부제', rects.s], ['›', rects.chev]] as const) {
+      const hit = o.x < art.x + art.width && o.x + o.width > art.x && o.y < art.y + art.height && o.y + o.height > art.y
+      expect(hit, `${scale} · ${name} 와 겹침`).toBe(false)
+    }
+    // 타일 안에 든다
+    const t = (await tile.boundingBox())!
+    expect(art.x + art.width).toBeLessThanOrEqual(t.x + t.width)
+    expect(art.y + art.height).toBeLessThanOrEqual(t.y + t.height)
   }
 })
