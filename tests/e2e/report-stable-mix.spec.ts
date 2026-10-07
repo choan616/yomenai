@@ -182,8 +182,11 @@ test('흔들리는 밴드는 밴드 색을 잃지 않고 사선만 덧입는다'
   // ② 표시는 사선이지 선이 아니다
   expect(paint.image).toContain('repeating-linear-gradient')
   expect(paint.shadow === 'none' || paint.shadow === '').toBe(true)
-  // ③ 朱 는 막대에서 빠졌지만 범례 글자에는 남는다
+  // ③ 범례 글자도 붉지 않다 (2026-10-07) — 흔들림은 막대의 사선·표의 왼쪽 줄·판정 문장이 이미 말해 신호가 겹쳤다
   await expect(page.locator('.mix-key.band-shaky')).toHaveCount(1)
+  const keyColor = await page.locator('.mix-key.band-shaky').evaluate((el) => getComputedStyle(el).color)
+  const legendColor = await page.locator('.mix-legend').evaluate((el) => getComputedStyle(el).color)
+  expect(keyColor).toBe(legendColor)
 
   // ── 밴드 표 (2026-09-23) — 흔들리는 행에만 왼쪽 줄이 선다
   const rules = await page.locator('.ladder tbody tr').evaluateAll((rows) =>

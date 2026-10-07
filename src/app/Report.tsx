@@ -609,21 +609,25 @@ function LevelSection({
   return (
     <section className="level">
       <p className="report-lead">{levelHeadline(level)}</p>
-      <p className="stat-line">
-        읽기 {reviews}회 · 전체 정답률 {accuracy}%
-      </p>
-      {/* 응답 시간 자동화를 잰다 (2026-10-07, 교수자 관점 보완 A2). 표본이 PACE_MIN_SAMPLE 미만이면
-          `pace` 가 null 이라 판정 보류 — 그때는 「0개」라고 쓰지 않고 줄 자체를 안 그린다.
+      {/* 같은 종류의 숫자 셋을 **한 덩어리**로 — 두 줄로 갈라 두면 판정 아래에 글자 줄이 다섯 개가 됐다
+          (2026-10-07 사용자 「너무 산만하다」). 칸 사이는 gap 으로 띄우고, 좁으면 칸 단위로 줄이 바뀐다.
+
+          응답 시간 자동화를 잰다 (2026-10-07, 교수자 관점 보완 A2). 표본이 PACE_MIN_SAMPLE 미만이면
+          `pace` 가 null 이라 판정 보류 — 그때는 「0개」라고 쓰지 않고 칸 자체를 안 그린다.
 
           **초를 안 쓴다** — 중앙값의 절반이 자판을 두드리는 시간이라(글자당 0.85초 + 고정 3.1초,
           실측 2026-10-07) 학습자가 해석할 수 없다. 개수만 내도 많은지 적은지를 못 읽어서
           분모(`counted`)로 비율을 같이 낸다. 「14개 중 1개」가 아니라 %인 이유는 코스마다
           비율이 두 배 넘게 갈려(코스0 3.1% ~ 코스3 8.8%) 뽑기처럼 읽히면 틀리기 때문이다 */}
-      {pace && (
-        <p className="stat-line pace-line">
-          망설인 표현 {pace.slow.length}개 · 정답 중 {Math.round((pace.slow.length / pace.counted) * 100)}%
-        </p>
-      )}
+      <p className="stat-line">
+        <span>읽기 {reviews}회</span>
+        <span>전체 정답률 {accuracy}%</span>
+        {pace && (
+          <span className="pace-line">
+            망설인 표현 {pace.slow.length}개 · 정답 중 {Math.round((pace.slow.length / pace.counted) * 100)}%
+          </span>
+        )}
+      </p>
       {/* 큰 숫자는 정답률이 아니라 **붙은 숙어 개수**다 (2026-09-19). 정답률은 순간
           상태라 표본이 흔들면 같이 뒤집히는데, 수준은 쌓인 것이라 그러면 안 된다.
           정답률은 표의 한 열로 내려 경계선을 긋는 데만 쓴다 */}

@@ -361,6 +361,9 @@ test('수준 시트 — 느린 정답을 심으면 응답 시간 줄이 뜬다',
   await expect(page.getByRole('dialog')).toHaveAccessibleName('수준')
   await expect(page.locator('.pace-line')).toContainText('망설인 표현 1개')
   await expect(page.locator('.pace-line')).toContainText('정답 중 5%')
+  // 읽기·정답률·망설인 표현은 한 덩어리다 — 줄이 갈라져 있지 않다 (2026-10-07)
+  await expect(page.locator('.level .stat-line')).toHaveCount(1)
+  await expect(page.locator('.level .stat-line .pace-line')).toHaveCount(1)
 })
 
 test('수준 시트 — 표본이 모자라면 응답 시간 줄이 없다', async ({ page }) => {

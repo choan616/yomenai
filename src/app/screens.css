@@ -565,9 +565,18 @@
 .level .report-lead {
   margin-top: 10px;
 }
+/* 읽기 횟수·정답률·망설인 표현을 한 덩어리로 (2026-10-07). 칸 사이는 gap 이라 가운뎃점이 없고,
+   좁으면 칸 단위로 줄이 바뀐다 — 칸 안에서 끊기지 않게 nowrap */
 .level .stat-line {
-  margin: 4px 0 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 14px;
+  margin: 6px 0 0;
+  font-size: calc(13px * var(--ui-scale));
   font-variant-numeric: tabular-nums;
+}
+.level .stat-line > span {
+  white-space: nowrap;
 }
 /* 제목과 총계가 한 줄에 마주 선다 — 총계가 요약 막대의 분모다 (2026-09-22) */
 .ladder-head {
@@ -623,9 +632,6 @@
 .mix-key {
   display: inline-flex;
   align-items: center;
-}
-.mix-key.band-shaky {
-  color: var(--ng);
 }
 /* 범례 점이 세그먼트와 같은 색이라야 어느 칸인지 짚인다 */
 .mix-dot {
