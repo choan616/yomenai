@@ -9,17 +9,20 @@ import { LOCAL_USER_ID, appendEvent } from '../db/events.ts'
 import { db } from '../db/schema.ts'
 import { loadCurrentList } from './currentList.ts'
 
-/** 담기/빼기 이벤트 한 건. 뺄 때는 묶음을 안 싣는다 — 어느 묶음이었는지는 담은 이벤트가 들고 있다 */
-export function starEvent(idiomId: string, on: boolean): StarEvent {
+/**
+ * 담기/빼기 이벤트 한 건. 뺄 때는 묶음을 안 싣는다 — 어느 묶음이었는지는 담은 이벤트가 들고 있다.
+ * `list` 를 주면 「지금 담는 묶음」 대신 그 묶음에 담는다 — 끝말잇기 말 카드가 쓴다 (2026-10-07)
+ */
+export function starEvent(idiomId: string, on: boolean, list?: string): StarEvent {
   return recordStar({
     idiomId,
     on,
-    ...(on ? { list: loadCurrentList() } : {}),
+    ...(on ? { list: list ?? loadCurrentList() } : {}),
     ctx: { userId: LOCAL_USER_ID, deviceId: getDeviceId(), at: Date.now() },
   })
 }
 
 /** 로그에 덧붙인다. 화면은 기다리지 않는다 — 집합 한 칸을 바로 갈아 끼우는 쪽이 손에 빠르다 */
-export function appendStar(idiomId: string, on: boolean): Promise<void> {
-  return appendEvent(db(), starEvent(idiomId, on))
+export function appendStar(idiomId: string, on: boolean, list?: string): Promise<void> {
+  return appendEvent(db(), starEvent(idiomId, on, list))
 }

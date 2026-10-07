@@ -32,6 +32,11 @@ describe('starEvent', () => {
     expect(starEvent('1234', true)).not.toHaveProperty('list')
   })
 
+  it('묶음을 지정하면 지금 담는 묶음 대신 그 묶음이 실린다', () => {
+    stubStorage({ 'yomenai:wordlistCurrent': '소설 B' })
+    expect(starEvent('1234', true, '끝말잇기')).toMatchObject({ on: true, list: '끝말잇기' })
+  })
+
   it('뺄 때는 묶음을 안 싣는다', () => {
     stubStorage({ 'yomenai:wordlistCurrent': '소설 B' })
     const e = starEvent('1234', false)

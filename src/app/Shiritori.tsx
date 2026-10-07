@@ -34,6 +34,9 @@ type Over = { reason: 'win' } | { reason: 'giveup'; examples: Word[] }
 
 const HINT_COUNT = 2
 
+/** 나온 말 카드에서 담으면 들어가는 단어장 묶음 — 「지금 담는 묶음」과 상관없이 늘 여기다 (2026-10-07 사용자 지시) */
+const SHIRITORI_LIST = '끝말잇기'
+
 export function Shiritori({ onExit }: { onExit: () => void }) {
   const [index, setIndex] = useState<Index | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -341,7 +344,7 @@ function ShiritoriDeck({
       else next.delete(id)
       return next
     })
-    void appendStar(id, on)
+    void appendStar(id, on, SHIRITORI_LIST)
   }
 
   if (error) {

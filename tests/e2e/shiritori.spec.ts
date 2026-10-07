@@ -138,6 +138,9 @@ test('판이 끝나면 결과 화면이 뜨고, 나온 말을 카드로 보며 �
   await expect(page.locator('.browse-slide').first().locator('.tag').first()).toHaveText('앱이 낸 말')
   await expect(page.locator('.browse-slide').first().locator('.meaning')).toBeVisible()
 
+  // 「지금 담는 묶음」이 다른 묶음이어도 여기서 담으면 끝말잇기 묶음으로 간다 (2026-10-07)
+  await page.evaluate(() => localStorage.setItem('yomenai:wordlistCurrent', '소설 B'))
+
   // 담기 — 카드마다 제 버튼이 카드 맨 아래에 있다
   const first = page.locator('.browse-slide').first()
   const add = first.getByRole('button', { name: '단어장에 담기' })
@@ -165,6 +168,8 @@ test('판이 끝나면 결과 화면이 뜨고, 나온 말을 카드로 보며 �
   await page.getByRole('button', { name: '찾기', exact: true }).click()
   await page.getByRole('button', { name: /^단어장/ }).click()
   await expect(page.locator('.review-row')).toHaveCount(1, { timeout: 60_000 })
+  await expect(page.locator('.wl-group .section-title')).toHaveCount(1)
+  await expect(page.locator('.wl-group .section-title')).toContainText('끝말잇기')
 })
 
 test('✕ 로 나가면 리포트로 돌아온다', async ({ page }) => {
