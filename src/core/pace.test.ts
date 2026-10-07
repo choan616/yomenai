@@ -88,4 +88,24 @@ describe('paceProfile', () => {
     expect(profile?.medianMs).toBe(1000)
     expect(profile?.slow).toEqual([])
   })
+
+  it('⑥ 느리고 틀린 답은 slow 에 안 든다 (2026-10-07, 교수자 관점 보완 7단계)', () => {
+    const baseline = correctEvents(20, () => 1000)
+    const slowWrong = ev('21', { elapsedMs: 50_000, correct: false })
+
+    const profile = paceProfile([...baseline, slowWrong])
+
+    expect(profile?.slow.some((s) => s.idiomId === '21')).toBe(false)
+  })
+
+  it('⑦ 오답은 중앙값을 안 움직인다 (2026-10-07, 교수자 관점 보완 7단계)', () => {
+    const baseline = correctEvents(20, () => 1000)
+    const slowWrong = ev('21', { elapsedMs: 50_000, correct: false })
+
+    const withWrong = paceProfile([...baseline, slowWrong])
+    const withoutWrong = paceProfile(baseline)
+
+    expect(withWrong?.medianMs).toBe(withoutWrong?.medianMs)
+    expect(withWrong?.medianMs).toBe(1000)
+  })
 })
