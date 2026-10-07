@@ -52,7 +52,11 @@ export function summaryTiles(i: TileInput): Tile[] {
           shade: course,
         }
       : edge !== null
-        ? { sheet: 'level', label: '수준', value: '—', sub: `경계 ${bandName(edge)}` }
+        // 안정 구간이 전혀 없을 때만 온다(course===null 은 edge===0 일 때뿐이다 — edge>0 이면
+        // 항상 course=edge-1 로 위 분기를 탄다). 「—」는 값이 없다는 뜻으로 읽혀 사용자가
+        // 자기 수준을 전혀 알 수 없었다(2026-10-07 사용자 지적) — 아는 것(산책로가 흔들린다는
+        // 것)을 그대로 보여준다. 기준(LEVEL_SOLID_RATE·LEVEL_WINDOW)은 그대로다, 문구만 바꿨다
+        ? { sheet: 'level', label: '수준', value: bandName(edge), sub: '흔들리고 있어요', shade: edge }
         : { sheet: 'level', label: '수준', value: '—', sub: '아직 기록이 적어요' }
 
   const days: Tile =

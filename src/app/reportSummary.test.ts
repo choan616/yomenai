@@ -35,10 +35,9 @@ describe('summaryTiles', () => {
     })
   })
 
-  it('첫 코스부터 흔들리면 수준을 말하지 않고 경계만 말한다', () => {
+  it('첫 코스부터 흔들리면 그 코스 이름과 흔들린다는 말을 그대로 보여준다 (2026-10-07, 「—」가 값이 없다는 뜻으로 읽혀서)', () => {
     const t = summaryTiles(base)[0]!
-    expect(t).toMatchObject({ value: '—', sub: '경계 산책로' })
-    expect(t.shade).toBeUndefined()
+    expect(t).toMatchObject({ value: '산책로', sub: '흔들리고 있어요', shade: 0 })
   })
 
   it('코스 이름의 농도 단계는 보이는 수준의 코스 번호를 따른다', () => {

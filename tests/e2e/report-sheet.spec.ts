@@ -61,9 +61,10 @@ test('요약 타일 넷이 첫 화면에 있고 값이 채워져 있다', async 
   await seed(page, 5)
   const tiles = page.locator('.summary .tile')
   await expect(tiles.nth(0)).toContainText('수준')
-  // 첫 코스부터 흔들리는 기록이라 수준은 아직 말하지 않고(그림도 없다) 경계만 말한다
-  await expect(tiles.nth(0)).toContainText('경계 산책로')
-  await expect(tiles.nth(0).locator('.tile-art')).toHaveCount(0)
+  // 첫 코스부터 흔들리는 기록이다 — 「—」로 비우지 않고 그 코스 이름과 흔들린다는 말을 그대로 보인다 (2026-10-07)
+  await expect(tiles.nth(0)).toContainText('산책로')
+  await expect(tiles.nth(0)).toContainText('흔들리고 있어요')
+  await expect(tiles.nth(0).locator('.tile-art')).toHaveCount(1)
   await expect(tiles.nth(1)).toContainText('학습한 날')
   await expect(tiles.nth(1)).toContainText('5일째')
   await expect(tiles.nth(2)).toContainText('많이 틀린 유형')
