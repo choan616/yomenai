@@ -20,7 +20,8 @@ export interface PaceProfile {
   slow: { idiomId: string; elapsedMs: number }[]
 }
 
-function median(values: number[]): number {
+/** 짝수 개면 가운데 둘의 평균. `tools/audit-pace.ts` 가 예측 타당도 실측에도 같은 중앙값을 쓴다 */
+export function median(values: number[]): number {
   const sorted = [...values].sort((a, b) => a - b)
   const mid = Math.floor(sorted.length / 2)
   return sorted.length % 2 === 0 ? (sorted[mid - 1] + sorted[mid]) / 2 : sorted[mid]
