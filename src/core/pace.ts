@@ -1,0 +1,62 @@
+// 응답 시간을 읽어 "맞지만 느린" 카드를 가려내는 순수 함수 (2026-10-07, 교수자 관점 보완 A1).
+//
+// `ReviewEvent.elapsedMs` 는 v1부터 모든 채점에 기록되는데 읽는 코드가 없었다. 정확도는
+// 지식의 유무를, 응답 시간은 자동화 여부를 잰다 — 맞지만 느린 것은 노출 반복이 필요하고
+// 틀리고 빠른 것은 대조가 필요해 처방이 반대다 (decisions.md 「처방 — 규칙 축에도 대조를
+// 연다」). 이 단계는 화면을 건드리지 않는다.
+import type { LearningEvent, ReviewEvent } from './types.ts'
+
+/** 이만큼 정답 표본이 안 모이면 null (판정 보류) */
+export const PACE_MIN_SAMPLE = 20
+/** 정답 응답 시간 중앙값의 몇 배부터 "느린" 인가 */
+export const PACE_SLOW_FACTOR = 2
+/** 이보다 긴 이벤트는 버린다 (중간에 멈춘 것) */
+export const PACE_CAP_MS = 60_000
+
+export interface PaceProfile {
+  /** 정답 응답 시간 중앙값 (ms) */
+  medianMs: number
+  /** 맞았지만 느린 카드. 느린 순서 */
+  slow: { idiomId: string; elapsedMs: number }[]
+}
+
+function median(values: number[]): number {
+  const sorted = [...values].sort((a, b) => a - b)
+  const mid = Math.floor(sorted.length / 2)
+  return sorted.length % 2 === 0 ? (sorted[mid - 1] + sorted[mid]) / 2 : sorted[mid]
+}
+
+/**
+ * 읽기 카드의 응답 시간 분포를 낸다.
+ *
+ * 같은 숙어가 여러 번 나오면 **가장 최근 이벤트**로 한 번만 센다 — 옛 기록이 지금 상태를
+ * 덮으면 느려진 것도 빨라진 것도 안 보인다. 중앙값·`slow` 모두 이 대표 이벤트 집합에서 낸다.
+ */
+export function paceProfile(events: readonly LearningEvent[]): PaceProfile | null {
+  const latestByIdiom = new Map<string, ReviewEvent>()
+  for (const e of events) {
+    if (e.type !== 'review' || e.deletedAt !== null || e.cardType !== 'reading') continue
+    if (e.elapsedMs <= 0 || e.elapsedMs > PACE_CAP_MS) continue
+    const cur = latestByIdiom.get(e.idiomId)
+    if (cur === undefined || e.at > cur.at || (e.at === cur.at && e.id > cur.id)) {
+      latestByIdiom.set(e.idiomId, e)
+    }
+  }
+
+  const correctMs: number[] = []
+  for (const e of latestByIdiom.values()) {
+    if (e.correct) correctMs.push(e.elapsedMs)
+  }
+  if (correctMs.length < PACE_MIN_SAMPLE) return null
+
+  const medianMs = median(correctMs)
+  const slow: { idiomId: string; elapsedMs: number }[] = []
+  for (const e of latestByIdiom.values()) {
+    if (e.correct && e.elapsedMs >= medianMs * PACE_SLOW_FACTOR) {
+      slow.push({ idiomId: e.idiomId, elapsedMs: e.elapsedMs })
+    }
+  }
+  slow.sort((a, b) => b.elapsedMs - a.elapsedMs || (a.idiomId < b.idiomId ? -1 : a.idiomId > b.idiomId ? 1 : 0))
+
+  return { medianMs, slow }
+}
