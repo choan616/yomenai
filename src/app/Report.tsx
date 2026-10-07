@@ -24,6 +24,7 @@ import {
 } from '../core/level.ts'
 import { DOMINANT_SHARE, prescribe, type Prescription } from '../core/prescription.ts'
 import { replay } from '../core/replay.ts'
+import { ruleFocusPairs } from '../core/ruleFocus.ts'
 import type { VoicingKind } from '../core/mistakes.ts'
 import {
   classifiedMistakes,
@@ -167,7 +168,8 @@ export function Report({
         const byId = new Map(learn.map((p) => [p.idiomId, p]))
         // 저장된 유형을 그대로 세면 규칙 화면에서 빠진 오답이 여기서는 남는다 (2026-09-17).
         // 규칙 화면·다시보기와 **같은 함수**로 다시 매긴다
-        const again = reclassifier(mistakeContextFromKanji(kanji), (id) => byId.get(id)?.headword)
+        const ctx = mistakeContextFromKanji(kanji)
+        const again = reclassifier(ctx, (id) => byId.get(id)?.headword)
         const state = replay(events, {
           pairsOf: (id) => byId.get(id)?.pairIds ?? [],
           mistakeOf: (e) => again(e).type,
@@ -200,10 +202,10 @@ export function Report({
           siblingsOf: (pairId) =>
             onyomiSiblings(pairId, index.keys(), (id) => index.get(id)?.length ?? 0),
         })
-        // 처방 D — 규칙 처방이 가리키는 절에서 틀린 숙어의 음독 쌍을 모은다 (2026-10-07,
-        // 교수자 관점 보완). 규칙 화면·배지와 **같은 판정**(reclassifier)을 써야 어느 쪽에선
-        // 걸리고 어느 쪽에선 안 걸리는 식으로 갈라지지 않는다. 대조 세션(`buildFocus`)은
-        // 안 건드린다 — 표적 pairId 만 모아 기존 onFocus 에 넘긴다
+        // 처방 D — 규칙 처방이 가리키는 절에서 틀린 숙어를 모으고, 그 변형을 실제로 든
+        // 조각의 음독 쌍으로 좁힌다 (2026-10-07, 교수자 관점 보완 9단계 — `ruleFocus.ts`).
+        // 규칙 화면·배지와 **같은 판정**(reclassifier)을 써야 어느 쪽에선 걸리고 어느
+        // 쪽에선 안 걸리는 식으로 갈라지지 않는다. 대조 세션(`buildFocus`)은 안 건드린다
         const isMistakeRule = (p: Prescription): p is Extract<Prescription, { kind: 'MISTAKE_RULE' }> =>
           p.kind === 'MISTAKE_RULE'
         const mistakeRule = prescriptions.find(isMistakeRule)
@@ -215,9 +217,11 @@ export function Report({
             const v = again(e)
             if (v.type === mistakeRule.type && v.voicing === kind) idiomIds.add(e.idiomId)
           }
-          const pairIds = new Set<string>()
-          for (const id of idiomIds) for (const pid of byId.get(id)?.pairIds ?? []) pairIds.add(pid)
-          ruleFocusPairIds = [...pairIds]
+          const idioms = [...idiomIds].flatMap((id) => {
+            const p = byId.get(id)
+            return p ? [{ idiomId: p.idiomId, headword: p.headword, reading: p.reading, pairIds: p.pairIds }] : []
+          })
+          ruleFocusPairIds = ruleFocusPairs({ idioms, type: mistakeRule.type, voicing: kind, lookup: ctx.lookup })
         }
         const next: Loaded = {
           report,
