@@ -4,6 +4,7 @@
 // 세션 중에는 여기로 안 온다 — 나가면 세션 큐가 초기화되므로, 카드 옆에서는 오답 상세가
 // 같은 절을 인라인으로 펼친다 (context-notes 2026-09-17).
 import { useEffect, useRef, useState } from 'react'
+import { firstTryByRule, type FirstTryRate, type MeasuredVariant } from '../core/firstTry.ts'
 import {
   classifiedMistakes,
   ruleRecord,
@@ -15,9 +16,20 @@ import { LOCAL_USER_ID, listEvents } from '../db/events.ts'
 import { db } from '../db/schema.ts'
 import { loadBaseIdioms, loadKanji } from '../dict/load.ts'
 import { mistakeContextFromKanji } from '../dict/mistakeContext.ts'
+import { decompose } from '../lib/onyomi.ts'
 import { MISTAKE_LABEL, VOICING_LABEL } from '../study/mistakeLabels.ts'
 import { Mixed, RuleBody } from './RuleBody.tsx'
 import { RULE_SECTIONS, type RuleId, type RuleSection } from './rules.ts'
+
+const MEASURED_VARIANTS = new Set<MeasuredVariant>(['sokuon', 'rendaku', 'handaku', 'renjo'])
+
+/** 이 절이 재는 절인가, 재면 어느 갈래인가. 넷 말고는 전부 null(장음·한국음 꼬리·청탁 미구분·음독 층위·혼독) */
+function measuredVariantOf(section: RuleSection): MeasuredVariant | null {
+  if (section.id === 'sokuon') return 'sokuon'
+  return section.voicing !== undefined && MEASURED_VARIANTS.has(section.voicing as MeasuredVariant)
+    ? (section.voicing as MeasuredVariant)
+    : null
+}
 
 interface Props {
   onBack: () => void
@@ -28,6 +40,7 @@ interface Props {
 export function Rules({ onBack, focus = null }: Props) {
   const [open, setOpen] = useState<RuleId | null>(focus)
   const [records, setRecords] = useState<Map<RuleId, RuleRecord> | null>(null)
+  const [firstTry, setFirstTry] = useState<Map<MeasuredVariant, FirstTryRate> | null>(null)
   const focused = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
@@ -52,6 +65,21 @@ export function Rules({ onBack, focus = null }: Props) {
         const wrong = classifiedMistakes(events)
         const verdictOf = verdictByEvent(wrong, ctx, (id) => byId.get(id)?.headword)
 
+        // 그 숙어의 정답 읽기가 어느 절에 걸리는지는 `decompose` 의 `Segment.variants` 로
+        // 판정한다 — 새 음운 판정을 안 만들고 있는 것을 쓴다 (`mistakes.ts` 와 같은 분해기)
+        const appliesTo = (id: string): Set<MeasuredVariant> => {
+          const p = byId.get(id)
+          const out = new Set<MeasuredVariant>()
+          if (!p) return out
+          const d = decompose(p.headword, p.reading, ctx.lookup)
+          if (!d.ok) return out
+          for (const seg of d.segments) {
+            for (const v of seg.variants) if (MEASURED_VARIANTS.has(v as MeasuredVariant)) out.add(v as MeasuredVariant)
+          }
+          return out
+        }
+        setFirstTry(firstTryByRule(events, appliesTo))
+
         setRecords(
           new Map(
             RULE_SECTIONS.map((s) => [
@@ -73,7 +101,10 @@ export function Rules({ onBack, focus = null }: Props) {
         )
       } catch {
         // 기록을 못 읽어도 본문은 읽을 수 있어야 한다 — 빈 기록으로 둔다
-        if (alive) setRecords(new Map())
+        if (alive) {
+          setRecords(new Map())
+          setFirstTry(new Map())
+        }
       }
     })()
     return () => {
@@ -101,16 +132,21 @@ export function Rules({ onBack, focus = null }: Props) {
           훈독 쪽 갈래예요. 위에서부터 읽으면 한 줄기로 이어져요.
         </p>
 
-        {RULE_SECTIONS.map((s) => (
-          <RuleBlock
-            key={s.id}
-            section={s}
-            record={records?.get(s.id) ?? null}
-            open={open === s.id}
-            onToggle={() => setOpen((cur) => (cur === s.id ? null : s.id))}
-            ref={s.id === focus ? focused : null}
-          />
-        ))}
+        {RULE_SECTIONS.map((s) => {
+          const variant = measuredVariantOf(s)
+          return (
+            <RuleBlock
+              key={s.id}
+              section={s}
+              record={records?.get(s.id) ?? null}
+              // 재는 절인데 아직 로딩 중이면 null(안 그린다), 로딩이 끝났는데 표본이 없으면 seen:0 으로 명시한다
+              firstTry={variant === null ? null : (firstTry?.get(variant) ?? (firstTry ? { seen: 0, correct: 0 } : null))}
+              open={open === s.id}
+              onToggle={() => setOpen((cur) => (cur === s.id ? null : s.id))}
+              ref={s.id === focus ? focused : null}
+            />
+          )
+        })}
       </div>
     </section>
   )
@@ -119,12 +155,14 @@ export function Rules({ onBack, focus = null }: Props) {
 function RuleBlock({
   section,
   record,
+  firstTry,
   open,
   onToggle,
   ref,
 }: {
   section: RuleSection
   record: RuleRecord | null
+  firstTry: FirstTryRate | null
   open: boolean
   onToggle: () => void
   ref: React.Ref<HTMLDivElement> | null
@@ -148,47 +186,79 @@ function RuleBlock({
       {open && (
         <div className="rule-open">
           <RuleBody section={section} />
-          <RuleRecordView section={section} record={record} />
+          <RuleRecordView section={section} record={record} firstTry={firstTry} />
         </div>
       )}
     </div>
   )
 }
 
-function RuleRecordView({ section, record }: { section: RuleSection; record: RuleRecord | null }) {
+function RuleRecordView({
+  section,
+  record,
+  firstTry,
+}: {
+  section: RuleSection
+  record: RuleRecord | null
+  /** 이 절의 첫 만남 정답률. 재지 않는 절(장음·한국음 꼬리·청탁 미구분·음독 층위·혼독)이면 null */
+  firstTry: FirstTryRate | null
+}) {
   // 탁음 세 절은 같은 유형(RENDAKU)을 나눠 가지므로 절의 갈래 이름을 쓴다 — 셋 다
   // 「연탁」으로 뜨면 숫자가 왜 다른지 설명이 안 된다
   const labels =
     section.voicing !== undefined
       ? VOICING_LABEL[section.voicing]
       : section.mistakes.map((m) => MISTAKE_LABEL[m]).join(' · ')
-  if (record === null) return <p className="dim rule-record">기록을 불러오고 있어요…</p>
+
+  // 기존 기록 블록(「이 규칙으로 틀린 것」) 아래에 붙는 줄 — 재지 않는 절이면 아예 안 그린다
+  const firstTryLine = firstTry && (
+    <p className="dim first-try">
+      {firstTry.seen > 0
+        ? `처음 만난 ${firstTry.seen}개 중 ${firstTry.correct}개를 읽었어요`
+        : '아직 처음 만난 말이 없어요'}
+    </p>
+  )
+
+  if (record === null) {
+    return (
+      <>
+        <p className="dim rule-record">기록을 불러오고 있어요…</p>
+        {firstTryLine}
+      </>
+    )
+  }
   if (record.count === 0) {
     return (
-      <p className="dim rule-record">
-        아직 이 규칙(<span className="tag">{labels}</span>)으로 틀린 기록이 없어요.
-      </p>
+      <>
+        <p className="dim rule-record">
+          아직 이 규칙(<span className="tag">{labels}</span>)으로 틀린 기록이 없어요.
+        </p>
+        {firstTryLine}
+      </>
     )
   }
   return (
-    <div className="rule-record">
-      <p className="section-title">
-        내가 이 규칙으로 틀린 것 — {record.count}번
-        <span className="tag">{labels}</span>
-      </p>
-      <ul className="rows">
-        {record.idioms.map((i) => (
-          <li key={i.id}>
-            <span className="r-main" lang="ja">
-              {i.headword}
-            </span>
-            <span className="r-sub r-ja" lang="ja">
-              {i.reading}
-            </span>
-            <span className="r-tail">{i.wrong}번</span>
-          </li>
-        ))}
-      </ul>
-    </div>
+    <>
+      <div className="rule-record">
+        <p className="section-title">
+          내가 이 규칙으로 틀린 것 — {record.count}번
+          <span className="tag">{labels}</span>
+        </p>
+        <ul className="rows">
+          {record.idioms.map((i) => (
+            <li key={i.id}>
+              <span className="r-main" lang="ja">
+                {i.headword}
+              </span>
+              <span className="r-sub r-ja" lang="ja">
+                {i.reading}
+              </span>
+              <span className="r-tail">{i.wrong}번</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+      {firstTryLine}
+    </>
   )
 }

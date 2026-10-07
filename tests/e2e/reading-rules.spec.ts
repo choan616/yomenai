@@ -91,3 +91,66 @@ test('반탁 오답은 연탁이 아니라 반탁으로 불린다', async ({ pag
   await renjo.locator('.rule-head').click()
   await expect(renjo.locator('.rule-open .rule-record')).toContainText('연성')
 })
+
+/** 学校 がっこう(id 1206730) 읽기 1회를 심는다 — がく+こう 가 촉음(sokuon)으로 분해되는 실재 표제어다 */
+async function seedSokuonFirstTry(page: Page, correct: boolean): Promise<void> {
+  await page.addInitScript(() => {
+    try {
+      localStorage.setItem('yomenai:diagnosticDone', '1')
+      localStorage.setItem('yomenai:welcomeSeen', '1')
+    } catch {
+      /* private mode */
+    }
+  })
+  await page.goto('/')
+  await expect(page.getByRole('button', { name: '세션 시작' })).toBeVisible({ timeout: 20_000 })
+  await page.evaluate(
+    (correct) =>
+      new Promise<void>((res, rej) => {
+        const req = indexedDB.open('yomenai')
+        req.onsuccess = () => {
+          const tx = req.result.transaction('events', 'readwrite')
+          tx.objectStore('events').put({
+            id: 'rules-firsttry-1',
+            userId: 'local',
+            deviceId: 'e2e',
+            at: Date.now(),
+            idiomId: '1206730',
+            cardType: 'reading',
+            mistakeType: correct ? null : 'SOKUON',
+            deletedAt: null,
+            type: 'review',
+            grade: correct ? 3 : 1,
+            answer: correct ? 'がっこう' : 'がくこう',
+            expected: 'がっこう',
+            correct,
+            elapsedMs: 1000,
+          })
+          tx.oncomplete = () => res()
+          tx.onerror = () => rej(new Error('심기 실패'))
+        }
+      }),
+    correct,
+  )
+  await page.reload()
+}
+
+test('규칙 절 — 첫 만남 정답률이 재는 절에만 뜬다', async ({ page }) => {
+  await seedSokuonFirstTry(page, true)
+  await openRules(page)
+
+  // 촉음은 재는 절이고 표본이 있다 — 「처음 만난 N개 중 M개」가 뜬다
+  const sokuon = page.locator('.rule-block').filter({ hasText: '촉음은 꼬리와' }).first()
+  await sokuon.locator('.rule-head').click()
+  await expect(sokuon.locator('.rule-open .first-try')).toHaveText('처음 만난 1개 중 1개를 읽었어요')
+
+  // 연탁은 재는 절이지만 이 기록엔 표본이 없다 — 0개를 말로 한다
+  const rendaku = page.locator('.rule-block').filter({ hasText: '연탁 — 두 낱말이' }).first()
+  await rendaku.locator('.rule-head').click()
+  await expect(rendaku.locator('.rule-open .first-try')).toHaveText('아직 처음 만난 말이 없어요')
+
+  // 장음은 안 재는 절이다 — 줄 자체가 없다
+  const choon = page.locator('.rule-block').filter({ hasText: '장음은 글자마다' }).first()
+  await choon.locator('.rule-head').click()
+  await expect(choon.locator('.rule-open .first-try')).toHaveCount(0)
+})
