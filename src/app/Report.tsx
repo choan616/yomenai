@@ -2,6 +2,7 @@
 import { Fragment, useEffect, useState } from 'react'
 import { dataVersion } from '../core/dataVersion.ts'
 import { onyomiSiblings } from '../core/contrast.ts'
+import { paceProfile, type PaceProfile } from '../core/pace.ts'
 import {
   buildAttendance,
   dateKey,
@@ -92,6 +93,8 @@ interface Loaded {
   reach: Map<string, Band>
   /** 계산한 날. 자정을 넘기면 캐시를 버린다 (Home 과 같은 이유) */
   day: string
+  /** 맞지만 느린 카드 — 응답 시간 자동화를 잰다 (2026-10-07, 교수자 관점 보완 A). 표본이 모자라면 null */
+  pace: PaceProfile | null
 }
 
 /**
@@ -196,6 +199,8 @@ export function Report({
           // 사다리와 같은 자로 잰다 — 같은 bandOf
           reach: solidReachDays(events, bandInPool),
           day,
+          // 풀과 무관하게 **기록 전체**를 본다 — 느린 응답은 출제 범위 설정과 상관없다
+          pace: paceProfile(events),
           rows: mistakeRows(report.mistakes, voicing, Math.max(0, report.unclassified - passed)),
           prescriptions: prescribe({
             report,
@@ -301,6 +306,7 @@ function ReportBody({
     streak,
     reach,
     onyomi,
+    pace,
   } = data
   // 정답률은 *실제* 오답으로 센다. 분류된 오답만 쓰면 미분류분이 정답으로 둔갑한다
   const accuracy =
@@ -329,7 +335,7 @@ function ReportBody({
         : null,
   })
   const sheets: Record<SheetKind, { title: string; content: React.ReactNode }> = {
-    level: { title: '수준', content: <LevelSection level={level} reviews={report.totalReviews} accuracy={accuracy} /> },
+    level: { title: '수준', content: <LevelSection level={level} reviews={report.totalReviews} accuracy={accuracy} pace={pace} /> },
     days: { title: '학습한 날', content: <CalendarSection
             attendance={attendance}
             sessionLimit={sessionLimit}
@@ -555,10 +561,13 @@ function LevelSection({
   level,
   reviews,
   accuracy,
+  pace,
 }: {
   level: LevelProfile
   reviews: number
   accuracy: number
+  /** 맞지만 느린 카드. 표본이 모자라면 null — 그때는 줄 자체를 안 그린다 (「0개」라고 쓰지 않는다) */
+  pace: PaceProfile | null
 }) {
   /**
    * **수준 지표는 밴드 0~3 만 센다** (2026-09-26 사용자 판단). 밴드 4 는 출제 범위 밖이라
@@ -574,6 +583,13 @@ function LevelSection({
       <p className="stat-line">
         읽기 {reviews}회 · 전체 정답률 {accuracy}%
       </p>
+      {/* 응답 시간 자동화를 잰다 (2026-10-07, 교수자 관점 보완 A2). 표본이 PACE_MIN_SAMPLE 미만이면
+          `pace` 가 null 이라 판정 보류 — 그때는 「0개」라고 쓰지 않고 줄 자체를 안 그린다 */}
+      {pace && (
+        <p className="stat-line pace-line">
+          맞지만 느린 말 {pace.slow.length}개 · 중앙값 {(pace.medianMs / 1000).toFixed(1)}초의 2배를 넘겨요
+        </p>
+      )}
       {/* 큰 숫자는 정답률이 아니라 **붙은 숙어 개수**다 (2026-09-19). 정답률은 순간
           상태라 표본이 흔들면 같이 뒤집히는데, 수준은 쌓인 것이라 그러면 안 된다.
           정답률은 표의 한 열로 내려 경계선을 긋는 데만 쓴다 */}

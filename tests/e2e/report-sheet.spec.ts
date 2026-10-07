@@ -284,6 +284,70 @@ test('모두 안정이면 가장 높은 안정 코스와 안정이에요를 말�
   await expect(tile.locator('.tile-s')).toHaveText('안정이에요')
 })
 
+/** 응답 시간 패이스 — 서로 다른 숙어로 정답 읽기 이벤트 `count`개를 심는다. `slowMs` 가 있으면 그중 하나만 그 속도로 */
+async function seedPace(page: Page, count: number, slowMs: number | null): Promise<void> {
+  await page.addInitScript(() => {
+    try {
+      localStorage.setItem('yomenai:diagnosticDone', '1')
+      localStorage.setItem('yomenai:welcomeSeen', '1')
+    } catch {
+      /* private mode */
+    }
+  })
+  await page.goto('/')
+  await expect(page.getByRole('button', { name: '세션 시작' })).toBeVisible({ timeout: 20_000 })
+  await page.evaluate(
+    ({ count, slowMs }) =>
+      new Promise<void>((res, rej) => {
+        const req = indexedDB.open('yomenai')
+        req.onsuccess = () => {
+          const tx = req.result.transaction('events', 'readwrite')
+          const store = tx.objectStore('events')
+          const now = Date.now()
+          for (let i = 0; i < count; i++) {
+            store.put({
+              id: `pace-${i}`,
+              userId: 'local',
+              deviceId: 'e2e',
+              at: now - (count - i) * 1000,
+              idiomId: `pace-idiom-${i}`,
+              cardType: 'reading',
+              mistakeType: null,
+              deletedAt: null,
+              type: 'review',
+              grade: 3,
+              answer: 'x',
+              expected: 'x',
+              correct: true,
+              elapsedMs: i === 0 && slowMs !== null ? slowMs : 1000,
+            })
+          }
+          tx.oncomplete = () => res()
+          tx.onerror = () => rej(new Error('심기 실패'))
+        }
+      }),
+    { count, slowMs },
+  )
+  await page.reload()
+  await page.getByRole('button', { name: '리포트', exact: true }).click()
+  await expect(page.locator('.summary .tile')).toHaveCount(4, { timeout: 20_000 })
+}
+
+test('수준 시트 — 느린 정답을 심으면 응답 시간 줄이 뜬다', async ({ page }) => {
+  await seedPace(page, 20, 5000)
+  await page.locator('.summary .tile').nth(0).click()
+  await expect(page.getByRole('dialog')).toHaveAccessibleName('수준')
+  await expect(page.locator('.pace-line')).toContainText('맞지만 느린 말 1개')
+  await expect(page.locator('.pace-line')).toContainText('중앙값')
+})
+
+test('수준 시트 — 표본이 모자라면 응답 시간 줄이 없다', async ({ page }) => {
+  await seedPace(page, 10, null)
+  await page.locator('.summary .tile').nth(0).click()
+  await expect(page.getByRole('dialog')).toHaveAccessibleName('수준')
+  await expect(page.locator('.pace-line')).toHaveCount(0)
+})
+
 test('코스 그림은 이름·부제·› 와 안 겹친다 (보통·큰 글자)', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 })
   await seedLevel(page, true)
