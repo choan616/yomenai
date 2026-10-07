@@ -108,4 +108,15 @@ describe('paceProfile', () => {
     expect(withWrong?.medianMs).toBe(withoutWrong?.medianMs)
     expect(withWrong?.medianMs).toBe(1000)
   })
+
+  it('⑧ counted 는 비율의 분모다 — 중앙값을 낸 정답 표본 수 (2026-10-07, 화면이 「정답 중 N%」를 말한다)', () => {
+    const baseline = correctEvents(20, (i) => (i === 0 ? 5000 : 1000))
+    const slowWrong = ev('21', { elapsedMs: 50_000, correct: false })
+
+    const profile = paceProfile([...baseline, slowWrong])
+
+    // 오답은 분모에 안 든다 — 21개를 심었지만 정답 20개가 분모다
+    expect(profile?.counted).toBe(20)
+    expect(profile?.slow).toHaveLength(1)
+  })
 })

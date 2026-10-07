@@ -18,6 +18,12 @@ export interface PaceProfile {
   medianMs: number
   /** 맞았지만 느린 카드. 느린 순서 */
   slow: { idiomId: string; elapsedMs: number }[]
+  /**
+   * 비율의 분모 — 중앙값을 낸 정답 표본 수(숙어당 최근 1건).
+   * 화면이 「정답 중 N%」를 말하려면 분모가 있어야 한다. 개수만 내면 많은지 적은지를 못 읽는다
+   * (사용자 2026-10-07 「내 수준이 어느 정도인지 알기 어렵다」)
+   */
+  counted: number
 }
 
 /** 짝수 개면 가운데 둘의 평균. `tools/audit-pace.ts` 가 예측 타당도 실측에도 같은 중앙값을 쓴다 */
@@ -59,5 +65,5 @@ export function paceProfile(events: readonly LearningEvent[]): PaceProfile | nul
   }
   slow.sort((a, b) => b.elapsedMs - a.elapsedMs || (a.idiomId < b.idiomId ? -1 : a.idiomId > b.idiomId ? 1 : 0))
 
-  return { medianMs, slow }
+  return { medianMs, slow, counted: correctMs.length }
 }

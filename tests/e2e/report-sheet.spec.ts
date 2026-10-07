@@ -337,8 +337,8 @@ test('수준 시트 — 느린 정답을 심으면 응답 시간 줄이 뜬다',
   await seedPace(page, 20, 5000)
   await page.locator('.summary .tile').nth(0).click()
   await expect(page.getByRole('dialog')).toHaveAccessibleName('수준')
-  await expect(page.locator('.pace-line')).toContainText('맞지만 느린 말 1개')
-  await expect(page.locator('.pace-line')).toContainText('중앙값')
+  await expect(page.locator('.pace-line')).toContainText('망설인 표현 1개')
+  await expect(page.locator('.pace-line')).toContainText('정답 중 5%')
 })
 
 test('수준 시트 — 표본이 모자라면 응답 시간 줄이 없다', async ({ page }) => {
