@@ -95,6 +95,11 @@ interface Loaded {
   day: string
   /** 맞지만 느린 카드 — 응답 시간 자동화를 잰다 (2026-10-07, 교수자 관점 보완 A). 표본이 모자라면 null */
   pace: PaceProfile | null
+  /**
+   * `MISTAKE_RULE` 처방이 가리키는 절에서 틀린 숙어의 음독 쌍 (2026-10-07, 교수자 관점 보완 D).
+   * 그 처방이 없거나 걸리는 숙어가 없으면 빈 배열 — 그때는 대조 진입 버튼을 안 그린다
+   */
+  ruleFocusPairIds: string[]
 }
 
 /**
@@ -187,6 +192,33 @@ export function Report({
           full: settings.sessionLimit,
         })
         const day = dateKey(Date.now())
+        const prescriptions = prescribe({
+          report,
+          level,
+          unlocksOf: (pairId) => index.get(pairId)?.length ?? 0,
+          // 역인덱스의 키가 곧 **코퍼스에서 실제로 실현된 쌍**이라 사전을 더 안 읽는다
+          siblingsOf: (pairId) =>
+            onyomiSiblings(pairId, index.keys(), (id) => index.get(id)?.length ?? 0),
+        })
+        // 처방 D — 규칙 처방이 가리키는 절에서 틀린 숙어의 음독 쌍을 모은다 (2026-10-07,
+        // 교수자 관점 보완). 규칙 화면·배지와 **같은 판정**(reclassifier)을 써야 어느 쪽에선
+        // 걸리고 어느 쪽에선 안 걸리는 식으로 갈라지지 않는다. 대조 세션(`buildFocus`)은
+        // 안 건드린다 — 표적 pairId 만 모아 기존 onFocus 에 넘긴다
+        const isMistakeRule = (p: Prescription): p is Extract<Prescription, { kind: 'MISTAKE_RULE' }> =>
+          p.kind === 'MISTAKE_RULE'
+        const mistakeRule = prescriptions.find(isMistakeRule)
+        let ruleFocusPairIds: string[] = []
+        if (mistakeRule) {
+          const kind = mistakeRule.type === 'RENDAKU' ? dominantVoicing(voicing) : null
+          const idiomIds = new Set<string>()
+          for (const e of classifiedMistakes(events)) {
+            const v = again(e)
+            if (v.type === mistakeRule.type && v.voicing === kind) idiomIds.add(e.idiomId)
+          }
+          const pairIds = new Set<string>()
+          for (const id of idiomIds) for (const pid of byId.get(id)?.pairIds ?? []) pairIds.add(pid)
+          ruleFocusPairIds = [...pairIds]
+        }
         const next: Loaded = {
           report,
           onyomi,
@@ -202,14 +234,8 @@ export function Report({
           // 풀과 무관하게 **기록 전체**를 본다 — 느린 응답은 출제 범위 설정과 상관없다
           pace: paceProfile(events),
           rows: mistakeRows(report.mistakes, voicing, Math.max(0, report.unclassified - passed)),
-          prescriptions: prescribe({
-            report,
-            level,
-            unlocksOf: (pairId) => index.get(pairId)?.length ?? 0,
-            // 역인덱스의 키가 곧 **코퍼스에서 실제로 실현된 쌍**이라 사전을 더 안 읽는다
-            siblingsOf: (pairId) =>
-              onyomiSiblings(pairId, index.keys(), (id) => index.get(id)?.length ?? 0),
-          }),
+          prescriptions,
+          ruleFocusPairIds,
         }
         cache = { version: dataVersion(), data: next }
         setData(next)
@@ -307,6 +333,7 @@ function ReportBody({
     reach,
     onyomi,
     pace,
+    ruleFocusPairIds,
   } = data
   // 정답률은 *실제* 오답으로 센다. 분류된 오답만 쓰면 미분류분이 정답으로 둔갑한다
   const accuracy =
@@ -497,6 +524,7 @@ function ReportBody({
                       p={p}
                       voicing={topVoicing}
                       mixed={voicingMixed}
+                      ruleFocusPairIds={ruleFocusPairIds}
                       onFocus={onFocus}
                       onRule={onRule}
                     />
@@ -959,6 +987,7 @@ function RxItem({
   p,
   voicing,
   mixed,
+  ruleFocusPairIds,
   onFocus,
   onRule,
 }: {
@@ -967,6 +996,8 @@ function RxItem({
   voicing: VoicingKind | null
   /** 그 바구니에 갈래가 둘 이상 섞였나 — 숫자가 묶인 값임을 밝힌다 */
   mixed: boolean
+  /** `MISTAKE_RULE` 의 대조 진입 표적 (2026-10-07). 비면 그 버튼을 안 그린다 */
+  ruleFocusPairIds: string[]
   onFocus: (pairIds: string[]) => void
   onRule: (id: RuleId | null) => void
 }) {
@@ -1003,6 +1034,14 @@ function RxItem({
           {rule && (
             <button type="button" className="btn rx-run" onClick={() => onRule(rule)}>
               이 규칙 읽기 <span className="chev">›</span>
+            </button>
+          )}
+          {/* 대조 세션 진입로 (2026-10-07). 2026-09-17 은 "규칙은 세션으로 못 만든다"였고
+              2026-09-21 대조 세션이 그 선을 좁혔다 — 이 자리도 같은 선을 적용받는다
+              (decisions.md 「처방 — 규칙 축에도 대조를 연다」). 갈 데 없는 버튼은 안 둔다 */}
+          {ruleFocusPairIds.length > 0 && (
+            <button type="button" className="btn rx-run" onClick={() => onFocus(ruleFocusPairIds)}>
+              이 경계를 갈라 풀기 <span className="chev">›</span>
             </button>
           )}
         </>

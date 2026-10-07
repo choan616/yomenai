@@ -49,3 +49,8 @@
 - 결정: 느린 정답 뒤 오답률 30.4%(표본 283) vs 빠른 정답 뒤 19.7%(표본 3910) — 느린 쪽이 10.7%p 높다. 축을 살린다, A2 의 pace-line 을 그대로 둔다.
 - 처방 가중에 섞는 것은 별도 단계로 미룬다(`docs/work-teaching-axis.md` 3단계 지시 그대로) — 지금은 pace-line 노출까지만.
 - 검증: `npm run audit:pace`(사용자 `backup.json`, 이벤트 파일 1개) 실측 + `tools/audit-pace.test.ts` 단위 4건.
+
+## 2026-10-07 — 규칙 처방 대조 진입로 실측 확인 (D)
+- 결정: `ruleFocusPairIds` 는 그 절 오답 숙어 **전체의 pairIds 합집합**이다. `surfaceOfPairs` 가 숙어의 첫 매치 segment 를 쓰므로, 표적을 "첫 글자가 같은 숙어들"로 고르면 코퍼스의 같은 글자 다른 숙어가 자연히 섞여 들어와 대조가 오히려 더 튼튼해진다(発 계열 30개 실측).
+- 대조군 확인: 疾病(しっぺい)만 반복해 틀리면 — 疾:on:しつ 코퍼스 5개 전부가 단일 표면 "しっ", 病:on:へい 는 이 숙어 하나뿐 — 인접 판정이 실제로 **false** 로 떨어진다. 검사가 변별력이 있다는 증거(`rule-contrast-session.spec.ts`).
+- 검증: e2e 4개(①②③+대조군) 신규, `focus-session`·`contrast-session`·`report-sheet` 15개 회귀 없음, 단위 1003 통과.
