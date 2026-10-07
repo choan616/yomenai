@@ -1,4 +1,4 @@
-// 규칙별 첫 만남 정답률 검증 — 반복 정답이 숫자를 안 올리는지, 규칙 없는 숙어가 안 세이는지
+// 규칙별 첫 만남 정답률 검증 — 반복 정답이 숫자를 안 올리는지, 규칙 없는 숙어가 안 세는지
 import { describe, expect, it } from 'vitest'
 import { firstTryByRule, type MeasuredVariant } from './firstTry.ts'
 import type { ReviewEvent } from './types.ts'
