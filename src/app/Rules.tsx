@@ -19,6 +19,7 @@ import { mistakeContextFromKanji } from '../dict/mistakeContext.ts'
 import { decompose } from '../lib/onyomi.ts'
 import { MISTAKE_LABEL, VOICING_LABEL } from '../study/mistakeLabels.ts'
 import { Mixed, RuleBody } from './RuleBody.tsx'
+import { firstTryLineText } from './rulesFirstTry.ts'
 import { RULE_SECTIONS, type RuleId, type RuleSection } from './rules.ts'
 
 const MEASURED_VARIANTS = new Set<MeasuredVariant>(['sokuon', 'rendaku', 'handaku', 'renjo'])
@@ -211,13 +212,7 @@ function RuleRecordView({
       : section.mistakes.map((m) => MISTAKE_LABEL[m]).join(' · ')
 
   // 기존 기록 블록(「이 규칙으로 틀린 것」) 아래에 붙는 줄 — 재지 않는 절이면 아예 안 그린다
-  const firstTryLine = firstTry && (
-    <p className="dim first-try">
-      {firstTry.seen > 0
-        ? `처음 만난 ${firstTry.seen}개 중 ${firstTry.correct}개를 읽었어요`
-        : '아직 처음 만난 말이 없어요'}
-    </p>
-  )
+  const firstTryLine = firstTry && <p className="dim first-try">{firstTryLineText(firstTry)}</p>
 
   if (record === null) {
     return (

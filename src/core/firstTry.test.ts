@@ -1,6 +1,6 @@
 // 규칙별 첫 만남 정답률 검증 — 반복 정답이 숫자를 안 올리는지, 규칙 없는 숙어가 안 세는지
 import { describe, expect, it } from 'vitest'
-import { firstTryByRule, type MeasuredVariant } from './firstTry.ts'
+import { firstTryByRule, FIRST_TRY_MIN_SAMPLE, type MeasuredVariant } from './firstTry.ts'
 import type { ReviewEvent } from './types.ts'
 
 let seq = 0
@@ -91,5 +91,11 @@ describe('firstTryByRule', () => {
     const out = firstTryByRule(events, appliesTo({ '1': ['sokuon', 'rendaku'] }))
     expect(out.get('sokuon')).toEqual({ seen: 1, correct: 0 })
     expect(out.get('rendaku')).toEqual({ seen: 1, correct: 0 })
+  })
+
+  it('표본이 FIRST_TRY_MIN_SAMPLE 미만이어도 집계는 그대로 센다 (문턱은 그리는 쪽 몫, 2026-10-07 8단계)', () => {
+    const events = Array.from({ length: FIRST_TRY_MIN_SAMPLE - 1 }, (_, i) => ev(String(i + 1), i, { correct: i % 2 === 0 }))
+    const out = firstTryByRule(events, () => new Set(['sokuon'] as const))
+    expect(out.get('sokuon')?.seen).toBe(FIRST_TRY_MIN_SAMPLE - 1)
   })
 })

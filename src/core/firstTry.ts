@@ -8,6 +8,16 @@ import type { LearningEvent, ReviewEvent } from './types.ts'
  */
 export type MeasuredVariant = 'sokuon' | 'rendaku' | 'handaku' | 'renjo'
 
+/**
+ * 이만큼 안 모이면 화면이 비율을 안 보인다 (2026-10-07, 교수자 관점 보완 8단계).
+ *
+ * 집계(`firstTryByRule`)는 이 값을 모른다 — 문턱은 **그리는 쪽**(`Rules.tsx`)에서만 쓴다.
+ * 여기 두는 이유는 A 축의 `PACE_MIN_SAMPLE` 과 같은 자리에서 같이 관리하기 위해서다.
+ * 실측(연성 1개로 0% 가 뜬 사례)으로 5 를 골랐다 — 20 은 반탁(17개, 41.2%)까지 지운다
+ * (decisions.md 「처방 — 규칙 축에도 대조를 연다」).
+ */
+export const FIRST_TRY_MIN_SAMPLE = 5
+
 export interface FirstTryRate {
   /** 그 규칙이 걸린 숙어를 처음 만난 횟수 */
   seen: number
