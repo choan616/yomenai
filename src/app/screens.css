@@ -889,33 +889,12 @@
 .browse-entry {
   margin-top: 18px;
 }
-/* 취약 음독 — 접힌 채로 둔다 (2026-10-01). 제목줄 전체가 누르는 자리, 오른쪽 ›가 열림을 말한다 */
-.weak-onyomi summary {
-  display: flex;
-  align-items: baseline;
-  gap: 6px;
-  cursor: pointer;
-  list-style: none;
-}
-.weak-onyomi summary::-webkit-details-marker {
-  display: none;
-}
-.weak-onyomi summary::after {
-  content: '›';
-  margin-left: auto;
-  font-size: calc(16px * var(--ui-scale));
-  line-height: 1;
-  transition: transform 160ms ease-out;
-}
-.weak-onyomi details[open] summary::after {
-  transform: rotate(90deg);
-}
+/* 취약 음독 시트 — 제목은 시트 머리가 말하고 본문은 개수와 목록뿐이다 (2026-10-07) */
 .weak-count {
+  margin: 0 0 8px;
+  font-size: calc(13px * var(--ui-scale));
   font-variant-numeric: tabular-nums;
   color: var(--text-dim);
-}
-.weak-onyomi details:not([open]) summary {
-  margin-bottom: 0;
 }
 .browse-lead {
   margin: 0 0 12px;

@@ -375,7 +375,6 @@ function ReportBody({
             onQuick={onQuick}
           /> },
     mist: { title: '오답 유형', content: <section>
-            <p className="section-title">오답 유형 분포</p>
             {rows.length === 0 && passed === 0 ? (
               <p className="empty">오답이 없어요.</p>
             ) : (
@@ -423,7 +422,6 @@ function ReportBody({
             )}
           </section> },
     browse: { title: '다시보기', content: <section>
-              <p className="section-title">다시보기</p>
             {report.frequent.length > 0 ? (
               <div className="browse-entry">
                 <p className="browse-lead">채점 없이 한 장씩 넘겨 봐요. 들어갈 때마다 섞여요.</p>
@@ -451,31 +449,31 @@ function ReportBody({
             )}
             </section> },
     weak: { title: '취약 음독', content: <section className="weak-onyomi">
-              <details open>
-                <summary className="section-title">
-                  취약 음독 <span className="weak-count">{report.weakOnyomi.length}</span>
-                </summary>
-                {report.weakOnyomi.length === 0 && <p className="empty">아직 약한 음독이 없어요.</p>}
-                <ul className="rows">
-                  {report.weakOnyomi.map((w, i) => (
-                    <li key={w.pairId} style={{ '--i': i } as React.CSSProperties}>
-                      <span className="st learning" aria-hidden="true">
-                        ◐
-                      </span>
-                      <span className="r-main" lang="ja">
-                        {w.kanji}
-                      </span>
-                      <span className="r-sub r-ja" lang="ja">
-                        {w.base}
-                      </span>
-                      <span className="r-sub">{w.kind === 'on' ? '음' : '훈'}</span>
-                      <span className="r-tail">
-                        {Math.round(w.rate * 100)}% · {w.wrong}/{w.seen}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              </details>
+              {/* 제목·접힘 줄은 없다 — 시트 제목(「취약 음독」)과 같은 말이었다. 개수만 남긴다 */}
+              {report.weakOnyomi.length === 0 ? (
+                <p className="empty">아직 약한 음독이 없어요.</p>
+              ) : (
+                <p className="weak-count">{report.weakOnyomi.length}개</p>
+              )}
+              <ul className="rows">
+                {report.weakOnyomi.map((w, i) => (
+                  <li key={w.pairId} style={{ '--i': i } as React.CSSProperties}>
+                    <span className="st learning" aria-hidden="true">
+                      ◐
+                    </span>
+                    <span className="r-main" lang="ja">
+                      {w.kanji}
+                    </span>
+                    <span className="r-sub r-ja" lang="ja">
+                      {w.base}
+                    </span>
+                    <span className="r-sub">{w.kind === 'on' ? '음' : '훈'}</span>
+                    <span className="r-tail">
+                      {Math.round(w.rate * 100)}% · {w.wrong}/{w.seen}
+                    </span>
+                  </li>
+                ))}
+              </ul>
             </section> },
   }
 
@@ -610,7 +608,6 @@ function LevelSection({
   const totalStable = scored.reduce((s, b) => s + b.stable, 0)
   return (
     <section className="level">
-      <p className="section-title">지금 수준</p>
       <p className="report-lead">{levelHeadline(level)}</p>
       <p className="stat-line">
         읽기 {reviews}회 · 전체 정답률 {accuracy}%
@@ -825,8 +822,8 @@ function CalendarSection({
   return (
     <section className="attendance">
       {/* 달력은 시트 안에서 늘 펼쳐져 있다 (2026-10-05). 전에는 접어 두고 연속 기록 문구만 먼저 보였지만,
-          요약은 이제 리포트 맨 위 타일이 말한다 — 접힘과 그 기억(calendarOpen.ts)은 쓸모가 없어져 걷었다 */}
-      <p className="section-title">학습한 날</p>
+          요약은 이제 리포트 맨 위 타일이 말한다 — 접힘과 그 기억(calendarOpen.ts)은 쓸모가 없어져 걷었다.
+          소제목은 없다 — 시트 제목(「학습한 날」)이 이미 말한다. 처음 높이에서 달력이 한 줄이라도 더 보여야 한다 */}
       {lead && <p className="cal-records">{lead}</p>}
         <div id="cal-body">
         <div className="cal-header">

@@ -82,7 +82,7 @@ test('리포트의 처방에서 집중 세션으로 바로 들어간다', async 
   // 취약 음독은 「더 보기」 줄의 시트 안에 있다 (2026-10-05) — 시트에서는 목록이 처음부터 펼쳐져 있다
   await openWeak(page)
   const weak = page.locator('.weak-onyomi')
-  await expect(weak.locator('summary')).toContainText('취약 음독')
+  await expect(page.getByRole('dialog')).toHaveAccessibleName('취약 음독')
   await expect(weak.locator('.rows li').first()).toBeVisible()
   await closeSheet(page)
 

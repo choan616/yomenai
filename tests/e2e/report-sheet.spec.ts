@@ -102,6 +102,27 @@ test('타일을 누르면 상세가 하단 시트로 열리고 Esc 로 닫힌다
   await expect(dialog).toHaveCount(0)
 })
 
+test('시트 본문은 시트 제목을 소제목으로 되풀이하지 않는다 — 처음 높이에서 달력이 가려진다', async ({ page }) => {
+  await seed(page, 5)
+  const dialog = page.getByRole('dialog')
+  const opens = [
+    () => page.locator('.summary .tile').nth(0).click(),
+    () => page.locator('.summary .tile').nth(1).click(),
+    () => page.locator('.summary .tile').nth(2).click(),
+    () => page.locator('.summary .tile').nth(3).click(),
+    () => page.locator('.tools').getByRole('button', { name: /^다시보기/ }).click(),
+  ]
+  for (const open of opens) {
+    await open()
+    const title = (await dialog.getAttribute('aria-label'))!
+    const body = dialog.locator('.sheet-body')
+    await expect(body.locator('.section-title')).toHaveCount(0)
+    // 본문 어디에도 제목과 같은 글자만 적힌 줄이 없다
+    await expect(body.getByText(title, { exact: true })).toHaveCount(0)
+    await closeSheet(page)
+  }
+})
+
 test('더 보기 줄: 읽기 규칙·음독 맵은 화면으로, 취약 음독·다시보기는 시트로', async ({ page }) => {
   await seed(page, 5)
   const more = page.locator('.tools')
