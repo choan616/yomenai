@@ -1,0 +1,237 @@
+# 작업 지시서 — 교수자 관점 보완 (2026-10-07)
+
+**이 문서 하나로 작업이 된다.** 근거는 이미 정리돼 있으니 다시 조사하지 않는다.
+
+## 읽을 것 (이 순서, 이것만)
+
+1. `CLAUDE.md` — 프로젝트 규칙
+2. 이 문서
+3. `decisions.md` 의 **「처방 — 규칙 축에도 대조를 연다」** 절 하나
+4. `checklist.md` 의 **「교수자 관점 보완 (2026-10-07)」** 절 하나
+
+**읽지 않는다** — `context-notes.md`, `docs/archive/` (수백 KB다). 특정 주제가 필요하면 통째로 열지 말고 grep 한다.
+`grep -n "키워드" decisions.md docs/archive/rejected-index.md`
+
+## 절대 어기지 말 것
+
+어기면 되돌린다. 이유는 `CLAUDE.md` 와 `decisions.md` 에 있다.
+
+- **학습 이벤트 스키마에 새 타입·새 필드를 넣지 않는다.** 여기 있는 모든 단계는 **기존 로그를 다시 읽는 것**으로 해결된다 (`src/core/ruleRecord.ts` 머리말이 그 패턴이다). 새 필드가 필요하다고 판단되면 **멈추고 사용자에게 묻는다.**
+- **사전 DB(정적 자산)와 사용자 DB(IndexedDB)를 섞지 않는다.**
+- **카드당 탭 수를 늘리지 않는다.** 확인 질문·선택지·추가 버튼을 카드에 붙이지 않는다. 카드 전환은 150ms 이하.
+- **객관식 보기를 만들지 않는다.** 보기에서 역추론이 되면 산출 능력을 못 잰다.
+- **대조 세션 진입로는 처방 하나다.** 규칙 화면·음독 맵·홈에서 열지 않는다.
+- 일본어를 출력하는 모든 요소에 `lang="ja"`.
+- 한국어 UI 는 해요체, 보고·기록은 평서체. **문장을 콜론으로 끝내지 않는다.**
+- `npm install` 금지. 새 의존성이 필요하면 멈추고 묻는다.
+- 새로 만드는 소스 파일 첫 줄은 **그 파일의 역할을 적은 한국어 한 줄 주석**.
+
+## 공통 검증
+
+단계마다 전부 돌린다. 하나라도 실패하면 커밋하지 않는다.
+
+```bash
+npm run lint && npm test && npm run build
+```
+
+e2e 는 해당 파일만 돌린다 (전체는 느리다).
+
+```bash
+npx playwright test tests/e2e/report-sheet.spec.ts
+```
+
+## 커밋
+
+**한 단계 = 한 커밋.** 검증을 통과한 뒤 커밋한다. 푸시는 사용자가 「푸시하라」고 할 때만.
+결정이 바뀌면 같은 커밋에 `decisions.md` 수정이 들어간다. 단계를 끝내면 `checklist.md` 의 그 항목을 지운다 (이력은 커밋에 남는다).
+
+---
+
+# 1단계 — A1. 응답 시간 집계 (순수 함수)
+
+`ReviewEvent.elapsedMs` 는 v1부터 모든 채점에 기록되는데 **읽는 코드가 없다.** 정확도는 아는지를 재고 응답 시간은 자동화됐는지를 잰다. 둘은 처방이 반대다 — 맞지만 느린 것은 노출 반복이 필요하고, 틀리고 빠른 것은 대조가 필요하다.
+
+**새로 만들 파일** — `src/core/pace.ts`, `src/core/pace.test.ts`
+**고칠 파일** — 없다. 이 단계는 화면을 건드리지 않는다.
+
+## 할 일
+
+`src/core/pace.ts` 에 순수 함수 하나와 상수 셋을 낸다.
+
+```ts
+export const PACE_MIN_SAMPLE = 20   // 이만큼 안 모이면 null (판정 보류)
+export const PACE_SLOW_FACTOR = 2   // 정답 응답 시간 중앙값의 몇 배부터 「느린」인가
+export const PACE_CAP_MS = 60_000   // 이보다 긴 이벤트는 버린다 (중간에 멈춘 것)
+
+export interface PaceProfile {
+  /** 정답 응답 시간 중앙값 (ms) */
+  medianMs: number
+  /** 맞았지만 느린 카드. 느린 순서 */
+  slow: { idiomId: string; elapsedMs: number }[]
+}
+
+export function paceProfile(events: readonly LearningEvent[]): PaceProfile | null
+```
+
+규칙은 이렇게 고정한다.
+
+- `type === 'review'` · `deletedAt === null` · `cardType === 'reading'` 만 본다
+- `elapsedMs > PACE_CAP_MS` 는 버린다. `elapsedMs <= 0` 도 버린다
+- 중앙값은 **정답 이벤트**(`correct === true`)의 `elapsedMs` 로 낸다
+- 남은 정답 표본이 `PACE_MIN_SAMPLE` 미만이면 `null` 을 낸다
+- 「느린」 = `correct === true` 이고 `elapsedMs >= medianMs * PACE_SLOW_FACTOR`
+- 같은 숙어가 여러 번 나오면 **가장 최근 이벤트**로 한 번만 센다
+- 정렬은 `elapsedMs` 내림차순, 동점은 `idiomId` 순 (같은 기록이면 같은 결과)
+
+## 완료 조건
+
+- `src/core/pace.test.ts` 가 다음을 덮는다. ① 표본이 19개면 `null`, 20개면 값이 난다 ② **정답률이 같고 응답 시간만 다른 두 로그가 서로 다른 `slow` 를 낸다** ③ 60초 넘는 이벤트가 중앙값을 안 흔든다 ④ 같은 숙어의 옛 이벤트가 최신 것을 덮지 않는다 ⑤ 지워진 이벤트(`deletedAt`)가 안 들어온다
+- `npm run lint && npm test && npm run build` 통과
+
+---
+
+# 2단계 — A2. 리포트 「수준」 시트에 한 줄
+
+**고칠 파일** — `src/app/Report.tsx` (수준 시트 본문), 필요하면 `src/app/reportSummary.ts`
+**새 화면·새 버튼·새 탭을 만들지 않는다.** 요약 타일 넷은 그대로 둔다 (`decisions.md`).
+
+## 할 일
+
+수준 시트 안에 한 줄을 더한다. 문구는 이렇게 둔다.
+
+- 값이 있으면 — `맞지만 느린 말 N개` + 부제 `중앙값 X.X초의 2배를 넘겨요`
+- `paceProfile` 이 `null` 이면 — 그 줄을 **아예 안 그린다** (「0개」라고 쓰지 않는다)
+
+숫자만 낸다. 이 단계에서 다시보기·세션으로 잇지 않는다 — 진입로를 늘리면 「측정이 먼저」가 깨진다.
+
+## 완료 조건
+
+- 기존 `tests/e2e/report-sheet.spec.ts` 에 케이스를 더한다 — 느린 정답을 심은 로그로 그 줄이 뜨고, 표본이 모자란 로그에서는 **그 줄이 없다**
+- `npx playwright test tests/e2e/report-sheet.spec.ts` 통과 + 공통 검증 통과
+
+---
+
+# 3단계 — A3. 예측 타당도 실측 (이 결과로 축을 살릴지 정한다)
+
+**이 단계는 사용자 작업이 먼저 필요하다.** Drive 동기화 파일(`reviews-*.json`)을 내려받아 `data/events/` 에 넣어야 한다. 없으면 **여기서 멈추고 사용자에게 요청한다.** 파일을 받기 전에 이 단계를 건너뛰고 4단계로 가지 않는다.
+
+**새로 만들 파일** — `tools/audit-pace.ts` (기존 `tools/audit-*.ts` 와 같은 모양. `tools/build-event-worklist.ts` 가 `data/events/*.json` 을 읽는 방식을 그대로 따른다)
+**`package.json`** 에 `audit:pace` 스크립트를 더한다.
+
+## 재는 것
+
+> 「맞지만 느린」 항목이 **다음 만남에 틀리는 비율**이 빠른 정답보다 높은가.
+
+- 각 카드의 정답 이벤트마다 그 **다음** 같은 카드 이벤트를 찾는다
+- 느린 정답 뒤 오답률과 빠른 정답 뒤 오답률을 나란히 낸다. 표본 수를 같이 찍는다
+- 판단은 사람이 한다. 스크립트는 숫자만 낸다
+
+## 완료 조건
+
+- 결과를 `context-notes.md` 에 **6줄 이내**로 적는다 (표본 수 · 두 비율 · 판단)
+- 느린 쪽이 더 높지 않으면 **축을 버린다** — 2단계의 줄을 걷어내고 `decisions.md` 의 해당 줄을 `[폐기 → 측정 실패]` 로 바꾼다. 줄은 지우지 않는다
+- 더 높으면 그대로 두고, 처방 가중에 섞는 것은 **별도 단계로 미룬다** (지금 하지 않는다)
+
+---
+
+# 4단계 — B1. 규칙별 첫 만남 정답률 (순수 함수)
+
+지금 리포트의 오답 분포는 **누적 오답 수**다. 복습 항목에서의 정답은 그 카드를 외운 것일 수 있다. 규칙을 익혔다는 증거는 **처음 보는 숙어에서 그 규칙이 작동하는 것**뿐이다.
+
+**새로 만들 파일** — `src/core/firstTry.ts`, `src/core/firstTry.test.ts`
+**고칠 파일** — `src/core/mistakes.ts` 는 **내부 함수를 `export` 하는 것까지만** 허용한다. 동작을 바꾸지 않는다. 음운 판정을 새로 구현하지 말고 **있는 것을 쓴다.**
+
+## 범위를 좁힌다 (중요)
+
+정답 읽기에 규칙이 걸렸는지는 `decompose` 결과의 `Segment.variants` 로 판정한다. 값은 `'rendaku'` · `'handaku'` · `'renjo'` · `'sokuon'` 넷뿐이다.
+
+- **재는 절** — 촉음(`sokuon`) · 연탁(`rendaku`) · 반탁(`handakuon`) · 연성(`renjo`) 넷
+- **안 재는 절** — 장음 · 한국음 꼬리 · 청탁 미구분 · 음독 층위 · 혼독. `variants` 에 표시가 없거나 애초에 예측 규칙이 아니다 (`PLAN.md` §6). 화면에는 **「—」**로 둔다. 억지로 판정하지 않는다
+
+## 할 일
+
+```ts
+export interface FirstTryRate {
+  /** 그 규칙이 걸린 숙어를 처음 만난 횟수 */
+  seen: number
+  /** 그중 맞힌 횟수 */
+  correct: number
+}
+
+/** 절별 첫 만남 정답률. 재지 않는 절은 Map 에 아예 넣지 않는다 */
+export function firstTryByRule(
+  events: readonly LearningEvent[],
+  appliesTo: (idiomId: string) => Set<'sokuon' | 'rendaku' | 'handaku' | 'renjo'>,
+): Map<string, FirstTryRate>
+```
+
+- 「첫 만남」 = 그 카드(`idiomId` + `cardType: 'reading'`)의 **시간순 첫 `review` 이벤트** 하나. `compareEvents` 로 정렬한다 (`src/core/types.ts`)
+- 지워진 이벤트는 뺀다
+- `appliesTo` 는 호출부가 사전을 들고 넘긴다 — 이 함수는 사전을 모른다 (`ruleRecord` 와 같은 규약)
+
+## 완료 조건
+
+- 테스트가 다음을 덮는다. ① **같은 숙어를 반복해 맞힌 로그가 이 숫자를 안 올린다** ② 첫 만남이 오답이고 두 번째가 정답이면 `correct` 는 0 이다 ③ 규칙이 안 걸린 숙어는 안 센다 ④ 재지 않는 절은 Map 에 없다
+- 공통 검증 통과
+
+---
+
+# 5단계 — B2. 규칙 절 화면에 그 숫자
+
+**고칠 파일** — `src/app/Rules.tsx` (`RuleRecordView` 자리), 필요하면 `src/app/RuleBody.tsx`
+`src/app/Rules.tsx` 는 이미 사전(`pool` · `kanji`)과 이벤트를 다 읽고 있으니 **거기서 `appliesTo` 를 만들어 넘긴다.** 새 로더를 만들지 않는다.
+
+## 할 일
+
+절마다 기존 기록 줄 아래에 한 줄을 더한다.
+
+- 재는 절이고 `seen > 0` 이면 — `처음 만난 N개 중 M개를 읽었어요`
+- 재는 절인데 `seen === 0` 이면 — `아직 처음 만난 말이 없어요`
+- 안 재는 절이면 — 줄을 그리지 않는다
+
+기존 기록 블록(「이 규칙으로 틀린 횟수와 숙어」)은 **그대로 둔다.** 지우거나 옮기지 않는다.
+
+## 완료 조건
+
+- `tests/e2e/reading-rules.spec.ts` 에 케이스를 더한다 — 촉음 절에 그 줄이 뜨고, 안 재는 절에는 **그 줄이 없다**
+- `npx playwright test tests/e2e/reading-rules.spec.ts` 통과 + 공통 검증 통과
+
+---
+
+# 6단계 — D. 규칙 처방에 대조 진입로
+
+지금 처방 셋 중 `ONYOMI` 만 그 자리에서 풀 수 있고 `MISTAKE_RULE` 은 **「이 규칙 읽기」 버튼뿐**이다. 가장 값이 큰 처방이 가장 실행이 안 되는 모양이다.
+
+**배경 판단 (사용자, 2026-10-07)** — 2026-09-17 「규칙은 세션으로 못 만든다」는 범위가 넓은 결정이었고 2026-09-21 대조 세션이 그 범위를 좁혔다. **뒤집는 것이 아니라 그 좁힌 선을 규칙 축에도 적용하는 것이다.** 선례를 다시 열지 않는다.
+
+**고칠 파일** — `src/app/Report.tsx` (`case 'MISTAKE_RULE'` 자리), 필요하면 `src/core/prescription.ts`
+**하지 말 것** — 새 세션 함수를 만들지 않는다. `buildFocus` 를 고치지 않는다. 처방 `kind` 를 새로 만들지 않는다.
+
+## 할 일
+
+`MISTAKE_RULE` 카드에 버튼을 하나 더한다. 기존 「이 규칙 읽기 ›」는 **그대로 둔다.**
+
+- 문구 — `이 경계를 갈라 풀기 ›`
+- 누르면 기존 `onFocus(pairIds)` 를 부른다. 그 뒤는 이미 다 돌아간다 — `App.tsx` 가 `onFlow({ kind: 'focus', pairIds })` 로 넘기고 `useStudySession` 이 `buildFocus` 에 `surfaceOf` 를 넣어 **표면형이 갈리게 번갈아 낸다** (発達 はっ ↔ 発言 はつ)
+
+`pairIds` 는 이렇게 모은다.
+
+1. 그 절의 기록에서 틀린 숙어를 가져온다 — `src/app/Rules.tsx` 가 쓰는 `ruleRecord` · `verdictByEvent` · `effectiveMistake` 와 **같은 함수**를 쓴다. 판정이 두 벌이 되면 배지와 세션이 언젠가 갈라진다
+2. 그 숙어들의 `pairIds` 를 합집합으로 모은다
+3. 비면 버튼을 **그리지 않는다** (갈 데 없는 버튼을 두지 않는다)
+
+## 완료 조건
+
+- `tests/e2e/contrast-session.spec.ts` 를 참고해 새 스펙을 쓴다 (`focus-session.spec.ts` 가 기록을 심는 방식 그대로 — 무작위로 틀리면 표적이 운에 달린다)
+- 확인할 것 — ① 촉음 오답을 심으면 규칙 처방에 버튼이 뜬다 ② 누르면 세션이 열리고 **촉음이 생기는 말과 안 생기는 말이 인접**해 나온다 ③ 기록이 없으면 버튼이 없다
+- **대조군을 돌린다** — 표적을 한쪽 표면형으로만 묶으면 ②가 실패해야 한다. 실패하지 않으면 검사가 못 읽고 있는 것이다
+- 공통 검증 + 그 스펙 통과
+
+---
+
+# 막혔을 때
+
+- 테스트가 실패하면 **에러 전문과 스택을 읽는다.** 기억으로 흔한 수정을 먼저 넣지 않는다
+- 같은 명령을 두 번 넘게 반복하지 않는다. 두 번 실패하면 **원인을 적어 사용자에게 보고한다** — 무엇이 실패했고, 왜라고 보는지, 무엇을 시도했는지, 대안이 무엇인지
+- 스키마를 건드려야 풀린다고 판단되면 **멈추고 묻는다.** 조용히 마이그레이션을 추가하지 않는다
+- 단계를 건너뛰지 않는다. 막힌 단계를 남기고 다음으로 가려면 그 사실을 먼저 보고한다
