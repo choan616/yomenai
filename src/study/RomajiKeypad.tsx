@@ -34,6 +34,18 @@ function swallowGhostClick(): void {
   timer = window.setTimeout(() => document.removeEventListener('click', eat, true), 500)
 }
 
+/** 직전 탭과 이 시간 안이면 연타로 본다. 빠른 타이핑의 키 간격(100~200ms)을 덮는다 */
+const REPEAT_MS = 300
+/** 직전 탭에서 키 폭의 이 비율보다 덜 움직였으면 손가락이 그 자리에 머문 것으로 본다 */
+const REPEAT_SLOP = 0.6
+
+interface LastTap {
+  ch: string
+  x: number
+  y: number
+  t: number
+}
+
 export function RomajiKeypad({
   onKey,
   onBackspace,
@@ -98,6 +110,30 @@ export function RomajiKeypad({
   const handled = (id: string) => pending.current.delete(id)
 
   /**
+   * 연타 보정 (2026-10-09 사용자 보고 「kyuu 가 kyuy 가 된다」). 같은 키를 빠르게 두 번 칠 때
+   * 엄지가 덜 움직여 둘째 탭이 이웃 키 쪽에 떨어진다 — uu·tt·nn 처럼 일본어 로마자엔 흔하다.
+   * 직전 탭에서 키 폭의 0.6배도 안 움직였는데 키만 바뀌었으면 같은 키로 본다. 다른 키를 일부러
+   * 이어 치면 손가락이 한 칸(키 폭+틈) 가까이 움직이니 걸리지 않는다. 터치에만 건다
+   */
+  const lastTap = useRef<LastTap | null>(null)
+  const resolveKey = (ch: string, e: React.PointerEvent): string => {
+    const last = lastTap.current
+    let key = ch
+    if (
+      e.pointerType === 'touch' &&
+      last !== null &&
+      last.ch !== ch &&
+      e.timeStamp - last.t < REPEAT_MS &&
+      Math.hypot(e.clientX - last.x, e.clientY - last.y) <
+        e.currentTarget.getBoundingClientRect().width * REPEAT_SLOP
+    ) {
+      key = last.ch
+    }
+    lastTap.current = { ch: key, x: e.clientX, y: e.clientY, t: e.timeStamp }
+    return key
+  }
+
+  /**
    * 글자 키. **누르는 순간 넣는다** — click 은 손을 뗄 때 와서 한 박자 늦게 느껴진다
    * (사용자 실기기 지적 2026-09-19 "반응속도가 느리다"). 시스템 키보드도 눌림에 글자를 낸다.
    * 확대 표시는 글자 키에만 붙인다 — 시스템 키보드도 지우기·확인 같은 기능 키는 확대하지 않는다
@@ -105,10 +141,12 @@ export function RomajiKeypad({
   const charKey = (ch: string) => ({
     onPointerDown: (e: React.PointerEvent) => {
       hold(e)
+      // 누름 번호는 실제로 눌린 버튼(ch) 기준이다 — 뒤따르는 click 이 그 버튼으로 온다
       markDown(ch)
-      setPressed(ch)
+      const key = resolveKey(ch, e)
+      setPressed(key)
       tick()
-      onKey(ch)
+      onKey(key)
     },
     onPointerUp: () => {
       markUp(ch)
