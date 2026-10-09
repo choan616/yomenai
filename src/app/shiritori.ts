@@ -92,6 +92,15 @@ export function pickReply(
   return from[Math.floor(rng() * from.length)]!
 }
 
+/**
+ * 앱이 답을 "치는 중"으로 보이는 시간 (2026-10-09 사용자 지시). 바로 나오면 내 말과 상대 말이
+ * 한 덩이로 붙어 어리둥절하다. 읽기가 길수록 오래 친다. 제한 시간이 아니라 상대의 연출이다 —
+ * 내 입력은 막지 않는다(제출만 답이 나온 뒤로 미룬다)
+ */
+export function replyDelayMs(reading: string): number {
+  return Math.min(2000, Math.max(900, 600 + 150 * [...reading].length))
+}
+
 /** 힌트 — 표기만 보인다(읽기를 떠올리는 게 연습이다). 흔한 말 위주 */
 export function hintWords(index: Index, need: string, used: ReadonlySet<string>, n: number): Word[] {
   return (index.get(need) ?? []).filter((w) => !used.has(w.headword)).slice(0, n)

@@ -8,6 +8,7 @@ import {
   judge,
   normReading,
   pickReply,
+  replyDelayMs,
   startWord,
   tailKanji,
   type Word,
@@ -129,5 +130,16 @@ describe('실제 사전', () => {
         cur = reply
       }
     }
+  })
+})
+
+// 앱이 답을 "치는 중"으로 보이는 시간 (2026-10-09 사용자 「상대의 글 입력이 너무 빨라서 어리둥절하다」)
+describe('replyDelayMs', () => {
+  it('읽기가 길수록 오래 친다', () => {
+    expect(replyDelayMs('ひとつ')).toBeLessThan(replyDelayMs('ひとつひとつ'))
+  })
+  it('아주 짧아도 입력 중으로 보일 만큼은 걸리고, 아무리 길어도 기다리게 하지 않는다', () => {
+    expect(replyDelayMs('あ')).toBeGreaterThanOrEqual(900)
+    expect(replyDelayMs('あ'.repeat(40))).toBeLessThanOrEqual(2000)
   })
 })

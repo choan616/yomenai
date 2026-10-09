@@ -19,6 +19,7 @@ import {
   hintWords,
   judge,
   pickReply,
+  replyDelayMs,
   startWord,
   tailKanji,
   type Index,
@@ -57,6 +58,13 @@ export function Shiritori({ onExit }: { onExit: () => void }) {
    * 놀이 중에는 안 쓰여서 상태가 아니라 ref 다 (렌더를 부를 이유가 없다)
    */
   const meanings = useRef<Map<string, string>>(new Map())
+  /**
+   * 앱이 답을 치는 중인가 (2026-10-09 사용자 지시 「상대의 글 입력이 너무 빨라서 어리둥절하다」).
+   * 내 말은 바로 붙고, 상대 자리에는 입력 중 표시가 뜬 뒤 말이 나온다. 입력창은 그대로 둔다 —
+   * `locked` 로 막으면 자판이 접혔다 펴져 화면이 출렁인다. 대신 제출만 답이 나온 뒤로 미룬다
+   */
+  const [replying, setReplying] = useState(false)
+  const replyTimer = useRef(0)
 
   useEffect(() => {
     let alive = true
@@ -84,11 +92,13 @@ export function Shiritori({ onExit }: { onExit: () => void }) {
     }
   }, [])
 
-  // 새 말이 붙으면 맨 아래로
+  useEffect(() => () => window.clearTimeout(replyTimer.current), [])
+
+  // 새 말이 붙거나 입력 중 표시가 뜨면 맨 아래로
   useEffect(() => {
     const el = listRef.current
     if (el) el.scrollTop = el.scrollHeight
-  }, [chain])
+  }, [chain, replying])
 
   const used = new Set(chain.map((l) => l.word.headword))
   const last = chain[chain.length - 1]?.word
@@ -108,7 +118,7 @@ export function Shiritori({ onExit }: { onExit: () => void }) {
   }
 
   const submit = (value: string) => {
-    if (!index || !last || over) return
+    if (!index || !last || over || replying) return
     const v = judge(index, need, value, used)
     if (v.kind === 'none') {
       setMessage(`「${need}」로 시작하는 말 중에 그 읽기가 없어요.`)
@@ -121,7 +131,6 @@ export function Shiritori({ onExit }: { onExit: () => void }) {
     const next: Link[] = [...chain, { word: v.word, by: 'me' }]
     const taken = new Set(next.map((l) => l.word.headword))
     const reply = pickReply(index, v.word, taken)
-    if (reply) next.push({ word: reply, by: 'app' })
     setChain(next)
     setMessage(null)
     setHint(null)
@@ -129,7 +138,13 @@ export function Shiritori({ onExit }: { onExit: () => void }) {
     if (!reply) {
       setOver({ reason: 'win' })
       finish(next.filter((l) => l.by === 'me').length)
+      return
     }
+    setReplying(true)
+    replyTimer.current = window.setTimeout(() => {
+      setChain((c) => [...c, { word: reply, by: 'app' }])
+      setReplying(false)
+    }, replyDelayMs(reply.reading))
   }
 
   const giveUp = () => {
@@ -140,6 +155,8 @@ export function Shiritori({ onExit }: { onExit: () => void }) {
 
   const again = () => {
     if (!index) return
+    window.clearTimeout(replyTimer.current)
+    setReplying(false)
     setChain([{ word: startWord(index), by: 'app' }])
     setMessage(null)
     setHint(null)
@@ -243,10 +260,22 @@ export function Shiritori({ onExit }: { onExit: () => void }) {
               </span>
             </li>
           ))}
+          {/* 상대가 치는 중 — 말이 나올 자리에 점 셋. 스크린리더에는 글로 읽힌다 */}
+          {replying && (
+            <li className="chain-item app typing" role="status">
+              <span className="typing-dots" aria-hidden="true">
+                <i />
+                <i />
+                <i />
+              </span>
+              <span className="sr-only">상대가 입력하고 있어요</span>
+            </li>
+          )}
         </ol>
 
         <div className="shiritori-ask">
-          <p className="shiritori-need">
+          {/* 상대가 치는 동안은 이어야 할 한자가 아직 없다 — 자리만 지켜 화면이 출렁이지 않게 한다 */}
+          <p className="shiritori-need" style={replying ? { visibility: 'hidden' } : undefined}>
             <span className="need-kanji" lang="ja">
               {need}
             </span>
@@ -266,11 +295,12 @@ export function Shiritori({ onExit }: { onExit: () => void }) {
             <button
               type="button"
               className="btn"
+              disabled={replying}
               onClick={() => index && setHint(hintWords(index, need, used, HINT_COUNT))}
             >
               힌트
             </button>
-            <button type="button" className="btn" onClick={giveUp}>
+            <button type="button" className="btn" disabled={replying} onClick={giveUp}>
               그만하기
             </button>
           </div>

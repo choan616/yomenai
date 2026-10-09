@@ -68,6 +68,34 @@ test('끝 한자로 시작하는 말의 읽기를 치면 이어지고 앱이 답
   await expect(page.locator('.count')).toHaveText('1개')
 })
 
+// 상대가 답을 치는 중으로 보인다 (2026-10-09 사용자 「상대의 글 입력이 너무 빨라서 어리둥절하다」)
+test('내 말이 붙은 뒤 상대는 입력 중 표시를 거쳐 말을 낸다', async ({ page }) => {
+  await open(page)
+  const need = tail(await lastWord(page))
+  const starts = BASE.filter((w) => [...w.headword][0] === need)
+  const mine = starts.find((w) => w.reading.length >= 2 && starts.filter((x) => x.reading === w.reading).length === 1)!
+  await page.locator('.kana-input').fill(mine.reading)
+  await page.locator('.kana-input').press('Enter')
+
+  // 앱이 이을 말이 없으면 입력 중 없이 바로 끝난다 — 그 판은 이 시험의 대상이 아니다
+  if ((await page.locator('.shiritori-over').count()) > 0) return
+
+  const typing = page.locator('.chain-item.typing')
+  await expect(typing).toBeVisible()
+  await expect(page.locator('.chain-item')).toHaveCount(3) // 첫 말 · 내 말 · 입력 중 표시
+  await expect(page.locator('.chain-item.me .chain-word')).toHaveText(mine.headword)
+  // 치는 동안 이어야 할 한자는 숨고, 힌트·그만하기는 눌리지 않는다
+  await expect(page.locator('.shiritori-need')).toBeHidden()
+  await expect(page.getByRole('button', { name: '그만하기' })).toBeDisabled()
+
+  // 끝나면 표시가 말로 바뀐다 (최대 2초)
+  await expect(typing).toHaveCount(0, { timeout: 4_000 })
+  await expect(page.locator('.chain-item')).toHaveCount(3)
+  await expect(page.locator('.chain-item.app')).toHaveCount(2)
+  await expect(page.locator('.shiritori-need')).toBeVisible()
+  await expect(page.getByRole('button', { name: '그만하기' })).toBeEnabled()
+})
+
 test('그 한자로 시작하는 말에 없는 읽기는 말이 이어지지 않고 안내가 뜬다', async ({ page }) => {
   await open(page)
   const need = tail(await lastWord(page))
