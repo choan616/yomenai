@@ -57,6 +57,8 @@ const wrong = (w: { id: string; reading: string; wrong: string }, n: number): Ev
   Array.from({ length: n }, () => ({ idiomId: w.id, daysAgo: 0, ok: false, answer: w.wrong, expected: w.reading, type: 'CHOON' }))
 
 test('쉬운 코스가 흔들리는 역전을 소견이 기록으로 설명한다', async ({ page }) => {
+  // 작은 화면 — 수준 시트가 스크롤돼야 「앞 시트의 스크롤을 물려받지 않는다」가 검증된다
+  await page.setViewportSize({ width: 390, height: 640 })
   await page.goto('/')
   await expect(page.getByRole('button', { name: '세션 시작' })).toBeVisible({ timeout: 20_000 })
   await page.evaluate(() => {
@@ -86,13 +88,26 @@ test('쉬운 코스가 흔들리는 역전을 소견이 기록으로 설명한�
   // 수준 시트가 역전을 알아보고 소견으로 잇는다
   const link = page.getByRole('button', { name: /더 쉬운 코스가 흔들리는 이유/ })
   await expect(link).toBeVisible()
-  await link.click()
+  // 앞 시트를 조금 내려 둔 채 넘어가도 소견은 맨 위부터 보인다
+  // (Playwright 의 click 은 링크를 보이게 하려고 스크롤을 되돌리므로, 스크롤한 채 DOM 클릭을 바로 보낸다)
+  await link.evaluate((el) => {
+    el.closest('.sheet-body')!.scrollTo(0, 30)
+    ;(el as HTMLElement).click()
+  })
 
   const dialog = page.getByRole('dialog')
   await expect(dialog).toHaveAccessibleName('진단 소견')
   const text = dialog.locator('.opinion')
+  await expect.poll(() => page.locator('.sheet-body').evaluate((el) => el.scrollTop)).toBe(0)
+  // 처음에는 한 줄 요약만 보이고 근거는 접혀 있다
+  await expect(text).toContainText('능선 코스는 안정인데, 더 쉬운 산책로 코스는 흔들려요.')
+  await expect(text).toContainText('오늘 하루 치 · 전체 기록')
+  await expect(text.locator('.opinion-line.detail').first()).toBeHidden()
+  await expect(text.getByText('訴訟 ×2')).toBeHidden()
+  // 「자세히」를 눌러야 근거 문장이 보인다
+  for (const s of await text.locator('summary').all()) await s.click()
+  await expect(text.locator('.opinion-line.detail').first()).toBeVisible()
   await expect(text).toContainText('능선 코스는 최근 30회 정답률')
-  await expect(text).toContainText('산책로 코스는 최근 기준으로 흔들려요')
   // 기록으로 푼 이유 — 창의 모양, 전체 기록, 장음 쏠림, 반복 오답
   await expect(text).toContainText('최근 30회가 모두 오늘 하루 치예요')
   await expect(text).toContainText('전체 기록은')

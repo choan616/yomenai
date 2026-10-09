@@ -748,6 +748,22 @@
   font-size: calc(15px * var(--ui-scale));
   line-height: 1.55;
 }
+/* 세부는 접어 둔다 (2026-10-10) — 한 줄 요약이 먼저 읽히고, 근거는 눌러야 펼친다 */
+.opinion-more {
+  margin-top: 2px;
+}
+.opinion-more > summary {
+  display: inline-block;
+  padding: 2px 0;
+  font-size: calc(13px * var(--ui-scale));
+  color: var(--text-dim);
+  cursor: pointer;
+}
+.opinion-line.detail {
+  margin-top: 4px;
+  font-size: calc(14px * var(--ui-scale));
+  color: var(--text-dim);
+}
 .opinion-note {
   margin: 20px 0 0;
   font-size: calc(12px * var(--ui-scale));

@@ -17,8 +17,10 @@ import { mistakeHint, mistakeLabel } from '../study/mistakeLabels.ts'
 export interface Paragraph {
   key: string
   title: string
-  /** 문장 하나가 한 줄이다 */
-  lines: string[]
+  /** 늘 보이는 한 줄 — 이것만 읽어도 결론이 선다 (2026-10-10 사용자 「간략 정보를 노출하고 세부는 요청에 의해」) */
+  summary: string
+  /** 「자세히」를 눌러야 보이는 근거 문장들. 없으면 펼침 버튼이 없다 */
+  details: string[]
 }
 
 export interface DiagnosisInput {
@@ -65,25 +67,24 @@ export function findInversion(level: LevelProfile): { solid: Band; shaky: Band[]
 function levelParagraph(level: LevelProfile): Paragraph {
   const inv = findInversion(level)
   const { solidThrough, edge } = level
-  const lines: string[] = []
+  const details: string[] = []
+  let summary: string
   if (inv !== null) {
     const row = scoredRows(level).find((r) => r.band === inv.solid)!
-    lines.push(`${bandName(inv.solid)} 코스는 최근 ${row.seen}회 정답률 ${pct(row.rate)}%로 안정이에요.`)
-    lines.push(
-      `그런데 더 쉬운 ${inv.shaky.map((b) => bandName(b)).join('·')} 코스는 최근 기준으로 흔들려요. 아래에서 기록으로 이유를 짚었어요.`,
-    )
+    summary = `${bandName(inv.solid)} 코스는 안정인데, 더 쉬운 ${inv.shaky.map((b) => bandName(b)).join('·')} 코스는 흔들려요.`
+    details.push(`${bandName(inv.solid)} 코스는 최근 ${row.seen}회 정답률 ${pct(row.rate)}%로 안정이에요. 흔들리는 코스는 아래에서 기록으로 이유를 짚었어요.`)
   } else if (edge !== null && solidThrough !== null) {
-    lines.push(`${bandName(solidThrough)}까지 안정, ${bandNameIga(edge)} 경계예요.`)
+    summary = `${bandName(solidThrough)}까지 안정, ${bandNameIga(edge)} 경계예요.`
   } else if (edge !== null) {
-    lines.push(`${bandName(edge)}부터 흔들려요.`)
+    summary = `${bandName(edge)}부터 흔들려요.`
   } else if (solidThrough !== null) {
-    lines.push(`${bandName(solidThrough)}까지 안정이에요. 아직 벽을 안 만났어요.`)
+    summary = `${bandName(solidThrough)}까지 안정이에요. 아직 벽을 안 만났어요.`
   } else {
-    lines.push('아직 수준을 말할 만큼 안 풀었어요.')
+    summary = '아직 수준을 말할 만큼 안 풀었어요.'
   }
   const stable = scoredRows(level).reduce((s, r) => s + r.stable, 0)
-  if (stable > 0) lines.push(`2주 넘게 안 잊는 표현은 ${stable}개예요.`)
-  return { key: 'level', title: '지금 수준', lines }
+  if (stable > 0) details.push(`2주 넘게 안 잊는 표현은 ${stable}개예요.`)
+  return { key: 'level', title: '지금 수준', summary, details }
 }
 
 /** 흔들리는 코스 하나를 기록으로 해부한다 */
@@ -97,6 +98,8 @@ function shakyParagraph(
 ): Paragraph {
   const lines: string[] = []
   const when = w.lastDate === today ? '오늘' : md(w.lastDate)
+  /** 접어 두기 전에 보이는 한 줄 — 창의 폭 · 전체 기록 · 오답 쏠림 */
+  const brief: string[] = [w.days === 1 ? `${when} 하루 치` : `${w.days}일 치`]
   lines.push(
     w.days === 1
       ? `최근 ${w.n}회가 모두 ${when} 하루 치예요.`
@@ -106,6 +109,7 @@ function shakyParagraph(
   const allRate = w.allCorrect / w.allN
   const comparable = [...windows.values()].filter((o) => o.allN >= LEVEL_WINDOW)
   const best = comparable.length >= 2 && comparable.every((o) => o.allCorrect / o.allN <= allRate)
+  brief.push(`전체 기록 ${pct(allRate)}%`)
   lines.push(
     `이 코스의 전체 기록은 ${pct(allRate)}%(${w.allN}회)예요.` +
       (best ? ` 비교할 수 있는 ${comparable.length}개 코스 중 가장 높은 값이에요.` : ''),
@@ -113,6 +117,7 @@ function shakyParagraph(
 
   const top = w.wrongTypes[0]
   if (w.wrongN >= 3 && top && top.type !== null && top.count / w.wrongN >= 0.5) {
+    brief.push(`${mistakeLabel(top.type)} ${top.count}/${w.wrongN}`)
     lines.push(`틀린 ${w.wrongN}개 중 ${top.count}개가 ${mistakeLabel(top.type)}${iEyo(mistakeLabel(top.type))}. ${mistakeHint(top.type)}`)
   }
   const rep = w.repeated
@@ -130,7 +135,7 @@ function shakyParagraph(
     )
     if (w.days <= 2 && !explained) lines.push('하루 이틀의 세션이 판정을 크게 좌우한 상태라, 며칠 더 풀면 달라질 수 있어요.')
   }
-  return { key: `shaky-${w.band}`, title: `${bandName(w.band)} — 최근 ${w.n}회`, lines }
+  return { key: `shaky-${w.band}`, title: `${bandName(w.band)} — 최근 ${w.n}회`, summary: brief.join(' · '), details: lines }
 }
 
 function trendParagraph(trends: AccuracyTrends): Paragraph | null {
@@ -144,11 +149,11 @@ function trendParagraph(trends: AccuracyTrends): Paragraph | null {
   return {
     key: 'trend',
     title: '최근 4주',
-    lines: [
+    summary:
       to - from >= 3
         ? `정답률이 ${from}%에서 ${to}%로 올랐어요 (${range}).`
         : `정답률은 ${from}%에서 ${to}%예요 (${range}).`,
-    ],
+    details: [],
   }
 }
 
@@ -158,12 +163,10 @@ function mistakeParagraph(
 ): Paragraph | null {
   if (totalWrong < 20 || mistakes.length === 0) return null
   const [a, b] = mistakes
-  const lines = [
-    b
-      ? `오답의 ${pct(a!.count / totalWrong)}%는 ${a!.label}, ${pct(b.count / totalWrong)}%는 ${b.label} 유형이에요.`
-      : `오답의 ${pct(a!.count / totalWrong)}%는 ${a!.label} 유형이에요.`,
-  ]
-  return { key: 'mistake', title: '많이 틀리는 유형', lines }
+  const summary = b
+    ? `오답의 ${pct(a!.count / totalWrong)}%는 ${a!.label}, ${pct(b.count / totalWrong)}%는 ${b.label} 유형이에요.`
+    : `오답의 ${pct(a!.count / totalWrong)}%는 ${a!.label} 유형이에요.`
+  return { key: 'mistake', title: '많이 틀리는 유형', summary, details: [] }
 }
 
 function paceParagraph(pace: PaceProfile | null): Paragraph | null {
@@ -171,9 +174,8 @@ function paceParagraph(pace: PaceProfile | null): Paragraph | null {
   return {
     key: 'pace',
     title: '읽는 속도',
-    lines: [
-      `맞힌 표현 ${pace.counted}개 중 ${pct(pace.slow.length / pace.counted)}%(${pace.slow.length}개)는 바로 안 나오고 한참 걸려서 읽었어요.`,
-    ],
+    summary: `맞힌 표현의 ${pct(pace.slow.length / pace.counted)}%는 한참 걸려서 읽었어요.`,
+    details: [`맞힌 표현 ${pace.counted}개 중 ${pace.slow.length}개는 바로 안 나왔어요.`],
   }
 }
 
@@ -193,7 +195,7 @@ function nextParagraph(next: Prescription | null): Paragraph | null {
     case 'MORE_DATA':
       return null
   }
-  return { key: 'next', title: '다음 한 걸음', lines: [line] }
+  return { key: 'next', title: '다음 한 걸음', summary: line, details: [] }
 }
 
 /** 소견 전체. 표본이 모자라면 한 문단만 낸다 */
@@ -204,9 +206,8 @@ export function buildDiagnosis(input: DiagnosisInput): Paragraph[] {
       {
         key: 'more',
         title: '지금 수준',
-        lines: [
-          `지금까지 읽기 ${level.totalReadings}회예요. ${PRESCRIPTION_MIN_READINGS - level.totalReadings}회쯤 더 쌓이면 소견을 쓸 수 있어요.`,
-        ],
+        summary: `지금까지 읽기 ${level.totalReadings}회예요. ${PRESCRIPTION_MIN_READINGS - level.totalReadings}회쯤 더 쌓이면 소견을 쓸 수 있어요.`,
+        details: [],
       },
     ]
   }
@@ -219,7 +220,7 @@ export function buildDiagnosis(input: DiagnosisInput): Paragraph[] {
   for (const row of shaky) {
     const w = input.windows.get(row.band as Band)
     if (w) {
-      const explained = out.some((p) => p.lines.some((l) => l.startsWith('하루 이틀의 세션이')))
+      const explained = out.some((p) => p.details.some((l) => l.startsWith('하루 이틀의 세션이')))
       out.push(shakyParagraph(w, input.windows, input.today, input.headwordOf, explained))
     }
   }

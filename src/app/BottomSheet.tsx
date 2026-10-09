@@ -45,6 +45,7 @@ export function BottomSheet({
   children: ReactNode
 }) {
   const sheetRef = useRef<HTMLDivElement>(null)
+  const bodyRef = useRef<HTMLDivElement>(null)
   const drag = useRef<Drag | null>(null)
   const [full, setFull] = useState(false)
   /** 끄는 동안의 높이(px). 아니면 null — CSS 높이를 쓴다 */
@@ -55,6 +56,11 @@ export function BottomSheet({
   useEffect(() => {
     closeRef.current = onClose
   }, [onClose])
+
+  // 다른 시트로 바뀌면(수준 → 진단 소견) 맨 위부터 보인다 — 앞 시트의 스크롤 위치를 물려받지 않는다
+  useEffect(() => {
+    bodyRef.current?.scrollTo(0, 0)
+  }, [title])
 
   // 열리면서 앞서 열려 있던 시트를 닫는다 (위 openSheet 주석)
   useEffect(() => {
@@ -169,7 +175,9 @@ export function BottomSheet({
             <h2>{title}</h2>
           </div>
         </div>
-        <div className="sheet-body screen-body">{children}</div>
+        <div className="sheet-body screen-body" ref={bodyRef}>
+          {children}
+        </div>
       </div>
     </>
   )

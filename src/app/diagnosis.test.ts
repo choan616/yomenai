@@ -1,6 +1,6 @@
 // 진단 소견 — 역전 설명, 표본 부족 시 생략, 근거 숫자, 금지어 (2026-10-09 사용자 백업의 모양을 그대로 본뜬다)
 import { describe, expect, it } from 'vitest'
-import { buildDiagnosis, findInversion, type DiagnosisInput } from './diagnosis.ts'
+import { buildDiagnosis, findInversion, type DiagnosisInput, type Paragraph } from './diagnosis.ts'
 import { accuracyTrends } from '../core/accuracyTrend.ts'
 import { courseWindows } from '../core/courseWindow.ts'
 import { buildLevel } from '../core/level.ts'
@@ -67,7 +67,9 @@ function scenario(): DiagnosisInput {
   }
 }
 
-const text = (ps: { lines: string[] }[]) => ps.flatMap((p) => p.lines).join('\n')
+/** 요약과 세부를 한 덩어리로 */
+const all = (p: Paragraph) => [p.summary, ...p.details]
+const text = (ps: Paragraph[]) => ps.flatMap(all).join('\n')
 
 describe('buildDiagnosis — 역전', () => {
   const input = scenario()
@@ -79,11 +81,13 @@ describe('buildDiagnosis — 역전', () => {
   it('수준 문단이 역전을 말하고, 흔들리는 코스를 기록으로 해부한다', () => {
     const ps = buildDiagnosis(input)
     const level = ps.find((p) => p.key === 'level')!
-    expect(level.lines[0]).toContain('능선 코스는')
-    expect(level.lines[1]).toContain('산책로 코스는 최근 기준으로 흔들려요')
+    // 늘 보이는 요약은 한 줄이고, 근거는 세부에 있다
+    expect(level.summary).toBe('능선 코스는 안정인데, 더 쉬운 산책로 코스는 흔들려요.')
+    expect(level.details[0]).toContain('능선 코스는 최근 30회 정답률')
 
     const shaky = ps.find((p) => p.key === 'shaky-0')!
-    const t = shaky.lines.join('\n')
+    expect(shaky.summary).toMatch(/^오늘 하루 치 · 전체 기록 \d+% · 장음 7\/8$/)
+    const t = shaky.details.join('\n')
     expect(t).toContain('최근 30회가 모두 오늘 하루 치예요')
     expect(t).toMatch(/전체 기록은 \d+%\(\d+회\)예요/)
     expect(t).toContain('틀린 8개 중 7개가 장음이에요')
@@ -107,7 +111,7 @@ describe('buildDiagnosis — 역전', () => {
         level: buildLevel(events, bandOf),
         windows: courseWindows(events, bandOf, (e) => e.mistakeType),
       })
-      return t.find((p) => p.key === 'shaky-0')!.lines.join(' ')
+      return t.find((p) => p.key === 'shaky-0')!.details.join(' ')
     }
     expect(run(80)).toContain('개 코스 중 가장 높은 값이에요') // 전체 102/110
     expect(run(0)).not.toContain('가장 높은 값이에요') // 전체 22/30 = 73%
@@ -116,9 +120,13 @@ describe('buildDiagnosis — 역전', () => {
   it('나머지 문단도 근거 숫자와 함께 나온다', () => {
     const ps = buildDiagnosis(input)
     expect(ps.map((p) => p.key)).toEqual(['level', 'shaky-0', 'trend', 'mistake', 'pace', 'next'])
-    expect(ps.find((p) => p.key === 'mistake')!.lines[0]).toBe('오답의 40%는 장음, 20%는 연탁 유형이에요.')
-    expect(ps.find((p) => p.key === 'pace')!.lines[0]).toContain('10%(10개)')
-    expect(ps.find((p) => p.key === 'next')!.lines[0]).toContain('장음 규칙')
+    expect(ps.find((p) => p.key === 'mistake')!.summary).toBe('오답의 40%는 장음, 20%는 연탁 유형이에요.')
+    const pace = ps.find((p) => p.key === 'pace')!
+    expect(pace.summary).toBe('맞힌 표현의 10%는 한참 걸려서 읽었어요.')
+    expect(pace.details[0]).toContain('100개 중 10개')
+    expect(ps.find((p) => p.key === 'next')!.summary).toContain('장음 규칙')
+    // 요약만으로 읽히는 문단은 펼침이 없다
+    for (const k of ['trend', 'mistake', 'next']) expect(ps.find((p) => p.key === k)!.details).toEqual([])
   })
 
   it('말투 방침 — 달래는 말과 막힘을 말하는 표현이 없다', () => {
@@ -137,7 +145,7 @@ describe('buildDiagnosis — 표본·예외', () => {
       windows: courseWindows(events, bandOf, (e) => e.mistakeType),
     })
     expect(ps).toHaveLength(1)
-    expect(ps[0]!.lines[0]).toContain('더 쌓이면 소견을 쓸 수 있어요')
+    expect(ps[0]!.summary).toContain('더 쌓이면 소견을 쓸 수 있어요')
   })
 
   it('역전이 아니면 흔들리는 코스의 해부는 경계로만 말한다', () => {
@@ -155,7 +163,7 @@ describe('buildDiagnosis — 표본·예외', () => {
     }
     expect(findInversion(input.level)).toBeNull()
     const ps = buildDiagnosis({ ...input, level: { ...input.level, totalReadings: 60 } })
-    expect(ps[0]!.lines[0]).toBe('산책로까지 안정, 뒷산이 경계예요.')
+    expect(ps[0]!.summary).toBe('산책로까지 안정, 뒷산이 경계예요.')
     expect(ps.some((p) => p.key === 'mistake' || p.key === 'pace' || p.key === 'next')).toBe(false)
   })
 
@@ -168,6 +176,6 @@ describe('buildDiagnosis — 표본·예외', () => {
       windows: courseWindows(events, bandOf, (e) => e.mistakeType),
     }
     const shaky = buildDiagnosis({ ...input, level: { ...input.level, totalReadings: 60 } }).find((p) => p.key === 'shaky-0')!
-    expect(shaky.lines.join('\n')).not.toContain('오차')
+    expect(all(shaky).join('\n')).not.toContain('오차')
   })
 })

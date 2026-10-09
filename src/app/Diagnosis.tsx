@@ -8,12 +8,21 @@ export function Diagnosis({ paragraphs }: { paragraphs: readonly Paragraph[] }) 
       {paragraphs.map((p) => (
         <div className="opinion-sec" key={p.key}>
           <h3 className="opinion-h">{p.title}</h3>
-          {p.lines.map((line, i) => (
-            <p className="opinion-line" key={i}>
-              {/* 문장 속 일본어(표기·예시)에 lang="ja" — 안 붙이면 한국 자형으로 나간다 */}
-              <Mixed text={line} />
-            </p>
-          ))}
+          {/* 문장 속 일본어(표기·예시)에 lang="ja" — 안 붙이면 한국 자형으로 나간다 */}
+          <p className="opinion-line">
+            <Mixed text={p.summary} />
+          </p>
+          {/* 세부는 요청해야 보인다 (2026-10-10 사용자 「너무 장황하다」) */}
+          {p.details.length > 0 && (
+            <details className="opinion-more">
+              <summary>자세히</summary>
+              {p.details.map((line, i) => (
+                <p className="opinion-line detail" key={i}>
+                  <Mixed text={line} />
+                </p>
+              ))}
+            </details>
+          )}
         </div>
       ))}
       <p className="opinion-note">기록에서 숫자를 뽑아 쓴 소견이에요. 새로 풀면 달라져요.</p>
