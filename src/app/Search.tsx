@@ -401,6 +401,7 @@ export function Search({
               <Outside
                 dict={outside}
                 state={outsideFailed ? 'failed' : wantOutside ? 'loading' : 'idle'}
+                found={false}
                 groups={outsideGroups}
                 kanji={outsideKanji ?? view.kanji}
                 starred={starred}
@@ -429,6 +430,7 @@ export function Search({
             <Outside
               dict={outside}
               state={outsideFailed ? 'failed' : askedOutside ? 'loading' : 'idle'}
+              found
               groups={outsideGroups}
               kanji={outsideKanji ?? view.kanji}
               starred={starred}
@@ -665,6 +667,7 @@ function Group({
 function Outside({
   dict,
   state,
+  found,
   groups,
   kanji,
   starred,
@@ -673,6 +676,8 @@ function Outside({
 }: {
   dict: WideDict | null
   state: 'idle' | 'loading' | 'failed'
+  /** 학습 사전에서 이미 걸렸나 — 0건 문구가 「아무것도 못 찾았다」로 읽히지 않게 가른다 */
+  found: boolean
   groups: ReadingGroup<WideIdiom>[]
   kanji: Map<string, KanjiInfo>
   starred: Set<string>
@@ -705,7 +710,11 @@ function Outside({
       </div>
     )
   }
-  if (groups.length === 0) return <p className="empty">학습 사전 밖에서도 못 찾았어요.</p>
+  if (groups.length === 0) {
+    return (
+      <p className="empty">{found ? '학습 사전 밖에는 더 없어요.' : '학습 사전 밖에서도 못 찾았어요.'}</p>
+    )
+  }
 
   return (
     <>

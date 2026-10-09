@@ -199,3 +199,23 @@ test('학습 사전에서 걸려도 사전 밖에서 더 찾을 수 있다 — �
   await expect(row).toBeVisible({ timeout: 30_000 })
   await expect(row.locator('.r-meaning')).not.toBeEmpty()
 })
+
+// 같은 표기는 한 줄이다 + 학습 사전에서 걸렸으면 사전 밖 0건 문구가 「못 찾았다」로 읽히지 않는다
+// (2026-10-09 사용자 확인 「なんにん」 → 何人 ×3, 「사전 밖에서도 못 찾았어요」). JMdict 가 읽기마다
+// 항목을 따로 두어 한 묶음에 같은 표기가 여러 줄 나왔다.
+test('なんにん 은 何人 한 줄이고, 사전 밖에 더 없으면 「더 없어요」라고 한다', async ({ page }) => {
+  test.setTimeout(120_000)
+  await page.goto('/')
+  const tab = page.getByRole('button', { name: '찾기', exact: true })
+  await expect(tab).toBeVisible({ timeout: 20_000 })
+  await tab.click()
+
+  await page.getByLabel('읽기 또는 한자 검색').fill('なんにん')
+  const group = page.locator('.hit-group').filter({ has: page.locator('.section-title', { hasText: /^なんにん/ }) })
+  await expect(group.locator('.rows > li')).toHaveCount(1, { timeout: 60_000 })
+  await expect(group.locator('.r-main')).toHaveText('何人')
+
+  await page.getByRole('button', { name: '학습 사전 밖에서 찾기' }).click()
+  await expect(page.getByText('학습 사전 밖에는 더 없어요.')).toBeVisible({ timeout: 30_000 })
+  await expect(page.getByText('학습 사전 밖에서도 못 찾았어요.')).toHaveCount(0)
+})
