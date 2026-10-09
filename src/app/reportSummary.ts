@@ -5,7 +5,7 @@
 
 import { bandName } from '../lib/bands.ts'
 
-export type SheetKind = 'level' | 'days' | 'mist' | 'browse' | 'weak'
+export type SheetKind = 'level' | 'days' | 'mist' | 'browse' | 'weak' | 'opinion'
 
 export interface Tile {
   /** 누르면 열 시트 */

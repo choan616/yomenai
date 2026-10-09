@@ -723,6 +723,37 @@
   color: var(--text-faint);
 }
 
+/* ── 진단 소견 (2026-10-09) — 수준·원인·다음 걸음을 문단으로. 문장은 diagnosis.ts 가 만든다 ── */
+.opinion-link {
+  display: block;
+  margin: 8px 0 0;
+  padding: 0;
+  font-size: calc(13px * var(--ui-scale));
+  color: var(--text);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-align: left;
+}
+.opinion-sec + .opinion-sec {
+  margin-top: 18px;
+}
+.opinion-h {
+  margin: 0 0 4px;
+  font-size: calc(13px * var(--ui-scale));
+  font-weight: 600;
+  color: var(--text-dim);
+}
+.opinion-line {
+  margin: 0 0 4px;
+  font-size: calc(15px * var(--ui-scale));
+  line-height: 1.55;
+}
+.opinion-note {
+  margin: 20px 0 0;
+  font-size: calc(12px * var(--ui-scale));
+  color: var(--text-faint);
+}
+
 /* ── 숙지 분포 요약 막대 (2026-09-22) ──
    밴드마다 막대를 두고 `stable/met` 을 그리던 것을 **한 막대의 분할**로 바꿨다. 분모가
    「숙지한 전체 개수」라 합이 늘 100% 다 — 새 표현을 만나도 막대가 안 짧아진다.

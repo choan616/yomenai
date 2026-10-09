@@ -11,6 +11,9 @@ import {
   type DayRecord,
 } from '../core/attendance.ts'
 import { accuracyTrends, type AccuracyTrends } from '../core/accuracyTrend.ts'
+import { courseWindows, type CourseWindow } from '../core/courseWindow.ts'
+import { buildDiagnosis, findInversion } from './diagnosis.ts'
+import { Diagnosis } from './Diagnosis.tsx'
 import { AccuracyTrend } from './AccuracyTrend.tsx'
 import { buildStreak, milestoneLabel, type Milestone, type StreakRecord } from '../core/streak.ts'
 import {
@@ -70,6 +73,9 @@ interface Loaded {
   level: LevelProfile
   /** 수준 시트의 정답률 추이 — 전체와 코스별 선 (2026-10-09) */
   trends: AccuracyTrends
+  /** 진단 소견 — 코스별 최근 창의 모양과 반복 오답의 표기 (2026-10-09) */
+  windows: Map<Band, CourseWindow>
+  headwords: Map<string, string>
   prescriptions: Prescription[]
   /**
    * 탁음 바구니 안의 갈래별 횟수 (2026-09-17).
@@ -188,6 +194,14 @@ export function Report({
         const inPool = new Set(learn.map((p) => p.idiomId))
         const bandInPool = (id: string) => (inPool.has(id) ? byId.get(id)?.band : undefined)
         const level = buildLevel(events, bandInPool, state.cards)
+        const windows = courseWindows(events, bandInPool, (e) => again(e).type)
+        const headwords = new Map<string, string>()
+        for (const w of windows.values()) {
+          for (const r of w.repeated) {
+            const hw = byId.get(r.idiomId)?.headword
+            if (hw !== undefined) headwords.set(r.idiomId, hw)
+          }
+        }
         const voicing = voicingCounts(classifiedMistakes(events), again)
         // 미분류 중 답이 있는 몫만 「잘못 읽기」다. 넘김(빈 답)은 이름 이전에 답이 없다
         const passed = passedCount(events)
@@ -232,6 +246,8 @@ export function Report({
           onyomi,
           level,
           trends: accuracyTrends(events, bandInPool, day),
+          windows,
+          headwords,
           voicing,
           passed,
           attendance,
@@ -333,6 +349,8 @@ function ReportBody({
     report,
     level,
     trends,
+    windows,
+    headwords,
     day,
     prescriptions,
     voicing,
@@ -373,7 +391,7 @@ function ReportBody({
         : null,
   })
   const sheets: Record<SheetKind, { title: string; content: React.ReactNode }> = {
-    level: { title: '수준', content: <LevelSection level={level} trends={trends} today={day} reviews={report.totalReviews} accuracy={accuracy} pace={pace} /> },
+    level: { title: '수준', content: <LevelSection level={level} trends={trends} today={day} onOpinion={() => setSheet('opinion')} reviews={report.totalReviews} accuracy={accuracy} pace={pace} /> },
     days: { title: '학습한 날', content: <CalendarSection
             attendance={attendance}
             sessionLimit={sessionLimit}
@@ -428,6 +446,24 @@ function ReportBody({
               </p>
             )}
           </section> },
+    opinion: {
+      title: '진단 소견',
+      content: (
+        <Diagnosis
+          paragraphs={buildDiagnosis({
+            level,
+            windows,
+            trends,
+            mistakes: rows,
+            totalWrong: report.totalWrong,
+            pace,
+            next: prescriptions[0] ?? null,
+            today: day,
+            headwordOf: (id) => headwords.get(id),
+          })}
+        />
+      ),
+    },
     browse: { title: '다시보기', content: <section>
             {report.frequent.length > 0 ? (
               <div className="browse-entry">
@@ -552,6 +588,11 @@ function ReportBody({
         streak={streak}
         onRules={() => onRule(null)}
       >
+        <button type="button" className="tool-row" onClick={() => setSheet('opinion')}>
+          <span className="tool-name">진단 소견</span>
+          <span className="tool-note">{findInversion(level) !== null ? '코스별 이유까지' : '수준 · 오답 · 속도'}</span>
+          <span className="chev">›</span>
+        </button>
         {/* 취약 음독 줄은 요약 타일로 올라갔다 (2026-10-06) — 같은 시트를 여는 입구가 둘이면 같은 내용이 두 번 나온다 */}
         {report.frequent.length > 0 && (
           <button type="button" className="tool-row" onClick={() => setSheet('browse')}>
@@ -598,6 +639,7 @@ function LevelSection({
   level,
   trends,
   today,
+  onOpinion,
   reviews,
   accuracy,
   pace,
@@ -606,6 +648,8 @@ function LevelSection({
   trends: AccuracyTrends
   /** 오늘의 날짜 키 — 불러올 때 정한 값이라 렌더 중에 시계를 안 본다 */
   today: string
+  /** 역전일 때 소견 시트로 (2026-10-09) */
+  onOpinion: () => void
   reviews: number
   accuracy: number
   /** 맞지만 느린 카드. 표본이 모자라면 null — 그때는 줄 자체를 안 그린다 (「0개」라고 쓰지 않는다) */
@@ -621,6 +665,12 @@ function LevelSection({
   return (
     <section className="level">
       <p className="report-lead">{levelHeadline(level)}</p>
+      {/* 더 어려운 코스는 안정인데 쉬운 코스가 흔들리면 궁금하다 — 이유를 기록으로 푼 소견으로 잇는다 */}
+      {findInversion(level) !== null && (
+        <button type="button" className="link opinion-link" onClick={onOpinion}>
+          더 쉬운 코스가 흔들리는 이유 보기 ›
+        </button>
+      )}
       {/* 같은 종류의 숫자 셋을 **한 덩어리**로 — 두 줄로 갈라 두면 판정 아래에 글자 줄이 다섯 개가 됐다
           (2026-10-07 사용자 「너무 산만하다」). 칸 사이는 gap 으로 띄우고, 좁으면 칸 단위로 줄이 바뀐다.
 
