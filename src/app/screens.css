@@ -594,6 +594,135 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* ── 정답률 추이 (2026-10-09) — 수준 시트의 선 하나. 칩이 전체·코스별을 고른다 ──
+   선은 2px, 격자는 머리카락 실선, 글자는 글자 토큰(계열 색을 안 입힌다). 색은 개체를 따른다 —
+   전체는 글자색, 코스는 막대 그래프와 같은 밴드 색. 내려간 구간을 붉게 칠하지 않는다 */
+.trend {
+  margin-top: 14px;
+}
+.trend .ladder-head {
+  margin-top: 0;
+}
+.trend-range {
+  margin: 0;
+  font-size: calc(12px * var(--ui-scale));
+  color: var(--text-faint);
+}
+.trend-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+.trend-chips .chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.trend-chips .chip:disabled {
+  opacity: 0.4;
+}
+.trend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+.trend-empty {
+  margin: 12px 0 0;
+  font-size: calc(13px * var(--ui-scale));
+  color: var(--text-dim);
+}
+.trend-readout {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin: 10px 0 0;
+  font-variant-numeric: tabular-nums;
+}
+.trend-readout b {
+  font-size: calc(22px * var(--ui-scale));
+  font-weight: 600;
+}
+.trend-readout span {
+  font-size: calc(13px * var(--ui-scale));
+  color: var(--text-dim);
+}
+.trend-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin-top: 2px;
+  /* 가로로 끄는 건 날짜 고르기, 세로는 시트 스크롤 */
+  touch-action: pan-y;
+  user-select: none;
+  border-radius: 8px;
+}
+.trend-svg:focus:not(:focus-visible) {
+  outline: none;
+}
+.trend-grid {
+  stroke: var(--border);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+.trend-grid.solid {
+  stroke: var(--text-faint);
+}
+.trend-tick {
+  font-size: 10.5px;
+  fill: var(--text-faint);
+  font-variant-numeric: tabular-nums;
+}
+.trend-line {
+  fill: none;
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+}
+.trend-cross {
+  stroke: var(--text-faint);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+.trend-dot-mark {
+  stroke: var(--bg);
+  stroke-width: 2;
+  vector-effect: non-scaling-stroke;
+}
+.trend-hit {
+  fill: transparent;
+  cursor: pointer;
+}
+.trend-note {
+  margin: 2px 0 0;
+  font-size: calc(12px * var(--ui-scale));
+  color: var(--text-faint);
+}
+.trend-table {
+  margin-top: 6px;
+  font-size: calc(13px * var(--ui-scale));
+}
+.trend-table summary {
+  color: var(--text-dim);
+  cursor: pointer;
+}
+.trend-table table {
+  width: 100%;
+  margin-top: 6px;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+.trend-table th,
+.trend-table td {
+  padding: 3px 0;
+  text-align: left;
+  font-weight: 400;
+}
+.trend-table thead th {
+  color: var(--text-faint);
+}
+
 /* ── 숙지 분포 요약 막대 (2026-09-22) ──
    밴드마다 막대를 두고 `stable/met` 을 그리던 것을 **한 막대의 분할**로 바꿨다. 분모가
    「숙지한 전체 개수」라 합이 늘 100% 다 — 새 표현을 만나도 막대가 안 짧아진다.

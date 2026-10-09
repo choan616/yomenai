@@ -10,6 +10,8 @@ import {
   monthSummary,
   type DayRecord,
 } from '../core/attendance.ts'
+import { accuracyTrends, type AccuracyTrends } from '../core/accuracyTrend.ts'
+import { AccuracyTrend } from './AccuracyTrend.tsx'
 import { buildStreak, milestoneLabel, type Milestone, type StreakRecord } from '../core/streak.ts'
 import {
   buildLevel,
@@ -66,6 +68,8 @@ import { RULE_OF_MISTAKE, type RuleId } from './rules.ts'
 interface Loaded {
   report: ReportData
   level: LevelProfile
+  /** 수준 시트의 정답률 추이 — 전체와 코스별 선 (2026-10-09) */
+  trends: AccuracyTrends
   prescriptions: Prescription[]
   /**
    * 탁음 바구니 안의 갈래별 횟수 (2026-09-17).
@@ -227,6 +231,7 @@ export function Report({
           report,
           onyomi,
           level,
+          trends: accuracyTrends(events, bandInPool, day),
           voicing,
           passed,
           attendance,
@@ -327,6 +332,8 @@ function ReportBody({
   const {
     report,
     level,
+    trends,
+    day,
     prescriptions,
     voicing,
     rows,
@@ -366,7 +373,7 @@ function ReportBody({
         : null,
   })
   const sheets: Record<SheetKind, { title: string; content: React.ReactNode }> = {
-    level: { title: '수준', content: <LevelSection level={level} reviews={report.totalReviews} accuracy={accuracy} pace={pace} /> },
+    level: { title: '수준', content: <LevelSection level={level} trends={trends} today={day} reviews={report.totalReviews} accuracy={accuracy} pace={pace} /> },
     days: { title: '학습한 날', content: <CalendarSection
             attendance={attendance}
             sessionLimit={sessionLimit}
@@ -589,11 +596,16 @@ function levelHeadline(level: LevelProfile): string {
 
 function LevelSection({
   level,
+  trends,
+  today,
   reviews,
   accuracy,
   pace,
 }: {
   level: LevelProfile
+  trends: AccuracyTrends
+  /** 오늘의 날짜 키 — 불러올 때 정한 값이라 렌더 중에 시계를 안 본다 */
+  today: string
   reviews: number
   accuracy: number
   /** 맞지만 느린 카드. 표본이 모자라면 null — 그때는 줄 자체를 안 그린다 (「0개」라고 쓰지 않는다) */
@@ -628,6 +640,7 @@ function LevelSection({
           </span>
         )}
       </p>
+      <AccuracyTrend trends={trends} today={today} courses={scored.map((b) => b.band as Band)} />
       {/* 큰 숫자는 정답률이 아니라 **붙은 숙어 개수**다 (2026-09-19). 정답률은 순간
           상태라 표본이 흔들면 같이 뒤집히는데, 수준은 쌓인 것이라 그러면 안 된다.
           정답률은 표의 한 열로 내려 경계선을 긋는 데만 쓴다 */}
