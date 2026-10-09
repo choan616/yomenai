@@ -51,7 +51,13 @@ export function buildReadingIndex<T extends Indexable>(pool: T[]): ReadingIndex<
     if (key === '') return
     let list = byReading.get(key)
     if (list === undefined) byReading.set(key, (list = []))
-    if (!list.includes(it)) list.push(it)
+    if (list.includes(it)) return
+    // 같은 표기가 이미 있으면 한 줄만 남긴다 — 대표 읽기가 이 키인 쪽이 이긴다.
+    // JMdict 는 읽기마다 항목을 따로 두고 서로의 읽기를 altReadings 로 적어서(何人 ×3)
+    // 그대로 넣으면 같은 표기가 같은 묶음에 여러 줄로 나온다
+    const dup = list.findIndex((o) => o.headword === it.headword)
+    if (dup === -1) list.push(it)
+    else if (toHiragana(it.reading) === key && toHiragana(list[dup]!.reading) !== key) list[dup] = it
   }
   const byHeadword = new Map<string, T[]>()
   for (const it of pool) {

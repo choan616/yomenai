@@ -43,6 +43,30 @@ describe('buildReadingIndex', () => {
     expect(INDEX.byReading.get('ごぜん')?.map((i) => i.headword)).toEqual(['御前'])
   })
 
+  it('같은 표기가 한 키에 여럿 걸리면 대표 읽기가 그 키인 항목만 남긴다', () => {
+    // JMdict 는 읽기마다 항목을 따로 두고 서로의 읽기를 altReadings 로 적는다 (何人 ×3)
+    const idx = buildReadingIndex([
+      mk('a', '何人', 'なにびと', ['なにじん', 'なんにん']),
+      mk('b', '何人', 'なんにん', ['なにじん', 'なにびと']),
+      mk('c', '何人', 'なにじん', ['なにびと', 'なんにん']),
+    ])
+    expect(idx.byReading.get('なんにん')?.map((i) => i.idiomId)).toEqual(['b'])
+    expect(idx.byReading.get('なにびと')?.map((i) => i.idiomId)).toEqual(['a'])
+    expect(idx.byReading.get('なにじん')?.map((i) => i.idiomId)).toEqual(['c'])
+  })
+
+  it('대표 읽기가 그 키인 항목이 없으면 먼저 온 항목을 남긴다', () => {
+    const idx = buildReadingIndex([
+      mk('a', '何人', 'なにびと', ['なんにん']),
+      mk('c', '何人', 'なにじん', ['なんにん']),
+    ])
+    expect(idx.byReading.get('なんにん')?.map((i) => i.idiomId)).toEqual(['a'])
+  })
+
+  it('표기가 다르면 같은 키에 그대로 같이 둔다', () => {
+    expect(INDEX.byReading.get('こうき')).toHaveLength(2)
+  })
+
   it('키 배열이 정렬돼 있다', () => {
     expect(INDEX.keys).toEqual([...INDEX.keys].sort())
   })
