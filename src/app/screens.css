@@ -595,7 +595,7 @@
 }
 
 /* ── 정답률 추이 (2026-10-09) — 수준 시트의 선 하나. 칩이 전체·코스별을 고른다 ──
-   선은 2px, 격자는 머리카락 실선, 글자는 글자 토큰(계열 색을 안 입힌다). 색은 개체를 따른다 —
+   선은 1.5px(사용자 요청 — 처음엔 2px), 격자는 머리카락 실선, 글자는 글자 토큰(계열 색을 안 입힌다). 색은 개체를 따른다 —
    전체는 글자색, 코스는 막대 그래프와 같은 밴드 색. 내려간 구간을 붉게 칠하지 않는다 */
 .trend {
   margin-top: 14px;
@@ -675,7 +675,7 @@
 }
 .trend-line {
   fill: none;
-  stroke-width: 2;
+  stroke-width: 1.5;
   stroke-linejoin: round;
   stroke-linecap: round;
   vector-effect: non-scaling-stroke;
