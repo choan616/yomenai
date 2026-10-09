@@ -4,6 +4,7 @@ import { shiftDateKey } from '../core/attendance.ts'
 import { TREND_DAYS, type AccuracyTrends, type TrendKey } from '../core/accuracyTrend.ts'
 import { LEVEL_MIN_SEEN, LEVEL_SOLID_RATE, LEVEL_WINDOW } from '../core/level.ts'
 import { bandName, type Band } from '../lib/bands.ts'
+import { smoothPath } from './trendPath.ts'
 
 const W = 320
 const H = 116
@@ -145,10 +146,10 @@ export function AccuracyTrend({
             </text>
 
             {points.length >= 2 && (
-              <polyline
+              <path
                 className="trend-line"
                 stroke={color}
-                points={points.map((p, i) => `${X(i)},${Y(p.rate)}`).join(' ')}
+                d={smoothPath(points.map((p, i) => ({ x: X(i), y: Y(p.rate) })))}
               />
             )}
             {/* 눌러서 고른 날은 세로선이 붙는다(기본인 마지막 점에는 없다). 점에는 바탕색 고리를 둘러 선 위에서도 또렷하다 */}
