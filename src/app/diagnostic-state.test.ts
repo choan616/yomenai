@@ -24,7 +24,7 @@ describe('shouldOfferDiagnostic', () => {
     expect(shouldOfferDiagnostic(false, level({ solidThrough: 3, totalReadings: 120 }))).toBe(false)
   })
 
-  it('문턱 부근만 있어도 안 권한다 — 안정도 흔들림도 아니지만 판정은 섰다 (2026-10-10)', () => {
+  it('기준 부근만 있어도 안 권한다 — 안정도 흔들림도 아니지만 판정은 섰다 (2026-10-10)', () => {
     expect(shouldOfferDiagnostic(false, level({ near: [0, 1], nearThrough: 1, totalReadings: 400 }))).toBe(false)
   })
 

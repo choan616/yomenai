@@ -84,7 +84,7 @@ export function stableReadingCount(
  *
  * - `solid` : 구간의 아래쪽이 문턱(80%) 이상 — 오차를 감안해도 안정이다
  * - `shaky` : 구간의 위쪽이 문턱 미만 — 오차를 감안해도 흔들린다
- * - `near`  : 구간이 문턱을 품는다 — 아직 안정인지 흔들림인지 가를 수 없다(문턱 부근)
+ * - `near`  : 구간이 문턱을 품는다 — 아직 안정인지 흔들림인지 가를 수 없다(기준 부근)
  * - `thin`  : 표본이 모자라 판정을 안 낸다 (`LEVEL_MIN_GRADES`·`LEVEL_MIN_IDIOMS`)
  * - `unseen`: 채점이 없다
  *
@@ -174,7 +174,7 @@ export interface LevelProfile {
   solidThrough: Band | null
   /** 낮은 밴드부터 끊기지 않고 `solid` 또는 `near` 인 마지막 밴드. 없으면 null */
   nearThrough: Band | null
-  /** `near`(문턱 부근) 인 밴드들 (오름차순) */
+  /** `near`(기준 부근) 인 밴드들 (오름차순) */
   near: Band[]
   /** 지금 흔들리는 첫 밴드. 없으면 null (아직 벽을 못 만났다) */
   edge: Band | null

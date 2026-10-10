@@ -97,7 +97,7 @@ describe('courseWindows', () => {
 })
 
 describe('wilson', () => {
-  it('30회 중 22개(73%)는 안정 문턱 80% 를 구간 안에 둔다', () => {
+  it('30회 중 22개(73%)는 안정 기준 80% 를 구간 안에 둔다', () => {
     const [lo, hi] = wilson(22, 30)
     expect(lo).toBeLessThan(0.8)
     expect(hi).toBeGreaterThan(0.8)

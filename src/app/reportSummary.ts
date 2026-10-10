@@ -21,7 +21,7 @@ export interface Tile {
 
 interface LevelLike {
   solidThrough: number | null
-  /** 안정 또는 문턱 부근이 끊기지 않는 가장 높은 코스 */
+  /** 안정 또는 기준 부근이 끊기지 않는 가장 높은 코스 */
   nearThrough?: number | null
   edge: number | null
 }
@@ -45,7 +45,7 @@ export function summaryTiles(i: TileInput): Tile[] {
   // 흔들리는 코스(경계)는 부제로 따로 말한다. 안정이 없는데 경계가 둘째 코스 이상이면 그 바로 아래를 수준으로 본다 —
   // 산책로(0)는 신규 도입에서 기본으로 건너뛰는 쉬운 말이라 따로 재지 않기 때문이다(PLAN §4, `minBand`)
   const course = solidThrough ?? (edge !== null && edge > 0 ? edge - 1 : null)
-  // 안정은 없는데 오차 범위가 문턱을 걸치는 코스가 있으면(2026-10-10) 그 코스를 「문턱 부근」으로 보여 준다 —
+  // 안정은 없는데 오차 범위가 문턱을 걸치는 코스가 있으면(2026-10-10) 그 코스를 「기준 부근」으로 보여 준다 —
   // 「—」나 「흔들려요」는 아는 것(정답률이 80% 근처)을 거짓으로 말하게 된다
   const near = course === null && edge === null && nearThrough !== null
   const level: Tile =
@@ -58,12 +58,12 @@ export function summaryTiles(i: TileInput): Tile[] {
             edge !== null
               ? `경계 ${bandName(edge)}`
               : nearThrough !== null && nearThrough > course
-                ? `${bandName(nearThrough)} 문턱 부근`
+                ? `${bandName(nearThrough)} 기준 부근`
                 : '안정이에요',
           shade: course,
         }
       : near
-        ? { sheet: 'level', label: '수준', value: bandName(nearThrough!), sub: '문턱 부근이에요', shade: nearThrough! }
+        ? { sheet: 'level', label: '수준', value: bandName(nearThrough!), sub: '기준 부근이에요', shade: nearThrough! }
         : edge !== null
         // 안정 구간이 전혀 없을 때만 온다(course===null 은 edge===0 일 때뿐이다 — edge>0 이면
         // 항상 course=edge-1 로 위 분기를 탄다). 「—」는 값이 없다는 뜻으로 읽혀 사용자가

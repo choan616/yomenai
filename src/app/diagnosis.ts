@@ -64,7 +64,7 @@ export function findInversion(level: LevelProfile): { solid: Band; shaky: Band[]
   return shaky.length > 0 ? { solid: top, shaky } : null
 }
 
-/** 문턱 부근(`near`)인 코스 이름들 — 「산책로·뒷산」 */
+/** 기준 부근(`near`)인 코스 이름들 — 「산책로·뒷산」 */
 function nearNames(level: LevelProfile): string {
   return level.near.map((b) => bandName(b)).join('·')
 }
@@ -86,7 +86,7 @@ function levelParagraph(level: LevelProfile): Paragraph {
   } else if (solidThrough !== null) {
     parts.push(`안정 ${bandName(solidThrough)}까지`, level.near.length > 0 ? '' : '벽 없음')
   }
-  if (level.near.length > 0) parts.push(`문턱 부근 ${nearNames(level)}`)
+  if (level.near.length > 0) parts.push(`기준 부근 ${nearNames(level)}`)
   if (parts.filter(Boolean).length === 0) parts.push('아직 수준을 말할 만큼 안 풀었어요.')
 
   // 표본이 모자라 판정을 못 내는 코스는 얼마나 더 쌓여야 하는지 말한다 (신규 사용자가 기다릴 만하게)
@@ -96,7 +96,7 @@ function levelParagraph(level: LevelProfile): Paragraph {
     }
   }
   if (level.near.length > 0) {
-    details.push('문턱 부근은 정답률의 오차 범위가 안정 문턱(80%)을 걸치고 있어 안정인지 흔들림인지 아직 가를 수 없다는 뜻이에요.')
+    details.push('기준 부근은 정답률의 오차 범위가 안정 기준(80%)을 걸치고 있어 안정인지 흔들림인지 아직 가를 수 없다는 뜻이에요.')
   }
   const stable = scoredRows(level).reduce((s, r) => s + r.stable, 0)
   if (stable > 0) {
@@ -147,7 +147,7 @@ function shakyParagraph(
   // 「흔들림」은 오차 범위까지 감안해도 문턱 아래라는 뜻이다 (2026-10-10 판정 기준 변경) — 그 사실을 숫자로 말한다
   const [lo, hi] = w.ci
   lines.push(
-    `정답률 ${pct(w.correct / w.n)}%는 오차 범위(${pct(lo)}~${pct(hi)}%)까지 감안해도 안정 문턱 ${pct(LEVEL_SOLID_RATE)}%보다 낮아요.`,
+    `정답률 ${pct(w.correct / w.n)}%는 오차 범위(${pct(lo)}~${pct(hi)}%)까지 감안해도 안정 기준 ${pct(LEVEL_SOLID_RATE)}%보다 낮아요.`,
   )
   return { key: `shaky-${w.band}`, title: `${bandName(w.band)} — 최근 ${w.n}회`, summary: brief.join(' · '), details: lines }
 }
@@ -232,7 +232,7 @@ export function buildOverall(input: DiagnosisInput): string[] {
     const names = inv.shaky.map((b) => bandName(b)).join('·')
     // 안정과 흔들림은 둘 다 오차 구간으로 가른 판정이라, 이 역전은 잡음이 아니라 뚜렷한 차이다
     out.push(
-      `${bandName(inv.solid)} 코스까지 안정적으로 읽어요. 그런데 더 쉬운 ${names} 코스는 오차 범위를 감안해도 정답률이 문턱 ${pct(LEVEL_SOLID_RATE)}% 아래예요.`,
+      `${bandName(inv.solid)} 코스까지 안정적으로 읽어요. 그런데 더 쉬운 ${names} 코스는 오차 범위를 감안해도 정답률이 안정 기준 ${pct(LEVEL_SOLID_RATE)}% 아래예요.`,
     )
   } else if (solidThrough !== null && edge !== null) {
     out.push(`${bandName(solidThrough)}까지 안정적으로 읽고, ${bandNameIga(edge)} 경계예요.`)
@@ -240,17 +240,17 @@ export function buildOverall(input: DiagnosisInput): string[] {
     const below = level.near.filter((b) => b < edge)
     out.push(
       below.length > 0
-        ? `${below.map((b) => bandName(b)).join('·')} 코스는 문턱 부근이고, ${bandName(edge)} 코스부터 흔들려요.`
+        ? `${below.map((b) => bandName(b)).join('·')} 코스는 기준 부근이고, ${bandName(edge)} 코스부터 흔들려요.`
         : `${bandName(edge)} 코스부터 흔들려요.`,
     )
   } else if (solidThrough !== null && level.near.length > 0) {
-    out.push(`${bandName(solidThrough)}까지 안정적으로 읽고, ${nearNames(level)} 코스는 문턱 부근이에요.`)
+    out.push(`${bandName(solidThrough)}까지 안정적으로 읽고, ${nearNames(level)} 코스는 기준 부근이에요.`)
   } else if (solidThrough !== null) {
     out.push(`${bandName(solidThrough)}까지 안정적으로 읽어요. 아직 벽을 안 만났어요.`)
   } else if (level.near.length > 0) {
     // 점 하나로 가르면 안 되는 자리 — 오차 범위가 문턱을 걸친다 (2026-10-10 판정 기준 변경)
     out.push(
-      `${nearNames(level)} 코스는 정답률이 문턱 80% 부근이에요. 표본의 오차를 감안하면 안정인지 흔들림인지 아직 가를 수 없어요.`,
+      `${nearNames(level)} 코스는 정답률이 안정 기준 80% 부근이에요. 표본의 오차를 감안하면 안정인지 흔들림인지 아직 가를 수 없어요.`,
     )
   } else {
     out.push(

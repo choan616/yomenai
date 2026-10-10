@@ -94,7 +94,7 @@ describe('buildDiagnosis — 역전', () => {
     expect(t).toContain('틀린 36개 중 20개가 장음이에요')
     expect(t).toContain('訴訟 ×2 · 報酬 ×2')
     // 흔들림은 오차 범위까지 감안해도 문턱 아래라는 뜻이다
-    expect(t).toMatch(/정답률 70%는 오차 범위\(\d+~\d+%\)까지 감안해도 안정 문턱 80%보다 낮아요/)
+    expect(t).toMatch(/정답률 70%는 오차 범위\(\d+~\d+%\)까지 감안해도 안정 기준 80%보다 낮아요/)
   })
 
   it('전체 기록이 비교 가능한 코스 중 가장 높을 때만 그렇게 말한다', () => {
@@ -140,7 +140,7 @@ describe('buildOverall — 총평', () => {
     const lines = buildOverall(scenario())
     expect(lines).toHaveLength(3)
     expect(lines[0]).toBe(
-      '능선 코스까지 안정적으로 읽어요. 그런데 더 쉬운 산책로 코스는 오차 범위를 감안해도 정답률이 문턱 80% 아래예요.',
+      '능선 코스까지 안정적으로 읽어요. 그런데 더 쉬운 산책로 코스는 오차 범위를 감안해도 정답률이 안정 기준 80% 아래예요.',
     )
     expect(lines[1]).toMatch(/^최근 4주 정답률은 /)
     expect(lines[2]).toBe('다음에는 장음 규칙을 읽고, 같은 유형을 대조해서 풀어 보세요.')
@@ -167,7 +167,7 @@ describe('buildOverall — 총평', () => {
     expect(buildOverall({ ...input, level: buildLevel(few, bandOf) })).toEqual([])
   })
 
-  it('문턱 부근뿐이면 안정이라고도 흔들린다고도 말하지 않는다 (2026-10-10 사용자 백업의 모양)', () => {
+  it('기준 부근뿐이면 안정이라고도 흔들린다고도 말하지 않는다 (2026-10-10 사용자 백업의 모양)', () => {
     // 네 코스 모두 정답률 77~79% 근처 — 오차 구간이 80% 를 걸친다
     const events = [
       ...many('a', 78, 22, '2026-10-05'),
@@ -186,14 +186,14 @@ describe('buildOverall — 총평', () => {
     expect(input.level.edge).toBeNull()
     const [first] = buildOverall(input)
     expect(first).toBe(
-      '산책로·뒷산·중턱·능선 코스는 정답률이 문턱 80% 부근이에요. 표본의 오차를 감안하면 안정인지 흔들림인지 아직 가를 수 없어요.',
+      '산책로·뒷산·중턱·능선 코스는 정답률이 안정 기준 80% 부근이에요. 표본의 오차를 감안하면 안정인지 흔들림인지 아직 가를 수 없어요.',
     )
     const level = buildDiagnosis(input).find((p) => p.key === 'level')!
-    expect(level.summary).toBe('문턱 부근 산책로·뒷산·중턱·능선')
-    expect(level.details.join(' ')).toContain('문턱 부근은 정답률의 오차 범위가 안정 문턱(80%)을 걸치고')
+    expect(level.summary).toBe('기준 부근 산책로·뒷산·중턱·능선')
+    expect(level.details.join(' ')).toContain('기준 부근은 정답률의 오차 범위가 안정 기준(80%)을 걸치고')
   })
 
-  it('흔들리는 코스 아래의 문턱 부근도 총평이 말한다', () => {
+  it('흔들리는 코스 아래의 기준 부근도 총평이 말한다', () => {
     const events = [...many('a', 80, 20, '2026-10-05'), ...many('b', 40, 60, '2026-10-06')]
     const input: DiagnosisInput = {
       ...scenario(),
@@ -202,7 +202,7 @@ describe('buildOverall — 총평', () => {
     }
     expect(input.level.near).toEqual([0])
     expect(input.level.edge).toBe(1)
-    expect(buildOverall(input)[0]).toBe('산책로 코스는 문턱 부근이고, 뒷산 코스부터 흔들려요.')
+    expect(buildOverall(input)[0]).toBe('산책로 코스는 기준 부근이고, 뒷산 코스부터 흔들려요.')
   })
 
   it('말투 방침을 지킨다', () => {

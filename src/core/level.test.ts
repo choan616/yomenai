@@ -120,7 +120,7 @@ describe('buildLevel', () => {
     expect(level.solidThrough).toBeNull()
   })
 
-  it('안정·문턱 부근·흔들림을 가르고, 행에 오차 구간과 표현 수가 실린다', () => {
+  it('안정·기준 부근·흔들림을 가르고, 행에 오차 구간과 표현 수가 실린다', () => {
     const level = buildLevel(
       [...batch('b1', 100, 0, 1), ...batch('b2', 80, 20, 1), ...batch('b3', 40, 60, 1)],
       bandOf,
@@ -145,7 +145,7 @@ describe('buildLevel', () => {
     expect(level.edge).toBe(1)
   })
 
-  it('문턱 부근은 안정의 끊김이지 흔들림이 아니다 — 경계로 안 잡히고 nearThrough 가 이어진다', () => {
+  it('기준 부근은 안정의 끊김이지 흔들림이 아니다 — 경계로 안 잡히고 nearThrough 가 이어진다', () => {
     const level = buildLevel(
       [...batch('b1', 80, 20, 1), ...batch('b2', 100, 0, 1), ...batch('b3', 80, 20, 1)],
       bandOf,
@@ -236,7 +236,7 @@ describe('buildLevel — 붙은 숙어 (재고)', () => {
     expect(level.bands[0].stable).toBe(0)
   })
 
-  it('안정 문턱을 넘긴 읽기 카드만 센다', () => {
+  it('안정 기준을 넘긴 읽기 카드만 센다', () => {
     const level = buildLevel(
       batch('b1', 10, 0, 1),
       (id) => (id.startsWith('b1') ? 1 : undefined),

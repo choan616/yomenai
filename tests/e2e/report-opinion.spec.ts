@@ -89,7 +89,7 @@ test('쉬운 코스가 흔들리는 역전을 소견이 기록으로 설명한�
   await expect(text).toContainText('틀린 36개 중 20개가 장음이에요')
   await expect(text).toContainText('訴訟 ×8 · 報酬 ×8 · 貯蓄 ×4')
   await expect(text).toContainText('오차 범위(')
-  await expect(text).toContainText('안정 문턱 80%보다 낮아요')
+  await expect(text).toContainText('안정 기준 80%보다 낮아요')
   // 일본어 표기는 lang="ja" 로 그려진다 (한국 자형 방지)
   await expect(text.locator('[lang="ja"]').filter({ hasText: '訴訟' })).not.toHaveCount(0)
   // 달래는 말·막힘 표현은 없다

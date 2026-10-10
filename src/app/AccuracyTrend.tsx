@@ -170,7 +170,7 @@ export function AccuracyTrend({
             />
           </svg>
           <p className="trend-note">
-            최근 {LEVEL_WINDOW_DAYS}일 채점 기준(모자라면 최근 {LEVEL_MIN_GRADES}회) · {solidPct}% 선이 「안정」의 문턱이에요.
+            최근 {LEVEL_WINDOW_DAYS}일 채점 기준(모자라면 최근 {LEVEL_MIN_GRADES}회) · {solidPct}% 선이 「안정」의 기준이에요.
           </p>
           <details className="trend-table">
             <summary>표로 보기</summary>

@@ -619,7 +619,7 @@ const NO_DATA = '—'
 
 const BAND_STATUS_LABEL: Record<BandRow['status'], string> = {
   solid: '안정',
-  near: '문턱 부근',
+  near: '기준 부근',
   shaky: '흔들림',
   thin: '표본 부족',
   unseen: '미학습',
@@ -631,18 +631,18 @@ function levelHeadline(level: LevelProfile): string {
     return `${bandName(solidThrough)}까지 안정, ${bandNameIga(edge)} 경계예요`
   }
   if (edge !== null) {
-    // 흔들리는 코스 아래에 문턱 부근인 코스가 있으면 그것도 말한다 — 빼면 쉬운 코스가 멀쩡한 것처럼 읽힌다 (2026-10-10)
+    // 흔들리는 코스 아래에 기준 부근인 코스가 있으면 그것도 말한다 — 빼면 쉬운 코스가 멀쩡한 것처럼 읽힌다 (2026-10-10)
     const below = level.near.filter((b) => b < edge)
     return below.length > 0
-      ? `${below.map((b) => bandName(b)).join('·')} 코스는 문턱 부근, ${bandName(edge)}부터 흔들려요`
+      ? `${below.map((b) => bandName(b)).join('·')} 코스는 기준 부근, ${bandName(edge)}부터 흔들려요`
       : `${bandName(edge)}부터 흔들려요`
   }
   if (solidThrough !== null && level.near.length > 0) {
-    return `${bandName(solidThrough)}까지 안정, ${level.near.map((b) => bandName(b)).join('·')} 코스는 문턱 부근이에요`
+    return `${bandName(solidThrough)}까지 안정, ${level.near.map((b) => bandName(b)).join('·')} 코스는 기준 부근이에요`
   }
   if (solidThrough !== null) return `${bandName(solidThrough)}까지 안정이에요. 아직 벽을 안 만났어요`
   // 오차 범위가 문턱(80%)을 걸치면 안정이라고도 흔들린다고도 못 한다 (2026-10-10 판정 기준 변경)
-  if (level.near.length > 0) return `${level.near.map((b) => bandName(b)).join('·')} 코스는 문턱 부근이에요`
+  if (level.near.length > 0) return `${level.near.map((b) => bandName(b)).join('·')} 코스는 기준 부근이에요`
   return '아직 수준을 말할 만큼 안 풀었어요'
 }
 
@@ -770,7 +770,7 @@ function LevelSection({
           정답률: 최근 {LEVEL_WINDOW_DAYS}일 채점 기준(모자라면 최근 {LEVEL_MIN_GRADES}회까지)
         </li>
         <li>
-          붉은 줄 = 흔들림(오차 범위까지 감안해도 {Math.round(LEVEL_SOLID_RATE * 100)}% 미만) · 줄 없음 = 안정 또는 문턱 부근 ·
+          붉은 줄 = 흔들림(오차 범위까지 감안해도 {Math.round(LEVEL_SOLID_RATE * 100)}% 미만) · 줄 없음 = 안정 또는 기준 부근 ·
           점선 = 표본 부족(채점 {LEVEL_MIN_GRADES}회·표현 {LEVEL_MIN_IDIOMS}개 미만)
         </li>
         <li>
