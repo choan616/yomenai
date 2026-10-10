@@ -237,7 +237,12 @@ export function buildOverall(input: DiagnosisInput): string[] {
   } else if (solidThrough !== null && edge !== null) {
     out.push(`${bandName(solidThrough)}까지 안정적으로 읽고, ${bandNameIga(edge)} 경계예요.`)
   } else if (edge !== null) {
-    out.push(`${bandName(edge)} 코스부터 흔들려요.`)
+    const below = level.near.filter((b) => b < edge)
+    out.push(
+      below.length > 0
+        ? `${below.map((b) => bandName(b)).join('·')} 코스는 문턱 부근이고, ${bandName(edge)} 코스부터 흔들려요.`
+        : `${bandName(edge)} 코스부터 흔들려요.`,
+    )
   } else if (solidThrough !== null && level.near.length > 0) {
     out.push(`${bandName(solidThrough)}까지 안정적으로 읽고, ${nearNames(level)} 코스는 문턱 부근이에요.`)
   } else if (solidThrough !== null) {

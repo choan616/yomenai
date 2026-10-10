@@ -630,7 +630,13 @@ function levelHeadline(level: LevelProfile): string {
   if (edge !== null && solidThrough !== null) {
     return `${bandName(solidThrough)}까지 안정, ${bandNameIga(edge)} 경계예요`
   }
-  if (edge !== null) return `${bandName(edge)}부터 흔들려요`
+  if (edge !== null) {
+    // 흔들리는 코스 아래에 문턱 부근인 코스가 있으면 그것도 말한다 — 빼면 쉬운 코스가 멀쩡한 것처럼 읽힌다 (2026-10-10)
+    const below = level.near.filter((b) => b < edge)
+    return below.length > 0
+      ? `${below.map((b) => bandName(b)).join('·')} 코스는 문턱 부근, ${bandName(edge)}부터 흔들려요`
+      : `${bandName(edge)}부터 흔들려요`
+  }
   if (solidThrough !== null && level.near.length > 0) {
     return `${bandName(solidThrough)}까지 안정, ${level.near.map((b) => bandName(b)).join('·')} 코스는 문턱 부근이에요`
   }

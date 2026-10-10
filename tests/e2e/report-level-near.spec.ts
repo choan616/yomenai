@@ -35,6 +35,15 @@ test('정답률이 문턱 근처면 안정도 흔들림도 아니라 「문턱 �
   await expect(caption).toContainText('채점 100회·표현 60개 미만')
 })
 
+test('흔들리는 코스 아래의 문턱 부근 코스도 제목 줄이 말한다', async ({ page }) => {
+  // 산책로 80/100(문턱 부근) · 뒷산 40/100(흔들림) — 제목이 뒷산만 말하면 산책로가 멀쩡해 보인다
+  await open(page, [...gradings(0, 100, 80, 1), ...gradings(1, 100, 40, 1)])
+  await openLevel(page)
+  await expect(page.locator('.report-lead')).toHaveText('산책로 코스는 문턱 부근, 뒷산부터 흔들려요')
+  // 한국어 안내문은 낱말 중간에서 끊기지 않는다
+  await expect(page.locator('.trend-note')).toHaveCSS('word-break', 'keep-all')
+})
+
 test('표본이 모자라면 판정하지 않고 표본 부족으로 둔다 — 정답률이 높아도 안정이라 말하지 않는다', async ({ page }) => {
   // 99개 전부 정답이어도 100회에 못 미친다
   await open(page, gradings(0, 99, 99, 1))

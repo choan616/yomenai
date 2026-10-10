@@ -702,6 +702,14 @@
   fill: transparent;
   cursor: pointer;
 }
+/* 한국어는 기본이 글자 단위 줄바꿈이라 「문 / 턱」처럼 낱말이 끊긴다 — 낱말 단위로 끊는다 (2026-10-10 실기기) */
+.trend-note,
+.trend-readout span,
+.opinion,
+.ladder-caption {
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
 .trend-note {
   margin: 2px 0 0;
   font-size: calc(12px * var(--ui-scale));

@@ -193,6 +193,18 @@ describe('buildOverall — 총평', () => {
     expect(level.details.join(' ')).toContain('문턱 부근은 정답률의 오차 범위가 안정 문턱(80%)을 걸치고')
   })
 
+  it('흔들리는 코스 아래의 문턱 부근도 총평이 말한다', () => {
+    const events = [...many('a', 80, 20, '2026-10-05'), ...many('b', 40, 60, '2026-10-06')]
+    const input: DiagnosisInput = {
+      ...scenario(),
+      level: buildLevel(events, bandOf),
+      windows: courseWindows(events, bandOf, (e) => e.mistakeType),
+    }
+    expect(input.level.near).toEqual([0])
+    expect(input.level.edge).toBe(1)
+    expect(buildOverall(input)[0]).toBe('산책로 코스는 문턱 부근이고, 뒷산 코스부터 흔들려요.')
+  })
+
   it('말투 방침을 지킨다', () => {
     const t = buildOverall(scenario()).join(' ')
     for (const bad of ['겁', '걱정', '괜찮', '막혀', '막힘', '포기', '실패']) expect(t).not.toContain(bad)
