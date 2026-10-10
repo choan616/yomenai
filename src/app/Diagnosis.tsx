@@ -2,9 +2,26 @@
 import type { Paragraph } from './diagnosis.ts'
 import { Mixed } from './RuleBody.tsx'
 
-export function Diagnosis({ paragraphs }: { paragraphs: readonly Paragraph[] }) {
+export function Diagnosis({
+  overall,
+  paragraphs,
+}: {
+  /** 총평 — 결론 두세 줄 (`buildOverall`). 비면 안 그린다 */
+  overall: readonly string[]
+  paragraphs: readonly Paragraph[]
+}) {
   return (
     <section className="opinion">
+      {overall.length > 0 && (
+        <div className="opinion-overall">
+          <h3 className="opinion-h">총평</h3>
+          {overall.map((line, i) => (
+            <p className="opinion-line" key={i}>
+              <Mixed text={line} />
+            </p>
+          ))}
+        </div>
+      )}
       {paragraphs.map((p) => (
         <div className="opinion-sec" key={p.key}>
           <h3 className="opinion-h">{p.title}</h3>

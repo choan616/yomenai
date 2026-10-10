@@ -12,7 +12,7 @@ import {
 } from '../core/attendance.ts'
 import { accuracyTrends, type AccuracyTrends } from '../core/accuracyTrend.ts'
 import { courseWindows, type CourseWindow } from '../core/courseWindow.ts'
-import { buildDiagnosis, findInversion } from './diagnosis.ts'
+import { buildDiagnosis, buildOverall, findInversion, type DiagnosisInput } from './diagnosis.ts'
 import { Diagnosis } from './Diagnosis.tsx'
 import { AccuracyTrend } from './AccuracyTrend.tsx'
 import { buildStreak, milestoneLabel, type Milestone, type StreakRecord } from '../core/streak.ts'
@@ -390,6 +390,18 @@ function ReportBody({
         ? { count: report.weakOnyomi.length, topRate: Math.max(...report.weakOnyomi.map((w) => w.rate)) }
         : null,
   })
+  // 총평과 항목이 같은 입력에서 나온다 — 서로 어긋나지 않는다
+  const opinionInput: DiagnosisInput = {
+    level,
+    windows,
+    trends,
+    mistakes: rows,
+    totalWrong: report.totalWrong,
+    pace,
+    next: prescriptions[0] ?? null,
+    today: day,
+    headwordOf: (id) => headwords.get(id),
+  }
   const sheets: Record<SheetKind, { title: string; content: React.ReactNode }> = {
     level: { title: '수준', content: <LevelSection level={level} trends={trends} today={day} onOpinion={() => setSheet('opinion')} reviews={report.totalReviews} accuracy={accuracy} pace={pace} /> },
     days: { title: '학습한 날', content: <CalendarSection
@@ -448,21 +460,7 @@ function ReportBody({
           </section> },
     opinion: {
       title: '진단 소견',
-      content: (
-        <Diagnosis
-          paragraphs={buildDiagnosis({
-            level,
-            windows,
-            trends,
-            mistakes: rows,
-            totalWrong: report.totalWrong,
-            pace,
-            next: prescriptions[0] ?? null,
-            today: day,
-            headwordOf: (id) => headwords.get(id),
-          })}
-        />
-      ),
+      content: <Diagnosis overall={buildOverall(opinionInput)} paragraphs={buildDiagnosis(opinionInput)} />,
     },
     browse: { title: '다시보기', content: <section>
             {report.frequent.length > 0 ? (

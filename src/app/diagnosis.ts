@@ -68,23 +68,27 @@ function levelParagraph(level: LevelProfile): Paragraph {
   const inv = findInversion(level)
   const { solidThrough, edge } = level
   const details: string[] = []
-  let summary: string
+  // 총평이 말로 결론을 말하니, 이 항목은 숫자로 짧게 받친다 (2026-10-10 사용자 「세부 항목별 진단은 간략하게」)
+  const parts: string[] = []
   if (inv !== null) {
     const row = scoredRows(level).find((r) => r.band === inv.solid)!
-    summary = `${bandName(inv.solid)} 코스는 안정인데, 더 쉬운 ${inv.shaky.map((b) => bandName(b)).join('·')} 코스는 흔들려요.`
+    parts.push(`안정 ${bandName(inv.solid)} ${pct(row.rate)}%`, `흔들림 ${inv.shaky.map((b) => bandName(b)).join('·')}`)
     details.push(`${bandName(inv.solid)} 코스는 최근 ${row.seen}회 정답률 ${pct(row.rate)}%로 안정이에요. 흔들리는 코스는 아래에서 기록으로 이유를 짚었어요.`)
   } else if (edge !== null && solidThrough !== null) {
-    summary = `${bandName(solidThrough)}까지 안정, ${bandNameIga(edge)} 경계예요.`
+    parts.push(`안정 ${bandName(solidThrough)}까지`, `경계 ${bandName(edge)}`)
   } else if (edge !== null) {
-    summary = `${bandName(edge)}부터 흔들려요.`
+    parts.push(`흔들림 ${bandName(edge)}`)
   } else if (solidThrough !== null) {
-    summary = `${bandName(solidThrough)}까지 안정이에요. 아직 벽을 안 만났어요.`
+    parts.push(`안정 ${bandName(solidThrough)}까지`, '벽 없음')
   } else {
-    summary = '아직 수준을 말할 만큼 안 풀었어요.'
+    parts.push('아직 수준을 말할 만큼 안 풀었어요.')
   }
   const stable = scoredRows(level).reduce((s, r) => s + r.stable, 0)
-  if (stable > 0) details.push(`2주 넘게 안 잊는 표현은 ${stable}개예요.`)
-  return { key: 'level', title: '지금 수준', summary, details }
+  if (stable > 0) {
+    parts.push(`숙지 ${stable}개`)
+    details.push('숙지는 2주 넘게 안 잊는 표현이에요.')
+  }
+  return { key: 'level', title: '지금 수준', summary: parts.join(' · '), details }
 }
 
 /** 흔들리는 코스 하나를 기록으로 해부한다 */
@@ -138,14 +142,19 @@ function shakyParagraph(
   return { key: `shaky-${w.band}`, title: `${bandName(w.band)} — 최근 ${w.n}회`, summary: brief.join(' · '), details: lines }
 }
 
-function trendParagraph(trends: AccuracyTrends): Paragraph | null {
+/** 4주 선의 처음·끝 값. 점이 둘 미만이면 null */
+function trendFacts(trends: AccuracyTrends) {
   const pts = trends.get('all')
   if (!pts || pts.length < 2) return null
   const a = pts[0]!
   const b = pts.at(-1)!
-  const from = pct(a.rate)
-  const to = pct(b.rate)
-  const range = `${md(a.date)}~${md(b.date)}`
+  return { from: pct(a.rate), to: pct(b.rate), range: `${md(a.date)}~${md(b.date)}` }
+}
+
+function trendParagraph(trends: AccuracyTrends): Paragraph | null {
+  const f = trendFacts(trends)
+  if (!f) return null
+  const { from, to, range } = f
   return {
     key: 'trend',
     title: '최근 4주',
@@ -196,6 +205,48 @@ function nextParagraph(next: Prescription | null): Paragraph | null {
       return null
   }
   return { key: 'next', title: '다음 한 걸음', summary: line, details: [] }
+}
+
+/**
+ * 총평 — 소견의 결론을 맨 위에 얹는 두세 줄 (2026-10-10 사용자 「결론을 위에 총평으로」).
+ * 수준 → 4주 흐름 → 다음 한 걸음 순이다. 항목별 진단과 같은 사실에서 조립해 서로 어긋나지 않는다.
+ * 표본이 모자라면 비운다(그때는 「더 쌓이면」 문단이 말한다)
+ */
+export function buildOverall(input: DiagnosisInput): string[] {
+  const { level } = input
+  if (level.totalReadings < PRESCRIPTION_MIN_READINGS) return []
+  const out: string[] = []
+  const inv = findInversion(level)
+  const { solidThrough, edge } = level
+  if (inv !== null) {
+    const names = inv.shaky.map((b) => bandName(b)).join('·')
+    const wins = inv.shaky.map((b) => input.windows.get(b)).filter((w): w is CourseWindow => w !== undefined)
+    // 창이 하루 이틀 치이고 오차 구간이 문턱을 품으면 판정이 아직 단단하지 않다
+    const loose = wins.length > 0 && wins.every((w) => w.days <= 2 && w.ci[0] < LEVEL_SOLID_RATE && LEVEL_SOLID_RATE < w.ci[1])
+    out.push(
+      `${bandName(inv.solid)} 코스까지 안정적으로 읽어요. 더 쉬운 ${names} 코스가 흔들리는 건` +
+        (loose ? ' 최근 하루 이틀 기록의 영향이 커서 아직 단단한 판정은 아니에요.' : ' 최근 기록에서 보이는 모습이에요.'),
+    )
+  } else if (solidThrough !== null && edge !== null) {
+    out.push(`${bandName(solidThrough)}까지 안정적으로 읽고, ${bandNameIga(edge)} 경계예요.`)
+  } else if (edge !== null) {
+    out.push(`${bandName(edge)} 코스부터 흔들려요.`)
+  } else if (solidThrough !== null) {
+    out.push(`${bandName(solidThrough)}까지 안정적으로 읽어요. 아직 벽을 안 만났어요.`)
+  } else {
+    out.push('아직 수준을 말할 만큼 안 풀었어요.')
+  }
+  const f = trendFacts(input.trends)
+  if (f) {
+    out.push(
+      f.to - f.from >= 3
+        ? `최근 4주 정답률은 ${f.from}%에서 ${f.to}%로 올랐어요.`
+        : `최근 4주 정답률은 ${f.to}%예요.`,
+    )
+  }
+  const n = nextParagraph(input.next)
+  if (n) out.push(`다음에는 ${n.summary}`)
+  return out
 }
 
 /** 소견 전체. 표본이 모자라면 한 문단만 낸다 */

@@ -99,8 +99,13 @@ test('쉬운 코스가 흔들리는 역전을 소견이 기록으로 설명한�
   await expect(dialog).toHaveAccessibleName('진단 소견')
   const text = dialog.locator('.opinion')
   await expect.poll(() => page.locator('.sheet-body').evaluate((el) => el.scrollTop)).toBe(0)
-  // 처음에는 한 줄 요약만 보이고 근거는 접혀 있다
-  await expect(text).toContainText('능선 코스는 안정인데, 더 쉬운 산책로 코스는 흔들려요.')
+  // 맨 위 총평이 결론을 말하고, 항목은 한 줄 요약만 보이며 근거는 접혀 있다
+  const overall = text.locator('.opinion-overall')
+  await expect(overall).toContainText('능선 코스까지 안정적으로 읽어요')
+  await expect(overall).toContainText('더 쉬운 산책로 코스가 흔들리는 건')
+  await expect(overall).toContainText('다음에는')
+  await expect(text).toContainText('안정 능선')
+  await expect(text).toContainText('흔들림 산책로')
   await expect(text).toContainText('오늘 하루 치 · 전체 기록')
   await expect(text.locator('.opinion-line.detail').first()).toBeHidden()
   await expect(text.getByText('訴訟 ×2')).toBeHidden()

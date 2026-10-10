@@ -734,6 +734,16 @@
   text-underline-offset: 3px;
   text-align: left;
 }
+/* 총평 — 결론을 맨 위에 (2026-10-10). 항목별 진단과 면으로 갈라 한눈에 먼저 읽힌다 */
+.opinion-overall {
+  margin: 0 0 18px;
+  padding: 0 0 14px;
+  border-bottom: 1px solid var(--border);
+}
+.opinion-overall .opinion-line {
+  font-size: calc(16px * var(--ui-scale));
+  font-weight: 500;
+}
 .opinion-sec + .opinion-sec {
   margin-top: 18px;
 }
