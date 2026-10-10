@@ -4,6 +4,7 @@
 // 지식의 유무를, 응답 시간은 자동화 여부를 잰다 — 맞지만 느린 것은 노출 반복이 필요하고
 // 틀리고 빠른 것은 대조가 필요해 처방이 반대다 (decisions.md 「처방 — 규칙 축에도 대조를
 // 연다」). 이 단계는 화면을 건드리지 않는다.
+import type { Confidence } from './scheduler.ts'
 import type { LearningEvent, ReviewEvent } from './types.ts'
 
 /** 이만큼 정답 표본이 안 모이면 null (판정 보류) */
@@ -31,6 +32,19 @@ export function median(values: number[]): number {
   const sorted = [...values].sort((a, b) => a - b)
   const mid = Math.floor(sorted.length / 2)
   return sorted.length % 2 === 0 ? (sorted[mid - 1] + sorted[mid]) / 2 : sorted[mid]
+}
+
+/**
+ * 정답의 등급을 응답 시간에서 정한다 (2026-10-10 사용자 결정 — 「쉬웠다·헷갈렸다」 버튼을 없앴다).
+ *
+ * 평소(`medianMs`)의 `PACE_SLOW_FACTOR` 배 넘게 걸린 정답은 Hard, 나머지는 Good(= null) 이다.
+ * **Easy 는 쓰지 않는다** — 버튼이 있던 때 정답의 99% 가 「쉬웠다」였고, 그 표현이 더 덜 맞았다
+ * (다음 복습 정답률 66% vs 80%). 평소 기준이 없거나(표본 부족) 중간에 멈춘 응답(`PACE_CAP_MS` 초과)이면
+ * 판단하지 않는다.
+ */
+export function autoConfidence(elapsedMs: number, medianMs: number | null): Confidence {
+  if (medianMs === null || elapsedMs <= 0 || elapsedMs > PACE_CAP_MS) return null
+  return elapsedMs >= medianMs * PACE_SLOW_FACTOR ? 'hard' : null
 }
 
 /**

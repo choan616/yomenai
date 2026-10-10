@@ -1,6 +1,7 @@
 // 응답 시간 집계 검증 — 표본 문턱, 느린 카드 판정, 극단값·중복 숙어·삭제 이벤트 처리
 import { describe, expect, it } from 'vitest'
-import { PACE_MIN_SAMPLE, paceProfile } from './pace.ts'
+import { autoConfidence, PACE_CAP_MS, PACE_MIN_SAMPLE, paceProfile } from './pace.ts'
+import { gradeFor } from './scheduler.ts'
 import type { ReviewEvent } from './types.ts'
 
 let seq = 0
@@ -118,5 +119,27 @@ describe('paceProfile', () => {
     // 오답은 분모에 안 든다 — 21개를 심었지만 정답 20개가 분모다
     expect(profile?.counted).toBe(20)
     expect(profile?.slow).toHaveLength(1)
+  })
+})
+
+// 정답의 등급을 응답 시간에서 정한다 (2026-10-10 사용자 결정 — 쉬웠다·헷갈렸다 버튼 제거)
+describe('autoConfidence', () => {
+  it('평소의 2배 넘게 걸린 정답만 Hard 다 — Easy 는 없다', () => {
+    expect(autoConfidence(1999, 1000)).toBeNull()
+    expect(autoConfidence(2000, 1000)).toBe('hard')
+    expect(autoConfidence(30_000, 1000)).toBe('hard')
+    expect(autoConfidence(100, 1000)).toBeNull()
+  })
+
+  it('평소 기준이 없거나 응답 시간을 믿을 수 없으면 판단하지 않는다', () => {
+    expect(autoConfidence(9000, null)).toBeNull() // 표본 부족
+    expect(autoConfidence(0, 1000)).toBeNull()
+    expect(autoConfidence(PACE_CAP_MS + 1, 1000)).toBeNull() // 중간에 멈춘 응답
+  })
+
+  it('gradeFor 와 이어 보면 정답은 Good(3)·느린 정답은 Hard(2), 오답은 Again(1)', () => {
+    expect(gradeFor(true, autoConfidence(1000, 1000))).toBe(3)
+    expect(gradeFor(true, autoConfidence(2500, 1000))).toBe(2)
+    expect(gradeFor(false, autoConfidence(2500, 1000))).toBe(1)
   })
 })

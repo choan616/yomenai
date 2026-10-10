@@ -1341,3 +1341,7 @@ button.tag {
 .screen-body.with-keypad {
   padding-bottom: 280px;
 }
+/* 정답 화면 — 「다음」 하나 (2026-10-10). 쉬웠다·헷갈렸다 버튼을 없앴다 */
+.answer-row.single {
+  grid-template-columns: 1fr;
+}

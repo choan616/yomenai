@@ -603,6 +603,14 @@
 .trend .ladder-head {
   margin-top: 0;
 }
+/* 「코스별 숙지한 표현」(.ladder-title)과 같은 제목 모양이되 클래스는 따로 둔다 — 같은 이름이면 그 제목을
+   찾는 선택자(full-flow e2e)가 둘을 잡는다 */
+.trend-title {
+  margin: 0;
+  font-size: calc(0.82rem * var(--ui-scale));
+  letter-spacing: 0.04em;
+  color: var(--text-dim);
+}
 .trend-range {
   margin: 0;
   font-size: calc(12px * var(--ui-scale));

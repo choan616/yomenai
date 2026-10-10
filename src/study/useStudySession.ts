@@ -13,6 +13,7 @@ import {
   type SessionCard,
 } from '../core/session.ts'
 import { explainMistake, type VoicingKind } from '../core/mistakes.ts'
+import { autoConfidence, paceProfile } from '../core/pace.ts'
 import { replay } from '../core/replay.ts'
 import { onyomiEcho, type OnyomiEcho } from '../core/echo.ts'
 import { observeReading, type Observation } from '../core/observe.ts'
@@ -20,7 +21,6 @@ import { rubyOf, type RubySegment } from '../core/ruby.ts'
 import { foldHomographs, pairOf } from './homograph.ts'
 import { buildFocus, buildRematch } from '../core/session.ts'
 import { surfaceOfPairs } from '../core/surface.ts'
-import type { Confidence } from '../core/scheduler.ts'
 import type { LearningEvent, MeaningVerdict, MistakeType } from '../core/types.ts'
 import { appendEvent } from '../db/events.ts'
 import { loadIntroduced, markIntroduced } from './introduced.ts'
@@ -148,7 +148,7 @@ export interface StudyActions {
    */
   voteMeaning: (verdict: MeaningVerdict) => void
   /** 피드백을 닫고 다음 카드로. 정답이면 자신감 보정을 함께 넘긴다 */
-  next: (confidence?: Confidence) => void
+  next: () => void
 }
 
 /**
@@ -631,9 +631,18 @@ export function useStudySession({
     [card, answerCtx, record],
   )
 
+  /**
+   * 정답의 평소 응답 시간 (2026-10-10). 세션을 열 때의 기록에서 한 번 구한다 — 이 값의 2배를 넘기면 Hard.
+   * 표본이 모자라면 null 이라 등급을 안 바꾼다
+   */
+  const paceMedian = useMemo(() => paceProfile(priorEvents)?.medianMs ?? null, [priorEvents])
+
   const next = useCallback(
-    (confidence?: Confidence) => {
+    () => {
       if (!card || !idiom) return
+      // 시간은 한 번만 잰다 — 이벤트마다 따로 재면 같은 답이 서로 다른 시간을 갖는다
+      const ctx = answerCtx()
+      const confidence = autoConfidence(ctx.elapsedMs, paceMedian)
       if (feedback?.dual) {
         // 「읽기 둘」 — 쓴 읽기의 카드에만 정답을 남긴다. 두 읽기는 처음부터 별도
         // 숙어라 평범한 reading 이벤트 두 개로 끝난다
@@ -645,7 +654,7 @@ export function useStudySession({
               reading: g.reading,
               answer: g.reading,
               confidence,
-              ctx: answerCtx(),
+              ctx,
               mistakes: mistakes.current!,
             }),
           )
@@ -660,7 +669,7 @@ export function useStudySession({
               reading: idiom.reading,
               answer: feedback.dual.missedAnswer,
               confidence,
-              ctx: answerCtx(),
+              ctx,
               mistakes: mistakes.current!,
             }),
           )
@@ -675,7 +684,7 @@ export function useStudySession({
             answer: feedback.answer,
             altReadings: idiom.altReadings,
             confidence,
-            ctx: answerCtx(),
+            ctx,
             mistakes: mistakes.current!,
           }),
         )
@@ -684,7 +693,7 @@ export function useStudySession({
         advance(meaningDone)
       }
     },
-    [card, idiom, feedback, meaningDone, answerCtx, advance, record],
+    [card, idiom, feedback, meaningDone, answerCtx, paceMedian, advance, record],
   )
 
   const events = useMemo(

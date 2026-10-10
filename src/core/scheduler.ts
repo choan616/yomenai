@@ -26,8 +26,9 @@ export function isDue(card: Card, now: number): boolean {
 export type Confidence = 'easy' | 'hard' | null
 
 /**
- * 채점은 자동 판정이라 FSRS 4단계를 다 노출하지 않는다 (PLAN §7).
- * 오답이면 Again, 정답이면 Good 이 기본이고 "쉬웠다"·"헷갈렸다" 두 버튼만 등급을 바꾼다.
+ * 채점은 자동 판정이라 FSRS 4단계를 노출하지 않는다 (PLAN §7).
+ * 오답이면 Again, 정답이면 Good 이 기본이고, 정답이 평소보다 한참 느리면 Hard 다 (`autoConfidence`).
+ * 2026-10-10 부터 사용자가 고르는 버튼은 없다 — 기록에 남은 Easy(4)는 옛 버튼의 것이다.
  */
 export function gradeFor(correct: boolean, confidence: Confidence = null): Grade {
   if (!correct) return 1 // Again

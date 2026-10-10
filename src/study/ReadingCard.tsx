@@ -2,7 +2,6 @@
 // 입력창은 피드백 중에도 마운트를 유지한다 — iOS 스탠드얼론에서 포커스·키보드를 놓지 않으려고.
 import { useEffect, useState } from 'react'
 import { SoundIcon } from '../app/icons.tsx'
-import type { Confidence } from '../core/scheduler.ts'
 import { diffAnswer } from '../core/answerDiff.ts'
 import { toHiragana } from '../lib/readings.ts'
 import { bandName } from '../lib/bands.ts'
@@ -27,7 +26,7 @@ interface Props {
   onSubmit: (answer: string) => void
   /** 모르겠다고 넘기기 — 정답 화면으로 바로 간다 */
   onPass: () => void
-  onNext: (confidence?: Confidence) => void
+  onNext: () => void
 }
 
 export function ReadingCard({
@@ -42,9 +41,9 @@ export function ReadingCard({
   const [detail, setDetail] = useState(false)
 
   // 다음 카드로 넘어갈 때 오답 상세 뷰를 닫는다 (effect 로 setState 하지 않으려고 핸들러에서)
-  const next = (c?: Confidence) => {
+  const next = () => {
     setDetail(false)
-    onNext(c)
+    onNext()
   }
 
   // 오답 상세는 카드를 교체하지 않고 그 위에 덮는다 (.card 기준 absolute).
@@ -222,15 +221,11 @@ export function ReadingCard({
         />
         {fb &&
           (fb.correct ? (
-            <div className="answer-row">
-              <button type="button" className="btn" onClick={() => next('hard')}>
-                헷갈렸다
-              </button>
+            /* 정답은 「다음」 하나다 (2026-10-10 사용자 결정). 「쉬웠다·헷갈렸다」는 없앴다 — 정답의 99% 가
+               쉬웠다로 눌려 정보가 없었고, 일정만 길게 만들었다. 등급은 응답 시간에서 정한다 */
+            <div className="answer-row single">
               <button type="button" className="btn-primary" onClick={() => next()}>
                 다음
-              </button>
-              <button type="button" className="btn" onClick={() => next('easy')}>
-                쉬웠다
               </button>
             </div>
           ) : (

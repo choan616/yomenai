@@ -85,7 +85,7 @@ export function AccuracyTrend({
   return (
     <div className="trend">
       <div className="ladder-head">
-        <p className="ladder-title">정답률 추이</p>
+        <p className="trend-title">정답률 추이</p>
         <p className="trend-range">최근 4주</p>
       </div>
 
