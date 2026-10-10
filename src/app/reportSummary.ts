@@ -21,6 +21,8 @@ export interface Tile {
 
 interface LevelLike {
   solidThrough: number | null
+  /** 안정 또는 문턱 부근이 끊기지 않는 가장 높은 코스 */
+  nearThrough?: number | null
   edge: number | null
 }
 
@@ -38,24 +40,35 @@ export interface TileInput {
 
 export function summaryTiles(i: TileInput): Tile[] {
   const { solidThrough, edge } = i.level
+  const nearThrough = i.level.nearThrough ?? null
   // 수준은 **안정적으로 읽는 가장 높은 코스**다 — 흔들리는 코스가 아니다 (2026-10-06 사용자 「흔들리면 수준은 그 이전 단계가 아닌가」).
   // 흔들리는 코스(경계)는 부제로 따로 말한다. 안정이 없는데 경계가 둘째 코스 이상이면 그 바로 아래를 수준으로 본다 —
   // 산책로(0)는 신규 도입에서 기본으로 건너뛰는 쉬운 말이라 따로 재지 않기 때문이다(PLAN §4, `minBand`)
   const course = solidThrough ?? (edge !== null && edge > 0 ? edge - 1 : null)
+  // 안정은 없는데 오차 범위가 문턱을 걸치는 코스가 있으면(2026-10-10) 그 코스를 「문턱 부근」으로 보여 준다 —
+  // 「—」나 「흔들려요」는 아는 것(정답률이 80% 근처)을 거짓으로 말하게 된다
+  const near = course === null && edge === null && nearThrough !== null
   const level: Tile =
     course !== null
       ? {
           sheet: 'level',
           label: '수준',
           value: bandName(course),
-          sub: edge !== null ? `경계 ${bandName(edge)}` : '안정이에요',
+          sub:
+            edge !== null
+              ? `경계 ${bandName(edge)}`
+              : nearThrough !== null && nearThrough > course
+                ? `${bandName(nearThrough)} 문턱 부근`
+                : '안정이에요',
           shade: course,
         }
-      : edge !== null
+      : near
+        ? { sheet: 'level', label: '수준', value: bandName(nearThrough!), sub: '문턱 부근이에요', shade: nearThrough! }
+        : edge !== null
         // 안정 구간이 전혀 없을 때만 온다(course===null 은 edge===0 일 때뿐이다 — edge>0 이면
         // 항상 course=edge-1 로 위 분기를 탄다). 「—」는 값이 없다는 뜻으로 읽혀 사용자가
         // 자기 수준을 전혀 알 수 없었다(2026-10-07 사용자 지적) — 아는 것(산책로가 흔들린다는
-        // 것)을 그대로 보여준다. 기준(LEVEL_SOLID_RATE·LEVEL_WINDOW)은 그대로다, 문구만 바꿨다
+        // 것)을 그대로 보여준다. 문구만 바꿨다(기준은 2026-10-10 에 따로 바꿨다 — `level.ts`)
         ? { sheet: 'level', label: '수준', value: bandName(edge), sub: '흔들리고 있어요', shade: edge }
         : { sheet: 'level', label: '수준', value: '—', sub: '아직 기록이 적어요' }
 

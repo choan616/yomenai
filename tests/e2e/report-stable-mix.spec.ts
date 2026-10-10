@@ -6,6 +6,7 @@
 // 안 짧아진다**는 것.
 import { expect, test } from '@playwright/test'
 import { openLevel } from './report-sheets.js'
+import { idsOf } from './level-seed.js'
 
 /** 밴드 0 · 음독. 셋을 숙지 상태로 만든다 */
 const BAND0 = ['1000220', '1150680', '1150710']
@@ -152,10 +153,11 @@ test('흔들리는 밴드는 밴드 색을 잃지 않고 사선만 덧입는다'
     ...BAND0.map((idiomId) => ({ idiomId, days: CORRECT_AT, correct: true })),
     // 밴드 2 — 둘은 숙지, 나머지는 최근에 계속 틀려 흔들림으로 떨어진다
     ...['1149590', '1150990'].map((idiomId) => ({ idiomId, days: CORRECT_AT, correct: true })),
-    ...['1151090', '1151120', '1151900', '1152020'].map((idiomId) => ({
+    // 판정이 서려면 채점 100회·표현 60개가 필요하다(2026-10-10) — 서로 다른 중턱 표현 100개를 한 번씩, 정답 35개
+    ...idsOf(2, 100, ['1149590', '1150990']).map((idiomId, i) => ({
       idiomId,
-      days: [4, 3, 2],
-      correct: false,
+      days: [3],
+      correct: i < 35,
     })),
   ])
   await page.reload()

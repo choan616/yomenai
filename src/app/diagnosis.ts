@@ -6,7 +6,7 @@
 //
 // 핵심은 **역전**(더 어려운 코스는 안정인데 더 쉬운 코스가 흔들림)의 설명이다. 수준 판정은 코스마다
 // 「최근 30회」라 하루 세션이 창을 채우면 판정이 뒤집힌다 — 문장은 창의 모양과 전체 기록을 사실로 말한다.
-import { LEVEL_MIN_SEEN, LEVEL_SOLID_RATE, LEVEL_WINDOW, type LevelProfile } from '../core/level.ts'
+import { LEVEL_MIN_GRADES, LEVEL_MIN_IDIOMS, LEVEL_SOLID_RATE, type LevelProfile } from '../core/level.ts'
 import { PRESCRIPTION_MIN_READINGS, type Prescription } from '../core/prescription.ts'
 import type { AccuracyTrends } from '../core/accuracyTrend.ts'
 import type { CourseWindow } from '../core/courseWindow.ts'
@@ -64,6 +64,11 @@ export function findInversion(level: LevelProfile): { solid: Band; shaky: Band[]
   return shaky.length > 0 ? { solid: top, shaky } : null
 }
 
+/** 문턱 부근(`near`)인 코스 이름들 — 「산책로·뒷산」 */
+function nearNames(level: LevelProfile): string {
+  return level.near.map((b) => bandName(b)).join('·')
+}
+
 function levelParagraph(level: LevelProfile): Paragraph {
   const inv = findInversion(level)
   const { solidThrough, edge } = level
@@ -79,16 +84,26 @@ function levelParagraph(level: LevelProfile): Paragraph {
   } else if (edge !== null) {
     parts.push(`흔들림 ${bandName(edge)}`)
   } else if (solidThrough !== null) {
-    parts.push(`안정 ${bandName(solidThrough)}까지`, '벽 없음')
-  } else {
-    parts.push('아직 수준을 말할 만큼 안 풀었어요.')
+    parts.push(`안정 ${bandName(solidThrough)}까지`, level.near.length > 0 ? '' : '벽 없음')
+  }
+  if (level.near.length > 0) parts.push(`문턱 부근 ${nearNames(level)}`)
+  if (parts.filter(Boolean).length === 0) parts.push('아직 수준을 말할 만큼 안 풀었어요.')
+
+  // 표본이 모자라 판정을 못 내는 코스는 얼마나 더 쌓여야 하는지 말한다 (신규 사용자가 기다릴 만하게)
+  for (const r of scoredRows(level)) {
+    if (r.status === 'thin') {
+      details.push(`${bandName(r.band)} 코스는 표본을 모으는 중이에요 — 채점 ${r.seen}/${LEVEL_MIN_GRADES}회 · 표현 ${r.idioms}/${LEVEL_MIN_IDIOMS}개.`)
+    }
+  }
+  if (level.near.length > 0) {
+    details.push('문턱 부근은 정답률의 오차 범위가 안정 문턱(80%)을 걸치고 있어 안정인지 흔들림인지 아직 가를 수 없다는 뜻이에요.')
   }
   const stable = scoredRows(level).reduce((s, r) => s + r.stable, 0)
   if (stable > 0) {
     parts.push(`숙지 ${stable}개`)
     details.push('숙지는 2주 넘게 안 잊는 표현이에요.')
   }
-  return { key: 'level', title: '지금 수준', summary: parts.join(' · '), details }
+  return { key: 'level', title: '지금 수준', summary: parts.filter(Boolean).join(' · '), details }
 }
 
 /** 흔들리는 코스 하나를 기록으로 해부한다 */
@@ -97,8 +112,6 @@ function shakyParagraph(
   windows: ReadonlyMap<Band, CourseWindow>,
   today: string,
   headwordOf: (id: string) => string | undefined,
-  /** 앞 문단이 이미 같은 해석을 말했나 — 둘째 코스에서 되풀이하지 않는다 */
-  explained: boolean,
 ): Paragraph {
   const lines: string[] = []
   const when = w.lastDate === today ? '오늘' : md(w.lastDate)
@@ -111,7 +124,7 @@ function shakyParagraph(
   )
 
   const allRate = w.allCorrect / w.allN
-  const comparable = [...windows.values()].filter((o) => o.allN >= LEVEL_WINDOW)
+  const comparable = [...windows.values()].filter((o) => o.allN >= LEVEL_MIN_GRADES)
   const best = comparable.length >= 2 && comparable.every((o) => o.allCorrect / o.allN <= allRate)
   brief.push(`전체 기록 ${pct(allRate)}%`)
   lines.push(
@@ -131,14 +144,11 @@ function shakyParagraph(
     lines.push(`같은 표현을 여러 번 틀렸어요 — ${rep.map(([h, c]) => `${h} ×${c}`).join(' · ')}.`)
   }
 
+  // 「흔들림」은 오차 범위까지 감안해도 문턱 아래라는 뜻이다 (2026-10-10 판정 기준 변경) — 그 사실을 숫자로 말한다
   const [lo, hi] = w.ci
-  const solid = LEVEL_SOLID_RATE
-  if (lo < solid && solid < hi) {
-    lines.push(
-      `표본이 ${w.n}회라 실제 정답률은 ${pct(lo)}~${pct(hi)}% 사이일 수 있고, 안정 문턱 ${pct(solid)}%가 그 안에 들어요.`,
-    )
-    if (w.days <= 2 && !explained) lines.push('하루 이틀의 세션이 판정을 크게 좌우한 상태라, 며칠 더 풀면 달라질 수 있어요.')
-  }
+  lines.push(
+    `정답률 ${pct(w.correct / w.n)}%는 오차 범위(${pct(lo)}~${pct(hi)}%)까지 감안해도 안정 문턱 ${pct(LEVEL_SOLID_RATE)}%보다 낮아요.`,
+  )
   return { key: `shaky-${w.band}`, title: `${bandName(w.band)} — 최근 ${w.n}회`, summary: brief.join(' · '), details: lines }
 }
 
@@ -220,21 +230,27 @@ export function buildOverall(input: DiagnosisInput): string[] {
   const { solidThrough, edge } = level
   if (inv !== null) {
     const names = inv.shaky.map((b) => bandName(b)).join('·')
-    const wins = inv.shaky.map((b) => input.windows.get(b)).filter((w): w is CourseWindow => w !== undefined)
-    // 창이 하루 이틀 치이고 오차 구간이 문턱을 품으면 판정이 아직 단단하지 않다
-    const loose = wins.length > 0 && wins.every((w) => w.days <= 2 && w.ci[0] < LEVEL_SOLID_RATE && LEVEL_SOLID_RATE < w.ci[1])
+    // 안정과 흔들림은 둘 다 오차 구간으로 가른 판정이라, 이 역전은 잡음이 아니라 뚜렷한 차이다
     out.push(
-      `${bandName(inv.solid)} 코스까지 안정적으로 읽어요. 더 쉬운 ${names} 코스가 흔들리는 건` +
-        (loose ? ' 최근 하루 이틀 기록의 영향이 커서 아직 단단한 판정은 아니에요.' : ' 최근 기록에서 보이는 모습이에요.'),
+      `${bandName(inv.solid)} 코스까지 안정적으로 읽어요. 그런데 더 쉬운 ${names} 코스는 오차 범위를 감안해도 정답률이 문턱 ${pct(LEVEL_SOLID_RATE)}% 아래예요.`,
     )
   } else if (solidThrough !== null && edge !== null) {
     out.push(`${bandName(solidThrough)}까지 안정적으로 읽고, ${bandNameIga(edge)} 경계예요.`)
   } else if (edge !== null) {
     out.push(`${bandName(edge)} 코스부터 흔들려요.`)
+  } else if (solidThrough !== null && level.near.length > 0) {
+    out.push(`${bandName(solidThrough)}까지 안정적으로 읽고, ${nearNames(level)} 코스는 문턱 부근이에요.`)
   } else if (solidThrough !== null) {
     out.push(`${bandName(solidThrough)}까지 안정적으로 읽어요. 아직 벽을 안 만났어요.`)
+  } else if (level.near.length > 0) {
+    // 점 하나로 가르면 안 되는 자리 — 오차 범위가 문턱을 걸친다 (2026-10-10 판정 기준 변경)
+    out.push(
+      `${nearNames(level)} 코스는 정답률이 문턱 80% 부근이에요. 표본의 오차를 감안하면 안정인지 흔들림인지 아직 가를 수 없어요.`,
+    )
   } else {
-    out.push('아직 수준을 말할 만큼 안 풀었어요.')
+    out.push(
+      `아직 수준을 말할 만큼 안 풀었어요. 코스마다 채점 ${LEVEL_MIN_GRADES}회·서로 다른 표현 ${LEVEL_MIN_IDIOMS}개가 쌓이면 판정해요.`,
+    )
   }
   const f = trendFacts(input.trends)
   if (f) {
@@ -266,14 +282,11 @@ export function buildDiagnosis(input: DiagnosisInput): Paragraph[] {
 
   // 흔들리는 코스 — 표본이 판정 문턱 이상인 것만, 낮은 코스부터 둘까지
   const shaky = scoredRows(level)
-    .filter((r) => r.status === 'shaky' && r.seen >= LEVEL_MIN_SEEN)
+    .filter((r) => r.status === 'shaky')
     .slice(0, 2)
   for (const row of shaky) {
     const w = input.windows.get(row.band as Band)
-    if (w) {
-      const explained = out.some((p) => p.details.some((l) => l.startsWith('하루 이틀의 세션이')))
-      out.push(shakyParagraph(w, input.windows, input.today, input.headwordOf, explained))
-    }
+    if (w) out.push(shakyParagraph(w, input.windows, input.today, input.headwordOf))
   }
   for (const p of [
     trendParagraph(input.trends),

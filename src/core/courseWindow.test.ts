@@ -1,7 +1,8 @@
-// 코스별 최근 창 해부 — 창이 걸친 날, 전체 기간 값, 창 안 오답 유형·반복, Wilson 구간
+// 코스별 판정 창 해부 — 창이 걸친 날, 전체 기간 값, 창 안 오답 유형·반복, Wilson 구간
 import { describe, expect, it } from 'vitest'
-import { courseWindows, wilson } from './courseWindow.ts'
-import { buildLevel, LEVEL_WINDOW } from './level.ts'
+import { courseWindows } from './courseWindow.ts'
+import { buildLevel } from './level.ts'
+import { wilson } from './wilson.ts'
 import type { Band } from '../lib/bands.ts'
 import type { MistakeType, ReviewEvent } from './types.ts'
 
@@ -27,29 +28,37 @@ const run = (id: string, c: number, w: number, day: string, t: MistakeType | nul
   ...Array.from({ length: c }, () => ev(id, true, day)),
   ...Array.from({ length: w }, () => ev(id, false, day, t)),
 ]
-const bandOf = (id: string) => band[id]
+const bandOf = (id: string) => band[id.slice(0, 1)]
 const typeOf = (e: { mistakeType: MistakeType | null }) => e.mistakeType
 
 describe('courseWindows', () => {
-  it('최근 창이 하루에 몰렸으면 days 가 1이고, 전체 기간 값은 따로 센다', () => {
-    // 옛날 40회 중 36 정답(90%) → 오늘 30회 중 22 정답(73%)
-    const events = [...run('a', 36, 4, '2026-09-10'), ...run('a', 22, 8, '2026-10-09')]
+  it('판정 창이 하루에 몰렸으면 days 가 1이고, 전체 기간 값은 따로 센다', () => {
+    // 옛날 90회 중 81 정답(90%) → 오늘 120회 중 96 정답(80%). 7일 창은 오늘 120회뿐이다
+    const events = [...run('a', 81, 9, '2026-09-10'), ...run('a', 96, 24, '2026-10-09')]
     const w = courseWindows(events, bandOf, typeOf).get(0)!
-    expect(w).toMatchObject({ n: LEVEL_WINDOW, correct: 22, days: 1, firstDate: '2026-10-09', lastDate: '2026-10-09' })
-    expect(w.allN).toBe(70)
-    expect(w.allCorrect).toBe(58)
+    expect(w).toMatchObject({ n: 120, correct: 96, days: 1, firstDate: '2026-10-09', lastDate: '2026-10-09' })
+    expect(w.allN).toBe(210)
+    expect(w.allCorrect).toBe(177)
   })
 
   it('창이 여러 날에 걸치면 그 날 수를 센다', () => {
-    const events = [...run('a', 10, 0, '2026-10-05'), ...run('a', 10, 0, '2026-10-07'), ...run('a', 10, 0, '2026-10-09')]
+    const events = [...run('a', 40, 0, '2026-10-05'), ...run('a', 40, 0, '2026-10-07'), ...run('a', 40, 0, '2026-10-09')]
     const w = courseWindows(events, bandOf, typeOf).get(0)!
+    expect(w.n).toBe(120)
     expect(w.days).toBe(3)
     expect(w.firstDate).toBe('2026-10-05')
   })
 
+  it('7일 안이 100회에 못 미치면 최근 100회까지 넓힌다', () => {
+    const events = [...run('a', 60, 0, '2026-09-01'), ...run('a', 50, 0, '2026-10-09')]
+    const w = courseWindows(events, bandOf, typeOf).get(0)!
+    expect(w.n).toBe(100)
+    expect(w.firstDate).toBe('2026-09-01')
+  })
+
   it('창 안 오답을 유형별로 세고, 두 번 이상 틀린 숙어를 낸다', () => {
     const events = [
-      ...run('a', 20, 0, '2026-10-09'),
+      ...run('a', 120, 0, '2026-10-09'),
       ev('a', false, '2026-10-09', 'CHOON'),
       ev('a', false, '2026-10-09', 'CHOON'),
       ev('b', false, '2026-10-09', 'CHOON'), // 다른 코스 — 세지 않는다
@@ -74,14 +83,15 @@ describe('courseWindows', () => {
     expect(out.size).toBe(0)
   })
 
-  it('창의 정답 수는 수준 표(buildLevel)와 같다', () => {
-    const events = [...run('a', 20, 6, '2026-10-01'), ...run('a', 5, 3, '2026-10-09'), ...run('b', 9, 4, '2026-10-08')]
+  it('창의 채점·정답 수와 오차 구간은 수준 표(buildLevel)와 같다', () => {
+    const events = [...run('a', 90, 30, '2026-10-01'), ...run('a', 50, 30, '2026-10-09'), ...run('b', 70, 30, '2026-10-08')]
     const windows = courseWindows(events, bandOf, typeOf)
     for (const row of buildLevel(events, bandOf).bands) {
       const w = windows.get(row.band as Band)
       if (!w) continue
       expect(w.n).toBe(row.seen)
       expect(w.correct).toBe(row.correct)
+      expect(w.ci).toEqual(row.ci)
     }
   })
 })

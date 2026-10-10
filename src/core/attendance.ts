@@ -113,6 +113,12 @@ export function monthGrid(
   return weeks
 }
 
+/** 날짜 키의 일 번호(UTC 기준 일수) — 두 날짜 사이의 일 수를 서머타임 없이 뺀다 */
+export function dayNumber(key: string): number {
+  const [y, m, d] = key.split('-').map(Number)
+  return Math.round(Date.UTC(y!, m! - 1, d!) / 86_400_000)
+}
+
 /** 날짜 키를 `delta`일 옮긴다. 로컬 달력으로 계산해 서머타임이 있는 시간대에서도 안 밀린다 */
 export function shiftDateKey(key: string, delta: number): string {
   const [y, m, d] = key.split('-').map(Number)

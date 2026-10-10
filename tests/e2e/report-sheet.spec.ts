@@ -1,6 +1,7 @@
 // 리포트 요약 타일 → 하단 시트, 처방 카드 줄, 더 보기 (2026-10-05) — 요약 먼저, 상세는 시트로
 import { expect, test, type Page } from '@playwright/test'
 import { closeSheet } from './report-sheets.js'
+import { gradings, putGradings } from './level-seed.js'
 
 /** 어제까지 이어진 `days` 일, 하루 4개(그중 하나는 틀린 것: 음독 선택)를 심는다 */
 async function seed(page: Page, days: number): Promise<void> {
@@ -59,6 +60,11 @@ async function seed(page: Page, days: number): Promise<void> {
 test('요약 타일 넷이 첫 화면에 있고 값이 채워져 있다', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 })
   await seed(page, 5)
+  // 산책로가 분명히 흔들리는 기록을 더한다 — 100회·서로 다른 표현 100개, 정답 40% (판정은 오차 구간으로 가른다)
+  await putGradings(page, gradings(0, 100, 40, 1), 'shaky0')
+  await page.reload()
+  await page.getByRole('button', { name: '리포트', exact: true }).click()
+  await expect(page.locator('.summary .tile')).toHaveCount(4, { timeout: 20_000 })
   const tiles = page.locator('.summary .tile')
   await expect(tiles.nth(0)).toContainText('수준')
   // 첫 코스부터 흔들리는 기록이다 — 「—」로 비우지 않고 그 코스 이름과 흔들린다는 말을 그대로 보인다 (2026-10-07)
@@ -229,7 +235,10 @@ test('수준 타일의 코스 이름은 오를수록 진하고, 가장 옅어도
   }
 })
 
-/** 산책로 셋을 숙지 상태(안정)로 — 옛 간격으로 다섯 번 맞힌 기록. 뒷산은 `shaky` 면 최근에 계속 틀린 기록으로 흔들리게 한다 */
+/**
+ * 산책로 셋을 숙지 상태로 — 옛 간격으로 다섯 번 맞힌 기록. 거기에 **판정을 세우는 채점 기록**을 더한다(2026-10-10 판정 기준 —
+ * 채점 100회·서로 다른 표현 60개): 산책로는 안정, 뒷산은 `shaky` 면 정답 40% 로 흔들리고 아니면 안정이다
+ */
 async function seedLevel(page: Page, shaky: boolean): Promise<void> {
   await page.addInitScript(() => {
     try {
@@ -281,6 +290,8 @@ async function seedLevel(page: Page, shaky: boolean): Promise<void> {
       }),
     [shaky, 86_400_000] as const,
   )
+  await putGradings(page, gradings(0, 100, 100, 2), 'lv-b0')
+  await putGradings(page, shaky ? gradings(1, 100, 40, 1) : gradings(1, 100, 100, 1), 'lv-b1')
   await page.reload()
   await page.getByRole('button', { name: '리포트', exact: true }).click()
   await expect(page.locator('.summary .tile')).toHaveCount(4, { timeout: 20_000 })

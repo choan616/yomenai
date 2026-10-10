@@ -1,8 +1,8 @@
 // 수준 시트의 정답률 추이 — 최근 4주 선 하나, 칩으로 전체·코스별을 고른다 (2026-10-09, 사용자 지시)
 import { useState } from 'react'
 import { shiftDateKey } from '../core/attendance.ts'
-import { TREND_DAYS, type AccuracyTrends, type TrendKey } from '../core/accuracyTrend.ts'
-import { LEVEL_MIN_SEEN, LEVEL_SOLID_RATE, LEVEL_WINDOW } from '../core/level.ts'
+import { TREND_DAYS, TREND_MIN_POINTS, type AccuracyTrends, type TrendKey } from '../core/accuracyTrend.ts'
+import { LEVEL_MIN_GRADES, LEVEL_SOLID_RATE, LEVEL_WINDOW_DAYS } from '../core/level.ts'
 import { bandName, type Band } from '../lib/bands.ts'
 import { smoothPath } from './trendPath.ts'
 
@@ -109,7 +109,7 @@ export function AccuracyTrend({
       </div>
 
       {points.length === 0 ? (
-        <p className="trend-empty">읽기 채점이 {LEVEL_MIN_SEEN}회 쌓이면 선이 그려져요.</p>
+        <p className="trend-empty">읽기 채점이 {TREND_MIN_POINTS}회 쌓이면 선이 그려져요.</p>
       ) : (
         <>
           {/* 값이 먼저, 날짜가 뒤 — 점을 누르면 이 줄이 바뀐다. 그림은 읽어 주지 못하니 이 줄이 대신 읽힌다 */}
@@ -170,7 +170,7 @@ export function AccuracyTrend({
             />
           </svg>
           <p className="trend-note">
-            최근 {LEVEL_WINDOW}회 채점 기준 · {solidPct}% 선이 「안정」의 문턱이에요.
+            최근 {LEVEL_WINDOW_DAYS}일 채점 기준(모자라면 최근 {LEVEL_MIN_GRADES}회) · {solidPct}% 선이 「안정」의 문턱이에요.
           </p>
           <details className="trend-table">
             <summary>표로 보기</summary>

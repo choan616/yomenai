@@ -1,60 +1,24 @@
 // 진단 소견 — 더 어려운 코스는 안정인데 쉬운 코스가 흔들리는 역전을 기록으로 설명한다 (2026-10-09 사용자 백업의 모양)
-import { expect, test, type Page } from '@playwright/test'
+// 2026-10-10 판정 기준(최근 7일·채점 100회·표현 60개·오차 구간)에 맞춰 시드를 키웠다
+import { expect, test } from '@playwright/test'
+import { gradings, idsOf, putGradings, type Grading } from './level-seed.js'
 import { openLevel } from './report-sheets.js'
 
-const DAY = 86_400_000
-
-/** 코스 0 · 明白(안 틀리는 쪽) / 訴訟·報酬·貯蓄(장음을 틀리는 쪽) · 코스 1·2·3 */
-const B0 = { id: '1000220', reading: 'めいはく' }
+/** 코스 0 · 장음을 틀리는 표현들(앱이 채점 때 장음으로 적어 두고, 소견이 다시 분류해 센다) */
 const SOSHO = { id: '1397740', reading: 'そしょう', wrong: 'そうしょう' }
 const HOSHU = { id: '1515700', reading: 'ほうしゅう', wrong: 'ほしゅう' }
 const CHOCHIKU = { id: '1597700', reading: 'ちょちく', wrong: 'ちょうちく' }
-const B1 = { id: '1012210', reading: 'ちゅうじつ' }
-const B2 = { id: '1149590', reading: 'あえん' }
-const B3 = { id: '1013270', reading: 'れっき' }
+const CHOON_IDS = [SOSHO.id, HOSHU.id, CHOCHIKU.id]
 
-type Ev = { idiomId: string; daysAgo: number; ok: boolean; answer: string; expected: string; type?: string }
-
-async function seed(page: Page, events: Ev[]) {
-  await page.evaluate(
-    ([events, day]) =>
-      new Promise<void>((res, rej) => {
-        const req = indexedDB.open('yomenai')
-        req.onsuccess = () => {
-          const tx = req.result.transaction('events', 'readwrite')
-          const store = tx.objectStore('events')
-          events.forEach((e, i) =>
-            store.put({
-              id: `op-${i}`,
-              userId: 'local',
-              deviceId: 'e2e',
-              at: Date.now() - e.daysAgo * day + i,
-              idiomId: e.idiomId,
-              cardType: 'reading',
-              // 실제 앱은 채점할 때 유형을 적어 둔다 — 소견은 그 값을 다시 분류해 센다
-              mistakeType: e.type ?? null,
-              deletedAt: null,
-              type: 'review',
-              grade: e.ok ? 3 : 1,
-              answer: e.answer,
-              expected: e.expected,
-              correct: e.ok,
-              elapsedMs: 4000,
-            }),
-          )
-          tx.oncomplete = () => res()
-          tx.onerror = () => rej(new Error('심기 실패'))
-        }
-        req.onerror = () => rej(new Error('DB 열기 실패'))
-      }),
-    [events, DAY] as const,
-  )
-}
-
-const right = (w: { id: string; reading: string }, n: number, daysAgo: number): Ev[] =>
-  Array.from({ length: n }, () => ({ idiomId: w.id, daysAgo, ok: true, answer: w.reading, expected: w.reading }))
-const wrong = (w: { id: string; reading: string; wrong: string }, n: number): Ev[] =>
-  Array.from({ length: n }, () => ({ idiomId: w.id, daysAgo: 0, ok: false, answer: w.wrong, expected: w.reading, type: 'CHOON' }))
+const choon = (w: { id: string; reading: string; wrong: string }, n: number): Grading[] =>
+  Array.from({ length: n }, () => ({
+    idiomId: w.id,
+    daysAgo: 0,
+    ok: false,
+    mistakeType: 'CHOON',
+    answer: w.wrong,
+    expected: w.reading,
+  }))
 
 test('쉬운 코스가 흔들리는 역전을 소견이 기록으로 설명한다', async ({ page }) => {
   // 작은 화면 — 수준 시트가 스크롤돼야 「앞 시트의 스크롤을 물려받지 않는다」가 검증된다
@@ -65,22 +29,28 @@ test('쉬운 코스가 흔들리는 역전을 소견이 기록으로 설명한�
     localStorage.setItem('yomenai:diagnosticDone', '1')
     localStorage.setItem('yomenai:welcomeSeen', '1')
   })
-  await seed(page, [
-    // 산책로: 옛날에 길게 잘함 → 오늘 하루 30회(22 정답, 오답 8 = 장음 5 + 그 밖 3)
-    ...right(B0, 60, 20),
-    ...right(B0, 22, 0),
-    ...wrong(SOSHO, 2),
-    ...wrong(HOSHU, 2),
-    ...wrong(CHOCHIKU, 1),
-    ...Array.from({ length: 3 }, () => ({ idiomId: B0.id, daysAgo: 0, ok: false, answer: 'ぬぬぬ', expected: B0.reading })),
-    // 위 코스들은 안정(30회 중 25~26 정답)
-    ...right(B1, 25, 5),
-    ...Array.from({ length: 5 }, () => ({ idiomId: B1.id, daysAgo: 5, ok: false, answer: 'ぬぬぬ', expected: B1.reading })),
-    ...right(B2, 25, 4),
-    ...Array.from({ length: 5 }, () => ({ idiomId: B2.id, daysAgo: 4, ok: false, answer: 'ぬぬぬ', expected: B2.reading })),
-    ...right(B3, 26, 3),
-    ...Array.from({ length: 4 }, () => ({ idiomId: B3.id, daysAgo: 3, ok: false, answer: 'ぬぬぬ', expected: B3.reading })),
-  ])
+  // 산책로: 옛날(20일 전)에 100개 전부 맞혀 전체 기록은 높고, 오늘 하루 120회 중 84 정답(70%) —
+  //   오답 36 = 장음 20(訴訟 ×8 · 報酬 ×8 · 貯蓄 ×4) + 그 밖 16. 7일 창이 오늘뿐이라 오차 구간이 문턱 아래로 내려간다
+  await putGradings(page, gradings(0, 100, 100, 20), 'op-old')
+  await putGradings(
+    page,
+    [
+      ...idsOf(0, 84, CHOON_IDS).map((idiomId) => ({ idiomId, daysAgo: 0, ok: true })),
+      ...choon(SOSHO, 8),
+      ...choon(HOSHU, 8),
+      ...choon(CHOCHIKU, 4),
+      ...idsOf(0, 16, [...CHOON_IDS, ...idsOf(0, 84, CHOON_IDS)]).map((idiomId) => ({
+        idiomId,
+        daysAgo: 0,
+        ok: false,
+        mistakeType: 'ONYOMI_CHOICE',
+        answer: 'ぬぬぬ',
+      })),
+    ],
+    'op-today',
+  )
+  // 능선: 100회 중 92 정답 — 오차 구간의 아래쪽이 문턱 위라 안정이다
+  await putGradings(page, gradings(3, 100, 92, 3), 'op-b3')
   await page.reload()
   await page.getByRole('button', { name: '리포트' }).click()
   await openLevel(page)
@@ -102,24 +72,24 @@ test('쉬운 코스가 흔들리는 역전을 소견이 기록으로 설명한�
   // 맨 위 총평이 결론을 말하고, 항목은 한 줄 요약만 보이며 근거는 접혀 있다
   const overall = text.locator('.opinion-overall')
   await expect(overall).toContainText('능선 코스까지 안정적으로 읽어요')
-  await expect(overall).toContainText('더 쉬운 산책로 코스가 흔들리는 건')
+  await expect(overall).toContainText('더 쉬운 산책로 코스는 오차 범위를 감안해도')
   await expect(overall).toContainText('다음에는')
   await expect(text).toContainText('안정 능선')
   await expect(text).toContainText('흔들림 산책로')
   await expect(text).toContainText('오늘 하루 치 · 전체 기록')
   await expect(text.locator('.opinion-line.detail').first()).toBeHidden()
-  await expect(text.getByText('訴訟 ×2')).toBeHidden()
+  await expect(text.getByText('訴訟 ×8')).toBeHidden()
   // 「자세히」를 눌러야 근거 문장이 보인다
   for (const s of await text.locator('summary').all()) await s.click()
   await expect(text.locator('.opinion-line.detail').first()).toBeVisible()
-  await expect(text).toContainText('능선 코스는 최근 30회 정답률')
-  // 기록으로 푼 이유 — 창의 모양, 전체 기록, 장음 쏠림, 반복 오답
-  await expect(text).toContainText('최근 30회가 모두 오늘 하루 치예요')
+  await expect(text).toContainText('능선 코스는 최근 100회 정답률')
+  // 기록으로 푼 이유 — 창의 모양, 전체 기록, 장음 쏠림, 반복 오답, 오차 구간
+  await expect(text).toContainText('최근 120회가 모두 오늘 하루 치예요')
   await expect(text).toContainText('전체 기록은')
-  await expect(text).toContainText('가 장음이에요')
-  await expect(text).toContainText('訴訟 ×2 · 報酬 ×2')
-  await expect(text).toContainText('안정 문턱 80%가 그 안에 들어요')
-  await expect(text).toContainText('실제 정답률은')
+  await expect(text).toContainText('틀린 36개 중 20개가 장음이에요')
+  await expect(text).toContainText('訴訟 ×8 · 報酬 ×8 · 貯蓄 ×4')
+  await expect(text).toContainText('오차 범위(')
+  await expect(text).toContainText('안정 문턱 80%보다 낮아요')
   // 일본어 표기는 lang="ja" 로 그려진다 (한국 자형 방지)
   await expect(text.locator('[lang="ja"]').filter({ hasText: '訴訟' })).not.toHaveCount(0)
   // 달래는 말·막힘 표현은 없다
@@ -133,7 +103,7 @@ test('「더 보기」의 진단 소견 줄로도 열린다', async ({ page }) =
     localStorage.setItem('yomenai:diagnosticDone', '1')
     localStorage.setItem('yomenai:welcomeSeen', '1')
   })
-  await seed(page, right(B0, 3, 1)) // 기록이 하나도 없으면 「더 보기」 줄 자체가 안 그려진다
+  await putGradings(page, gradings(0, 3, 3, 1), 'op-few') // 기록이 하나도 없으면 「더 보기」 줄 자체가 안 그려진다
   await page.reload()
   await page.getByRole('button', { name: '리포트' }).click()
   await page.locator('.tools').getByRole('button', { name: /진단 소견/ }).click()

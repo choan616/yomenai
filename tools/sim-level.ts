@@ -1,7 +1,8 @@
 // 수준 사다리 두 안이 실제 실력을 얼마나 맞히는지 시뮬레이션으로 잰다.
 // 실제 로그로는 "정말 익혔는지"를 알 수 없어서, 학습자를 시뮬레이터 안에서 만들고 그 내부 상태를
 // 정답지로 쓴다 (context-notes 2026-09-19 절).
-//   A 지금 것  — 밴드별 최근 30회 정답률 (buildLevel)
+//   A 지금 것  — 밴드별 판정 창 정답률 (buildLevel — 최근 7일, 모자라면 최근 100회. 2026-10-10 부터)
+//   A30 옛 것  — 밴드별 최근 30회 정답률 (2026-10-10 이전 기준) — 새 창과 억울한 뒤집힘을 견준다
 //   B 재고     — 밴드별 isStable 통과 숙어 개수 / 만난 숙어 수
 //   C 숙어 창  — 숙어당 최근 1건만 남긴 최근 30숙어 정답률
 import { existsSync, readFileSync } from 'node:fs'
@@ -19,13 +20,16 @@ import {
 import { replay } from '../src/core/replay.ts'
 import { State } from 'ts-fsrs'
  import { isStable, MEANING_STABLE_DAYS } from '../src/core/scheduler.ts'
-import { buildLevel, LEVEL_SOLID_RATE, LEVEL_WINDOW } from '../src/core/level.ts'
+import { dateKey } from '../src/core/attendance.ts'
+import { buildLevel, LEVEL_SOLID_RATE, selectWindow } from '../src/core/level.ts'
 import { cardKey, compareEvents, type KoreanCategory, type LearningEvent } from '../src/core/types.ts'
 import type { Band } from '../src/lib/bands.ts'
 import { writeTsvBom } from './lib/tsv.ts'
 import { DICT_DIR } from './lib/dict.ts'
 
 const DAY = 86_400_000
+/** 옛 판정 창(최근 30회) — 새 창과 견주려고 남긴다 */
+const LEGACY_WINDOW = 30
 const T0 = Date.UTC(2026, 0, 1)
 const SESSION_LIMIT = 20
 const BANDS: Band[] = [1, 2, 3]
@@ -133,6 +137,8 @@ interface Snapshot {
   introduced: number
   /** A 지금 사다리 */
   rateA: number
+  /** A30 옛 사다리(최근 30회) */
+  rateA30: number
   seenA: number
   /** B 재고 사다리 */
   stableB: number
@@ -160,14 +166,15 @@ function measure(
   const level = buildLevel(events, bandOf)
 
   // 밴드별 읽기 이력 — 숙어 창(C)과 창 구성 확인에 쓴다
-  const history = new Map<Band, { idiomId: string; correct: boolean }[]>()
+  const history = new Map<Band, { date: string; idiomId: string; correct: boolean }[]>()
   for (const e of [...events].sort(compareEvents)) {
     if (e.type !== 'review' || e.cardType !== 'reading' || e.deletedAt !== null) continue
     const band = bandOf(e.idiomId)
     if (band === undefined) continue
     const row = history.get(band)
-    if (row) row.push({ idiomId: e.idiomId, correct: e.correct })
-    else history.set(band, [{ idiomId: e.idiomId, correct: e.correct }])
+    const entry = { date: dateKey(e.at), idiomId: e.idiomId, correct: e.correct }
+    if (row) row.push(entry)
+    else history.set(band, [entry])
   }
 
   return BANDS.map((band) => {
@@ -190,7 +197,8 @@ function measure(
     }).length
 
     const rows = history.get(band) ?? []
-    const win = rows.slice(-LEVEL_WINDOW)
+    const win = selectWindow(rows)
+    const legacy = rows.slice(-LEGACY_WINDOW)
     const distinct = new Set(win.map((r) => r.idiomId))
     const unlearnedInWin = win.filter((r) => !learned.has(r.idiomId)).length
 
@@ -200,7 +208,7 @@ function measure(
       latest.delete(r.idiomId)
       latest.set(r.idiomId, r.correct)
     }
-    const lastN = [...latest.values()].slice(-LEVEL_WINDOW)
+    const lastN = [...latest.values()].slice(-LEGACY_WINDOW)
 
     const a = level.bands.find((b) => b.band === band)
     return {
@@ -211,6 +219,7 @@ function measure(
       truthAccuracy,
       introduced: introducedIds.length,
       rateA: a?.rate ?? 0,
+      rateA30: legacy.length ? legacy.filter((r) => r.correct).length / legacy.length : 0,
       seenA: a?.seen ?? 0,
       stableB,
       rateB: introducedIds.length ? stableB / introducedIds.length : 0,
@@ -348,13 +357,13 @@ function main() {
   const tail = snaps.filter((s) => s.session >= sessions / 2 && s.introduced >= 5)
 
   console.log('\n== 마지막 시점 ==')
-  console.log('밴드 | 만남 | 익힘(수준) | 기대정답률 | A 최근30회 | B 붙은개수 | C 숙어창')
+  console.log('밴드 | 만남 | 익힘(수준) | 기대정답률 | A 판정창 | A30 옛 30회 | B 붙은개수 | C 숙어창')
   for (const band of BANDS) {
     const last = snaps.filter((s) => s.band === band).at(-1)!
     console.log(
       `  ${band}  | ${String(last.introduced).padStart(4)} | ` +
         `${pct(last.truthRate)} (${last.truthLearned}) | ${pct(last.truthAccuracy)} | ` +
-        `${pct(last.rateA)} | ${pct(last.rateB)} (${last.stableB}) | ${pct(last.rateC)}`,
+        `${pct(last.rateA)} | ${pct(last.rateA30)} | ${pct(last.rateB)} (${last.stableB}) | ${pct(last.rateC)}`,
     )
   }
 
@@ -365,7 +374,7 @@ function main() {
     const d = (f: (r: Snapshot) => number) =>
       (mean(rows.map((r) => f(r) - r.truthRate)) * 100).toFixed(1)
     console.log(
-      `  밴드 ${band} — A ${d((r) => r.rateA)}%p · B ${d((r) => r.rateB)}%p · C ${d((r) => r.rateC)}%p`,
+      `  밴드 ${band} — A ${d((r) => r.rateA)}%p · A30 ${d((r) => r.rateA30)}%p · B ${d((r) => r.rateB)}%p · C ${d((r) => r.rateC)}%p`,
     )
   }
 
@@ -380,7 +389,7 @@ function main() {
 
   console.log('\n== 익힌 숙어가 안 줄었는데 안정 → 흔들림으로 뒤집힌 횟수 ==')
   console.log(
-    `  A ${flips(snaps, (s) => s.rateA)}회 · B ${flips(snaps, (s) => s.rateB)}회 · ` +
+    `  A ${flips(snaps, (s) => s.rateA)}회 · A30 ${flips(snaps, (s) => s.rateA30)}회 · B ${flips(snaps, (s) => s.rateB)}회 · ` +
       `C ${flips(snaps, (s) => s.rateC)}회`,
   )
 
@@ -389,7 +398,7 @@ function main() {
     const rows = tail.filter((s) => s.band === band)
     if (rows.length === 0) continue
     console.log(
-      `  밴드 ${band} — 창 30회 안 서로 다른 숙어 ${mean(rows.map((r) => r.windowIdioms)).toFixed(1)}개 · ` +
+      `  밴드 ${band} — 판정 창 안 서로 다른 숙어 ${mean(rows.map((r) => r.windowIdioms)).toFixed(1)}개 · ` +
         `아직 안 익힌 숙어가 차지한 비율 ${pct(mean(rows.map((r) => r.windowUnlearnedShare)))}`,
     )
   }
@@ -399,13 +408,13 @@ function main() {
     out,
     [
       [
-        'session', 'band', 'introduced', 'truthLearned', 'truthRate', 'truthAccuracy', 'rateA', 'seenA',
+        'session', 'band', 'introduced', 'truthLearned', 'truthRate', 'truthAccuracy', 'rateA', 'rateA30', 'seenA',
         'stableB', 'rateB', 'rateC', 'windowIdioms', 'windowUnlearnedShare',
       ].join('\t'),
       ...snaps.map((s) =>
         [
           s.session, s.band, s.introduced, s.truthLearned, s.truthRate.toFixed(4), s.truthAccuracy.toFixed(4),
-          s.rateA.toFixed(4), s.seenA, s.stableB, s.rateB.toFixed(4), s.rateC.toFixed(4),
+          s.rateA.toFixed(4), s.rateA30.toFixed(4), s.seenA, s.stableB, s.rateB.toFixed(4), s.rateC.toFixed(4),
           s.windowIdioms, s.windowUnlearnedShare.toFixed(4),
         ].join('\t'),
       ),

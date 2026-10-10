@@ -24,11 +24,13 @@ function report(over: Partial<Report> = {}): Report {
 function level(over: Partial<LevelProfile> = {}): LevelProfile {
   return {
     bands: [
-      { band: 1, seen: 40, correct: 38, rate: 0.95, status: 'solid', met: 60, stable: 44 },
-      { band: 2, seen: 40, correct: 20, rate: 0.5, status: 'shaky', met: 50, stable: 12 },
-      { band: 3, seen: 0, correct: 0, rate: 0, status: 'unseen', met: 0, stable: 0 },
+      { band: 1, seen: 40, correct: 38, rate: 0.95, idioms: 40, ci: [0.84, 0.99], status: 'solid', met: 60, stable: 44 },
+      { band: 2, seen: 40, correct: 20, rate: 0.5, idioms: 40, ci: [0.35, 0.65], status: 'shaky', met: 50, stable: 12 },
+      { band: 3, seen: 0, correct: 0, rate: 0, idioms: 0, ci: [0, 1], status: 'unseen', met: 0, stable: 0 },
     ],
     solidThrough: 1,
+    nearThrough: 1,
+    near: [],
     edge: 2,
     totalReadings: 80,
     ...over,
