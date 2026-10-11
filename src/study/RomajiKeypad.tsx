@@ -37,6 +37,16 @@ function swallowGhostClick(): void {
 
 /** 직전 탭과 이 시간 안이면 연타로 본다. 빠른 타이핑의 키 간격(100~200ms)을 덮는다 */
 const REPEAT_MS = 300
+/**
+ * 자판에서 손가락 누름(pointerdown)이 있은 뒤 이 시간(ms) 안에 오는 click 은 새 누름이 아니다. iOS 는 click 을 누른 요소가
+ * 아니라 가장 가까운 눌림 요소로 보낼 수 있어(탭 보정), u 를 눌렀는데 click 이 이웃 y 로 가서 y 가 한 번 더 들어갔다
+ * (2026-10-11 「せきゆ → せきゆy」). 보조 기술의 click 만 오는 누름은 직전 손가락 누름이 없을 때만 받는다
+ */
+const STRAY_CLICK_MS = 700
+
+/** 지금 시각(ms). 렌더 밖(이벤트 핸들러)에서만 부른다 */
+const nowMs = (): number => performance.now()
+
 /** 키의 왼쪽·오른쪽 가장자리에서 이만큼(px) 안에 떨어진 탭은 이웃 키와 헷갈린 것일 수 있다 */
 const EDGE_PX = 10
 
@@ -113,6 +123,10 @@ export function RomajiKeypad({
   const markCancel = (id: string) => pending.current.delete(id)
   /** click 이 pointerdown 으로 이미 처리한 누름의 꼬리면 true (그리고 표시를 걷는다) */
   const handled = (id: string) => pending.current.delete(id)
+  /** 마지막 손가락 누름의 시각 — 자판 어디서든(루트의 capture 에서) 갱신한다 */
+  const lastDown = useRef(-Infinity)
+  /** 방금 손가락 누름이 있었으면 이 click 은 그 누름의 꼬리가 이웃으로 샌 것이다 */
+  const strayClick = () => nowMs() - lastDown.current < STRAY_CLICK_MS
 
   /**
    * 이웃 키와 헷갈린 탭을 고른다 (2026-10-09 「kyuu 가 kyuy 가 된다」, 2026-10-11 「kyuu 가 kyy 가 된다」).
@@ -178,7 +192,7 @@ export function RomajiKeypad({
     },
     onPointerLeave: () => setPressed(null),
     onClick: () => {
-      if (handled(ch)) return
+      if (handled(ch) || strayClick()) return
       tick()
       onKey(ch)
     },
@@ -192,7 +206,14 @@ export function RomajiKeypad({
     ) : null
 
   return (
-    <div className={`keypad${docked ? ' docked' : ''}`} role="group" aria-label="로마자 자판">
+    <div
+      className={`keypad${docked ? ' docked' : ''}`}
+      role="group"
+      aria-label="로마자 자판"
+      onPointerDownCapture={() => {
+        lastDown.current = nowMs()
+      }}
+    >
       {rows.map((row, i) => (
         <div className="keypad-row" key={i}>
           {/* 가운데 줄은 9키라 양끝에 반 칸씩 넣어 **키 폭을 모든 줄에서 같게** 만든다.
@@ -229,7 +250,7 @@ export function RomajiKeypad({
               onPointerUp={() => markUp('⌫')}
               onPointerCancel={() => markCancel('⌫')}
               onClick={() => {
-                if (handled('⌫')) return
+                if (handled('⌫') || strayClick()) return
                 tick()
                 onBackspace()
               }}
@@ -257,7 +278,7 @@ export function RomajiKeypad({
           /* click 만 온 누름에는 유령 클릭을 삼키지 않는다 — 뒤따를 손가락이 없고,
              삼키면 보조 기술이 곧이어 누른 「다음」이 먹힌다 */
           onClick={() => {
-            if (handled('submit')) return
+            if (handled('submit') || strayClick()) return
             tick()
             onSubmit()
           }}
