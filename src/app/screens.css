@@ -2119,8 +2119,19 @@ p.rule-record {
   background: none;
   border: 0;
   color: var(--text-faint);
-  font-size: calc(13px * var(--ui-scale));
-  padding: 8px 4px;
+  font-size: calc(12px * var(--ui-scale));
+  padding: 6px 4px;
+  /* 아이콘 위, 글자 아래 (2026-10-11) */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+}
+/* 아이콘은 글자 크기 설정을 안 따른다 — 눌리는 표적이 설정 따라 커지거나 작아지면 탭 줄이 출렁인다 */
+.tabbar-item .icon {
+  width: 24px;
+  height: 24px;
 }
 /* 현재 탭은 색만으로 구분하지 않는다 (PLAN §7) — 굵기와 윗줄을 같이 쓴다 */
 .tabbar-item.on {

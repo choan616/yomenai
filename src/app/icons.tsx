@@ -28,6 +28,46 @@ function Icon({ children }: { children: ReactNode }) {
   )
 }
 
+/** 하단 탭 — 홈. 지붕과 몸통을 한 획으로 잇고 문 자리를 비운다 */
+export function HomeIcon() {
+  return (
+    <Icon>
+      <path d="M4 11.2 12 4.5l8 6.7V19a1 1 0 0 1-1 1h-4v-5.2a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1V20H5a1 1 0 0 1-1-1z" />
+    </Icon>
+  )
+}
+
+/** 하단 탭 — 리포트. 높이가 다른 막대 셋 (수준·추이를 보는 자리라 막대 그래프다) */
+export function ReportIcon() {
+  return (
+    <Icon>
+      <path d="M5.5 20v-6M12 20V5M18.5 20v-9.5" />
+    </Icon>
+  )
+}
+
+/** 하단 탭 — 찾기. 돋보기 */
+export function SearchIcon() {
+  return (
+    <Icon>
+      <circle cx="11" cy="11" r="6.2" />
+      <path d="m15.6 15.6 4.4 4.4" />
+    </Icon>
+  )
+}
+
+/** 하단 탭 — 설정. 손잡이가 선 위에 앉은 조절선 셋 */
+export function SettingsIcon() {
+  return (
+    <Icon>
+      <path d="M4 7h8M16.5 7H20M4 12h3.5M12 12h8M4 17h10M18.5 17H20" />
+      <circle cx="14.2" cy="7" r="2.1" />
+      <circle cx="9.7" cy="12" r="2.1" />
+      <circle cx="16.4" cy="17" r="2.1" />
+    </Icon>
+  )
+}
+
 /** 카메라로 찾기 — 몸통과 그 위에 솟은 뷰파인더를 한 획으로 잇는다 */
 export function CameraIcon() {
   return (
