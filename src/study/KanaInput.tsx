@@ -6,6 +6,7 @@ import { bind, unbind } from 'wanakana'
 import type { DiffChar } from '../core/answerDiff.ts'
 import { hasHangul } from '../lib/hangul.ts'
 import { RomajiKeypad } from './RomajiKeypad.tsx'
+import { trailingRomaji } from './romajiPrefix.ts'
 import { useAppKeypad } from './useCoarsePointer.ts'
 
 /**
@@ -187,6 +188,7 @@ export function KanaInput({ onSubmit, resetKey, locked, diff, done }: Props) {
           그만큼이 본문으로 간다 */}
       {keypad && !locked && (
         <RomajiKeypad
+          romajiBuffer={() => trailingRomaji(ref.current?.value ?? '')}
           onKey={(ch) => {
             const el = ref.current
             if (el && !locked) typeInto(el, ch)

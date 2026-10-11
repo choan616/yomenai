@@ -11,6 +11,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { CameraIcon } from './icons.tsx'
 import { toKana } from 'wanakana'
 import { RomajiKeypad } from '../study/RomajiKeypad.tsx'
+import { trailingRomaji } from '../study/romajiPrefix.ts'
 import { useAppKeypad } from '../study/useCoarsePointer.ts'
 import { dataVersion } from '../core/dataVersion.ts'
 import { replay } from '../core/replay.ts'
@@ -346,6 +347,7 @@ export function Search({
             자판이 늘 떠 있으면 화면을 절반 먹는다 (2026-09-19) */}
         {keypad && typing && (
           <RomajiKeypad
+            romajiBuffer={() => trailingRomaji(ref.current?.value ?? '')}
             onKey={(ch) => setRaw((v) => toKana(v + ch, { IMEMode: 'toHiragana' }))}
             onBackspace={() => setRaw((v) => [...v].slice(0, -1).join(''))}
             onSubmit={() => {

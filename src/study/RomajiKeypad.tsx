@@ -11,6 +11,7 @@ import { useRef, useState } from 'react'
 import { loadSettings } from '../app/settings.ts'
 import { playKeyClick, vibrateKey } from './keyFeedback.ts'
 import { KEYPAD_ROWS } from './keypadLayouts.ts'
+import { canExtend } from './romajiPrefix.ts'
 
 /**
  * 확인 키를 누른 뒤 따라오는 클릭 하나를 먹는다.
@@ -36,13 +37,11 @@ function swallowGhostClick(): void {
 
 /** 직전 탭과 이 시간 안이면 연타로 본다. 빠른 타이핑의 키 간격(100~200ms)을 덮는다 */
 const REPEAT_MS = 300
-/** 직전 탭에서 키 폭의 이 비율보다 덜 움직였으면 손가락이 그 자리에 머문 것으로 본다 */
-const REPEAT_SLOP = 0.6
+/** 키의 왼쪽·오른쪽 가장자리에서 이만큼(px) 안에 떨어진 탭은 이웃 키와 헷갈린 것일 수 있다 */
+const EDGE_PX = 10
 
 interface LastTap {
   ch: string
-  x: number
-  y: number
   t: number
 }
 
@@ -52,7 +51,13 @@ export function RomajiKeypad({
   onSubmit,
   submitLabel = '확인',
   docked,
+  romajiBuffer,
 }: {
+  /**
+   * 입력창 끝에 아직 가나로 안 바뀌고 남은 로마자(`ky`). 이웃 키 사이에서 헷갈릴 때 어느 쪽이 음절이 되는지
+   * 고르는 근거다. 안 주면 눌린 키를 그대로 쓴다
+   */
+  romajiBuffer?: () => string
   onKey: (ch: string) => void
   onBackspace: () => void
   onSubmit: () => void
@@ -110,26 +115,41 @@ export function RomajiKeypad({
   const handled = (id: string) => pending.current.delete(id)
 
   /**
-   * 연타 보정 (2026-10-09 사용자 보고 「kyuu 가 kyuy 가 된다」). 같은 키를 빠르게 두 번 칠 때
-   * 엄지가 덜 움직여 둘째 탭이 이웃 키 쪽에 떨어진다 — uu·tt·nn 처럼 일본어 로마자엔 흔하다.
-   * 직전 탭에서 키 폭의 0.6배도 안 움직였는데 키만 바뀌었으면 같은 키로 본다. 다른 키를 일부러
-   * 이어 치면 손가락이 한 칸(키 폭+틈) 가까이 움직이니 걸리지 않는다. 터치에만 건다
+   * 이웃 키와 헷갈린 탭을 고른다 (2026-10-09 「kyuu 가 kyuy 가 된다」, 2026-10-11 「kyuu 가 kyy 가 된다」).
+   *
+   * 키 가장자리(`EDGE_PX`) 근처에 떨어진 탭은 이웃 키를 누르려던 것일 수 있다. 눌린 글자와 그 이웃 글자를 **지금까지
+   * 친 로마자에 붙여 보아 일본어 음절이 되는 쪽**을 고른다 — `ky` 뒤의 y 는 음절이 못 되고(kyy) u 는 된다.
+   * 둘 다 되면(`kyu` 뒤의 u/y) 직전에 친 같은 키의 연타로 본다(`uu`). 둘 다 안 되면 눌린 글자 그대로다.
+   * 거리만 보던 처음 안은 `y`→`u` 를 경계 근처에서 빠르게 치면 둘을 한 키로 합쳐(kyy) 걷었다 — 두 탭이 가깝다는 것만으로는
+   * 「같은 키 연타」와 「이웃 키를 연달아」를 가를 수 없다(거울상이다). 로마자가 말이 되는지는 가른다.
+   * 터치에만 건다
    */
   const lastTap = useRef<LastTap | null>(null)
   const resolveKey = (ch: string, e: React.PointerEvent): string => {
-    const last = lastTap.current
     let key = ch
-    if (
-      e.pointerType === 'touch' &&
-      last !== null &&
-      last.ch !== ch &&
-      e.timeStamp - last.t < REPEAT_MS &&
-      Math.hypot(e.clientX - last.x, e.clientY - last.y) <
-        e.currentTarget.getBoundingClientRect().width * REPEAT_SLOP
-    ) {
-      key = last.ch
+    const el = e.currentTarget as HTMLElement
+    if (e.pointerType === 'touch' && romajiBuffer) {
+      const rect = el.getBoundingClientRect()
+      const side =
+        e.clientX - rect.left < EDGE_PX
+          ? el.previousElementSibling
+          : rect.right - e.clientX < EDGE_PX
+            ? el.nextElementSibling
+            : null
+      const other = side instanceof HTMLElement ? (side.dataset.ch ?? null) : null
+      if (other !== null) {
+        const buf = romajiBuffer()
+        const hit = canExtend(buf, ch)
+        const near = canExtend(buf, other)
+        if (hit !== near) {
+          key = hit ? ch : other
+        } else if (hit && near) {
+          const last = lastTap.current
+          if (last !== null && last.ch === other && e.timeStamp - last.t < REPEAT_MS) key = other
+        }
+      }
     }
-    lastTap.current = { ch: key, x: e.clientX, y: e.clientY, t: e.timeStamp }
+    lastTap.current = { ch: key, t: e.timeStamp }
     return key
   }
 
@@ -188,6 +208,7 @@ export function RomajiKeypad({
               type="button"
               className="key"
               key={ch}
+              data-ch={ch}
               {...charKey(ch)}
             >
               {ch}
