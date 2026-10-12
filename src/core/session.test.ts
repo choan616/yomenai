@@ -201,6 +201,21 @@ describe('buildSession — 지연 검수 신호 (Phase 3 에서 미룬 몫)', ()
     expect(cards.every((c) => !c.needsClassReview)).toBe(true)
   })
 
+  // 집중 세션·재대결은 확인을 안 끼운다. 그렇게 읽기로 풀어 온 숙어의 뜻 카드가 나중에 새로
+  // 나올 때 「뜻은 알고 있었어요?」 를 처음 묻는 일이 났다 (2026-10-12 백업 실측 62건)
+  it('이미 읽기로 푼 숙어는 뜻 카드가 새로 나와도 묻지 않는다', () => {
+    const pool = [entry('a', 2, 'llm')] // 확장 — 읽기 카드는 기한 전, 뜻 카드는 신규
+    const solved: LearningEvent[] = [
+      recordReadingAnswer({
+        item: { idiomId: 'a', cardType: 'reading', mode: 'expansion', due: false },
+        headword: '学校', reading: 'がっこう', answer: 'がっこう', ctx, mistakes,
+      }),
+    ]
+    const later = buildSession(pool, solved, { now: T0 + 1000, limit: 10 })
+    expect(later.cards.some((c) => c.cardType === 'meaning')).toBe(true)
+    expect(later.cards.every((c) => !c.needsClassReview)).toBe(true)
+  })
+
   it('복습으로 다시 나온 카드에는 안 묻는다 — 진입 시점 한 번뿐이다', () => {
     const pool = [entry('a', 1, 'llm')]
     const first = buildSession(pool, [], { now: T0, limit: 10 })

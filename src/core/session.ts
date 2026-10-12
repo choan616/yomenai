@@ -102,6 +102,10 @@ export function buildSession(
       byId.get(item.idiomId)?.classSource !== 'manual' &&
       // 이미 확인을 받았으면(meaningKnown 이벤트가 있으면) 다시 묻지 않는다
       !state.meaningKnown.has(item.idiomId) &&
+      // 한 번이라도 푼 숙어는 카드 종류를 가리지 않고 묻지 않는다 — 집중 세션·재대결은 확인을
+      // 안 끼워서, 읽기로 풀어 온 숙어의 뜻 카드가 나중에 새로 나올 때 처음 묻게 된다
+      !state.cards.has(cardKey(item.idiomId, 'reading')) &&
+      !state.cards.has(cardKey(item.idiomId, 'meaning')) &&
       !asked.has(item.idiomId)
     if (needsClassReview) asked.add(item.idiomId)
     return { ...item, needsClassReview }
