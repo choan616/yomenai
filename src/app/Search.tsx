@@ -8,7 +8,7 @@
 // 먼저 나온다 — 시험이 아니라 보여주는 자리라 위 문제를 안 만든다. `star` 이벤트 하나만
 // 남고 FSRS 는 그대로다.
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { CameraIcon } from './icons.tsx'
+import { CameraIcon, CloseIcon } from './icons.tsx'
 import { toKana } from 'wanakana'
 import { RomajiKeypad } from '../study/RomajiKeypad.tsx'
 import { trailingRomaji } from '../study/romajiPrefix.ts'
@@ -315,6 +315,7 @@ export function Search({
 
       <div className={`screen-body${keypad && typing ? ' with-keypad' : ''}`}>
         <div className="search-row">
+        <div className="search-field">
         <input
           className="search-input"
           type="text"
@@ -337,6 +338,22 @@ export function Search({
           onChange={(e) => setRaw(toKana(e.target.value, { IMEMode: 'toHiragana' }))}
           onFocus={() => setTyping(true)}
         />
+        {/* 입력 전체 지우기 — mousedown 을 막아 입력창 포커스(자판)를 유지한다 */}
+        {raw !== '' && (
+          <button
+            type="button"
+            className="search-clear"
+            aria-label="입력 지우기"
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={() => {
+              setRaw('')
+              ref.current?.focus()
+            }}
+          >
+            <CloseIcon />
+          </button>
+        )}
+        </div>
         {/* 읽는 법을 모를 때 쓰는 입력 수단이다. 검색창 **옆**에 두는 이유가 그것이다 —
             둘 다 같은 질문("이 단어가 뭐냐")에 답하는 길이다 */}
         <button type="button" className="cam-open" onClick={onCamera} aria-label="카메라로 찾기">

@@ -2195,9 +2195,24 @@ p.rule-record {
   align-items: center;
   gap: 8px;
 }
-.search-row .search-input {
+.search-field {
+  position: relative;
   flex: 1;
   min-width: 0;
+}
+.search-field .search-input {
+  padding-right: var(--tap);
+}
+.search-clear {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: var(--tap);
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-dim);
 }
 .cam-open {
   flex: none;

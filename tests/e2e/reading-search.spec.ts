@@ -219,3 +219,21 @@ test('なんにん 은 何人 한 줄이고, 사전 밖에 더 없으면 「더 
   await expect(page.getByText('학습 사전 밖에는 더 없어요.')).toBeVisible({ timeout: 30_000 })
   await expect(page.getByText('학습 사전 밖에서도 못 찾았어요.')).toHaveCount(0)
 })
+
+test('✕ 버튼이 입력을 한 번에 지운다', async ({ page }) => {
+  await page.goto('/')
+  const tab = page.getByRole('button', { name: '찾기', exact: true })
+  await expect(tab).toBeVisible({ timeout: 20_000 })
+  await tab.click()
+
+  const input = page.getByLabel('읽기 또는 한자 검색')
+  const clear = page.getByRole('button', { name: '입력 지우기' })
+  await expect(clear).toHaveCount(0)
+
+  await input.fill('kouki')
+  await expect(input).toHaveValue('こうき')
+  await clear.click()
+  await expect(input).toHaveValue('')
+  await expect(clear).toHaveCount(0)
+  await expect(page.locator('.search-scope')).toBeVisible()
+})
