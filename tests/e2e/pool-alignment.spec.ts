@@ -27,9 +27,10 @@ async function prime(page: Page): Promise<void> {
 async function totalPairs(page: Page): Promise<number> {
   await page.getByRole('button', { name: '리포트' }).click()
   await page.getByRole('button', { name: /음독 맵/ }).click()
-  const head = page.locator('.stat-big')
-  await expect(head).toContainText('숙달', { timeout: 60_000 })
-  const m = /읽는 법\s+([\d,]+)개 중/.exec(await head.innerText())
+  await expect(page.locator('.stat-big')).toContainText('숙달', { timeout: 60_000 })
+  // 전체 분모는 접힌 「이 수는 어떻게 세나요」 안이다 (2026-10-12). 닫혀 있어 textContent 로 읽는다
+  const text = (await page.locator('.count-more .unit-note').textContent()) ?? ''
+  const m = /읽는 법\s+([\d,]+)개 가운데/.exec(text)
   if (!m) throw new Error('총계를 못 읽었다')
   return Number(m[1]!.replace(/,/g, ''))
 }

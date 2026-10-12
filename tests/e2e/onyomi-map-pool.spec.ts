@@ -35,10 +35,11 @@ async function openMap(page: Page, kunPercent: number): Promise<number> {
   await page.reload()
   await page.getByRole('button', { name: '리포트' }).click()
   await page.getByRole('button', { name: /음독 맵/ }).click()
-  const head = page.locator('.stat-big')
-  await expect(head).toContainText('숙달')
-  const text = await head.innerText()
-  const m = /읽는 법\s+(\d+)개 중/.exec(text)
+  await expect(page.locator('.stat-big')).toContainText('숙달')
+  // 전체 분모는 접힌 「이 수는 어떻게 세나요」 안에 있다 (2026-10-12) — 상단은 내가 아는
+  // 양만 말한다. 닫힌 details 도 textContent 로는 읽힌다 (innerText 는 빈 문자열이다)
+  const text = (await page.locator('.count-more .unit-note').textContent()) ?? ''
+  const m = /읽는 법\s+([\d,]+)개 가운데/.exec(text)
   if (!m) throw new Error('총계를 못 읽었다: ' + text)
   return Number(m[1]!.replace(/,/g, ''))
 }
@@ -88,12 +89,15 @@ test('리포트와 음독 맵이 서로의 수치를 같은 값으로 인용한�
   await page.getByRole('button', { name: /음독 맵/ }).click()
   await expect(page.locator('.stat-big')).toBeVisible()
   const head = await page.locator('.stat-big').innerText()
-  expect(head).toContain(`읽는 법 ${total}개 중 ${mastered}개 숙달`)
+  expect(head).toContain(`읽는 법 ${mastered}개 숙달`)
+  // 전체 분모·표현 수치·잣대는 접힌 줄 안에 모아 뒀다 (2026-10-12)
+  const more = page.locator('.count-more .unit-note')
+  await expect(more).toContainText(`읽는 법 ${total}개 가운데`)
   // 표현 수치가 리포트와 **같은 값**이다. 갈라지면 두 화면이 또 다른 말을 한다
-  await expect(page.locator('.unit-note').first()).toContainText(`표현으로는 ${idioms}개 숙지`)
+  await expect(more).toContainText(`표현으로는 ${idioms}개 숙지`)
   // 잣대가 다르다는 것도 화면이 말한다 — 쌍은 정확도, 표현은 시간을 본다
-  await expect(page.locator('.unit-note').nth(1)).toContainText('오답률')
-  await expect(page.locator('.unit-note').nth(1)).toContainText('안 잊으면')
+  await expect(more).toContainText('오답률')
+  await expect(more).toContainText('안 잊으면')
 })
 
 function num(text: string, re: RegExp): number {

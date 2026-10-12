@@ -105,34 +105,38 @@ export function OnyomiMap({ onBack }: { onBack: () => void }) {
         ) : (
           <>
             <div>
-              {/* 단위를 **읽는 법**이라고 부르고 보기를 붙인다 (2026-10-12). 「음독 N개」라고만 하면
-                  리포트의 「숙지한 표현 N개」와 같은 자로 읽히고(2026-09-23), 「쌍」은 한자 둘의
-                  조합으로 읽혀 사용자가 세 번 되물었다 */}
+              {/* 상단은 **내가 아는 양**만 말한다 (2026-10-12 사용자 지시). 전체 대비 진행
+                  막대를 걷었다 — 분모가 공부 범위 전체(2,600여 개)라 채움이 늘 1%(3px)여서
+                  그림으로 읽히지 않았고, 남은 양을 들이밀어 질리게 한다. 수준 판단은 진단
+                  리포트가 한다. 여기는 진도 지표가 아니라 진단 도구다 (PLAN §음독 추적).
+                  단위는 **읽는 법**이다 — 「음독 N개」는 리포트의 「숙지한 표현 N개」와 같은
+                  자로 읽히고(2026-09-23), 「쌍」은 한자 둘의 조합으로 읽혔다 */}
               <p className="stat-big">
-                읽는 법 {summary.total}개 중 <b>{summary.mastered}</b>개 숙달
+                읽는 법 <b>{summary.mastered}</b>개 숙달
               </p>
-              <div className="meter" aria-hidden="true">
-                <span style={{ width: pct(summary.mastered, summary.total) }} />
-              </div>
-              <p className="stat-line">
-                학습 중 {summary.learning} · 미학습 {summary.unseen}
-              </p>
-              {/* 다른 자로 잰 수치를 나란히 둔다 — 두 화면이 서로를 밝힌다 (사용자 선택) */}
+              <p className="stat-line">학습 중 {summary.learning}개</p>
+              {/* 단위를 모르면 숫자를 못 읽는다 — 정의가 아니라 보기 하나로 말한다 */}
               <p className="unit-note">
-                <span lang="ja">明</span> 를 <span lang="ja">めい</span> 로 읽는 법이 하나예요 —
-                같은 글자를 <span lang="ja">みょう</span> 로 읽으면 또 하나고요. 표현으로는{' '}
-                {stableIdioms}개 숙지예요. 표현 하나가 읽는 법 여러 개로 쪼개지고, 읽는 법
-                하나는 여러 표현에 걸쳐요 — 그래서 두 수가 달라요
+                <span lang="ja">明</span> + <span lang="ja">めい</span> 가 읽는 법 하나예요 — 같은
+                글자의 <span lang="ja">みょう</span> 는 또 하나고요
               </p>
+              {/* 전체 분모·표현 병기·잣대는 처음 한 번 읽으면 되는 글이라 접어 둔다. 접어도
+                  DOM 에 남아 「분모가 출제 범위와 같다」는 불변 조건을 테스트가 그대로 집는다
+                  (`onyomi-map-pool.spec.ts` · `pool-alignment.spec.ts` 는 textContent 로 읽는다) */}
+              <details className="count-more">
+                <summary>이 수는 어떻게 세나요</summary>
+                <p className="unit-note">
+                  지금 공부 범위의 읽는 법 {summary.total}개 가운데 센 것이에요. 표현으로는{' '}
+                  {stableIdioms}개 숙지예요 — 표현 하나가 읽는 법 여러 개로 쪼개지고, 읽는 법
+                  하나는 여러 표현에 걸쳐요. 읽는 법은 {MASTERY_MIN_SEEN}회 이상 보고 오답률{' '}
+                  {Math.round(MASTERY_MAX_WRONG_RATE * 100)}% 이하면 숙달이에요 · 표현은{' '}
+                  {READING_STABLE_DAYS}일 이상 안 잊으면 숙지예요
+                </p>
+              </details>
             </div>
 
             <div>
               <p className="section-title">{showAll ? '읽는 법 전체' : '학습 중인 읽는 법'}</p>
-              {/* 잣대도 다르다 — 읽는 법은 정확도(오답률), 표현은 시간(안 잊은 날수)을 본다 */}
-              <p className="unit-note">
-                읽는 법은 {MASTERY_MIN_SEEN}회 이상 보고 오답률 {Math.round(MASTERY_MAX_WRONG_RATE * 100)}%
-                이하면 숙달이에요 · 표현은 {READING_STABLE_DAYS}일 이상 안 잊으면 숙지예요
-              </p>
               {visible.length === 0 ? (
                 <p className="empty">
                   {showAll ? '표시할 읽는 법이 없어요.' : '오답률이 높은 음독이 아직 없어요.'}
@@ -165,7 +169,8 @@ export function OnyomiMap({ onBack }: { onBack: () => void }) {
                 style={{ marginTop: 12, width: '100%' }}
                 onClick={() => setShowAll((v) => !v)}
               >
-                {showAll ? '학습 중인 것만 보기' : `전체 보기 (${summary.total})`}
+                {/* 수를 안 붙인다 — 상단에서 걷은 전체 수가 여기로 새면 같은 일이 된다 */}
+                {showAll ? '학습 중인 것만 보기' : '전체 보기'}
               </button>
             </div>
           </>
@@ -173,8 +178,4 @@ export function OnyomiMap({ onBack }: { onBack: () => void }) {
       </div>
     </section>
   )
-}
-
-function pct(n: number, total: number): string {
-  return total === 0 ? '0%' : `${Math.round((n / total) * 100)}%`
 }

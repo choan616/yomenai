@@ -82,8 +82,10 @@
   font-size: calc(15px * var(--ui-scale));
   color: var(--text-dim);
 }
+/* 20px — 음독 맵 머리 한 줄이 쓰는 유일한 자리다 (2026-10-12 사용자 지시 「사이즈를 조금 더
+   줄인다」). 28px 에서는 375px 폭에서 두 줄로 접혔다 */
 .stat-big {
-  font-size: calc(28px * var(--ui-scale));
+  font-size: calc(20px * var(--ui-scale));
   font-variant-numeric: tabular-nums;
   color: var(--text);
   margin: 0;
@@ -94,19 +96,6 @@
   color: var(--text-faint);
   text-transform: uppercase;
   margin: 0 0 10px;
-}
-
-/* ── 진행 바 (무채색) ── */
-.meter {
-  height: 8px;
-  border-radius: 999px;
-  background: var(--surface-2);
-  overflow: hidden;
-}
-.meter > span {
-  display: block;
-  height: 100%;
-  background: var(--text-dim);
 }
 
 /* ── 막대 차트 (인라인, 라이브러리 없음). 색은 차트에만 (PLAN §7) ── */
@@ -961,8 +950,17 @@
   line-height: 1.6;
   color: var(--text-faint);
 }
-.section-title + .unit-note {
-  margin: 6px 0 10px;
+/* 전체 분모·잣대를 접어 두는 줄 (2026-10-12) — 상단에 늘 펼쳐 두면 읽을 글이 아홉 줄이
+   되고, 남은 양이 눈에 먼저 든다. 「자세히」(`.opinion-more`)와 같은 꼴이다 */
+.count-more > summary {
+  /* `display` 를 안 건드린다 — summary 의 기본값이 list-item 이라 펼침 삼각형이 남는다.
+     「자세히」(`.opinion-more`)는 inline-block 으로 그걸 없앴지만, 여기는 낱말이 평서문
+     한 줄이라 마커가 없으면 누를 수 있는 줄인지 안 보인다 */
+  list-style-position: inside;
+  padding: 2px 0;
+  font-size: calc(0.72rem * var(--ui-scale));
+  color: var(--text-dim);
+  cursor: pointer;
 }
 
 /* 화면에서는 감추고 읽어 주는 쪽에만 남긴다 */
