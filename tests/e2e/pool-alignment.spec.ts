@@ -29,7 +29,7 @@ async function totalPairs(page: Page): Promise<number> {
   await page.getByRole('button', { name: /음독 맵/ }).click()
   const head = page.locator('.stat-big')
   await expect(head).toContainText('숙달', { timeout: 60_000 })
-  const m = /한자 읽기\s+([\d,]+)쌍 중/.exec(await head.innerText())
+  const m = /읽는 법\s+([\d,]+)개 중/.exec(await head.innerText())
   if (!m) throw new Error('총계를 못 읽었다')
   return Number(m[1]!.replace(/,/g, ''))
 }

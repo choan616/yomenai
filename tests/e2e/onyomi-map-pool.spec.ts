@@ -38,7 +38,7 @@ async function openMap(page: Page, kunPercent: number): Promise<number> {
   const head = page.locator('.stat-big')
   await expect(head).toContainText('숙달')
   const text = await head.innerText()
-  const m = /한자 읽기\s+(\d+)쌍 중/.exec(text)
+  const m = /읽는 법\s+(\d+)개 중/.exec(text)
   if (!m) throw new Error('총계를 못 읽었다: ' + text)
   return Number(m[1]!.replace(/,/g, ''))
 }
@@ -79,7 +79,7 @@ test('리포트와 음독 맵이 서로의 수치를 같은 값으로 인용한�
   await expect(page.locator('.ladder')).toBeVisible()
   const idioms = num(await page.locator('.ladder-total').innerText(), /^(\d+)개$/)
   const note = await page.locator('.tools .tool-row').nth(1).innerText()
-  const m = /(\d+)\/(\d+)쌍 숙달/.exec(note)
+  const m = /읽는 법 (\d+)\/(\d+) 숙달/.exec(note)
   expect(m, '도구 행이 쌍 수치를 든다: ' + note).not.toBeNull()
   const [mastered, total] = [Number(m![1]), Number(m![2])]
 
@@ -88,7 +88,7 @@ test('리포트와 음독 맵이 서로의 수치를 같은 값으로 인용한�
   await page.getByRole('button', { name: /음독 맵/ }).click()
   await expect(page.locator('.stat-big')).toBeVisible()
   const head = await page.locator('.stat-big').innerText()
-  expect(head).toContain(`한자 읽기 ${total}쌍 중 ${mastered}쌍 숙달`)
+  expect(head).toContain(`읽는 법 ${total}개 중 ${mastered}개 숙달`)
   // 표현 수치가 리포트와 **같은 값**이다. 갈라지면 두 화면이 또 다른 말을 한다
   await expect(page.locator('.unit-note').first()).toContainText(`표현으로는 ${idioms}개 숙지`)
   // 잣대가 다르다는 것도 화면이 말한다 — 쌍은 정확도, 표현은 시간을 본다

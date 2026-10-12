@@ -1236,14 +1236,14 @@ function ToolsSection({
       </button>
       <button type="button" className="tool-row" onClick={onOnyomi}>
         <span className="tool-name">음독 맵</span>
-        {/* 표현이 아니라 **쌍**을 센다고 행이 직접 말한다 (2026-09-23) — 위 사다리의
+        {/* 표현이 아니라 **읽는 법**을 센다고 행이 직접 말한다 (2026-09-23) — 위 사다리의
             「숙지한 표현 N개」와 다른 자라는 걸 들어가기 전에 알아야 한다.
             **두 문구 다 한 줄이다** — 수치가 채워질 때 줄이 늘면 도구 묶음이 덜컥인다
             (`screen-cache.spec.ts` 가 그걸 못 박는다) */}
         <span className="tool-note">
           {onyomi === null
-            ? '쌍 숙달 현황'
-            : `${onyomi.mastered}/${onyomi.total}쌍 숙달`}
+            ? '읽는 법 숙달 현황'
+            : `읽는 법 ${onyomi.mastered}/${onyomi.total} 숙달`}
         </span>
         <span className="chev">›</span>
       </button>
