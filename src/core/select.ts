@@ -267,9 +267,27 @@ export function selectSession(
   // 음독 쪽이 모자라면 남은 자리를 훈독이 마저 가져간다 (그 반대는 위 줄이 이미 처리했다)
   fill(kunG, room - kunPlaced - onPlaced)
 
+  readingFirst(picked)
   return options.seed === undefined
     ? picked
     : shuffleByIdiom(picked, options.seed, state.starred)
+}
+
+/**
+ * 같은 숙어의 두 카드는 **읽기가 앞 자리를 갖는다** (2026-10-12).
+ *
+ * `CARD_ORDER` 는 정렬 키의 맨 끝이라 기한 초과가 다르거나(뜻만 더 밀렸다) 한쪽이 신규면
+ * 안 닿는다 — 뜻 카드가 먼저 뽑히고, `shuffleByIdiom` 이 둘을 붙여 놓아 **뜻 카드가 읽기를
+ * 보여 준 직후 같은 읽기를 묻는** 일이 났다. 뽑힌 자리는 그대로 두고 둘의 위치만 맞바꾼다.
+ */
+function readingFirst(picked: SessionItem[]): void {
+  const reading = new Map<string, number>()
+  const meaning = new Map<string, number>()
+  picked.forEach((it, i) => (it.cardType === 'reading' ? reading : meaning).set(it.idiomId, i))
+  for (const [id, r] of reading) {
+    const m = meaning.get(id)
+    if (m !== undefined && m < r) [picked[m], picked[r]] = [picked[r], picked[m]]
+  }
 }
 
 /** 같은 숙어면 읽기 카드가 뜻 카드보다 먼저다 — 뜻 카드는 읽기를 보여주므로,

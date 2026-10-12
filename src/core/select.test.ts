@@ -160,6 +160,31 @@ describe('selectSession — 구성 규칙', () => {
     expect(picked.map((p) => p.cardType)).toEqual(['reading', 'meaning'])
   })
 
+  describe('같은 숙어는 어떤 경우에도 읽기가 뜻보다 먼저다 (뜻 카드가 읽기를 보여주므로)', () => {
+    const opts = { now: T0, limit: 4, ratio: { correction: 0, expansion: 1 } }
+    const order = (picked: { idiomId: string; cardType: string }[]) =>
+      picked.filter((p) => p.idiomId === 'x').map((p) => p.cardType)
+
+    it('뜻 카드가 더 오래 밀렸어도 — 기한 초과 순이 읽기→뜻 순을 뒤집지 않는다', () => {
+      const state = emptyState()
+      put(state, 'x', 'reading', { ...newCard(T0), due: new Date(T0 - DAY) })
+      put(state, 'x', 'meaning', { ...newCard(T0), due: new Date(T0 - 5 * DAY) })
+      for (const seed of [undefined, 1, 7, 42]) {
+        const picked = selectSession([candidate('x', 1, 'expansion')], state, { ...opts, seed })
+        expect(order(picked)).toEqual(['reading', 'meaning'])
+      }
+    })
+
+    it('뜻 카드만 기한이 됐고 읽기가 신규여도 읽기가 앞에 선다', () => {
+      const state = emptyState()
+      put(state, 'x', 'meaning', { ...newCard(T0), due: new Date(T0 - DAY) })
+      for (const seed of [undefined, 1, 7, 42]) {
+        const picked = selectSession([candidate('x', 1, 'expansion')], state, { ...opts, seed })
+        expect(order(picked)).toEqual(['reading', 'meaning'])
+      }
+    })
+  })
+
   describe('seed — 제시 순서 섞기', () => {
     const cands = Array.from({ length: 12 }, (_, i) =>
       candidate(`c${String(i).padStart(2, '0')}`, 1, 'correction'),
