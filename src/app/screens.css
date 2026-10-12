@@ -2204,6 +2204,9 @@ p.rule-record {
   padding-right: var(--tap);
 }
 .search-clear {
+  background: none;
+  border: 0;
+  padding: 0;
   position: absolute;
   top: 0;
   right: 0;
@@ -2212,7 +2215,22 @@ p.rule-record {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--text-dim);
+}
+/* 눌리는 자리는 --tap 그대로 두고, 눈에 보이는 건 작은 원 안의 ✕ 다 */
+.search-clear::before {
+  content: '';
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--text-dim);
+}
+.search-clear .icon {
+  position: relative;
+  width: 12px;
+  height: 12px;
+  color: var(--surface);
+  stroke-width: 2.5;
 }
 .cam-open {
   flex: none;
