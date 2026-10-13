@@ -39,6 +39,12 @@
   --accent-shade: color-mix(in oklab, var(--accent) 68%, black);
   --accent-edge: color-mix(in oklab, var(--accent) 84%, black);
   --on-accent: var(--bg);
+  /* 홈이 내미는 표기의 면과 그 위 글자 (2026-10-13). 바탕에 강조색을 섞어 **연한 쪽빛 면**을 만든다 —
+     `--accent-soft`(투명 섞기)는 바탕과 겹치면 밝은 테마에서 그림자처럼 옅어 면으로 안 읽혔다.
+     비율이 테마마다 다르다: 어두운 바탕에서는 밝은 강조색이 같은 비율로도 덜 떠서 28% 가 필요하다.
+     면 위 글자는 무채색 `--text-dim` 을 올리면 탁해지므로 같은 쪽빛 계열에서 가져온다 */
+  --lead-face: color-mix(in oklab, var(--accent) 28%, var(--bg));
+  --lead-ask: color-mix(in oklab, var(--accent) 55%, var(--text));
 
   /* 밴드 색 (2026-09-22 사용자 지시 "색상으로 밴드구역을 구분하라").
      PLAN §7 의 "색은 오답에만" 에 대한 **명시적 예외**다. 그래서 두 가지를 지킨다 —
@@ -98,6 +104,8 @@
 
     /* 강조색 — 밝은 바탕에서는 어둡게(종이색 위 대비 약 6.7:1). 계산 토큰은 기본 :root 에 있다 */
     --accent: #41567f;
+    /* 밝은 바탕에서는 18% 로 충분하다 — 어두운 강조색이라 같은 비율이면 면이 너무 무거워진다 */
+    --lead-face: color-mix(in oklab, var(--accent) 18%, var(--bg));
 
     /* 밝은 바탕에서는 같은 계열을 어둡게 — 10px 막대라 채도보다 명도차가 먼저 읽힌다 */
     --band-0: #2d7c6f;
@@ -133,6 +141,8 @@
 
   /* 강조색 — 위 미디어 쿼리 블록과 같은 값 */
   --accent: #41567f;
+  /* 면 비율도 밝은 쪽 값으로 — 위 미디어 쿼리 블록과 같다 */
+  --lead-face: color-mix(in oklab, var(--accent) 18%, var(--bg));
 
   /* 밝은 바탕에서는 같은 계열을 어둡게 — 10px 막대라 채도보다 명도차가 먼저 읽힌다 */
   --band-0: #2d7c6f;

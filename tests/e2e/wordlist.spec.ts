@@ -51,25 +51,33 @@ async function open(page: Page, via: 'search' | 'home' = 'search'): Promise<void
     DAY,
   )
   await page.reload()
-  if (via === 'search') await page.getByRole('button', { name: '찾기', exact: true }).click()
-  await page.getByRole('button', { name: /^단어장/ }).click()
+  if (via === 'search') {
+    await page.getByRole('button', { name: '찾기', exact: true }).click()
+    // 찾기 화면 안의 진입로. 탭바에도 같은 이름이 있어 자리로 가른다 (2026-10-13)
+    await page.locator('.screen').getByRole('button', { name: /^단어장/ }).click()
+  } else {
+    await page.locator('.tabbar').getByRole('button', { name: '단어장' }).click()
+  }
   await expect(page.getByRole('heading', { name: '단어장' })).toBeVisible()
 }
 
-test('담은 게 있으면 홈에서 바로 들어가고, 뒤로 가면 홈이다', async ({ page }) => {
+test('단어장은 탭으로 들어가고, 홈 탭으로 돌아온다', async ({ page }) => {
   test.setTimeout(120_000)
   await open(page, 'home')
-  // 씨앗은 두 개 — 홈 버튼이 개수를 단다
-  await page.getByRole('button', { name: '돌아가기' }).click()
-  await expect(page.getByRole('button', { name: /^단어장 · 2/ })).toBeVisible()
+  // 탭 루트라 「돌아가기」가 없다 — 돌아갈 자리가 탭바다 (2026-10-13)
+  await expect(page.getByRole('button', { name: '돌아가기' })).toHaveCount(0)
+  await page.getByRole('button', { name: '홈', exact: true }).click()
+  await expect(page.getByRole('heading', { name: '読めない' })).toBeVisible()
 })
 
-test('담은 게 없으면 홈에 단어장 진입로가 없다', async ({ page }) => {
+test('홈에는 단어장 진입로가 없다 — 탭으로 내려갔다', async ({ page }) => {
   await skipIntro(page)
-  // 계산이 끝난 뒤에야 「없다」를 말할 수 있다 — 끝나기 전엔 자리만 잡힌 숨은 버튼이다
   // 계산이 끝났다는 신호는 띠다 — 홈의 숫자 줄은 2026-10-02 에 걷어냈다
   await expect(page.locator('.week-strip:not(.slot)')).toBeVisible({ timeout: 60_000 })
-  await expect(page.getByRole('button', { name: /^단어장/ })).toHaveCount(0)
+  await expect(page.locator('.home').getByRole('button', { name: /단어장/ })).toHaveCount(0)
+  // 담은 게 없어도 탭은 늘 있고, 빈 상태를 말한다
+  await page.locator('.tabbar').getByRole('button', { name: '단어장' }).click()
+  await expect(page.locator('.empty')).toContainText('아직 담은 표현이 없어요')
 })
 
 test('학습을 시작해도 단어장에는 남는다', async ({ page }) => {
@@ -111,8 +119,7 @@ test('묶음을 만들어 옮기고, 메모를 남긴다', async ({ page }) => {
 
   // 다시 들어와도 남아 있다 — 새 star 이벤트로 쌓였다는 뜻이다
   await page.reload()
-  await page.getByRole('button', { name: '찾기', exact: true }).click()
-  await page.getByRole('button', { name: /^단어장/ }).click()
+  await page.locator('.tabbar').getByRole('button', { name: '단어장' }).click()
   const again = page.locator('.review-row').filter({ hasText: '明白' })
   await expect(again.locator('.wl-memo')).toContainText('3장 첫 문단', { timeout: 60_000 })
   await expect(page.locator('.wl-group .section-title')).toHaveCount(2)
@@ -187,7 +194,7 @@ test('고른 보기를 기억해서, 다시 들어가면 그 보기로 열린다
   await expect(page.locator('.wl-deck')).toBeVisible({ timeout: 60_000 })
 
   await page.reload()
-  await page.getByRole('button', { name: /^단어장/ }).click()
+  await page.locator('.tabbar').getByRole('button', { name: '단어장' }).click()
   await expect(page.getByRole('button', { name: '카드', exact: true })).toHaveAttribute(
     'aria-pressed',
     'true',
@@ -198,7 +205,7 @@ test('고른 보기를 기억해서, 다시 들어가면 그 보기로 열린다
   await page.getByRole('button', { name: '리스트', exact: true }).click()
   await expect(page.locator('.review-row').first()).toBeVisible()
   await page.reload()
-  await page.getByRole('button', { name: /^단어장/ }).click()
+  await page.locator('.tabbar').getByRole('button', { name: '단어장' }).click()
   await expect(page.getByRole('button', { name: '리스트', exact: true })).toHaveAttribute(
     'aria-pressed',
     'true',
@@ -220,8 +227,7 @@ test('최근에 담은 것이 위다 — 오래된 것의 메모를 고쳐도 �
 
   // 다시 열어도(재생을 새로 돌려도) 순서가 같다
   await page.reload()
-  await page.getByRole('button', { name: '찾기', exact: true }).click()
-  await page.getByRole('button', { name: /^단어장/ }).click()
+  await page.locator('.tabbar').getByRole('button', { name: '단어장' }).click()
   await expect.poll(headwords, { timeout: 60_000 }).toEqual(['愛好', '明白'])
 
   // 카드 보기도 같은 순서다

@@ -5,7 +5,7 @@
 // "머무는 화면"(탭 루트와 그 하위)에만 붙고 "흐름"은 전체화면으로 덮는다.
 import type { ReactNode } from 'react'
 import type { Tab } from '../App.tsx'
-import { HomeIcon, ReportIcon, SearchIcon, SettingsIcon } from './icons.tsx'
+import { BookmarkIcon, HomeIcon, ReportIcon, SearchIcon, SettingsIcon } from './icons.tsx'
 
 /**
  * 라벨은 짧게. 아이콘은 `icons.tsx` 의 선 아이콘 세트다 — 처음엔 세트가 없어 글자만 썼다(2026-09-17).
@@ -13,6 +13,7 @@ import { HomeIcon, ReportIcon, SearchIcon, SettingsIcon } from './icons.tsx'
  */
 const TABS: { id: Tab; label: string; icon: ReactNode }[] = [
   { id: 'home', label: '홈', icon: <HomeIcon /> },
+  { id: 'wordlist', label: '단어장', icon: <BookmarkIcon /> },
   { id: 'report', label: '리포트', icon: <ReportIcon /> },
   { id: 'search', label: '찾기', icon: <SearchIcon /> },
   { id: 'settings', label: '설정', icon: <SettingsIcon /> },

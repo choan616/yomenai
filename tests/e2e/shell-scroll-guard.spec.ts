@@ -20,8 +20,7 @@ async function openWordlist(page: Page): Promise<void> {
     }
   })
   await page.goto('/')
-  await page.getByRole('button', { name: '찾기', exact: true }).click()
-  await page.getByRole('button', { name: /^단어장/ }).click()
+  await page.locator('.tabbar').getByRole('button', { name: '단어장' }).click()
   await expect(page.getByRole('heading', { name: '단어장' })).toBeVisible({ timeout: 60_000 })
 }
 

@@ -12,8 +12,8 @@ test('탭마다 아이콘과 글자가 있고, 아이콘은 읽어 주지 않는
   await expect(page.getByRole('button', { name: '세션 시작' })).toBeVisible({ timeout: 20_000 })
 
   const items = page.locator('.tabbar-item')
-  await expect(items).toHaveCount(4)
-  for (const [i, label] of ['홈', '리포트', '찾기', '설정'].entries()) {
+  await expect(items).toHaveCount(5)
+  for (const [i, label] of ['홈', '단어장', '리포트', '찾기', '설정'].entries()) {
     const item = items.nth(i)
     await expect(item.locator('svg.icon')).toHaveCount(1)
     await expect(item.locator('svg.icon')).toHaveAttribute('aria-hidden', 'true')

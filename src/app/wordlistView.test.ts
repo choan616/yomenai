@@ -1,11 +1,6 @@
 // 단어장 보기 기억 검증 — 기본값·저장·깨진 값·저장소가 막힌 경우
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import {
-  hasWordlistHint,
-  loadWordlistView,
-  saveWordlistView,
-  setWordlistHint,
-} from './wordlistView.ts'
+import { loadWordlistView, saveWordlistView } from './wordlistView.ts'
 
 function stubStorage(): Map<string, string> {
   const map = new Map<string, string>()
@@ -51,27 +46,5 @@ describe('wordlistView', () => {
     })
     expect(loadWordlistView()).toBe('list')
     expect(() => saveWordlistView('card')).not.toThrow()
-  })
-})
-
-describe('wordlistHint', () => {
-  beforeEach(() => void stubStorage())
-  afterEach(() => vi.unstubAllGlobals())
-
-  it('남긴 적이 없으면 없다 → 세우면 있다 → 내리면 다시 없다', () => {
-    expect(hasWordlistHint()).toBe(false)
-    setWordlistHint(true)
-    expect(hasWordlistHint()).toBe(true)
-    setWordlistHint(false)
-    expect(hasWordlistHint()).toBe(false)
-  })
-
-  it('저장소가 막혀도 던지지 않는다', () => {
-    const blocked = () => {
-      throw new Error('blocked')
-    }
-    vi.stubGlobal('localStorage', { getItem: blocked, setItem: blocked, removeItem: blocked })
-    expect(hasWordlistHint()).toBe(false)
-    expect(() => setWordlistHint(true)).not.toThrow()
   })
 })

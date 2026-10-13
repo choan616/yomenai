@@ -23,11 +23,11 @@ import { loadSettings, QUICK_SESSION_LIMIT } from './settings.ts'
 import type { Flow } from '../App.tsx'
 import { openGuide } from './guide.ts'
 import { isWelcomeSeen, markWelcomeSeen } from './welcome.ts'
+import { hasLeadHint, setLeadHint } from './leadHint.ts'
 import { WeekStrip } from './WeekStrip.tsx'
 import { homeLine } from './weekLine.tsx'
-import { hasWordlistHint, setWordlistHint } from './wordlistView.ts'
 import { markNudgeShown, NUDGE_DISMISS_MS, shouldNudge } from './nudgeToast.ts'
-import { ArrowRightIcon, BookmarkIcon, CloseIcon, RetryIcon, StackIcon } from './icons.tsx'
+import { ArrowRightIcon, CloseIcon, RetryIcon, StackIcon } from './icons.tsx'
 
 interface Preview {
   /**
@@ -44,8 +44,6 @@ interface Preview {
   rematch: number
   /** 한 번이라도 틀린 읽기 카드 수 — 다시보기 대상. 재대결보다 넓다 */
   browse: number
-  /** 단어장에 담은 표현 수. 0 이면 홈에 진입로를 안 낸다 — 첫 담기는 찾기에서 한다 (2026-10-01) */
-  wordlist: number
   /** 이번 주 띠 (2026-09-30) */
   week: WeekCell[]
   /** 오늘 이미 채점한 수. 띠 문구가 남은 장수를 말하는 데 쓴다 (2026-10-02) */
@@ -73,13 +71,7 @@ function cacheValid(): boolean {
   return cache?.version === dataVersion() && cache.preview.day === dateKey(Date.now())
 }
 
-export function Home({
-  onFlow,
-  onWordlist,
-}: {
-  onFlow: (flow: Flow) => void
-  onWordlist: () => void
-}) {
+export function Home({ onFlow }: { onFlow: (flow: Flow) => void }) {
   // 초기화 함수에서 캐시를 꺼낸다 — effect 로 넣으면 로딩 화면이 한 번 그려진 뒤에 바뀐다
   const [preview, setPreview] = useState<Preview | null>(
     () => (cacheValid() ? cache!.preview : null),
@@ -87,10 +79,10 @@ export function Home({
   const [error, setError] = useState<string | null>(null)
   // 로그를 읽기 전엔 플래그만 보고, 읽고 나면 수준까지 보고 다시 정한다
   const [needsDiagnostic, setNeedsDiagnostic] = useState(!isDiagnosticDone())
+  /** 직전 계산에 내밀 카드가 있었나. 계산 전에 면의 자리를 잡을지만 정한다 (2026-10-13) */
+  const [leadHint] = useState(hasLeadHint)
   /** 첫 안내를 아직 안 봤나. 화면 하나를 더 만들지 않고 홈 위에 얹는다 — 아래 주석 참조 */
   const [showWelcome, setShowWelcome] = useState(!isWelcomeSeen())
-  /** 직전 계산에서 단어장에 담은 게 있었나. 계산 전에 진입로 자리를 잡을지만 정한다 */
-  const [wordlistHint] = useState(hasWordlistHint)
   /**
    * 「오늘은 짧게」 토스트가 지금 떠 있나 (2026-10-02 사용자 지시).
    *
@@ -150,14 +142,13 @@ export function Home({
           lead,
           rematch: rematchCount(pool, events),
           browse: browseCount(pool, events),
-          wordlist: state.wordlist.size,
           week: weekStrip(day, attendance),
           todayCount: attendance.get(day)?.count ?? 0,
           streak: buildStreak(attendance, day),
           day,
         }
         cache = { version: dataVersion(), preview: next }
-        setWordlistHint(next.wordlist > 0)
+        setLeadHint(next.lead !== null)
         setPreview(next)
 
         // 동기화로 받아온 기록만 있고 이 기기의 플래그는 비어 있을 수 있다 (플래그는 안 옮겨온다)
@@ -207,11 +198,8 @@ export function Home({
   }, [nudge])
 
   const sessionReady = !!preview && preview.ready > 0
-  /** 주 동작이 표기를 내미는 꼴인지 (2026-10-13). 계산 전엔 「세션 시작」이다 — 두 꼴의 높이가
-   * 같아서 바뀌어도 홈이 안 움직인다 (`.btn-primary.big.lead` 주석) */
-  const leadShown = preview?.lead != null
-  /** 단어장 칸을 낼지. 계산 전엔 직전에 담은 게 있던 기기에서만 자리를 잡는다 (아래 주석) */
-  const wordlistShown = preview === null ? wordlistHint : preview.wordlist > 0
+  /** 면을 낼지. 계산 전엔 직전 계산에 내밀 카드가 있던 기기에서만 자리를 잡는다 (아래 주석) */
+  const faceShown = preview === null ? leadHint : preview.lead != null
 
   return (
     <main className="home">
@@ -307,61 +295,46 @@ export function Home({
             />
           )}
 
-          {/* 주 동작이 세션 첫 카드의 표기를 내민다 (2026-10-13 사용자 지시). 「세션 시작」이라는
-              추상 라벨은 분량을 상상하게 하는데(그래서 숫자 줄을 걷었다), 표기 한 장은 결정 단위를
-              「이 한 장」으로 줄인다. **읽기는 안 보인다** — 보여주면 그 숙어의 회상 기회를 공짜로
-              쓰고, 홈에서 본 것은 로그에 안 남아 진단이 모르는 표현을 「안다」로 센다.
+          {/* 세션 첫 장이 될 표기를 **제 영역으로** 내민다 (2026-10-13 사용자 지시). 전에는 주 동작
+              버튼 안에 문구와 함께 쌓았는데 「우겨넣은 것 같다」는 지적을 받았다. 단어장 칸을 탭으로
+              내려 그 자리를 여기 줬다.
 
-              **줄도 높이도 안 늘린다.** 홈은 세로 중앙 정렬이라 버튼이 자라면 제목까지 밀린다
-              (`screen-cache.spec.ts`). 문구와 표기를 버튼 안에 쌓고 높이는 「세션 시작」과 같은
-              56px 로 고정한다 — 계산 전후로 꼴이 바뀌어도 홈이 안 움직인다.
-              낭독 이름은 `세션 시작` 으로 고정한다 — 이 버튼이 하는 일은 그것이고,
-              표기는 눈으로 읽는 미끼다 */}
+              표기가 위, 묻는 말이 아래다 — 묻는 말을 위에 두면 바로 위 띠 문구와 작은 글자 두 줄로
+              붙어 보인다(사용자 지적). 읽는 순서도 글자를 먼저 보고 스스로 묻는 쪽이 맞다.
+              **읽기는 안 보인다** — 보여주면 그 숙어의 회상 기회를 공짜로 쓰고, 홈에서 본 것은
+              로그에 안 남아 진단이 모르는 표현을 「안다」로 센다.
+
+              면은 강조색을 바탕에 섞은 `--lead-face` 다. 누르는 면이 아니라 보는 면이라 테두리와
+              그림자를 안 쓴다 — 홈에서 누르는 면은 주 동작 하나다 (2026-10-05).
+              내밀 카드가 없는 날(복습 기한 카드가 없는 날)은 이 영역째로 없다.
+
+              계산 전에는 `leadHint` 가 있는 기기에서만 **자리를 숨겨 잡는다** — 98px 가 뒤늦게
+              생기면 세로 중앙 정렬이 제목까지 밀어 올린다 (걷어낸 단어장 칸이 받던 처방) */}
+          {faceShown && (
+            <div className={`lead-face${preview?.lead == null ? ' slot' : ''}`}>
+              <p className="lead-word" lang="ja">
+                {preview?.lead ?? '読'}
+              </p>
+              <p className="lead-ask">이 표현, 읽을 수 있어요?</p>
+            </div>
+          )}
+
           <button
             type="button"
-            className={`btn-primary big${leadShown ? ' lead' : ''}`}
-            aria-label="세션 시작"
+            className="btn-primary big"
             onClick={() => onFlow({ kind: 'study', lead: preview?.lead ?? undefined })}
             disabled={!sessionReady}
           >
-            {leadShown ? (
-              <span className="lead-stack">
-                <span className="lead-ask">이 표현, 읽을 수 있어요?</span>
-                <span className="lead-word" lang="ja">
-                  {preview?.lead}
-                </span>
-              </span>
-            ) : (
-              '세션 시작'
-            )}
+            세션 시작
           </button>
 
           {/* 「3장만」은 홈에서 걷어냈다 (2026-10-02 사용자 지시) — 짧은 세션으로 가는 길은 리포트
               달력에서 **오늘 칸을 누를 때** 낸다(`Report.tsx` 의 `.cal-nudge`). 의욕 없는 날의
               진입로라는 목적은 그대로지만(Phase 11), 매일 보이는 버튼일 이유는 없다.
 
-              남은 단어장 칸은 계산 전이면 **자리만 잡아 둔다** (2026-09-21 사용자 지적). `.home` 은
-              세로 중앙 정렬이라, 버튼이 뒤늦게 생기면 그 높이의 절반만큼 제목까지 위로 밀린다.
-              `.answer-row` 가 빈 슬롯으로 주 동작의 자리를 지키는 것과 같은 처방이다.
-              담은 게 없으면 단어장 칸이 없다 — 찾기에서 담으며 들어가는 길이 이미 있다.
-              **직전 계산에서 담은 게 있던 기기에서만** 계산 전에 자리를 잡는다 — 개수는 로그를 읽어야
-              알 수 있어 힌트로 정한다. 늘 잡으면 담은 게 없는 사람은 계산 뒤에 칸이 접히고, 안 잡으면
-              담은 사람이 계산 뒤에 밀린다 (`screen-cache.spec.ts` 가 잡는다) */}
-          {wordlistShown && (
-            <div className="quick-row">
-              {preview === null ? (
-                <button type="button" className="btn quick wl slot" aria-hidden="true" tabIndex={-1}>
-                  <BookmarkIcon />
-                  단어장<span className="dim"> · 0</span>
-                </button>
-              ) : (
-                <button type="button" className="btn quick wl" onClick={onWordlist}>
-                  <BookmarkIcon />
-                  단어장<span className="dim"> · {preview.wordlist.toLocaleString('ko')}</span>
-                </button>
-              )}
-            </div>
-          )}
+              **단어장 칸도 걷었다** (2026-10-13 사용자 지시) — 하단 탭으로 내려갔다. 계산 전에
+              자리를 잡던 `wordlistHint` 처방도 같이 사라졌다. 담은 수를 홈에서 세어 보일 자리는
+              이제 없다 — 탭을 누르면 목록이 그 수를 그대로 말한다 */}
 
           {/* 재대결과 다시보기는 **대상이 같다** — 틀렸던 숙어다. 한 줄에 세워 "풀래, 볼래" 의
               선택으로 읽히게 한다 (2026-09-14). 틀린 게 없으면 줄째로 사라진다 — 첫 진입에는

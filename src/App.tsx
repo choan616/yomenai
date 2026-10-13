@@ -1,4 +1,4 @@
-// 앱 셸 — 하단 탭 4개 + 탭 안 한 겹(sub) + 탭바를 덮는 전체화면 흐름(flow) (2026-09-17).
+// 앱 셸 — 하단 탭 5개 + 탭 안 한 겹(sub) + 탭바를 덮는 전체화면 흐름(flow) (2026-09-17).
 //
 // 라우터는 여전히 안 쓴다. 대신 **탭이 자리를 기억한다** — 전에는 화면마다 「어디서 왔는지」
 // 를 상태로 들고 다녔고(`browseFrom`·`rulesFrom`), 그게 셋이 되면서 상태 기반 전환이
@@ -33,7 +33,8 @@ import type { VoicingKind } from './core/mistakes.ts'
 import type { MistakeType } from './core/types.ts'
 
 /** 하단 탭. 모든 화면이 이 넷 중 하나 아래에 있다 */
-export type Tab = 'home' | 'report' | 'search' | 'settings'
+// 단어장은 2026-10-13 에 탭으로 내려왔다 — 홈의 진입로를 걷고 그 자리를 세션 첫 장에 줬다
+export type Tab = 'home' | 'wordlist' | 'report' | 'search' | 'settings'
 
 /** 탭 안에서 한 겹 들어간 화면. 자기 탭 루트로 돌아간다 */
 export type Sub =
@@ -49,8 +50,6 @@ export type Sub =
   | { kind: 'camera' }
   /** 뜻 검수. 설정에서 한 겹 들어간다 — 검수 모드를 켠 기기에서만 진입로가 보인다 (2026-09-24) */
   | { kind: 'review' }
-  /** 단어장. 찾기에서 한 겹 들어간다 — 담기가 일어나는 곳이다 (2026-09-25) */
-  | { kind: 'wordlist' }
 
 /**
  * 탭바를 덮는 전체화면 흐름. 끝나면 열었던 탭으로 돌아온다.
@@ -138,6 +137,7 @@ function Shell() {
             <TabRoot
               tab={tab === 'settings' ? underTab : tab}
               onSub={setSub}
+              onTab={goTab}
               onFlow={setFlow}
               found={found}
               onUsedFound={() => setFound(null)}
@@ -205,19 +205,23 @@ function FlowScreen({
 function TabRoot({
   tab,
   onSub,
+  onTab,
   onFlow,
   found,
   onUsedFound,
 }: {
   tab: Tab
   onSub: (s: Sub) => void
+  onTab: (t: Tab) => void
   onFlow: (f: Flow) => void
   found: CameraFound | null
   onUsedFound: () => void
 }) {
   switch (tab) {
     case 'home':
-      return <Home onFlow={onFlow} onWordlist={() => onSub({ kind: 'wordlist' })} />
+      return <Home onFlow={onFlow} />
+    case 'wordlist':
+      return <Wordlist />
     case 'report':
       return (
         <Report
@@ -236,7 +240,7 @@ function TabRoot({
       return (
         <Search
           onCamera={() => onSub({ kind: 'camera' })}
-          onWordlist={() => onSub({ kind: 'wordlist' })}
+          onWordlist={() => onTab('wordlist')}
           found={found}
           onUsedFound={onUsedFound}
         />
@@ -268,7 +272,5 @@ function SubScreen({
       return <CameraFind onBack={onBack} onFound={onFound} />
     case 'review':
       return <MeaningReview onBack={onBack} />
-    case 'wordlist':
-      return <Wordlist onBack={onBack} />
   }
 }

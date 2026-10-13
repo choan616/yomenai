@@ -1,21 +1,23 @@
 // 폰에서 홈이 잘리지 않는지 — 세로로 키가 작을 때, 그리고 가로 모드 (2026-10-01).
 //
 // 홈은 가운데 정렬 칼럼이고 모바일에서는 문서가 스크롤하지 않는다(`index.css`). 그래서 내용이 화면보다
-// 길면 **홈이 스스로 스크롤해야** 위(제목·세션 시작)도 아래(단어장·틀렸던 것)도 닿는다.
-// - 세로: 진입로를 맨 아래 한 줄로 더하니 iPhone 크기(375×667)에서 탭바 밑에 반쯤 묻혔다 (사용자 캡처).
-//   **클릭이 되는지만 보면 못 잡는다** — 누르는 점이 보이는 쪽에 걸리면 통과한다. 버튼 전체를 잰다.
+// 길면 **홈이 스스로 스크롤해야** 위(제목·세션 시작)도 아래(틀렸던 것)도 닿는다.
+// - 세로: 맨 아래 줄이 iPhone 크기(375×667)에서 탭바 밑에 반쯤 묻힌 적이 있다 (사용자 캡처).
+//   **클릭이 되는지만 보면 못 잡는다** — 누르는 점이 보이는 쪽에 걸리면 통과한다. 줄 전체를 잰다.
+//   2026-10-13 에 재던 대상이 단어장 진입로에서 「틀렸던 것」 줄로 바뀌었다 — 단어장은 탭으로 내려갔고
+//   그 자리에 세션 첫 장의 면이 들어왔다.
 // - 가로: 높이가 375px 안팎이라 홈이 세로로 안 들어간다 (사용자 지적 「메인에 스크롤을 막은 것은
 //   가로모드에서 문제가 된다」). 가운데 정렬이 넘치면 위가 잘려 스크롤로도 못 닿는 것도 같이 본다.
 import { expect, test, type Page } from '@playwright/test'
 
 test.use({ hasTouch: true, isMobile: true })
 
-/** 실사용처럼 「틀렸던 것」 줄·단어장 진입로까지 다 나오는 가장 긴 홈을 만든다 */
+/** 실사용처럼 면·「틀렸던 것」 줄까지 다 나오는 가장 긴 홈을 만든다 */
 async function seed(page: Page): Promise<void> {
   await page.addInitScript(() => {
     localStorage.setItem('yomenai:diagnosticDone', '1')
     localStorage.setItem('yomenai:welcomeSeen', '1')
-    localStorage.setItem('yomenai:wordlistHint', '1')
+    localStorage.setItem('yomenai:leadHint', '1')
   })
   await page.goto('/')
   await page.evaluate(async () => {
@@ -43,26 +45,31 @@ async function seed(page: Page): Promise<void> {
     })
   })
   await page.reload()
-  await expect(page.getByRole('button', { name: /^단어장/ })).toBeVisible({ timeout: 60_000 })
+  await expect(page.locator('.lead-face:not(.slot)')).toBeVisible({ timeout: 60_000 })
 }
 
 for (const [w, h] of [[360, 640], [375, 667]] as const) {
-  test(`${w}×${h} 에서 홈의 단어장 진입로가 탭바에 안 가린다`, async ({ page }) => {
+  test(`${w}×${h} 에서 홈의 맨 아래 줄이 탭바에 안 가린다`, async ({ page }) => {
     test.setTimeout(120_000)
     await page.setViewportSize({ width: w, height: h })
     await seed(page)
 
-    const open = page.getByRole('button', { name: /^단어장/ })
-    const box = await open.boundingBox()
+    const last = page.locator('.wrong-group')
+    const box = await last.boundingBox()
     const tab = await page.locator('.tabbar').boundingBox()
     expect(box && tab).toBeTruthy()
     expect(
       box!.y + box!.height,
-      `단어장 버튼 아래 ${Math.round(box!.y + box!.height)} · 탭바 위 ${Math.round(tab!.y)}`,
+      `맨 아래 줄 ${Math.round(box!.y + box!.height)} · 탭바 위 ${Math.round(tab!.y)}`,
     ).toBeLessThanOrEqual(tab!.y)
 
-    await open.click({ timeout: 5_000 })
-    await expect(page.getByRole('heading', { name: '단어장' })).toBeVisible()
+    // 면도 온전히 보인다 — 표기가 반쯤 잘리면 읽을 수 없다
+    const face = await page.locator('.lead-face').boundingBox()
+    expect(face!.y, `면 위 ${Math.round(face!.y)}`).toBeGreaterThanOrEqual(0)
+    expect(face!.y + face!.height).toBeLessThanOrEqual(tab!.y)
+
+    await page.getByRole('button', { name: /재도전/ }).click({ timeout: 5_000 })
+    await expect(page.locator('.headword').first()).toBeVisible({ timeout: 60_000 })
   })
 }
 

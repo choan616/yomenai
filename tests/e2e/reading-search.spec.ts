@@ -142,7 +142,7 @@ test('넓힌 사전에서 담을 수 있는 것과 없는 것을 갈라 낸다',
 
   // 담은 것은 단어장에 뜬다 — 넓힌 사전에서 되짚어 오지 않으면 조용히 사라진다
   await input.fill('')
-  await page.getByRole('button', { name: /^단어장/ }).click()
+  await page.locator('.tabbar').getByRole('button', { name: '단어장' }).click()
   const wl = page.locator('.review-row').filter({ hasText: '爆轟' })
   await expect(wl).toBeVisible({ timeout: 30_000 })
   await expect(wl.locator('.wl-state')).toHaveText('아직 안 나옴')

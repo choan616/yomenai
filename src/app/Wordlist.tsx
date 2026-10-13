@@ -47,7 +47,7 @@ function stateLabel(row: Row): string {
   return row.started ? (row.wrong > 0 ? `학습 중 · ✗ ${row.wrong}회` : '학습 중') : '아직 안 나옴'
 }
 
-export function Wordlist({ onBack }: { onBack: () => void }) {
+export function Wordlist() {
   const [rows, setRows] = useState<Row[] | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [current, setCurrent] = useState(loadCurrentList)
@@ -243,9 +243,6 @@ export function Wordlist({ onBack }: { onBack: () => void }) {
   return (
     <section className={`screen${cardMode ? ' wl-cards-mode' : ''}`}>
       <div className="screen-bar">
-        <button type="button" className="back" onClick={onBack} aria-label="돌아가기">
-          ←
-        </button>
         <h2>단어장</h2>
         {/* 보기는 상단에서 고른다 (사용자 요청 2026-10-01). 고른 보기는 기기가 기억한다 */}
         <div className="seg wl-view" role="group" aria-label="보기">

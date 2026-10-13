@@ -32,22 +32,24 @@ test('주 동작이 표기를 내밀고, 누르면 그 표기가 첫 장으로 �
   await putGradings(page, gradings(0, 30, 30, 30), 'lead')
   await page.reload()
 
-  const start = page.getByRole('button', { name: '세션 시작' })
-  await expect(start).toBeEnabled({ timeout: 20_000 })
-  const word = start.locator('.lead-word')
-  await expect(word).toBeVisible()
+  const face = page.locator('.lead-face')
+  await expect(face).toBeVisible({ timeout: 20_000 })
+  const word = face.locator('.lead-word')
   // 일본어 자형으로 렌더링돼야 한다 (CLAUDE.md)
   await expect(word).toHaveAttribute('lang', 'ja')
   const lead = (await word.innerText()).trim()
   expect(lead).not.toBe('')
+  // 표기가 위, 묻는 말이 아래다 (2026-10-13 사용자 지적 — 위에 두면 띠 문구와 붙어 보인다)
+  const wordBox = (await word.boundingBox())!
+  const askBox = (await face.locator('.lead-ask').boundingBox())!
+  expect(wordBox.y).toBeLessThan(askBox.y)
   // 읽기는 홈에 안 보인다 — 보여주면 그 숙어의 회상 기회를 공짜로 쓴다
-  await expect(start).toHaveText(`이 표현, 읽을 수 있어요?${lead}`)
+  await expect(face).toHaveText(`${lead}이 표현, 읽을 수 있어요?`)
+  // 누르는 면이 아니다 — 주 동작은 「세션 시작」 버튼 하나다 (2026-10-05)
+  await expect(face.getByRole('button')).toHaveCount(0)
 
-  // 두 꼴의 높이가 같아야 홈이 안 움직인다 (screen-cache 가 15px 움직임을 잡은 적이 있다).
-  // 56px 안에 두 줄이 들어가는지도 같이 본다 — 넘치면 글자가 잘린다
-  expect((await start.boundingBox())?.height).toBe(56)
-  const stack = start.locator('.lead-stack')
-  expect(await stack.evaluate((el) => el.scrollHeight)).toBeLessThanOrEqual(56)
+  const start = page.getByRole('button', { name: '세션 시작' })
+  await expect(start).toBeEnabled()
 
   await start.click()
   const card = page.locator('.card').first()
@@ -57,7 +59,7 @@ test('주 동작이 표기를 내밀고, 누르면 그 표기가 첫 장으로 �
   await expect(page.locator('.kana-input')).toBeVisible()
 })
 
-test('내밀 카드가 없으면 「세션 시작」 그대로다', async ({ page }) => {
+test('내밀 카드가 없으면 면이 아예 없다', async ({ page }) => {
   await page.goto('/')
   await expect(page.getByRole('button', { name: '세션 시작' })).toBeVisible({ timeout: 20_000 })
   await resetState(page)
@@ -67,5 +69,5 @@ test('내밀 카드가 없으면 「세션 시작」 그대로다', async ({ pag
   const start = page.getByRole('button', { name: '세션 시작' })
   await expect(start).toBeEnabled({ timeout: 20_000 })
   await expect(start).toHaveText('세션 시작')
-  await expect(start.locator('.lead-word')).toHaveCount(0)
+  await expect(page.locator('.lead-face')).toHaveCount(0)
 })

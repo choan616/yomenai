@@ -78,10 +78,13 @@ test('홈은 첫 진입에도 기록이 쌓여도 안 넘친다', async ({ page 
   await expect(page.getByRole('button', { name: /재도전/ })).toBeVisible()
 })
 
-test('탭 넷을 오가고, 세션에서는 탭바가 사라진다', async ({ page }) => {
+test('탭 다섯을 오가고, 세션에서는 탭바가 사라진다', async ({ page }) => {
   await page.goto('/')
   await expect(page.getByRole('button', { name: '세션 시작' })).toBeVisible({ timeout: 20_000 })
   await expect(page.locator('.tabbar')).toBeVisible()
+
+  await page.getByRole('button', { name: '단어장', exact: true }).click()
+  await expect(page.getByRole('heading', { name: '단어장' })).toBeVisible()
 
   await page.getByRole('button', { name: '리포트', exact: true }).click()
   await expect(page.getByRole('heading', { name: '진단 리포트' })).toBeVisible()
