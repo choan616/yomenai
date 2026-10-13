@@ -239,45 +239,36 @@ test('최근에 담은 것이 위다 — 오래된 것의 메모를 고쳐도 �
 })
 
 // ── 카드 보기의 묶음 (2026-10-13) ──
-// 「지금 담는 묶음」 줄이 카드 보기에도 서고, 카드 머리의 묶음 알약을 눌러 그 카드를 옮기거나 알약 자리에서
-// 묶음 이름을 바꾼다. 끝말잇기 말 카드(`WordCards` 를 같이 쓴다)는 알약이 그냥 글자여야 한다.
+// 카드 머리의 묶음 알약을 눌러 그 카드를 옮기거나 알약 자리에서 묶음 이름을 바꾼다.
+// 끝말잇기 말 카드(`WordCards` 를 같이 쓴다)는 알약이 그냥 글자여야 한다.
 
-/** 카드 보기로 열고 새 묶음 `소설 A` 를 만든다 — 만드는 것도 카드 보기의 줄에서 한다 */
+/** 리스트에서 새 묶음 `소설 A` 를 만들고 카드 보기로 넘어간다 — 묶음 만들기는 리스트의 줄이 한다 */
 async function openCardsWithList(page: Page): Promise<void> {
   await open(page)
-  await page.getByRole('button', { name: '카드', exact: true }).click()
-  await expect(page.locator('.wl-deck .browse-slide')).toHaveCount(2, { timeout: 60_000 })
   await page.getByRole('button', { name: '+ 새 묶음' }).click()
   await page.getByLabel('새 묶음 이름').fill('소설 A')
   await page.getByRole('button', { name: '만들기' }).click()
   await expect(page.locator('.chip.on')).toHaveText('소설 A')
-}
-
-test('카드 보기에도 「지금 담는 묶음」 줄이 있고, 덱이 줄에 잘리지 않는다', async ({ page }) => {
-  test.setTimeout(120_000)
-  await open(page)
   await page.getByRole('button', { name: '카드', exact: true }).click()
   await expect(page.locator('.wl-deck .browse-slide')).toHaveCount(2, { timeout: 60_000 })
+}
 
-  const bar = page.locator('.wl-current-bar')
-  await expect(bar).toContainText('지금 담는 묶음')
-  await expect(bar.locator('.chip.on')).toHaveText('기본')
-  // 줄과 덱이 겹치지 않고, 덱의 아래 끝(넘김 버튼)이 화면 안에 있다
+test('카드 보기에는 「지금 담는 묶음」 줄이 없다 — 알약이 그 일을 한다', async ({ page }) => {
+  test.setTimeout(120_000)
+  await open(page)
+  // 리스트에는 있다
+  await expect(page.locator('.wl-current')).toContainText('지금 담는 묶음')
+
+  await page.getByRole('button', { name: '카드', exact: true }).click()
+  await expect(page.locator('.wl-deck .browse-slide')).toHaveCount(2, { timeout: 60_000 })
+  // 카드 보기에는 없다 (2026-10-13 사용자 지시) — 덱이 화면을 다 쓰는 모드다
+  await expect(page.locator('.wl-current')).toHaveCount(0)
+  // 덱의 아래 끝(넘김 버튼)이 화면 안에 있다
   const geo = await page.evaluate(() => {
-    const b = document.querySelector('.wl-current-bar')!.getBoundingClientRect()
-    const d = document.querySelector('.wl-deck')!.getBoundingClientRect()
     const n = document.querySelector('.wl-deck .browse-nav')!.getBoundingClientRect()
-    return { barBottom: b.bottom, deckTop: d.top, navBottom: n.bottom, vh: window.innerHeight }
+    return { navBottom: n.bottom, vh: window.innerHeight }
   })
-  expect(geo.deckTop).toBeGreaterThanOrEqual(geo.barBottom - 1)
   expect(geo.navBottom).toBeLessThanOrEqual(geo.vh + 1)
-
-  // 새 묶음을 만들면 칩이 늘고 「지금 담는 묶음」이 바뀐다
-  await page.getByRole('button', { name: '+ 새 묶음' }).click()
-  await page.getByLabel('새 묶음 이름').fill('소설 A')
-  await page.getByRole('button', { name: '만들기' }).click()
-  await expect(bar.locator('.chip.on')).toHaveText('소설 A')
-  await expect(page.locator('.wl-deck .browse-slide')).toHaveCount(2)
 })
 
 test('카드의 묶음 알약을 눌러 그 카드만 다른 묶음으로 옮긴다', async ({ page }) => {
@@ -397,15 +388,15 @@ test('이름 바꾸기는 알약 자리에서 입력이 되고, 그 묶음 전�
   await first.getByLabel('소설 A 묶음 이름').fill('소설 B')
   await page.keyboard.press('Enter')
 
-  // 두 장 모두 따라 바뀌었고, 「지금 담는 묶음」이던 것도 따라갔다
+  // 두 장 모두 따라 바뀌었다
   await expect(first.locator('.tag-pick-btn')).toHaveText('소설 B')
   await expect(page.locator('.wl-deck .browse-slide').nth(1).locator('.tag-pick-btn')).toHaveText('소설 B')
-  await expect(page.locator('.wl-current-bar .chip.on')).toHaveText('소설 B')
 
-  // 리스트에서도 한 묶음이고, 다시 들어와도 남아 있다
+  // 리스트에서도 한 묶음이고, 「지금 담는 묶음」이던 것도 따라갔다. 다시 들어와도 남아 있다
   await page.reload()
   await page.locator('.tabbar').getByRole('button', { name: '단어장' }).click()
   await page.getByRole('button', { name: '리스트', exact: true }).click()
+  await expect(page.locator('.wl-current .chip.on')).toHaveText('소설 B', { timeout: 60_000 })
   await expect(page.locator('.wl-group .section-title')).toHaveCount(1, { timeout: 60_000 })
   await expect(page.locator('.wl-group .section-title')).toContainText('소설 B')
   await expect(page.locator('.wl-group .review-row')).toHaveCount(2)
@@ -424,7 +415,7 @@ test('기본 묶음에는 이름 바꾸기가 없다', async ({ page }) => {
 test.describe('모바일 화면에서', () => {
   test.use({ hasTouch: true, isMobile: true, viewport: { width: 375, height: 667 } })
 
-  test('카드 보기의 줄이 덱을 잘라 넘김 버튼이 탭바 밑으로 내려가지 않는다', async ({ page }) => {
+  test('넘김 버튼이 탭바 밑으로 내려가지 않는다', async ({ page }) => {
     test.setTimeout(120_000)
     await open(page)
     await page.getByRole('button', { name: '카드', exact: true }).click()
@@ -432,11 +423,8 @@ test.describe('모바일 화면에서', () => {
     const geo = await page.evaluate(() => {
       const n = document.querySelector('.wl-deck .browse-nav')!.getBoundingClientRect()
       const t = document.querySelector('.tabbar')!.getBoundingClientRect()
-      const bar = document.querySelector('.wl-current-bar')!.getBoundingClientRect()
-      return { navBottom: n.bottom, tabTop: t.top, barH: bar.height }
+      return { navBottom: n.bottom, tabTop: t.top }
     })
     expect(geo.navBottom).toBeLessThanOrEqual(geo.tabTop + 1)
-    // 묶음이 둘일 때 줄은 한 줄이다 — 덱에서 가져가는 높이가 작다
-    expect(geo.barH).toBeLessThan(100)
   })
 })

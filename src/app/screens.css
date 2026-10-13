@@ -2592,16 +2592,10 @@ p.rule-record {
   .screen.wl-cards-mode {
     overflow: visible;
   }
-  /* 「지금 담는 묶음」 줄(2026-10-13)이 덱 위에 서므로 높이는 본문이 묶고 덱이 남는 만큼을 쓴다.
-     줄이 두 줄로 늘거나 새 묶음 입력이 열려도 문서가 넘치지 않는다 */
-  .wl-cards-mode .screen-body {
-    flex: 0 0 auto;
-    height: min(800px, calc(100dvh - 60px));
-  }
   /* 단어장 안에 끼워 쓸 때만 높이를 묶는다 — 전체화면 덱(끝말잇기)은 화면을 다 쓴다 (2026-10-06) */
   .wl-cards-mode .wl-deck {
-    flex: 1 1 auto;
-    max-height: 680px;
+    flex: 0 0 auto;
+    height: min(680px, calc(100dvh - 60px));
   }
 }
 /* 카드 본문은 가운데 정렬이라 메모도 맞춘다 */
@@ -2616,20 +2610,6 @@ p.rule-record {
 }
 /* 카드 보기에서도 「지금 담는 묶음」 줄이 선다 (2026-10-13). 덱은 flex:1 이라 줄이 차지한 만큼만 줄어든다.
    묶음이 많아도 줄이 덱을 먹지 않게 두 줄까지만 보이고 그 위는 줄 안에서 스크롤한다 */
-.wl-current-bar {
-  flex: 0 0 auto;
-  padding: 10px 16px 8px;
-}
-.wl-current-bar .wl-current {
-  margin: 0;
-}
-.wl-current-bar .wl-current > .dim {
-  margin-bottom: 6px;
-}
-.wl-current-bar .wl-chips {
-  max-height: 76px;
-  overflow-y: auto;
-}
 /* 카드 머리의 묶음 알약 — 눌러서 이 카드를 옮기고 이름을 바꾼다 (2026-10-13).
    목록은 알약 바로 아래에 얹힌다. 카드(.card)가 기준이고 모달이 아니다 */
 .tag-pick {

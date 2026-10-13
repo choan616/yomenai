@@ -272,11 +272,9 @@ export function Wordlist() {
         ) : rows === null ? (
           <p className="empty">불러오고 있어요…</p>
         ) : cardMode ? (
+          /* 카드 보기에는 「지금 담는 묶음」 줄을 안 둔다 (2026-10-13 사용자 지시 「보이지 않아도 괜찮다」)
+             — 덱이 화면을 다 쓰는 모드고, 묶음을 옮기고 이름을 바꾸는 일은 카드 머리의 알약이 맡는다 */
           <>
-            {/* 카드 보기에서도 「지금 담는 묶음」이 보인다 (2026-10-13). 덱 위에 줄을 얹고 덱이 남는 높이를 쓴다 */}
-            <div className="wl-current-bar">
-              <CurrentPicker lists={lists} current={current} onPick={pickList} />
-            </div>
             {examples === null ? (
               <p className="empty">불러오고 있어요…</p>
             ) : (
