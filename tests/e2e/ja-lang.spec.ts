@@ -178,7 +178,13 @@ test('세션 카드와 오답 상세의 일본어도 lang="ja" 안에 있다', a
   await expect(input).toBeVisible({ timeout: 20_000 })
   await scan(page, '세션 — 읽기 카드', found)
 
-  await input.fill('xxxxx')
+  // 채운 값이 남은 것을 보고 보낸다 — `KanaInput` 은 카드가 바뀔 때 입력을 비우는데(resetKey 효과)
+  // 그 효과가 페인트 직후에 돌아, 입력란이 보이자마자 채우면 방금 친 값이 지워진다.
+  // 미끼가 생기면서 세션 첫 장이 바로 읽기 카드가 되어 그 틈이 넓어졌다 (2026-10-13, WebKit 에서 재현)
+  await expect(async () => {
+    await input.fill('xxxxx')
+    await expect(input).toHaveValue(/.+/)
+  }).toPass({ timeout: 10_000 })
   await input.press('Enter')
   await expect(page.locator('.card.feedback.is-ng')).toBeVisible({ timeout: 20_000 })
   await scan(page, '세션 — 오답 피드백', found)
