@@ -75,6 +75,6 @@ test('내밀 카드가 없으면 면이 아예 없다', async ({ page }) => {
   await expect(start).toBeEnabled({ timeout: 20_000 })
   await expect(start).toHaveText('세션 시작')
   await expect(page.locator('.lead-face')).toHaveCount(0)
-  // 면이 없으면 주 동작은 큰 버튼(56px)으로 혼자 선다 — 면 안에서는 48px 다
+  // 면이 없으면 주 동작은 큰 버튼(56px)으로 혼자 선다 — 면 안에서는 40px 다
   expect((await start.boundingBox())?.height).toBe(56)
 })
