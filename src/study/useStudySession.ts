@@ -22,6 +22,8 @@ import { foldHomographs, pairOf } from './homograph.ts'
 import { buildFocus, buildRematch } from '../core/session.ts'
 import { surfaceOfPairs } from '../core/surface.ts'
 import { leadWith } from '../core/homeCard.ts'
+import { dateKey } from '../core/attendance.ts'
+import { addSkipped } from '../app/skippedToday.ts'
 import type { LearningEvent, MeaningVerdict, MistakeType } from '../core/types.ts'
 import { appendEvent } from '../db/events.ts'
 import { loadIntroduced, markIntroduced } from './introduced.ts'
@@ -607,6 +609,9 @@ export function useStudySession({
    * 무엇을 잘못 골랐는지가 없는데 유형을 붙이면 분포가 거짓이 된다.
    */
   const passReading = useCallback(() => {
+    // 넘긴 표기를 기기에 적어 둔다 — 홈의 미끼가 오늘은 그 글자를 다시 안 내민다
+    // (2026-10-13 사용자 지시). 넘김은 이벤트를 안 남겨서 학습 기록으로는 알 수 없다
+    if (idiom) addSkipped(dateKey(Date.now()), idiom.headword)
     if (dualPair) {
       // 「읽기 둘」 에서 넘기면 여태 맞힌 것만 남는다. 하나라도 맞혔으면 오답은 없다
       settle({
@@ -618,7 +623,7 @@ export function useStudySession({
       return
     }
     settle({ answer: '', correct: false, viaAlt: false, dual: null })
-  }, [dualPair, dualGot, settle])
+  }, [dualPair, dualGot, idiom, settle])
 
   const submitMeaning = useCallback(
     (known: boolean) => {

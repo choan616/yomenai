@@ -165,3 +165,30 @@ test('「읽기 둘」에서 한쪽만 쓰고 넘겨도 그 표기는 다시 안
   await expect(page.locator('.week-strip:not(.slot)')).toBeVisible({ timeout: 20_000 })
   await expect(page.locator('.lead-face')).toHaveCount(0)
 })
+
+/**
+ * 넘기기(SKIP)는 **빈 답을 오답으로** 남기지만, 그 기록은 「다음」을 눌러야 쌓인다.
+ * 넘기고 바로 세션을 나가면 기록이 없어 그 표기가 다시 미끼로 선다 (2026-10-13 사용자 지시).
+ * 그래서 넘긴 표기는 기기에도 적어 둔다 (`skippedToday`).
+ */
+test('넘기고 바로 나가도 그 표기는 오늘 다시 안 선다', async ({ page }) => {
+  await page.goto('/')
+  await expect(page.getByRole('button', { name: '세션 시작' })).toBeVisible({ timeout: 20_000 })
+  await resetState(page)
+  await page.reload()
+  await putGradings(page, [{ idiomId: '1581470', daysAgo: 60, ok: true }], 'skip')
+  await page.reload()
+
+  const word = page.locator('.lead-face .lead-word')
+  await expect(word).toHaveText('代替', { timeout: 20_000 })
+
+  await page.getByRole('button', { name: '세션 시작' }).click()
+  await expect(page.locator('.headword').first()).toHaveText('代替', { timeout: 20_000 })
+  await page.getByRole('button', { name: 'SKIP', exact: true }).click()
+  await expect(page.locator('.card.feedback')).toBeVisible({ timeout: 20_000 })
+  // 「다음」을 안 누르고 나간다 — 채점이 기록되지 않는 길이다
+  await page.getByRole('button', { name: '세션 나가기' }).click()
+
+  await expect(page.locator('.week-strip:not(.slot)')).toBeVisible({ timeout: 20_000 })
+  await expect(page.locator('.lead-face')).toHaveCount(0)
+})

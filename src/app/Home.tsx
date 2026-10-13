@@ -24,6 +24,7 @@ import type { Flow } from '../App.tsx'
 import { openGuide } from './guide.ts'
 import { isWelcomeSeen, markWelcomeSeen } from './welcome.ts'
 import { hasLeadHint, setLeadHint } from './leadHint.ts'
+import { loadSkipped } from './skippedToday.ts'
 import { WeekStrip } from './WeekStrip.tsx'
 import { homeLine } from './weekLine.tsx'
 import { markNudgeShown, NUDGE_DISMISS_MS, shouldNudge } from './nudgeToast.ts'
@@ -134,7 +135,8 @@ export function Home({ onFlow }: { onFlow: (flow: Flow) => void }) {
         // 오늘 채점한 표기 — 미끼에서 뺀다 (2026-10-13 사용자 보고 「세션을 끝내고 같은 단어가
         // 다시 나온다」). 「읽기 둘」 카드가 쓰지 못한 쪽을 무기록으로 두므로, 기록이 남은 짝꿍
         // 쪽으로만 걸러도 같은 표기가 다시 선다. 그래서 **표기**로 모은다 (`pickHomeCard` 주석)
-        const seenToday = new Set<string>()
+        // 넘긴 표기도 같이 뺀다 — 넘김은 이벤트를 안 남겨 학습 기록으로는 안 걸린다 (`skippedToday`)
+        const seenToday = loadSkipped(day)
         for (const st of session.state.cards.values()) {
           if (st.lastAt === null || dateKey(st.lastAt) !== day) continue
           const hw = headwordOf.get(st.idiomId)
