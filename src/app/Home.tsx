@@ -129,12 +129,20 @@ export function Home({ onFlow }: { onFlow: (flow: Flow) => void }) {
           ratio,
           kunShare: kunPercent / 100,
         })
-        // 내밀 카드는 **세션에 낼 카드 안에서** 고른다 — 따로 뽑으면 눌렀을 때 안 나올 수 있다
-        const leadId = pickHomeCard(session.cards)
-        const lead = leadId === null
-          ? null
-          : (pool.find((x) => x.idiomId === leadId)?.headword ?? null)
         const day = dateKey(Date.now())
+        const headwordOf = new Map(pool.map((x) => [x.idiomId, x.headword]))
+        // 오늘 채점한 표기 — 미끼에서 뺀다 (2026-10-13 사용자 보고 「세션을 끝내고 같은 단어가
+        // 다시 나온다」). 「읽기 둘」 카드가 쓰지 못한 쪽을 무기록으로 두므로, 기록이 남은 짝꿍
+        // 쪽으로만 걸러도 같은 표기가 다시 선다. 그래서 **표기**로 모은다 (`pickHomeCard` 주석)
+        const seenToday = new Set<string>()
+        for (const st of session.state.cards.values()) {
+          if (st.lastAt === null || dateKey(st.lastAt) !== day) continue
+          const hw = headwordOf.get(st.idiomId)
+          if (hw !== undefined) seenToday.add(hw)
+        }
+        // 내밀 카드는 **세션에 낼 카드 안에서** 고른다 — 따로 뽑으면 눌렀을 때 안 나올 수 있다
+        const leadId = pickHomeCard(session.cards, (id) => headwordOf.get(id), seenToday)
+        const lead = leadId === null ? null : (headwordOf.get(leadId) ?? null)
         // 리포트 달력과 같은 문턱. 연속은 `touched`(3장) 문턱만 보므로 sessionLimit 과 무관하다
         const attendance = buildAttendance(events, { quick: QUICK_SESSION_LIMIT, full: sessionLimit })
         const next: Preview = {

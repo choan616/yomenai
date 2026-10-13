@@ -78,3 +78,90 @@ test('내밀 카드가 없으면 면이 아예 없다', async ({ page }) => {
   // 면이 없으면 주 동작은 큰 버튼(56px)으로 혼자 선다 — 면 안에서는 40px 다
   expect((await start.boundingBox())?.height).toBe(56)
 })
+
+test('세션에서 푼 표기는 돌아온 홈에 다시 안 선다', async ({ page }) => {
+  await page.goto('/')
+  await expect(page.getByRole('button', { name: '세션 시작' })).toBeVisible({ timeout: 20_000 })
+  await resetState(page)
+  await page.reload()
+  await putGradings(page, gradings(0, 30, 30, 30), 'again')
+  await page.reload()
+
+  const word = page.locator('.lead-face .lead-word')
+  await expect(word).toBeVisible({ timeout: 20_000 })
+  const first = (await word.innerText()).trim()
+
+  await page.getByRole('button', { name: '세션 시작' }).click()
+  const card = page.locator('.card').first()
+  await expect(card.locator('.headword')).toHaveText(first, { timeout: 20_000 })
+
+  // 한 장만 풀고 나온다. 입력은 채운 값이 남은 것을 보고 보낸다 (ja-lang 과 같은 이유)
+  const input = page.locator('.kana-input')
+  await expect(input).toBeVisible()
+  await expect(async () => {
+    await input.fill('xxxxx')
+    await expect(input).toHaveValue(/.+/)
+  }).toPass({ timeout: 10_000 })
+  await input.press('Enter')
+  await expect(page.locator('.card.feedback')).toBeVisible({ timeout: 20_000 })
+  // 「다음」이 채점을 기록한다 — 피드백에서 바로 나가면 이벤트가 안 남는다
+  await page.getByRole('button', { name: '다음', exact: true }).click()
+  await expect(page.locator('.card.feedback')).toHaveCount(0)
+  await page.getByRole('button', { name: '세션 나가기' }).click()
+
+  // 돌아온 홈 — 방금 푼 표기는 안 선다. 틀렸어도(10분 뒤 기한) 오늘 본 표기라 빠진다
+  await expect(page.locator('.home h1')).toBeVisible({ timeout: 20_000 })
+  await expect(page.locator('.lead-face .lead-word')).toBeVisible({ timeout: 20_000 })
+  await expect(page.locator('.lead-face .lead-word')).not.toHaveText(first)
+})
+
+/**
+ * 사용자가 보고한 그 길이다 (2026-10-13 「표현이 두 개였던 것 중 하나가 틀렸다. 그것이 다시 나왔다」).
+ *
+ * 「읽기 둘」 카드는 쓰지 못한 쪽을 **무기록**으로 둔다(`homograph-dual.spec.ts`). 그 숙어의 기한은
+ * 세션 전 그대로라, 고치기 전에는 돌아온 홈에서 같은 표기가 다시 맨 앞에 섰다.
+ * 代替 는 だいたい·だいがわり 가 한 표기를 나눠 쓴다.
+ */
+test('「읽기 둘」에서 한쪽만 쓰고 넘겨도 그 표기는 다시 안 선다', async ({ page }) => {
+  await page.goto('/')
+  await expect(page.getByRole('button', { name: '세션 시작' })).toBeVisible({ timeout: 20_000 })
+  await resetState(page)
+  await page.reload()
+  // 기한이 지난 카드를 代替 둘만 둔다 — 그래야 미끼가 반드시 代替 고, 세션 뒤에
+  // 「무기록으로 남은 だいたい」가 미끼로 다시 서는지를 가릴 수 있다
+  await putGradings(
+    page,
+    [
+      { idiomId: '1581470', daysAgo: 60, ok: true },
+      { idiomId: '1824770', daysAgo: 60, ok: true },
+    ],
+    'dual',
+  )
+  await page.reload()
+
+  const word = page.locator('.lead-face .lead-word')
+  await expect(word).toHaveText('代替', { timeout: 20_000 })
+
+  await page.getByRole('button', { name: '세션 시작' }).click()
+  await expect(page.locator('.headword').first()).toHaveText('代替', { timeout: 20_000 })
+  await expect(page.locator('.dual-slot')).toHaveCount(2)
+
+  // 한쪽만 쓰고 나머지는 넘긴다 — 넘긴 쪽은 기록이 안 남는다
+  const input = page.locator('.kana-input')
+  await expect(async () => {
+    await input.fill('daigawari')
+    await expect(input).toHaveValue(/.+/)
+  }).toPass({ timeout: 10_000 })
+  await input.press('Enter')
+  await page.getByRole('button', { name: 'SKIP', exact: true }).click()
+  await expect(page.locator('.card.feedback')).toBeVisible({ timeout: 20_000 })
+  await page.getByRole('button', { name: '다음', exact: true }).click()
+  await expect(page.locator('.card.feedback')).toHaveCount(0)
+  await page.getByRole('button', { name: '세션 나가기' }).click()
+
+  // 돌아온 홈 — 기록이 없는 だいたい 는 아직 기한이 지난 채 남아 있다. 오늘 본 표기라 안 내밀고,
+  // 다른 기한 카드가 없으니 면이 통째로 사라진다 (고치기 전에는 여기서 代替 가 다시 섰다)
+  await expect(page.locator('.home h1')).toBeVisible({ timeout: 20_000 })
+  await expect(page.locator('.week-strip:not(.slot)')).toBeVisible({ timeout: 20_000 })
+  await expect(page.locator('.lead-face')).toHaveCount(0)
+})

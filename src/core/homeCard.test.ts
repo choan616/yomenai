@@ -9,24 +9,39 @@ function card(idiomId: string, cardType: CardType, due: boolean) {
 }
 
 describe('pickHomeCard', () => {
+  /** 숙어 id → 표기. c 는 a 와 같은 표기다 — 「읽기 둘」 짝꿍 */
+  const hw: Record<string, string> = { a: '幻滅', b: '憂鬱', c: '幻滅' }
+  const pick = (cards: ReturnType<typeof card>[], seen: string[] = []) =>
+    pickHomeCard(cards, (id) => hw[id], new Set(seen))
+
   it('전에 본 읽기 카드를 고른다', () => {
-    const cards = [card('a', 'reading', true), card('b', 'reading', true)]
-    expect(pickHomeCard(cards)).toBe('a')
+    expect(pick([card('a', 'reading', true), card('b', 'reading', true)])).toBe('a')
   })
 
   it('뜻 카드는 고르지 않는다 — 묻는 게 다르다', () => {
-    const cards = [card('a', 'meaning', true), card('b', 'reading', true)]
-    expect(pickHomeCard(cards)).toBe('b')
+    expect(pick([card('a', 'meaning', true), card('b', 'reading', true)])).toBe('b')
   })
 
   it('처음 보는 표현은 고르지 않는다 — 「모르겠다」로 끝난다', () => {
-    const cards = [card('a', 'reading', false), card('b', 'reading', true)]
-    expect(pickHomeCard(cards)).toBe('b')
+    expect(pick([card('a', 'reading', false), card('b', 'reading', true)])).toBe('b')
+  })
+
+  it('오늘 채점한 표기는 안 내민다', () => {
+    expect(pick([card('a', 'reading', true), card('b', 'reading', true)], ['幻滅'])).toBe('b')
+  })
+
+  /**
+   * 「읽기 둘」에서 쓰지 못한 쪽은 무기록이라 기한이 그대로다. 기록이 남은 건 짝꿍(a)뿐인데
+   * 표기가 같으므로, 숙어 id 로 걸렀다면 c 가 그대로 올라와 같은 글자가 다시 섰을 것이다
+   */
+  it('같은 표기의 짝꿍만 채점했어도 그 표기를 안 내민다', () => {
+    expect(pick([card('c', 'reading', true), card('b', 'reading', true)], ['幻滅'])).toBe('b')
   })
 
   it('고를 카드가 없으면 null — 그날은 「세션 시작」 그대로', () => {
-    expect(pickHomeCard([card('a', 'reading', false), card('b', 'meaning', true)])).toBeNull()
-    expect(pickHomeCard([])).toBeNull()
+    expect(pick([card('a', 'reading', false), card('b', 'meaning', true)])).toBeNull()
+    expect(pick([card('a', 'reading', true)], ['幻滅'])).toBeNull()
+    expect(pick([])).toBeNull()
   })
 })
 

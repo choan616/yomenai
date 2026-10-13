@@ -9,15 +9,32 @@ interface Card {
 }
 
 /**
- * 홈에 내밀 카드를 고른다 (2026-10-13). 조건 둘 —
+ * 홈에 내밀 카드를 고른다 (2026-10-13). 조건 셋 —
  * **읽기 카드**여야 하고(뜻 카드는 묻는 게 달라 「읽을 수 있어요?」와 어긋난다),
- * **전에 한 번이라도 본 카드**여야 한다(`due`. 처음 보는 표현을 내밀면 「모르겠다」로 끝나
- * 유도가 거꾸로 돈다). 담아 둔 것·신규는 `due` 가 false 라 여기서 빠진다.
+ * **전에 한 번이라도 본 카드**여야 하고(`due`. 처음 보는 표현을 내밀면 「모르겠다」로 끝나
+ * 유도가 거꾸로 돈다. 담아 둔 것·신규는 `due` 가 false 라 여기서 빠진다),
+ * **오늘 채점한 표기가 아니어야** 한다.
+ *
+ * 마지막 조건은 사용자 보고로 들어왔다 (2026-10-13 「세션을 끝내고 같은 단어가 다시 나온다」).
+ * 「읽기 둘」 카드는 쓰지 못한 쪽을 **무기록**으로 둔다(2026-09-14 — 아직 안 배운 카드로 남긴다).
+ * 그 숙어의 기한은 세션 전 그대로라, 돌아온 홈에서 방금 본 표기가 다시 맨 앞에 선다.
+ * 틀려서 10분 뒤 다시 기한이 되는 카드도 같은 자리에 선다.
+ * **표기 기준**이라야 둘 다 걸린다 — 기록이 남은 건 같은 표기의 짝꿍 숙어 쪽이다.
+ *
+ * 넘긴(SKIP) 카드는 기록이 없어 여기 안 걸린다. 그건 따로 정할 일이다.
  *
  * 없으면 null — 그날 홈은 「세션 시작」 그대로다.
  */
-export function pickHomeCard(cards: readonly Card[]): string | null {
-  return cards.find((c) => c.due && c.cardType === 'reading')?.idiomId ?? null
+export function pickHomeCard(
+  cards: readonly Card[],
+  headwordOf: (idiomId: string) => string | undefined,
+  /** 오늘 채점한 표기 (카드 종류를 안 가린다 — 그 글자를 오늘 봤다는 뜻이다) */
+  seenToday: ReadonlySet<string>,
+): string | null {
+  const found = cards.find(
+    (c) => c.due && c.cardType === 'reading' && !seenToday.has(headwordOf(c.idiomId) ?? ''),
+  )
+  return found?.idiomId ?? null
 }
 
 /**
