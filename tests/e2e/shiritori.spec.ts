@@ -164,6 +164,8 @@ test('판이 끝나면 결과 화면이 뜨고, 나온 말을 카드로 보며 �
   await page.getByRole('button', { name: /나온 말 \d+개 보기/ }).click()
   await expect(page.locator('.wl-deck .browse-slide')).toHaveCount(n, { timeout: 60_000 })
   await expect(page.locator('.browse-slide').first().locator('.tag').first()).toHaveText('앱이 낸 말')
+  // 묶음 알약은 단어장 카드 보기에서만 눌린다 — 말 카드의 태그는 그냥 글자다 (2026-10-13)
+  await expect(page.locator('.wl-deck .tag-pick-btn')).toHaveCount(0)
   await expect(page.locator('.browse-slide').first().locator('.meaning')).toBeVisible()
 
   // 「지금 담는 묶음」이 다른 묶음이어도 여기서 담으면 끝말잇기 묶음으로 간다 (2026-10-07)

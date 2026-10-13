@@ -4,7 +4,7 @@
 // 넘김은 **CSS scroll-snap 캐러셀**이다 (사용자 요청). 손가락을 따라 오는 움직임·관성·
 // 스냅을 브라우저가 하고, 이 파일은 스크롤 위치에서 지금 장을 읽어 머리말에 반영하는 것과
 // 버튼이 트랙을 스크롤하게 하는 것만 한다.
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { SoundIcon } from './icons.tsx'
 import { frequentIdioms, pickBrowse, pickBrowseMore } from '../core/report.ts'
 import { replay } from '../core/replay.ts'
@@ -300,6 +300,7 @@ export function BrowseSlide({
   item,
   filterLabel,
   tag,
+  tagSlot,
   note,
   memo,
   star,
@@ -316,6 +317,8 @@ export function BrowseSlide({
   filterLabel?: string
   /** 단어장 카드가 머리 태그를 바꾼다 (2026-10-01). 없으면 「다시보기」 */
   tag?: string
+  /** 머리 태그 자리를 통째로 대신한다 — 단어장 카드가 누르면 묶음이 열리는 알약을 꽂는다 (2026-10-13) */
+  tagSlot?: ReactNode
   /** 같은 이유로 「N회 틀림」 자리를 바꾼다. 없으면 오답 횟수 */
   note?: string
   /** 단어장 카드의 메모. 뜻 아래에 읽기만 보인다 */
@@ -343,7 +346,9 @@ export function BrowseSlide({
     <div className="browse-slide">
       <div className="card">
         <div className="card-head">
-          <span className="tag">{tag ?? `다시보기${filterLabel ? ` · ${filterLabel}` : ''}`}</span>
+          {tagSlot ?? (
+            <span className="tag">{tag ?? `다시보기${filterLabel ? ` · ${filterLabel}` : ''}`}</span>
+          )}
           <span className="tag muted">{note ?? `${item.wrong}회 틀림`}</span>
           {/* 이 숙어를 왜 틀렸나 — 같은 줄에 규칙 이름으로 (사용자 요청 2026-09-17).
               누르면 그 절이 카드 안에서 펼쳐진다. 규칙 화면으로 나가면 넘기던 자리를 잃는다 */}

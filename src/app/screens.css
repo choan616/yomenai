@@ -2592,13 +2592,16 @@ p.rule-record {
   .screen.wl-cards-mode {
     overflow: visible;
   }
+  /* 「지금 담는 묶음」 줄(2026-10-13)이 덱 위에 서므로 높이는 본문이 묶고 덱이 남는 만큼을 쓴다.
+     줄이 두 줄로 늘거나 새 묶음 입력이 열려도 문서가 넘치지 않는다 */
   .wl-cards-mode .screen-body {
     flex: 0 0 auto;
+    height: min(800px, calc(100dvh - 60px));
   }
   /* 단어장 안에 끼워 쓸 때만 높이를 묶는다 — 전체화면 덱(끝말잇기)은 화면을 다 쓴다 (2026-10-06) */
   .wl-cards-mode .wl-deck {
-    flex: 0 0 auto;
-    height: min(680px, calc(100dvh - 60px));
+    flex: 1 1 auto;
+    max-height: 680px;
   }
 }
 /* 카드 본문은 가운데 정렬이라 메모도 맞춘다 */
@@ -2610,6 +2613,125 @@ p.rule-record {
   font-size: calc(0.78rem * var(--ui-scale));
   line-height: 1.6;
   color: var(--text-faint);
+}
+/* 카드 보기에서도 「지금 담는 묶음」 줄이 선다 (2026-10-13). 덱은 flex:1 이라 줄이 차지한 만큼만 줄어든다.
+   묶음이 많아도 줄이 덱을 먹지 않게 두 줄까지만 보이고 그 위는 줄 안에서 스크롤한다 */
+.wl-current-bar {
+  flex: 0 0 auto;
+  padding: 10px 16px 8px;
+}
+.wl-current-bar .wl-current {
+  margin: 0;
+}
+.wl-current-bar .wl-current > .dim {
+  margin-bottom: 6px;
+}
+.wl-current-bar .wl-chips {
+  max-height: 76px;
+  overflow-y: auto;
+}
+/* 카드 머리의 묶음 알약 — 눌러서 이 카드를 옮기고 이름을 바꾼다 (2026-10-13).
+   목록은 알약 바로 아래에 얹힌다. 카드(.card)가 기준이고 모달이 아니다 */
+.tag-pick {
+  position: relative;
+  display: inline-flex;
+  flex: 0 1 auto;
+  min-width: 0;
+}
+.tag-pick-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text);
+}
+/* 누를 수 있다는 표시 — 글자가 아니라 모양이라 폰트에 안 흔들린다 */
+.tag-pick-btn::after {
+  content: '';
+  flex: none;
+  border: 4px solid transparent;
+  border-top-color: currentColor;
+  border-bottom-width: 0;
+}
+.tag-pick-btn[aria-expanded='true'] {
+  color: var(--bg);
+  background: var(--text-dim);
+}
+/* 알약 자리에서 바로 입력 — 높이는 알약 줄(.card-head 28px)과 같게 두어 카드가 안 들썩인다.
+   16px 아래면 iOS 가 포커스에서 확대한다 */
+.tag-rename {
+  box-sizing: border-box;
+  width: min(14em, 100%);
+  height: 28px;
+  padding: 0 12px;
+  border: 1px solid var(--text-dim);
+  background: var(--surface);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 16px;
+}
+.tag-rename:focus {
+  outline: none;
+  border-color: var(--text);
+}
+.tag-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 3;
+  min-width: 9em;
+  max-width: min(18em, 80vw);
+  max-height: min(60dvh, 320px);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  padding: 4px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+  box-shadow: 0 6px 20px rgb(0 0 0 / 0.18);
+}
+.tag-menu button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--text);
+  font-family: inherit;
+  font-size: calc(15px * var(--ui-scale));
+  text-align: left;
+}
+.tag-menu button:focus-visible,
+.tag-menu button:hover {
+  background: var(--surface-2);
+}
+/* 지금 묶음은 색이 아니라 표시와 굵기로 말한다 (PLAN §7) */
+.tag-menu button[aria-checked='true'] {
+  font-weight: 600;
+}
+.tag-menu button[aria-checked='true']::before {
+  content: '✓';
+  flex: none;
+}
+.tag-menu button[aria-checked='false']::before,
+.tag-menu .tag-menu-rename::before {
+  content: '';
+  flex: none;
+  width: 1em;
+}
+/* 옮기기 목록과 이름 바꾸기는 다른 일이라 선으로 가른다 */
+.tag-menu .tag-menu-rename {
+  margin-top: 4px;
+  border-top: 1px solid var(--border);
+  border-radius: 0 0 10px 10px;
+  color: var(--text-dim);
 }
 .wl-move select {
   padding: 6px 10px;

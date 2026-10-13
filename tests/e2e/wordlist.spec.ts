@@ -237,3 +237,206 @@ test('최근에 담은 것이 위다 — 오래된 것의 메모를 고쳐도 �
   await expect(page.locator('.wl-deck .browse-slide').first().locator('.meaning')).toContainText('애호')
   await expect(page.locator('.wl-deck .browse-slide').nth(1).locator('.meaning')).toContainText('분명함')
 })
+
+// ── 카드 보기의 묶음 (2026-10-13) ──
+// 「지금 담는 묶음」 줄이 카드 보기에도 서고, 카드 머리의 묶음 알약을 눌러 그 카드를 옮기거나 알약 자리에서
+// 묶음 이름을 바꾼다. 끝말잇기 말 카드(`WordCards` 를 같이 쓴다)는 알약이 그냥 글자여야 한다.
+
+/** 카드 보기로 열고 새 묶음 `소설 A` 를 만든다 — 만드는 것도 카드 보기의 줄에서 한다 */
+async function openCardsWithList(page: Page): Promise<void> {
+  await open(page)
+  await page.getByRole('button', { name: '카드', exact: true }).click()
+  await expect(page.locator('.wl-deck .browse-slide')).toHaveCount(2, { timeout: 60_000 })
+  await page.getByRole('button', { name: '+ 새 묶음' }).click()
+  await page.getByLabel('새 묶음 이름').fill('소설 A')
+  await page.getByRole('button', { name: '만들기' }).click()
+  await expect(page.locator('.chip.on')).toHaveText('소설 A')
+}
+
+test('카드 보기에도 「지금 담는 묶음」 줄이 있고, 덱이 줄에 잘리지 않는다', async ({ page }) => {
+  test.setTimeout(120_000)
+  await open(page)
+  await page.getByRole('button', { name: '카드', exact: true }).click()
+  await expect(page.locator('.wl-deck .browse-slide')).toHaveCount(2, { timeout: 60_000 })
+
+  const bar = page.locator('.wl-current-bar')
+  await expect(bar).toContainText('지금 담는 묶음')
+  await expect(bar.locator('.chip.on')).toHaveText('기본')
+  // 줄과 덱이 겹치지 않고, 덱의 아래 끝(넘김 버튼)이 화면 안에 있다
+  const geo = await page.evaluate(() => {
+    const b = document.querySelector('.wl-current-bar')!.getBoundingClientRect()
+    const d = document.querySelector('.wl-deck')!.getBoundingClientRect()
+    const n = document.querySelector('.wl-deck .browse-nav')!.getBoundingClientRect()
+    return { barBottom: b.bottom, deckTop: d.top, navBottom: n.bottom, vh: window.innerHeight }
+  })
+  expect(geo.deckTop).toBeGreaterThanOrEqual(geo.barBottom - 1)
+  expect(geo.navBottom).toBeLessThanOrEqual(geo.vh + 1)
+
+  // 새 묶음을 만들면 칩이 늘고 「지금 담는 묶음」이 바뀐다
+  await page.getByRole('button', { name: '+ 새 묶음' }).click()
+  await page.getByLabel('새 묶음 이름').fill('소설 A')
+  await page.getByRole('button', { name: '만들기' }).click()
+  await expect(bar.locator('.chip.on')).toHaveText('소설 A')
+  await expect(page.locator('.wl-deck .browse-slide')).toHaveCount(2)
+})
+
+test('카드의 묶음 알약을 눌러 그 카드만 다른 묶음으로 옮긴다', async ({ page }) => {
+  test.setTimeout(120_000)
+  await openCardsWithList(page)
+
+  // 첫 장은 愛好(하루 전에 담아 위다). 알약은 묶음 이름이다
+  const first = page.locator('.wl-deck .browse-slide').first()
+  const pill = first.getByRole('button', { name: /묶음 옮기기/ })
+  await expect(pill).toHaveText('기본')
+  await expect(first.locator('.meaning')).toContainText('애호')
+
+  await pill.click()
+  const menu = first.getByRole('menu')
+  await expect(menu.getByRole('menuitemradio', { name: '기본' })).toHaveAttribute('aria-checked', 'true')
+  await expect(menu.getByRole('menuitemradio', { name: '소설 A' })).toHaveAttribute('aria-checked', 'false')
+  // 새 묶음 만들기는 여기 없다(위 줄이 한다). 기본 묶음은 이름 바꾸기도 없다(아래 테스트)
+  await expect(menu.getByText('새 묶음')).toHaveCount(0)
+
+  await menu.getByRole('menuitemradio', { name: '소설 A' }).click()
+  await expect(menu).toHaveCount(0)
+  await expect(pill).toHaveText('소설 A')
+  // 다른 카드는 그대로다
+  await expect(page.locator('.wl-deck .browse-slide').nth(1).locator('.tag-pick-btn')).toHaveText('기본')
+
+  // 리스트로 돌아가도 그 말이 소설 A 에 있다
+  await page.getByRole('button', { name: '리스트', exact: true }).click()
+  const groupA = page.locator('.wl-group').filter({ has: page.getByText('소설 A ·') })
+  await expect(groupA.locator('.review-row')).toHaveCount(1)
+  await expect(groupA.locator('.review-row')).toContainText('愛好')
+  await expect(
+    page.locator('.wl-group').filter({ has: page.getByText('기본 ·') }).locator('.review-row'),
+  ).toContainText('明白')
+
+  // 다시 들어와도 남아 있다 — 새 star 이벤트로 쌓였다는 뜻이다
+  await page.reload()
+  await page.locator('.tabbar').getByRole('button', { name: '단어장' }).click()
+  await expect(
+    page.locator('.wl-group').filter({ has: page.getByText('소설 A ·') }).locator('.review-row'),
+  ).toContainText('愛好', { timeout: 60_000 })
+})
+
+test('알약 목록은 바깥을 누르거나 Escape 로 닫힌다', async ({ page }) => {
+  test.setTimeout(120_000)
+  await openCardsWithList(page)
+  const first = page.locator('.wl-deck .browse-slide').first()
+  const pill = first.getByRole('button', { name: /묶음 옮기기/ })
+
+  await pill.click()
+  await expect(first.getByRole('menu')).toBeVisible()
+  await page.keyboard.press('Escape')
+  await expect(first.getByRole('menu')).toHaveCount(0)
+  await expect(pill).toBeFocused()
+
+  await pill.click()
+  await expect(first.getByRole('menu')).toBeVisible()
+  await page.locator('.wl-deck .study-bar').click()
+  await expect(first.getByRole('menu')).toHaveCount(0)
+  // 닫기만 했다 — 아무것도 안 옮겼다
+  await expect(pill).toHaveText('기본')
+
+  // 방향키로 항목을 오가고 Enter 로 고른다
+  await pill.click()
+  await page.keyboard.press('ArrowDown')
+  await expect(first.getByRole('menuitemradio', { name: '소설 A' })).toBeFocused()
+  await page.keyboard.press('Enter')
+  await expect(pill).toHaveText('소설 A')
+})
+
+test('이름 바꾸기는 알약 자리에서 입력이 되고, 그 묶음 전체에 반영된다', async ({ page }) => {
+  test.setTimeout(120_000)
+  await openCardsWithList(page)
+
+  // 두 장 모두 소설 A 로 옮겨 둔다
+  for (const i of [0, 1]) {
+    const slide = page.locator('.wl-deck .browse-slide').nth(i)
+    if (i === 1) {
+      await page.locator('.wl-deck .browse-nav').getByRole('button', { name: /^다음/ }).click()
+      await expect(page.locator('.wl-deck .count')).toHaveText('2 / 2')
+    }
+    await slide.getByRole('button', { name: /묶음 옮기기/ }).click()
+    await slide.getByRole('menuitemradio', { name: '소설 A' }).click()
+    await expect(slide.locator('.tag-pick-btn')).toHaveText('소설 A')
+  }
+  await page.locator('.wl-deck .browse-nav').getByRole('button', { name: /이전/ }).click()
+  await expect(page.locator('.wl-deck .count')).toHaveText('1 / 2')
+
+  const first = page.locator('.wl-deck .browse-slide').first()
+  const pill = first.getByRole('button', { name: /묶음 옮기기/ })
+  // 이전 장으로 부드럽게 넘어오는 중이면 자리가 움직인다 — 멈춘 뒤에 잰다
+  await expect
+    .poll(() => page.evaluate(() => document.querySelector('.wl-deck .browse-track')!.scrollLeft))
+    .toBe(0)
+  const before = await pill.boundingBox()
+  await pill.click()
+  // 목록의 맨 아래가 이름 바꾸기다
+  await expect(first.getByRole('menu').getByRole('menuitem').last()).toHaveText('이름 바꾸기')
+  await first.getByRole('menuitem', { name: '이름 바꾸기' }).click()
+
+  // 알약 자리 그대로 입력이 된다 — 머리 줄 안, 알약의 왼쪽 위 같은 곳이다. 알약 버튼은 사라졌다
+  const input = first.locator('.card-head').getByLabel('소설 A 묶음 이름')
+  await expect(input).toBeFocused()
+  await expect(input).toHaveValue('소설 A')
+  await expect(pill).toHaveCount(0)
+  const at = await input.boundingBox()
+  expect(Math.abs(at!.x - before!.x)).toBeLessThanOrEqual(2)
+  expect(Math.abs(at!.y - before!.y)).toBeLessThanOrEqual(4)
+
+  // Escape 는 취소다
+  await input.fill('버릴 이름')
+  await page.keyboard.press('Escape')
+  await expect(first.getByRole('button', { name: /묶음 옮기기/ })).toHaveText('소설 A')
+
+  // 다시 열어 고치고 Enter
+  await first.getByRole('button', { name: /묶음 옮기기/ }).click()
+  await first.getByRole('menuitem', { name: '이름 바꾸기' }).click()
+  await first.getByLabel('소설 A 묶음 이름').fill('소설 B')
+  await page.keyboard.press('Enter')
+
+  // 두 장 모두 따라 바뀌었고, 「지금 담는 묶음」이던 것도 따라갔다
+  await expect(first.locator('.tag-pick-btn')).toHaveText('소설 B')
+  await expect(page.locator('.wl-deck .browse-slide').nth(1).locator('.tag-pick-btn')).toHaveText('소설 B')
+  await expect(page.locator('.wl-current-bar .chip.on')).toHaveText('소설 B')
+
+  // 리스트에서도 한 묶음이고, 다시 들어와도 남아 있다
+  await page.reload()
+  await page.locator('.tabbar').getByRole('button', { name: '단어장' }).click()
+  await page.getByRole('button', { name: '리스트', exact: true }).click()
+  await expect(page.locator('.wl-group .section-title')).toHaveCount(1, { timeout: 60_000 })
+  await expect(page.locator('.wl-group .section-title')).toContainText('소설 B')
+  await expect(page.locator('.wl-group .review-row')).toHaveCount(2)
+})
+
+test('기본 묶음에는 이름 바꾸기가 없다', async ({ page }) => {
+  test.setTimeout(120_000)
+  await open(page)
+  await page.getByRole('button', { name: '카드', exact: true }).click()
+  const first = page.locator('.wl-deck .browse-slide').first()
+  await first.getByRole('button', { name: /묶음 옮기기/ }).click({ timeout: 60_000 })
+  await expect(first.getByRole('menuitemradio')).toHaveCount(1)
+  await expect(first.getByRole('menuitem', { name: '이름 바꾸기' })).toHaveCount(0)
+})
+
+test.describe('모바일 화면에서', () => {
+  test.use({ hasTouch: true, isMobile: true, viewport: { width: 375, height: 667 } })
+
+  test('카드 보기의 줄이 덱을 잘라 넘김 버튼이 탭바 밑으로 내려가지 않는다', async ({ page }) => {
+    test.setTimeout(120_000)
+    await open(page)
+    await page.getByRole('button', { name: '카드', exact: true }).click()
+    await expect(page.locator('.wl-deck .browse-slide')).toHaveCount(2, { timeout: 60_000 })
+    const geo = await page.evaluate(() => {
+      const n = document.querySelector('.wl-deck .browse-nav')!.getBoundingClientRect()
+      const t = document.querySelector('.tabbar')!.getBoundingClientRect()
+      const bar = document.querySelector('.wl-current-bar')!.getBoundingClientRect()
+      return { navBottom: n.bottom, tabTop: t.top, barH: bar.height }
+    })
+    expect(geo.navBottom).toBeLessThanOrEqual(geo.tabTop + 1)
+    // 묶음이 둘일 때 줄은 한 줄이다 — 덱에서 가져가는 높이가 작다
+    expect(geo.barH).toBeLessThan(100)
+  })
+})

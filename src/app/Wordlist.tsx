@@ -272,27 +272,41 @@ export function Wordlist() {
         ) : rows === null ? (
           <p className="empty">불러오고 있어요…</p>
         ) : cardMode ? (
-          examples === null ? (
-            <p className="empty">불러오고 있어요…</p>
-          ) : (
-            <WordCards
-              cards={rows.map((r) => ({
-                item: {
-                  id: r.it.idiomId,
-                  headword: r.it.headword,
-                  reading: r.it.reading,
-                  meaning: r.it.koMeaning?.definition?.trim() ?? '',
-                  wrong: r.wrong,
-                  sentences: examples.get(r.it.idiomId) ?? [],
-                  ruby: r.ruby,
-                  rule: null,
-                },
-                tag: r.list,
-                note: stateLabel(r),
-                ...(r.memo ? { memo: r.memo } : {}),
-              }))}
-            />
-          )
+          <>
+            {/* 카드 보기에서도 「지금 담는 묶음」이 보인다 (2026-10-13). 덱 위에 줄을 얹고 덱이 남는 높이를 쓴다 */}
+            <div className="wl-current-bar">
+              <CurrentPicker lists={lists} current={current} onPick={pickList} />
+            </div>
+            {examples === null ? (
+              <p className="empty">불러오고 있어요…</p>
+            ) : (
+              <WordCards
+                tagMenu={{
+                  lists,
+                  onMove: (id, list) => {
+                    const row = rows.find((r) => r.it.idiomId === id)
+                    if (row !== undefined && row.list !== list) write(row, { on: true, list })
+                  },
+                  onRename: retag,
+                }}
+                cards={rows.map((r) => ({
+                  item: {
+                    id: r.it.idiomId,
+                    headword: r.it.headword,
+                    reading: r.it.reading,
+                    meaning: r.it.koMeaning?.definition?.trim() ?? '',
+                    wrong: r.wrong,
+                    sentences: examples.get(r.it.idiomId) ?? [],
+                    ruby: r.ruby,
+                    rule: null,
+                  },
+                  tag: r.list,
+                  note: stateLabel(r),
+                  ...(r.memo ? { memo: r.memo } : {}),
+                }))}
+              />
+            )}
+          </>
         ) : (
           <>
             {/* 담을 때마다 묶음을 고르게 하면 한 번 누를 일이 두 번이 된다.

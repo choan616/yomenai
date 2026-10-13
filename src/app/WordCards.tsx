@@ -5,9 +5,11 @@
 // `browseMask` 를 따르는 다시보기와 달리 여기서는 카드의 정의다.
 //
 // 넘김 상태(지금 장·벗김·예문 자리)는 다시보기와 같은 규칙이다 — 카드를 떠나면 도로 가린다.
-// 관리(메모 고치기·빼기·묶음 옮기기)는 리스트에만 둔다. 카드를 넘기다 잘못 누르면 안 되므로.
+// 관리(메모 고치기·빼기)는 리스트에만 둔다. 카드를 넘기다 잘못 누르면 안 되므로.
+// 묶음 옮기기·이름 바꾸기는 예외다(2026-10-13) — 머리의 묶음 알약을 **눌러야** 열려 넘기다 닿지 않는다.
 import { useRef, useState } from 'react'
 import { BrowseSlide, type BrowseItem } from './Browse.tsx'
+import { TagPicker } from './TagPicker.tsx'
 
 export interface WordCard {
   item: BrowseItem
@@ -21,6 +23,7 @@ export interface WordCard {
 export function WordCards({
   cards,
   star,
+  tagMenu,
   onClose,
 }: {
   cards: readonly WordCard[]
@@ -29,6 +32,15 @@ export function WordCards({
    * 이미 담은 것들이고, 카드에 관리 기능을 두지 않는다는 결정이 그대로다 (2026-10-01)
    */
   star?: { has: (id: string) => boolean; toggle: (id: string) => void }
+  /**
+   * 묶음 알약을 눌러 이 카드를 옮기고 묶음 이름을 바꿀 때만 준다 (2026-10-13). **안 주면 알약은 그냥
+   * 글자다** — 끝말잇기 말 카드가 그렇다
+   */
+  tagMenu?: {
+    lists: readonly string[]
+    onMove: (id: string, list: string) => void
+    onRename: (list: string, next: string) => void
+  }
   /** 전체화면으로 쓸 때의 나가기. 탭 안에 끼워 쓰는 단어장은 제 머리말이 있어 안 준다 */
   onClose?: () => void
 }) {
@@ -79,6 +91,18 @@ export function WordCards({
             key={c.item.id}
             item={c.item}
             tag={c.tag}
+            {...(tagMenu
+              ? {
+                  tagSlot: (
+                    <TagPicker
+                      name={c.tag}
+                      lists={tagMenu.lists}
+                      onMove={(list) => tagMenu.onMove(c.item.id, list)}
+                      onRename={(next) => tagMenu.onRename(c.tag, next)}
+                    />
+                  ),
+                }
+              : {})}
             {...(star ? { star: { on: star.has(c.item.id), onToggle: () => star.toggle(c.item.id) } } : {})}
             note={c.note}
             {...(c.memo ? { memo: c.memo } : {})}
