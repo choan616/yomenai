@@ -13,6 +13,7 @@ export function Study({
   kind = 'normal',
   focusPairIds,
   limit,
+  lead,
   onExit,
 }: {
   kind?: SessionKind
@@ -20,10 +21,12 @@ export function Study({
   focusPairIds?: string[]
   /** 세션 길이를 설정값 대신 이 값으로 ("3장만") */
   limit?: number
+  /** 홈이 내민 표기. 그 읽기 카드가 첫 장이 된다 (2026-10-13) */
+  lead?: string
   onExit: () => void
 }) {
   useViewportLock()
-  const [s, a] = useStudySession({ kind, focusPairIds, limit })
+  const [s, a] = useStudySession({ kind, focusPairIds, limit, lead })
 
   // 카드 전환 실측. transitionSeq 는 advance 때만 오르고, useStudySession 이 그 직전에
   // 'yomenai:advance' 를 마킹한다. 단일 rAF 로 DOM 커밋·레이아웃 뒤 페인트 직전에 measure 한다.

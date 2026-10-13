@@ -463,6 +463,34 @@ button.tag {
   padding: 0 40px;
   font-size: 18px;
 }
+/* 주 동작이 세션 첫 카드의 표기를 내미는 꼴 (2026-10-13). 줄을 더하지 않으려고 문구와 표기를
+   버튼 안에 쌓고, **높이는 「세션 시작」과 같은 56px 로 고정한다** — 자라게 두면 계산이 끝날 때
+   홈의 세로 중앙 정렬이 제목까지 밀어 올린다 (`screen-cache.spec.ts` 가 15px 움직임을 잡았다) */
+.btn-primary.big.lead {
+  padding: 0 32px;
+}
+.lead-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+}
+/* 묻는 말은 작게 — 눈이 표기로 먼저 가야 한다. 재촉이 아니라 권하는 톤이라 한 톤 옅다 */
+.lead-ask {
+  font-size: calc(12.5px * var(--ui-scale));
+  font-weight: 500;
+  line-height: 1.1;
+  opacity: 0.85;
+}
+/* 표기는 일본어 자형으로 (CLAUDE.md — 한국 자형으로 렌더링되면 잘못된 글자 모양을 학습한다).
+   두 줄이 56px 안에 들어가야 하므로 행간을 좁게 잡는다 */
+.lead-word {
+  font-family: var(--font-ja);
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: 0.02em;
+}
 .btn:disabled,
 .btn-primary:disabled {
   opacity: 0.4;

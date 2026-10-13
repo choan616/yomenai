@@ -4,6 +4,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { dataVersion } from '../core/dataVersion.ts'
 import { buildSession, rematchCount } from '../core/session.ts'
+import { pickHomeCard } from '../core/homeCard.ts'
 import { browseCount } from '../core/report.ts'
 import { LOCAL_USER_ID, listEvents } from '../db/events.ts'
 import { db } from '../db/schema.ts'
@@ -34,6 +35,11 @@ interface Preview {
    * 가린다. 옛 「이번 세션 20장 · 새 표현 6」 줄과 그 뒤 숫자(`fresh`)는 그때 같이 걷어냈다
    */
   ready: number
+  /**
+   * 주 동작이 내미는 표기 (2026-10-13). 세션 첫 장이 될 **전에 본 읽기 카드**의 표기다 —
+   * 고를 카드가 없으면 null 이고 버튼은 「세션 시작」으로 돌아간다 (`pickHomeCard`)
+   */
+  lead: string | null
   /** 예전에 틀린 읽기 카드 수 — 재대결 대상 */
   rematch: number
   /** 한 번이라도 틀린 읽기 카드 수 — 다시보기 대상. 재대결보다 넓다 */
@@ -131,11 +137,17 @@ export function Home({
           ratio,
           kunShare: kunPercent / 100,
         })
+        // 내밀 카드는 **세션에 낼 카드 안에서** 고른다 — 따로 뽑으면 눌렀을 때 안 나올 수 있다
+        const leadId = pickHomeCard(session.cards)
+        const lead = leadId === null
+          ? null
+          : (pool.find((x) => x.idiomId === leadId)?.headword ?? null)
         const day = dateKey(Date.now())
         // 리포트 달력과 같은 문턱. 연속은 `touched`(3장) 문턱만 보므로 sessionLimit 과 무관하다
         const attendance = buildAttendance(events, { quick: QUICK_SESSION_LIMIT, full: sessionLimit })
         const next: Preview = {
           ready: session.cards.length,
+          lead,
           rematch: rematchCount(pool, events),
           browse: browseCount(pool, events),
           wordlist: state.wordlist.size,
@@ -195,6 +207,9 @@ export function Home({
   }, [nudge])
 
   const sessionReady = !!preview && preview.ready > 0
+  /** 주 동작이 표기를 내미는 꼴인지 (2026-10-13). 계산 전엔 「세션 시작」이다 — 두 꼴의 높이가
+   * 같아서 바뀌어도 홈이 안 움직인다 (`.btn-primary.big.lead` 주석) */
+  const leadShown = preview?.lead != null
   /** 단어장 칸을 낼지. 계산 전엔 직전에 담은 게 있던 기기에서만 자리를 잡는다 (아래 주석) */
   const wordlistShown = preview === null ? wordlistHint : preview.wordlist > 0
 
@@ -292,13 +307,33 @@ export function Home({
             />
           )}
 
+          {/* 주 동작이 세션 첫 카드의 표기를 내민다 (2026-10-13 사용자 지시). 「세션 시작」이라는
+              추상 라벨은 분량을 상상하게 하는데(그래서 숫자 줄을 걷었다), 표기 한 장은 결정 단위를
+              「이 한 장」으로 줄인다. **읽기는 안 보인다** — 보여주면 그 숙어의 회상 기회를 공짜로
+              쓰고, 홈에서 본 것은 로그에 안 남아 진단이 모르는 표현을 「안다」로 센다.
+
+              **줄도 높이도 안 늘린다.** 홈은 세로 중앙 정렬이라 버튼이 자라면 제목까지 밀린다
+              (`screen-cache.spec.ts`). 문구와 표기를 버튼 안에 쌓고 높이는 「세션 시작」과 같은
+              56px 로 고정한다 — 계산 전후로 꼴이 바뀌어도 홈이 안 움직인다.
+              낭독 이름은 `세션 시작` 으로 고정한다 — 이 버튼이 하는 일은 그것이고,
+              표기는 눈으로 읽는 미끼다 */}
           <button
             type="button"
-            className="btn-primary big"
-            onClick={() => onFlow({ kind: 'study' })}
+            className={`btn-primary big${leadShown ? ' lead' : ''}`}
+            aria-label="세션 시작"
+            onClick={() => onFlow({ kind: 'study', lead: preview?.lead ?? undefined })}
             disabled={!sessionReady}
           >
-            세션 시작
+            {leadShown ? (
+              <span className="lead-stack">
+                <span className="lead-ask">이 표현, 읽을 수 있어요?</span>
+                <span className="lead-word" lang="ja">
+                  {preview?.lead}
+                </span>
+              </span>
+            ) : (
+              '세션 시작'
+            )}
           </button>
 
           {/* 「3장만」은 홈에서 걷어냈다 (2026-10-02 사용자 지시) — 짧은 세션으로 가는 길은 리포트

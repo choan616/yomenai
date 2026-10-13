@@ -57,7 +57,12 @@ export type Sub =
  * 세션은 키보드가 올라오는 화면이라 하단에 탭이 깔리면 안 된다
  */
 export type Flow =
-  | { kind: 'study' | 'quick' | 'rematch' | 'diagnostic' | 'shiritori' }
+  | { kind: 'quick' | 'rematch' | 'diagnostic' | 'shiritori' }
+  /**
+   * `lead` 가 있으면 그 표기의 읽기 카드가 **첫 장**이 된다 — 홈이 주 동작에 내민 표기다
+   * (2026-10-13). 내민 것과 첫 장이 다르면 유도가 거짓이 된다
+   */
+  | { kind: 'study'; lead?: string }
   /**
    * `filter` 가 있으면 그 오답 유형(+탁음이면 갈래)만 다시본다 — 리포트의 분포 그래프
    * "N회 다시보기" 가 쓴다 (2026-09-18). 없으면 기존처럼 자주 틀린 것 전체를 섞어 낸다
@@ -171,7 +176,7 @@ function FlowScreen({
 }) {
   switch (flow.kind) {
     case 'study':
-      return <Study onExit={onExit} />
+      return <Study lead={flow.lead} onExit={onExit} />
     case 'quick':
       // 의욕 없는 날의 진입로. 설정을 안 건드리므로 다음 세션은 원래 길이로 돌아온다 (Phase 11)
       return <Study limit={QUICK_SESSION_LIMIT} onExit={onExit} />

@@ -21,6 +21,7 @@ import { rubyOf, type RubySegment } from '../core/ruby.ts'
 import { foldHomographs, pairOf } from './homograph.ts'
 import { buildFocus, buildRematch } from '../core/session.ts'
 import { surfaceOfPairs } from '../core/surface.ts'
+import { leadWith } from '../core/homeCard.ts'
 import type { LearningEvent, MeaningVerdict, MistakeType } from '../core/types.ts'
 import { appendEvent } from '../db/events.ts'
 import { loadIntroduced, markIntroduced } from './introduced.ts'
@@ -167,12 +168,18 @@ export interface StudySessionOptions {
    * 설정을 안 건드리므로 다음 세션은 다시 원래 길이로 돌아온다.
    */
   limit?: number
+  /**
+   * 홈이 주 동작에 내민 표기 (2026-10-13). 그 표기의 읽기 카드를 **첫 장으로 당긴다** —
+   * 내민 것과 첫 장이 다르면 유도가 거짓이 된다. 이번 세션에 그 카드가 없으면 순서를 그대로 둔다
+   */
+  lead?: string
 }
 
 export function useStudySession({
   kind = 'normal',
   focusPairIds,
   limit: limitOverride,
+  lead,
 }: StudySessionOptions = {}): [StudyState, StudyActions] {
   const [session, setSession] = useState<Session | null>(null)
   /**
@@ -342,7 +349,14 @@ export function useStudySession({
         // 물으므로, 안 접으면 방금 물어본 표기가 세션 뒤에 또 나온다 (2026-09-14).
         // 소개 배치보다 먼저 해야 한다 — 접힌 카드 자리로 소개 간격이 어긋나지 않게
         const byIdLoaded = new Map(loaded.map((x) => [x.idiomId, x.headword]))
-        const folded = foldHomographs(built.cards, (id) => byIdLoaded.get(id))
+        // 홈이 내민 표기를 첫 장으로 — **접기·소개 배치보다 먼저** 당긴다 (2026-10-13).
+        // 뒤에서 당기면 `planIntros` 가 상한으로 자를 때 그 카드가 잘려 나가 미끼가 세션에
+        // 없는 날이 생긴다(e2e 가 실제로 그렇게 깨졌다). 첫 장이 소개에 밀리지도 않는다 —
+        // `spread` 가 첫 장을 문제로 보장한다
+        const led = lead === undefined
+          ? built.cards
+          : leadWith(built.cards, (id) => byIdLoaded.get(id), lead)
+        const folded = foldHomographs(led, (id) => byIdLoaded.get(id))
         const plan = planIntros(
           folded,
           (id) => introduced.has(id),
@@ -362,7 +376,7 @@ export function useStudySession({
     return () => {
       alive = false
     }
-  }, [kind, focusPairs, limitOverride])
+  }, [kind, focusPairs, limitOverride, lead])
 
   const card = session?.cards[idx]
   const idiom = card ? byId.get(card.idiomId) : undefined
