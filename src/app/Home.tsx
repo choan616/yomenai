@@ -201,6 +201,21 @@ export function Home({ onFlow }: { onFlow: (flow: Flow) => void }) {
   /** 면을 낼지. 계산 전엔 직전 계산에 내밀 카드가 있던 기기에서만 자리를 잡는다 (아래 주석) */
   const faceShown = preview === null ? leadHint : preview.lead != null
 
+  /**
+   * 주 동작. 면이 있으면 그 안에 서고(`lead-go` — 작고 모서리도 면보다 덜 둥글다),
+   * 없으면 혼자 큰 버튼으로 선다. 마크업을 한 번만 적어 두 자리가 어긋나지 않게 한다
+   */
+  const startButton = (
+    <button
+      type="button"
+      className={`btn-primary ${faceShown ? 'lead-go' : 'big'}`}
+      onClick={() => onFlow({ kind: 'study', lead: preview?.lead ?? undefined })}
+      disabled={!sessionReady}
+    >
+      세션 시작
+    </button>
+  )
+
   return (
     <main className="home">
       {/* 큰 「読」 — 장식이라 낭독에서 숨기고, 일본어라 lang 을 명시한다. 래퍼가 .home 안에서 잘라 스크롤 범위를 안 늘린다 */}
@@ -299,34 +314,31 @@ export function Home({ onFlow }: { onFlow: (flow: Flow) => void }) {
               버튼 안에 문구와 함께 쌓았는데 「우겨넣은 것 같다」는 지적을 받았다. 단어장 칸을 탭으로
               내려 그 자리를 여기 줬다.
 
-              표기가 위, 묻는 말이 아래다 — 묻는 말을 위에 두면 바로 위 띠 문구와 작은 글자 두 줄로
-              붙어 보인다(사용자 지적). 읽는 순서도 글자를 먼저 보고 스스로 묻는 쪽이 맞다.
+              표기가 위, 묻는 말이 가운데, **주 동작이 면 안에 같이 선다** (2026-10-13 2차 시안).
+              묻는 말을 위에 두면 바로 위 띠 문구와 작은 글자 두 줄로 붙어 보인다(사용자 지적).
+              읽는 순서도 글자를 먼저 보고 스스로 묻는 쪽이 맞다.
               **읽기는 안 보인다** — 보여주면 그 숙어의 회상 기회를 공짜로 쓰고, 홈에서 본 것은
               로그에 안 남아 진단이 모르는 표현을 「안다」로 센다.
 
-              면은 강조색을 바탕에 섞은 `--lead-face` 다. 누르는 면이 아니라 보는 면이라 테두리와
-              그림자를 안 쓴다 — 홈에서 누르는 면은 주 동작 하나다 (2026-10-05).
-              내밀 카드가 없는 날(복습 기한 카드가 없는 날)은 이 영역째로 없다.
+              면은 강조색을 바탕에 섞은 `--lead-face`(14%)다. 테두리와 그림자는 안 쓴다 —
+              면 안의 버튼이 「누르는 곳」을 혼자 말한다.
+              내밀 카드가 없는 날(복습 기한 카드가 없는 날)은 면이 통째로 없고 버튼만 남는다.
 
-              계산 전에는 `leadHint` 가 있는 기기에서만 **자리를 숨겨 잡는다** — 98px 가 뒤늦게
-              생기면 세로 중앙 정렬이 제목까지 밀어 올린다 (걷어낸 단어장 칸이 받던 처방) */}
-          {faceShown && (
+              계산 전에는 `leadHint` 가 있는 기기에서만 **자리를 숨겨 잡는다** — 면이 뒤늦게
+              생기면 세로 중앙 정렬이 제목까지 밀어 올린다 (걷어낸 단어장 칸이 받던 처방).
+              숨기는 건 표기와 묻는 말뿐이다 — 주 동작은 계산 중에도 보이고, 눌리지 않는 것으로
+              아직 준비되지 않았음을 알린다 (2026-10-02 와 같은 처방) */}
+          {faceShown ? (
             <div className={`lead-face${preview?.lead == null ? ' slot' : ''}`}>
               <p className="lead-word" lang="ja">
                 {preview?.lead ?? '読'}
               </p>
               <p className="lead-ask">이 표현, 읽을 수 있어요?</p>
+              {startButton}
             </div>
+          ) : (
+            startButton
           )}
-
-          <button
-            type="button"
-            className="btn-primary big"
-            onClick={() => onFlow({ kind: 'study', lead: preview?.lead ?? undefined })}
-            disabled={!sessionReady}
-          >
-            세션 시작
-          </button>
 
           {/* 「3장만」은 홈에서 걷어냈다 (2026-10-02 사용자 지시) — 짧은 세션으로 가는 길은 리포트
               달력에서 **오늘 칸을 누를 때** 낸다(`Report.tsx` 의 `.cal-nudge`). 의욕 없는 날의

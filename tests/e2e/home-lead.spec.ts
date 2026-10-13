@@ -44,12 +44,17 @@ test('주 동작이 표기를 내밀고, 누르면 그 표기가 첫 장으로 �
   const askBox = (await face.locator('.lead-ask').boundingBox())!
   expect(wordBox.y).toBeLessThan(askBox.y)
   // 읽기는 홈에 안 보인다 — 보여주면 그 숙어의 회상 기회를 공짜로 쓴다
-  await expect(face).toHaveText(`${lead}이 표현, 읽을 수 있어요?`)
-  // 누르는 면이 아니다 — 주 동작은 「세션 시작」 버튼 하나다 (2026-10-05)
-  await expect(face.getByRole('button')).toHaveCount(0)
-
-  const start = page.getByRole('button', { name: '세션 시작' })
+  await expect(face).toHaveText(`${lead}이 표현, 읽을 수 있어요?세션 시작`)
+  // 주 동작은 면 안에 선다 (2026-10-13 2차 시안). 면 안에 버튼은 그것 하나뿐이다
+  const start = face.getByRole('button', { name: '세션 시작' })
+  await expect(face.getByRole('button')).toHaveCount(1)
   await expect(start).toBeEnabled()
+  // 둥근 면 안이라 버튼 모서리가 면보다 덜 둥글다 (사용자 지적)
+  const r = (el: typeof face) => el.evaluate((e) => parseFloat(getComputedStyle(e).borderTopLeftRadius))
+  expect(await r(start)).toBeLessThan(await r(face))
+  // 표기가 상단 로고(700)보다 얇다 — 같은 굵기면 둘이 같은 무게로 선다
+  const weight = (el: typeof face) => el.evaluate((e) => Number(getComputedStyle(e).fontWeight))
+  expect(await weight(word)).toBeLessThan(await weight(page.locator('.home h1')))
 
   await start.click()
   const card = page.locator('.card').first()
@@ -70,4 +75,6 @@ test('내밀 카드가 없으면 면이 아예 없다', async ({ page }) => {
   await expect(start).toBeEnabled({ timeout: 20_000 })
   await expect(start).toHaveText('세션 시작')
   await expect(page.locator('.lead-face')).toHaveCount(0)
+  // 면이 없으면 주 동작은 큰 버튼(56px)으로 혼자 선다 — 면 안에서는 48px 다
+  expect((await start.boundingBox())?.height).toBe(56)
 })
