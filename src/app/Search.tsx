@@ -692,7 +692,7 @@ function Outside({
   }
   if (groups.length === 0) {
     return (
-      <p className="empty">{found ? '학습 사전 밖에는 더 없어요.' : '학습 사전 밖에서도 못 찾았어요.'}</p>
+      <p className="empty">{found ? '더 넓은 사전에도 이 읽기의 표현은 위의 것뿐이에요.' : '학습 사전 밖에서도 못 찾았어요.'}</p>
     )
   }
 
