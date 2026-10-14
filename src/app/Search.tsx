@@ -691,9 +691,9 @@ function Outside({
     )
   }
   if (groups.length === 0) {
-    return (
-      <p className="empty">{found ? '더 넓은 사전에도 이 읽기의 표현은 위의 것뿐이에요.' : '학습 사전 밖에서도 못 찾았어요.'}</p>
-    )
+    // 학습 사전에서 이미 걸렸으면 말하지 않는다 — 버튼이 사라진 것이 「끝났다」는 신호고
+    // 위에 결과가 보인다. 아무것도 없을 때만 「못 찾았다」를 말한다
+    return found ? null : <p className="empty">학습 사전 밖에서도 못 찾았어요.</p>
   }
 
   return (

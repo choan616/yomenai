@@ -203,7 +203,7 @@ test('학습 사전에서 걸려도 사전 밖에서 더 찾을 수 있다 — �
 // 같은 표기는 한 줄이다 + 학습 사전에서 걸렸으면 사전 밖 0건 문구가 「못 찾았다」로 읽히지 않는다
 // (2026-10-09 사용자 확인 「なんにん」 → 何人 ×3, 「사전 밖에서도 못 찾았어요」). JMdict 가 읽기마다
 // 항목을 따로 두어 한 묶음에 같은 표기가 여러 줄 나왔다.
-test('なんにん 은 何人 한 줄이고, 넓은 사전에도 더 없으면 「위의 것뿐」이라고 한다', async ({ page }) => {
+test('なんにん 은 何人 한 줄이고, 사전 밖에서 더 없으면 아무 말 없이 버튼만 사라진다', async ({ page }) => {
   test.setTimeout(120_000)
   await page.goto('/')
   const tab = page.getByRole('button', { name: '찾기', exact: true })
@@ -216,8 +216,11 @@ test('なんにん 은 何人 한 줄이고, 넓은 사전에도 더 없으면 �
   await expect(group.locator('.r-main')).toHaveText('何人')
 
   await page.getByRole('button', { name: '학습 사전 밖에서 찾기' }).click()
-  await expect(page.getByText('더 넓은 사전에도 이 읽기의 표현은 위의 것뿐이에요.')).toBeVisible({ timeout: 30_000 })
+  // 끝났다는 신호는 버튼이 사라지는 것이다 — 학습 사전에서 걸렸으니 따로 말하지 않는다
+  await expect(page.getByRole('button', { name: '학습 사전 밖에서 찾기' })).toHaveCount(0, { timeout: 30_000 })
+  await expect(page.getByText('학습 사전 밖에서 찾고 있어요…')).toHaveCount(0)
   await expect(page.getByText('학습 사전 밖에서도 못 찾았어요.')).toHaveCount(0)
+  await expect(group.locator('.rows > li')).toHaveCount(1)
 })
 
 test('✕ 버튼이 입력을 한 번에 지운다', async ({ page }) => {
