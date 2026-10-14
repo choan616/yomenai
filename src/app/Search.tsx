@@ -86,14 +86,11 @@ let cache: { version: number; loaded: Loaded; starred: Set<string> } | null = nu
 
 export function Search({
   onCamera,
-  onWordlist,
   found,
   onUsedFound,
 }: {
   /** 카메라로 찾기로 한 겹 들어간다 (2026-09-23) */
   onCamera: () => void
-  /** 단어장으로 한 겹 들어간다 (2026-09-25) */
-  onWordlist: () => void
   /** 카메라가 찾아낸 것. 없으면 `null` */
   found: CameraFound | null
   /** 받아서 썼다고 알린다 — 다시 들어올 때 옛 결과가 남아 있으면 안 된다 */
@@ -391,12 +388,6 @@ export function Search({
                 onClose={onUsedFound}
               />
             )}
-            <Basket loaded={view} starred={starred} onToggle={toggleStar} />
-            {/* 담기 대기열(Basket)과 다른 물건이다 — 저쪽은 세션에 나오면 사라지고
-                단어장은 남는다. 담은 게 없어도 진입로는 늘 보인다 (2026-09-25) */}
-            <button type="button" className="btn wl-open" onClick={onWordlist}>
-              단어장{starred.size > 0 && ` · ${starred.size.toLocaleString('ko')}`}
-            </button>
             <Scope poolSize={view.poolSize} widening={widening} />
           </>
         ) : groups.length === 0 ? (
@@ -460,36 +451,6 @@ export function Search({
         )}
       </div>
     </section>
-  )
-}
-
-/**
- * 담아 둔 표현 (2026-09-21). 안 쳤을 때만 보인다 — 찾는 중에는 결과가 주인공이다.
- * **이미 카드가 생긴 것은 빼고 보여준다.** 별이 하는 일은 신규 도입 우선권까지라
- * 한 번 나온 뒤로는 목록에 남아 있어도 아무 일도 안 한다 (`select.ts` 와 같은 기준).
- */
-function Basket({
-  loaded,
-  starred,
-  onToggle,
-}: {
-  loaded: Loaded
-  starred: Set<string>
-  onToggle: (idiomId: string) => void
-}) {
-  const waiting = [...starred].filter((id) => !loaded.started.has(id) && loaded.byId.has(id))
-  if (waiting.length === 0) return null
-
-  return (
-    <div className="basket">
-      <p className="section-title">
-        담아 둔 표현<span className="dim"> · {waiting.length}</span>
-      </p>
-      <IdiomRows ids={waiting} loaded={loaded} starred={starred} onToggle={onToggle} />
-      {/* 밴드 4(출제 범위 밖)도 **담으면 나온다** (2026-09-23). 자동 출제는 안 하고
-          담은 것만 들인다 — 「내가 만난 말을 담는다」는 담기의 뜻 그대로다 */}
-      <p className="basket-note">다음 세션에 소개로 먼저 나와요.</p>
-    </div>
   )
 }
 

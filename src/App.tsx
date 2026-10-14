@@ -137,7 +137,6 @@ function Shell() {
             <TabRoot
               tab={tab === 'settings' ? underTab : tab}
               onSub={setSub}
-              onTab={goTab}
               onFlow={setFlow}
               found={found}
               onUsedFound={() => setFound(null)}
@@ -205,14 +204,12 @@ function FlowScreen({
 function TabRoot({
   tab,
   onSub,
-  onTab,
   onFlow,
   found,
   onUsedFound,
 }: {
   tab: Tab
   onSub: (s: Sub) => void
-  onTab: (t: Tab) => void
   onFlow: (f: Flow) => void
   found: CameraFound | null
   onUsedFound: () => void
@@ -240,7 +237,6 @@ function TabRoot({
       return (
         <Search
           onCamera={() => onSub({ kind: 'camera' })}
-          onWordlist={() => onTab('wordlist')}
           found={found}
           onUsedFound={onUsedFound}
         />

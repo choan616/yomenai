@@ -31,6 +31,11 @@ async function openSearch(page: Page): Promise<void> {
   await tab.click()
 }
 
+async function openWordlist(page: Page): Promise<void> {
+  await page.locator('.tabbar').getByRole('button', { name: '단어장' }).click()
+  await expect(page.getByRole('heading', { name: '단어장' })).toBeVisible()
+}
+
 test('담은 표현이 다음 세션에 나온다 — 밴드 0 이라 담지 않으면 안 나올 것', async ({ page }) => {
   await fresh(page)
   await openSearch(page)
@@ -46,14 +51,14 @@ test('담은 표현이 다음 세션에 나온다 — 밴드 0 이라 담지 않
   await star.click()
   await expect(row.getByRole('button', { name: `${WORD} 빼기` })).toHaveText('−')
 
-  // 검색어를 지우면 담아 둔 목록이 보인다
-  await input.fill('')
-  await expect(page.locator('.basket')).toContainText(WORD)
+  // 담은 말은 단어장 탭에 선다
+  await openWordlist(page)
+  await expect(page.locator('.r-main').filter({ hasText: WORD })).toBeVisible()
 
   // 새로고침해도 남는다 — 이벤트가 IndexedDB 에 들어갔다는 뜻이다
   await page.reload()
-  await openSearch(page)
-  await expect(page.locator('.basket')).toContainText(WORD)
+  await openWordlist(page)
+  await expect(page.locator('.r-main').filter({ hasText: WORD })).toBeVisible()
 
   // 세션을 돌며 실제로 만나는지 본다
   await page.getByRole('button', { name: '홈', exact: true }).click()
@@ -82,7 +87,7 @@ test('담은 표현이 다음 세션에 나온다 — 밴드 0 이라 담지 않
   expect(met, `${WORD} 가 세션에 나와야 한다`).toBe(true)
 })
 
-test('빼면 목록에서 사라진다', async ({ page }) => {
+test('빼면 단어장에서 사라진다', async ({ page }) => {
   await fresh(page)
   await openSearch(page)
 
@@ -92,6 +97,25 @@ test('빼면 목록에서 사라진다', async ({ page }) => {
   await row.getByRole('button', { name: `${WORD} 담기` }).click()
   await row.getByRole('button', { name: `${WORD} 빼기` }).click()
 
+  await openWordlist(page)
+  await expect(page.locator('.empty')).toContainText('아직 담은 표현이 없어요')
+})
+
+// 2026-10-14 — 단어장이 하단 탭이 되어 찾기 첫 화면의 목록·진입 버튼은 같은 이름이 둘 서는 꼴이었다
+test('찾기 첫 화면에는 담아 둔 목록도 단어장 버튼도 없다', async ({ page }) => {
+  await fresh(page)
+  await openSearch(page)
+  const input = page.getByLabel('읽기 또는 한자 검색')
+  await input.fill(READING)
+  await page
+    .locator('.rows > li')
+    .filter({ hasText: WORD })
+    .first()
+    .getByRole('button', { name: `${WORD} 담기` })
+    .click()
+
   await input.fill('')
+  await expect(page.locator('.search-scope')).toBeVisible()
   await expect(page.locator('.basket')).toHaveCount(0)
+  await expect(page.locator('.screen').getByRole('button', { name: /^단어장/ })).toHaveCount(0)
 })

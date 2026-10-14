@@ -73,8 +73,8 @@ test('담은 밴드 4 가 세션에 소개로 나오고, 뜻은 안 묻는다', 
   await expect(row.locator('.star-btn')).toHaveAttribute('aria-pressed', 'true')
 
   // 담긴 것이 목록에 선다 — 기본 사전 밖인데도 이름이 보여야 한다
-  await page.locator('.search-input').fill('')
-  await expect(page.locator('.basket .r-main').filter({ hasText: '陰鬱' })).toBeVisible()
+  await page.locator('.tabbar').getByRole('button', { name: '단어장' }).click()
+  await expect(page.locator('.r-main').filter({ hasText: '陰鬱' })).toBeVisible()
 
   // 세션에서 만난다
   await page.getByRole('button', { name: '홈' }).click()

@@ -1946,16 +1946,6 @@ button.cal-cell[aria-pressed='true'] .cal-dot {
   color: var(--text-faint);
   white-space: nowrap;
 }
-.basket {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-.basket-note {
-  margin: 0;
-  color: var(--text-faint);
-  font-size: calc(13px * var(--ui-scale));
-}
 
 /* ── 읽기 규칙 (2026-09-17) ──
    접힌 목록이 기본이다. 아홉 절이 다 펼쳐져 있으면 지도가 아니라 벽이 된다.
@@ -2488,13 +2478,7 @@ p.rule-record {
 }
 
 /* ── 단어장 (2026-09-25) ──
-   찾기의 「담아 둔 표현」과 다른 화면이다. 저쪽은 세션에 나오면 사라지는 대기열이고
-   여기는 남는 곳이라, 학습 중인 줄도 상태를 달고 그대로 있다 */
-.wl-open {
-  display: block;
-  width: 100%;
-  margin: 12px 0 4px;
-}
+   담은 말이 남는 곳이라, 학습 중인 줄도 상태를 달고 그대로 있다 */
 /* 아래 여백은 `.screen-body` 의 flex gap(24px)이 이미 준다 — 더 주면 묶음 제목이 멀어진다 */
 .wl-current {
   margin: 4px 0 0;

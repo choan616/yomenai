@@ -18,8 +18,7 @@ async function skipIntro(page: Page): Promise<void> {
   await page.goto('/')
 }
 
-/** `via` — 단어장에 들어가는 길. 찾기 탭(항상 있다) 또는 홈 진입로(담은 게 있을 때만) */
-async function open(page: Page, via: 'search' | 'home' = 'search'): Promise<void> {
+async function open(page: Page): Promise<void> {
   await skipIntro(page)
   // 담아 둔 것 하나 + 그중 하나는 이미 학습을 시작했다
   await page.evaluate(
@@ -51,19 +50,13 @@ async function open(page: Page, via: 'search' | 'home' = 'search'): Promise<void
     DAY,
   )
   await page.reload()
-  if (via === 'search') {
-    await page.getByRole('button', { name: '찾기', exact: true }).click()
-    // 찾기 화면 안의 진입로. 탭바에도 같은 이름이 있어 자리로 가른다 (2026-10-13)
-    await page.locator('.screen').getByRole('button', { name: /^단어장/ }).click()
-  } else {
-    await page.locator('.tabbar').getByRole('button', { name: '단어장' }).click()
-  }
+  await page.locator('.tabbar').getByRole('button', { name: '단어장' }).click()
   await expect(page.getByRole('heading', { name: '단어장' })).toBeVisible()
 }
 
 test('단어장은 탭으로 들어가고, 홈 탭으로 돌아온다', async ({ page }) => {
   test.setTimeout(120_000)
-  await open(page, 'home')
+  await open(page)
   // 탭 루트라 「돌아가기」가 없다 — 돌아갈 자리가 탭바다 (2026-10-13)
   await expect(page.getByRole('button', { name: '돌아가기' })).toHaveCount(0)
   await page.getByRole('button', { name: '홈', exact: true }).click()
