@@ -12,10 +12,10 @@ import { BookmarkIcon, HomeIcon, ReportIcon, SearchIcon, SettingsIcon } from './
  * 아이콘은 장식이다(`aria-hidden`) — 버튼 이름은 글자가 맡아 스크린리더·테스트가 그대로 「리포트」를 찾는다
  */
 const TABS: { id: Tab; label: string; icon: ReactNode }[] = [
-  { id: 'home', label: '홈', icon: <HomeIcon /> },
-  { id: 'wordlist', label: '단어장', icon: <BookmarkIcon /> },
+  { id: 'home', label: '홈', icon: <HomeIcon /> },  
   { id: 'report', label: '리포트', icon: <ReportIcon /> },
   { id: 'search', label: '찾기', icon: <SearchIcon /> },
+  { id: 'wordlist', label: '단어장', icon: <BookmarkIcon /> },
   { id: 'settings', label: '설정', icon: <SettingsIcon /> },
 ]
 
