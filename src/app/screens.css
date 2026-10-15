@@ -937,6 +937,15 @@
 .ladder tbody tr.band-shaky td.rate {
   color: var(--ng);
 }
+/* 「안정 N%」 — 정답률 칸의 둘째 줄 (2026-10-15). 열을 늘리지 않으려고 같은 칸에 쌓는다.
+   흔들림 행의 朱 를 **물려받지 않는다**: 목표는 오답이 아니다 (PLAN §7 「색은 오답에만」,
+   2026-10-07 「흔들려도 범례 글자를 붉게 칠하지 않는다」와 같은 자리) */
+.ladder td.rate .solid-target {
+  display: block;
+  margin-top: 2px;
+  font-size: calc(11px * var(--ui-scale));
+  color: var(--text-faint);
+}
 /* 경계선 줄은 표의 칸 여백을 안 쓴다 — .edge-line 이 제 여백을 들고 있다 */
 .ladder .edge-row td {
   padding: 0;

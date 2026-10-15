@@ -140,6 +140,34 @@ export function judgeWindow(win: readonly WindowEntry[]): {
   return { status, seen, correct, idioms, ci }
 }
 
+/**
+ * 지금 창 크기에서 `solid` 가 되는 **최소 정답률**(0~1). 표본이 모자라거나 100% 로도 못 닿으면 null.
+ *
+ * 화면이 「안정 기준 80%」라고 말하는데 `solid` 는 Wilson **아래쪽**이 80% 이상이라, 실제 요구치는
+ * 창이 작을수록 높다 (2026-10-15 실측: n=132 → 87.1% · n=671 → 83.2%). 80% 를 목표로 삼으면
+ * 영원히 낱말이 안 바뀌어 「아무리 해도 안 올라간다」로 읽힌다 (사용자 2026-10-15).
+ *
+ * **판정을 다시 구현하지 않는다** — `judgeWindow` 와 같은 `wilson()`·`LEVEL_SOLID_RATE` 를 쓴다.
+ * 두 벌이 되면 「83% 라더니 83% 에서 안 바뀐다」가 생긴다 (`level.test.ts` 가 그 일치를 못 박는다).
+ *
+ * 창이 커지면 구간이 좁아져 요구치가 **내려간다**. 날마다 값이 바뀌는 것이 정상이라 화면이 그걸 말한다.
+ */
+export function rateForSolid(seen: number, idioms: number): number | null {
+  // `thin` 은 요구치를 말할 자리가 아니라 표본을 더 모을 자리다
+  if (seen < LEVEL_MIN_GRADES || idioms < LEVEL_MIN_IDIOMS) return null
+  if (wilson(seen, seen)[0] < LEVEL_SOLID_RATE) return null
+
+  // Wilson 아래쪽은 correct 에 대해 단조 증가다 — 조건을 만족하는 가장 작은 correct 를 찾는다
+  let lo = 0
+  let hi = seen
+  while (lo < hi) {
+    const mid = Math.floor((lo + hi) / 2)
+    if (wilson(mid, seen)[0] >= LEVEL_SOLID_RATE) hi = mid
+    else lo = mid + 1
+  }
+  return lo / seen
+}
+
 export interface BandRow {
   band: Band
   /** 판정 창의 채점 수 (`selectWindow`) */

@@ -28,7 +28,10 @@ test('정답률이 안정 기준 근처면 안정도 흔들림도 아니라 「�
   const row = page.locator('.ladder tbody tr').first()
   await expect(row).toHaveClass(/band-near/)
   await expect(row.locator('.sr-only')).toContainText('기준 부근')
-  await expect(row.locator('.rate')).toHaveText('80%')
+  // 정답률 칸은 두 줄이다 (2026-10-15) — 비율과, 안정까지 필요한 정답률. 기준 부근도 아직
+  // 안정이 아니라서 목표가 같이 뜬다. 창이 100회라 요구치가 88% 다 (`rateForSolid`)
+  await expect(row.locator('.rate')).toContainText('80%')
+  await expect(row.locator('.rate .solid-target')).toHaveText('안정 88%')
   // 판정 기준을 밝힌다 — 7일 창, 최소 표본, 줄의 뜻
   const caption = page.locator('.ladder-caption')
   await expect(caption).toContainText('최근 7일 채점 기준')

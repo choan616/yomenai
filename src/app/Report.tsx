@@ -23,6 +23,7 @@ import {
   LEVEL_MIN_IDIOMS,
   LEVEL_SOLID_RATE,
   LEVEL_WINDOW_DAYS,
+  rateForSolid,
   READING_STABLE_DAYS,
   solidReachDays,
   type BandRow,
@@ -755,7 +756,14 @@ function LevelSection({
                 <td className={b.band > LEVEL_MAX_BAND ? 'dim' : undefined}>
                   {b.met > 0 ? b.stable : NO_DATA}
                 </td>
-                <td className="rate">{b.seen > 0 ? `${Math.round(b.rate * 100)}%` : NO_DATA}</td>
+                {/* 흔들림·기준 부근 행은 **안정까지 필요한 정답률**을 같이 낸다 (2026-10-15).
+                    화면이 「안정 기준 80%」라고 말하는데 요구치는 창 크기마다 83~88% 라, 80% 를
+                    목표로 삼으면 낱말이 안 바뀌어 「아무리 해도 안 올라간다」로 읽혔다.
+                    열을 새로 만들지 않고 이 칸의 둘째 줄로 둔다 — 375px 에서 5열은 좁다 */}
+                <td className="rate">
+                  {b.seen > 0 ? `${Math.round(b.rate * 100)}%` : NO_DATA}
+                  {(b.status === 'shaky' || b.status === 'near') && <SolidTarget row={b} />}
+                </td>
               </tr>
             </Fragment>
           ))}
@@ -769,6 +777,9 @@ function LevelSection({
         <li>
           정답률: 최근 {LEVEL_WINDOW_DAYS}일 채점 기준(모자라면 최근 {LEVEL_MIN_GRADES}회까지)
         </li>
+        {/* 「창이 커지면 내려가요」를 꼭 적는다 — 채점이 쌓이면 오차 범위가 좁아져 요구치가
+            실제로 내려간다. 설명이 없으면 날마다 숫자가 바뀌는 것이 고장으로 보인다 */}
+        <li>안정 N%: 지금 창 크기에서 안정으로 바뀌는 정답률이에요. 창이 커지면 내려가요</li>
         <li>
           붉은 줄 = 흔들림(오차 범위까지 감안해도 {Math.round(LEVEL_SOLID_RATE * 100)}% 미만) · 줄 없음 = 안정 또는 기준 부근 ·
           점선 = 표본 부족(채점 {LEVEL_MIN_GRADES}회·표현 {LEVEL_MIN_IDIOMS}개 미만)
@@ -780,6 +791,18 @@ function LevelSection({
       </ul>
     </section>
   )
+}
+
+/**
+ * 「안정 N%」 — 그 코스가 안정으로 바뀌는 정답률 (2026-10-15). 흔들림·기준 부근 행에만 선다.
+ *
+ * 요구치를 못 내면(표본 부족 · 100% 로도 못 닿음) 아무것도 안 그린다 — 갈 수 없는 목표를
+ * 적는 것보다 안 적는 쪽이 낫다.
+ */
+function SolidTarget({ row }: { row: BandRow }) {
+  const need = rateForSolid(row.seen, row.idioms)
+  if (need === null) return null
+  return <span className="dim solid-target">안정 {Math.round(need * 100)}%</span>
 }
 
 /**

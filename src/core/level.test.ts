@@ -7,6 +7,7 @@ import {
   LEVEL_MIN_GRADES,
   LEVEL_MIN_IDIOMS,
   LEVEL_WINDOW_DAYS,
+  rateForSolid,
   READING_STABLE_DAYS,
   selectWindow,
   solidReachDays,
@@ -351,5 +352,45 @@ describe('solidReachDays', () => {
 
   it('표본이 모자라면 도달로 안 센다', () => {
     expect(solidReachDays(batch('b1', LEVEL_MIN_GRADES - 1, 0, 1), bandOf).size).toBe(0)
+  })
+})
+
+describe('rateForSolid — 안정까지 필요한 정답률 (2026-10-15)', () => {
+  /** 정답 `correct` 개를 섞은 길이 `seen` 의 창. 표현은 `idioms` 개로 돌려 쓴다 */
+  const win = (seen: number, correct: number, idioms: number): WindowEntry[] =>
+    Array.from({ length: seen }, (_, i) => ({
+      date: '2026-09-10',
+      correct: i < correct,
+      idiomId: `b1-${i % idioms}`,
+    }))
+
+  it('표본이 모자라면 null — 요구치를 말할 자리가 아니다', () => {
+    expect(rateForSolid(LEVEL_MIN_GRADES - 1, LEVEL_MIN_IDIOMS)).toBeNull()
+    expect(rateForSolid(LEVEL_MIN_GRADES, LEVEL_MIN_IDIOMS - 1)).toBeNull()
+  })
+
+  it('요구치는 80% 보다 높다 — Wilson 아래쪽이 80% 를 넘어야 하기 때문이다', () => {
+    const r = rateForSolid(LEVEL_MIN_GRADES, LEVEL_MIN_IDIOMS)
+    expect(r).not.toBeNull()
+    expect(r!).toBeGreaterThan(0.8)
+    expect(Math.round(r! * 1000) / 10).toBe(88)
+  })
+
+  it('창이 커지면 요구치가 내려간다 — 구간이 좁아지기 때문이다', () => {
+    const small = rateForSolid(132, 60)!
+    const large = rateForSolid(671, 300)!
+    expect(small).toBeGreaterThan(large)
+    expect(Math.round(small * 1000) / 10).toBe(87.1)
+    expect(Math.round(large * 1000) / 10).toBe(83.2)
+  })
+
+  it('요구치만큼 맞히면 실제로 solid 가 되고, 한 개 적으면 아니다', () => {
+    // 판정과 요구치가 두 벌이 되는 것을 막는 케이스다 — 「83% 라더니 83% 에서 안 바뀐다」
+    for (const seen of [LEVEL_MIN_GRADES, 132, 303, 671]) {
+      const idioms = Math.min(seen, 300)
+      const need = Math.round(rateForSolid(seen, idioms)! * seen)
+      expect(judgeWindow(win(seen, need, idioms)).status).toBe('solid')
+      expect(judgeWindow(win(seen, need - 1, idioms)).status).not.toBe('solid')
+    }
   })
 })

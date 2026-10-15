@@ -317,6 +317,30 @@ test('모두 안정이면 가장 높은 안정 코스와 안정이에요를 말�
   await expect(tile.locator('.tile-s')).toHaveText('안정이에요')
 })
 
+// 화면이 말하는 「안정 기준 80%」와 실제 요구치가 어긋나 있었다 (2026-10-15) — Wilson 아래쪽이
+// 80% 를 넘어야 하므로 창이 작을수록 요구치가 높다. 흔들리는 행에만 그 값을 같이 낸다
+test('수준 시트 — 흔들리는 코스만 안정까지 필요한 정답률을 같이 낸다', async ({ page }) => {
+  await seedLevel(page, true)
+  // 중턱은 채점을 100회 미만으로 심어 「표본 부족」으로 둔다 — 요구치를 말할 자리가 아니다
+  await putGradings(page, gradings(2, 50, 20, 1), 'lv-b2-thin')
+  await page.reload()
+  await page.getByRole('button', { name: '리포트', exact: true }).click()
+  await page.locator('.summary .tile').nth(0).click()
+  await expect(page.getByRole('dialog')).toHaveAccessibleName('수준')
+
+  const row = (name: string) => page.locator('.ladder tbody tr').filter({ hasText: name })
+  // 뒷산은 흔들림 — 요구치가 뜨고, 기준 80% 보다 높다
+  const target = row('뒷산').locator('.solid-target')
+  await expect(target).toHaveText(/^안정 \d+%$/)
+  const pct = Number((await target.innerText()).replace(/[^0-9]/g, ''))
+  expect(pct).toBeGreaterThan(80)
+  // 산책로는 안정이라 안 뜨고, 중턱은 표본 부족이라 안 뜬다
+  await expect(row('산책로').locator('.solid-target')).toHaveCount(0)
+  await expect(row('중턱').locator('.solid-target')).toHaveCount(0)
+  // 캡션이 「창이 커지면 내려가요」를 말한다 — 날마다 바뀌는 것이 고장으로 보이지 않게
+  await expect(page.locator('.ladder-caption')).toContainText('창이 커지면 내려가요')
+})
+
 /** 응답 시간 패이스 — 서로 다른 숙어로 정답 읽기 이벤트 `count`개를 심는다. `slowMs` 가 있으면 그중 하나만 그 속도로 */
 async function seedPace(page: Page, count: number, slowMs: number | null): Promise<void> {
   await page.addInitScript(() => {
