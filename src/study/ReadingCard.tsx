@@ -14,6 +14,7 @@ import { mistakeHint, mistakeLabel, RULE_MISTAKES } from './mistakeLabels.ts'
 import { Mixed } from '../app/RuleBody.tsx'
 import { tts } from './tts.ts'
 import { useCanSpeak } from './useCanSpeak.ts'
+import { useEnterForNext } from './useEnterForNext.ts'
 
 interface Props {
   idiom: RuntimeIdiom
@@ -45,6 +46,8 @@ export function ReadingCard({
     setDetail(false)
     onNext()
   }
+  // 상세가 열려 있는 동안은 끈다 — 그 안의 Enter 는 상세를 닫는 쪽 몫이다
+  useEnterForNext(!!fb && !detail, next)
 
   // 오답 상세는 카드를 교체하지 않고 그 위에 덮는다 (.card 기준 absolute).
   // 카드를 언마운트하면 KanaInput 이 리마운트되며 방금 낸 답이 사라진다 — 그대로 둔다.

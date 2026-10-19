@@ -7,6 +7,7 @@ import type { RuntimeIdiom } from '../dict/load.ts'
 import { bandName } from '../lib/bands.ts'
 import { tts } from './tts.ts'
 import { useCanSpeak } from './useCanSpeak.ts'
+import { useEnterForNext } from './useEnterForNext.ts'
 
 interface Props {
   idiom: RuntimeIdiom
@@ -26,6 +27,7 @@ export function MeaningCard({ idiom, ruby, graded, onGrade, onNext, vote, onVote
   const canSpeak = useCanSpeak(idiom.reading)
   const [revealed, setRevealed] = useState(false)
   const meaning = idiom.koMeaning?.definition?.trim()
+  useEnterForNext(graded, onNext)
 
   return (
     <div className={`card ${graded ? 'feedback is-ng' : ''}`}>
