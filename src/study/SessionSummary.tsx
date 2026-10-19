@@ -214,7 +214,7 @@ function findingText(f: Finding): ReactNode {
     case 'CLEAN_RUN':
       return (
         <>
-          <b>{f.total}장 다 맞혔어요.</b> 다음엔 한 단계 위를 볼까요?
+          <b>{f.total}장 다 맞혔어요.</b>
         </>
       )
     case 'MISTAKE_TREND':
