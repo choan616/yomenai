@@ -24,6 +24,13 @@ export interface SessionItem {
   mode: StudyMode
   /** 복습 기한이 지난 카드인지. false 면 신규 도입 */
   due: boolean
+  /**
+   * 뽑힌 순서 — 0 이 가장 먼저 뽑힌 카드(우선순위 가장 높음), 클수록 낮다 (2026-10-24).
+   * `selectSession` 만 채우고 섞은 뒤에도 따라간다. 제시 순서는 `seed` 로 섞여 우선순위가 아니라서,
+   * 환기 퀴즈가 「한 장 적었다면 뽑히지 않았을 카드」를 찾을 방법이 이것뿐이다.
+   * 메모리에만 있다 — 이벤트 로그·IndexedDB 에 저장되지 않는다.
+   */
+  rank?: number
 }
 
 export interface SelectOptions {
@@ -268,9 +275,11 @@ export function selectSession(
   fill(kunG, room - kunPlaced - onPlaced)
 
   readingFirst(picked)
+  // 순번은 같은 숙어의 읽기·뜻을 맞바꾼 **뒤** 자리 기준이다 — 「뽑힌 자리」가 우선순위다
+  const ranked = picked.map((it, rank) => ({ ...it, rank }))
   return options.seed === undefined
-    ? picked
-    : shuffleByIdiom(picked, options.seed, state.starred)
+    ? ranked
+    : shuffleByIdiom(ranked, options.seed, state.starred)
 }
 
 /**

@@ -3,6 +3,9 @@ import { describe, expect, it } from 'vitest'
 import { QUICK_SESSION_LIMIT } from '../app/settings.ts'
 import { buildHomophoneIndex, type QuizIdiom } from '../core/quiz.ts'
 import type { SessionCard } from '../core/session.ts'
+import { leadWith } from '../core/homeCard.ts'
+import { foldHomographs } from './homograph.ts'
+import { INTRO_MIN_READINGS, planIntros } from './planIntros.ts'
 import { planQuiz } from './planQuiz.ts'
 
 /** mulberry32 — quiz.test.ts 와 같은 재현 가능한 난수 */
@@ -16,12 +19,18 @@ function rng(seed: number): () => number {
   }
 }
 
-const card = (idiomId: string, due: boolean, cardType: 'reading' | 'meaning' = 'reading'): SessionCard => ({
+const card = (
+  idiomId: string,
+  due: boolean,
+  cardType: 'reading' | 'meaning' = 'reading',
+  rank?: number,
+): SessionCard => ({
   idiomId,
   cardType,
   mode: due ? 'correction' : 'expansion',
   due,
   needsClassReview: false,
+  ...(rank === undefined ? {} : { rank }),
 })
 
 /** 숙어마다 읽기가 다르고, 읽기마다 뜻이 겹치지 않는 동음이의 둘이 딸린 사전 */
@@ -68,7 +77,7 @@ describe('planQuiz', () => {
     card('n4', false),
   ]
 
-  it('맨 뒤 단독 신규 카드를 빼고 그 자리에 퀴즈가 선다 — 진행 분모는 그대로다', () => {
+  it('rank 가 없으면 맨 뒤 단독 카드를 빼고 그 자리에 퀴즈가 선다 — 진행 분모는 그대로다', () => {
     const cards = base()
     const p = plan(cards)
     expect(p.quiz).not.toBeNull()
@@ -87,40 +96,108 @@ describe('planQuiz', () => {
     expect(p.quiz!.at).toBe(5)
   })
 
-  it('소개 카드와 복습 카드는 빼지 않는다', () => {
-    const cards = [card('d1', true), card('d2', true), card('i1', false), card('d3', true)]
-    const p = plan(cards, { introIds: new Set(['i1']) })
-    expect(p.quiz).toBeNull()
-    expect(p.cards).toEqual(cards)
-  })
-
-  it('신규 카드가 없으면(전부 복습) 퀴즈 없이 cards 그대로다', () => {
-    const cards = [card('d1', true), card('d2', true), card('d3', true), card('d4', true)]
-    const p = plan(cards)
-    expect(p.quiz).toBeNull()
-    expect(p.cards).toEqual(cards)
-  })
-
-  it('신규가 둘짜리 숙어뿐이면 퀴즈 없이 cards 그대로다', () => {
-    const cards = [card('d1', true), card('n1', false, 'reading'), card('d2', true), card('n1', false, 'meaning')]
-    const p = plan(cards)
-    expect(p.quiz).toBeNull()
-    expect(p.cards).toEqual(cards)
-  })
-
-  it('맨 뒤 신규가 둘짜리면 앞쪽 단독 신규를 뺀다', () => {
+  // 사용자 결정 2026-10-24 「복습 한 장 양보」 — 신규가 전부 소개이고 나머지가 복습인 세션(실제 기록)에서도 선다
+  it('신규가 전부 소개이고 나머지가 복습이어도 퀴즈가 서고, rank 최대인 복습이 빠진다', () => {
+    // 자리 순서는 섞여 있다 — 우선순위는 rank 다. rank 최대는 d3
     const cards = [
-      card('d1', true),
-      card('n1', false),
-      card('d2', true),
-      card('n2', false, 'reading'),
-      card('d3', true),
-      card('n2', false, 'meaning'),
+      card('d1', true, 'reading', 3),
+      card('i1', false, 'reading', 20),
+      card('d2', true, 'reading', 0),
+      card('d3', true, 'reading', 9),
+      card('i2', false, 'reading', 21),
+      card('d4', true, 'reading', 5),
+      card('d5', true, 'reading', 1),
+      card('d6', true, 'reading', 2),
+    ]
+    const p = plan(cards, { introIds: new Set(['i1', 'i2']) })
+    expect(p.quiz).not.toBeNull()
+    expect(p.cards.map((c) => c.idiomId)).toEqual(['d1', 'i1', 'd2', 'i2', 'd4', 'd5', 'd6'])
+    expect(p.cards.length + 1).toBe(cards.length)
+  })
+
+  it('소개 카드는 rank 가 가장 커도 빼지 않는다', () => {
+    const cards = [
+      card('d1', true, 'reading', 0),
+      card('d2', true, 'reading', 1),
+      card('i1', false, 'reading', 99),
+      card('d3', true, 'reading', 2),
+      card('d4', true, 'reading', 3),
+      card('d5', true, 'reading', 4),
+    ]
+    const p = plan(cards, { introIds: new Set(['i1']) })
+    expect(p.quiz).not.toBeNull()
+    expect(p.cards.map((c) => c.idiomId)).toEqual(['d1', 'd2', 'i1', 'd3', 'd4'])
+  })
+
+  it('소개 카드뿐이면(첫 장 제외) 뺄 카드가 없어 퀴즈 없이 cards 그대로다', () => {
+    const cards = [card('d1', true, 'reading', 0), card('i1', false, 'reading', 1), card('i2', false, 'reading', 2)]
+    const p = plan(cards, { introIds: new Set(['i1', 'i2']) })
+    expect(p.quiz).toBeNull()
+    expect(p.cards).toEqual(cards)
+  })
+
+  it('첫 장은 rank 가 가장 커도 빼지 않는다 — 홈이 내민 카드다', () => {
+    const cards = base().map((c, i) => ({ ...c, rank: i === 0 ? 99 : i }))
+    const p = plan(cards)
+    expect(p.quiz).not.toBeNull()
+    expect(p.cards[0]!.idiomId).toBe('d1')
+    expect(p.cards.map((c) => c.idiomId)).not.toContain('n4')
+  })
+
+  it('단독 카드가 둘짜리보다 먼저 빠진다 — 둘짜리의 rank 가 더 커도', () => {
+    const cards = [
+      card('d1', true, 'reading', 0),
+      card('n1', false, 'reading', 1),
+      card('d2', true, 'reading', 2),
+      card('n2', false, 'reading', 8),
+      card('d3', true, 'reading', 3),
+      card('n2', false, 'meaning', 9),
     ]
     const p = plan(cards)
     expect(p.quiz).not.toBeNull()
-    expect(p.cards.map((c) => c.idiomId)).not.toContain('n1')
+    expect(p.cards.map((c) => c.idiomId)).not.toContain('d3')
     expect(p.cards.filter((c) => c.idiomId === 'n2')).toHaveLength(2)
+  })
+
+  it('단독이 없으면 둘짜리의 rank 최대 한 장이 빠지고, 남은 한 장은 그대로다', () => {
+    const cards = [
+      card('x', true, 'reading', 0),
+      card('x', true, 'meaning', 1),
+      card('a', true, 'reading', 2),
+      card('a', true, 'meaning', 3),
+      card('b', true, 'reading', 4),
+      card('c', true, 'reading', 5),
+      card('b', true, 'meaning', 9),
+      card('c', true, 'meaning', 6),
+    ]
+    const p = plan(cards)
+    expect(p.quiz).not.toBeNull()
+    expect(p.cards.map((c) => [c.idiomId, c.cardType])).toEqual([
+      ['x', 'reading'],
+      ['x', 'meaning'],
+      ['a', 'reading'],
+      ['a', 'meaning'],
+      ['b', 'reading'],
+      ['c', 'reading'],
+      ['c', 'meaning'],
+    ])
+    // 뺀 숙어 b 는 퀴즈의 정답·보기에 안 나온다
+    const shown = p.quiz!.questions.flatMap((q) => [q.targetId, ...q.options.map((o) => o.idiomId)])
+    expect(shown).not.toContain('b')
+  })
+
+  it('복습뿐이어도 퀴즈를 못 세우면(문항 부족) 아무 카드도 안 빠진다', () => {
+    const cards = [card('d1', true, 'reading', 0), card('d2', true, 'reading', 1), card('d3', true, 'reading', 2), card('d4', true, 'reading', 3)]
+    const p = planQuiz({
+      cards,
+      introIds: NONE,
+      kind: 'normal',
+      questionLimit: LIMIT,
+      index: indexFor([]),
+      rand: rng(1),
+    })
+    expect(p.quiz).toBeNull()
+    expect(p.cards).toEqual(cards)
   })
 
   it('normal 이 아닌 세션(rematch·focus)은 퀴즈가 없다', () => {
@@ -236,6 +313,18 @@ describe('planQuiz', () => {
     const p = plan(cards, { introIds: new Set(['i1']), ids: ['i1', 'd1'] })
     expect(p.quiz!.at).toBe(4)
     expect(p.quiz!.questions.map((q) => q.targetId)).toEqual(['d1', 'i1'])
+  })
+
+  it('leadWith·foldHomographs·planIntros 를 지나도 rank 가 카드를 따라간다', () => {
+    const raw = ['a', 'b', 'c', 'd', 'e', 'new'].map((id, i) => card(id, id !== 'new', 'reading', i))
+    const headword = (id: string) => `${id}#`
+    const led = leadWith(raw, headword, 'c#')
+    const folded = foldHomographs(led, headword)
+    const plan = planIntros(folded, () => false, () => false, INTRO_MIN_READINGS, 20)
+    expect(plan.introIds.has('new')).toBe(true)
+    const rankOf = Object.fromEntries(plan.cards.map((c) => [c.idiomId, c.rank]))
+    expect(rankOf).toEqual({ a: 0, b: 1, c: 2, d: 3, e: 4, new: 5 })
+    expect(plan.cards[0]!.idiomId).toBe('c')
   })
 
   it('같은 난수면 결과가 같다', () => {

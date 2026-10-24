@@ -175,6 +175,23 @@ describe('buildSession — 조립', () => {
   })
 })
 
+describe('buildSession — rank', () => {
+  it('선택 단계의 순번이 런타임 카드에 실려 오고, 섞어도 서로 다른 값이다', () => {
+    const pool = [entry('a', 1, 'manual'), entry('b', 1, 'manual'), entry('c', 1, 'manual')]
+    const { cards } = buildSession(pool, [], { now: T0, limit: 3, seed: 5 })
+    expect(cards.every((c) => typeof c.rank === 'number')).toBe(true)
+    expect(new Set(cards.map((c) => c.rank)).size).toBe(cards.length)
+    expect(Math.min(...cards.map((c) => c.rank!))).toBe(0)
+  })
+
+  it('재대결·집중 세션은 rank 를 안 싣는다', () => {
+    const pool = [entry('a', 1, 'manual')]
+    const { cards } = buildFocus(pool, [], { pairIds: ['a:on:x'], now: T0, limit: 3 })
+    expect(cards.length).toBeGreaterThan(0)
+    expect(cards.every((c) => c.rank === undefined)).toBe(true)
+  })
+})
+
 describe('buildSession — 지연 검수 신호 (Phase 3 에서 미룬 몫)', () => {
   it('미확정 분류(llm·default)가 처음 나오면 확인을 요구한다', () => {
     const pool = [entry('a', 1, 'llm'), entry('b', 1, 'default')]

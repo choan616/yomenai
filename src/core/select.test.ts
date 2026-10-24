@@ -220,6 +220,50 @@ describe('selectSession — 구성 규칙', () => {
     })
   })
 
+  describe('rank — 뽑힌 순서(우선순위)', () => {
+    // 기한이 가장 많이 지난 것부터 뽑힌다: o3(3일) > o2(2일) > o1(1일) > 신규
+    const setup = () => {
+      const state = emptyState()
+      for (const [id, days] of [['o1', 1], ['o2', 2], ['o3', 3]] as const) {
+        put(state, id, 'reading', { ...newCard(T0 - 10 * DAY), due: new Date(T0 - days * DAY) })
+      }
+      const cands = ['o1', 'o2', 'o3', 'n1'].map((id) => candidate(id, 1, 'correction'))
+      return { state, cands }
+    }
+
+    it('seed 없이는 자리 순서가 곧 rank 다 — 0 이 가장 먼저 뽑힌 카드', () => {
+      const { state, cands } = setup()
+      const picked = selectSession(cands, state, { now: T0, limit: 4 })
+      expect(picked.map((p) => p.idiomId)).toEqual(['o3', 'o2', 'o1', 'n1'])
+      expect(picked.map((p) => p.rank)).toEqual([0, 1, 2, 3])
+    })
+
+    it('seed 로 섞어도 rank 는 카드를 따라간다', () => {
+      const { state, cands } = setup()
+      const byRank = new Map<string, number | undefined>()
+      for (const seed of [1, 2, 3, 4, 5]) {
+        for (const p of selectSession(cands, state, { now: T0, limit: 4, seed })) byRank.set(p.idiomId, p.rank)
+      }
+      expect(Object.fromEntries(byRank)).toEqual({ o3: 0, o2: 1, o1: 2, n1: 3 })
+    })
+
+    it('limit 이 하나 적으면 rank 가 가장 큰 카드가 빠진다', () => {
+      const { state, cands } = setup()
+      const full = selectSession(cands, state, { now: T0, limit: 4, seed: 9 })
+      const less = selectSession(cands, state, { now: T0, limit: 3, seed: 9 })
+      const dropped = full.filter((f) => !less.some((l) => l.idiomId === f.idiomId))
+      expect(dropped.map((d) => d.rank)).toEqual([Math.max(...full.map((f) => f.rank!))])
+    })
+
+    it('같은 숙어의 읽기·뜻을 맞바꾼 뒤의 자리로 매긴다', () => {
+      // 읽기는 신규(기한 없음), 뜻은 기한이 지난 카드 — 뜻이 먼저 뽑히지만 readingFirst 가 맞바꾼다
+      const state = emptyState()
+      put(state, 'x', 'meaning', { ...newCard(T0 - 10 * DAY), due: new Date(T0 - DAY) })
+      const picked = selectSession([candidate('x', 1, 'expansion')], state, { now: T0, limit: 2, ratio: { correction: 0, expansion: 2 } })
+      expect(picked.map((p) => [p.cardType, p.rank])).toEqual([['reading', 0], ['meaning', 1]])
+    })
+  })
+
   it('모드 비율 기본값 7:3 을 지킨다', () => {
     const candidates = [
       ...Array.from({ length: 20 }, (_, i) => candidate(`c${i}`, 1, 'correction')),
