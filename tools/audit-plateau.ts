@@ -33,7 +33,7 @@ export interface PlateauProfile {
   sameWrongRepeated: number
   /** 상습 표현이 맞힌 바로 다음 만남에서 틀린 비율의 분모·분자 */
   relapse: { afterCorrect: number; wrongNext: number }
-  /** 마지막 이벤트로부터 7일 창 */
+  /** 마지막 이벤트로부터 7일 창. 상습 여부는 창 시작 전 오답으로 판정한다 */
   window: { chronic: Tally; rest: Tally }
 }
 
@@ -72,11 +72,18 @@ export function plateauProfile(events: readonly LearningEvent[]): PlateauProfile
     }
   }
 
+  // 창 안의 상습 여부는 **창 시작 전 오답으로만** 가른다. 전 기록으로 가르면 창 안에서 틀린 표현이
+  // 상습으로 들어가 상습 정답률이 저절로 낮게 나온다(2026-10-24 정정 — 61.7% 대 83.1% 가 그 착시였다)
   const since = reads[reads.length - 1]!.at - WINDOW_DAYS * DAY_MS
+  const wrongBefore = new Map<string, number>()
+  for (const e of reads) {
+    if (e.at > since) break
+    if (!e.correct) wrongBefore.set(e.idiomId, (wrongBefore.get(e.idiomId) ?? 0) + 1)
+  }
   const window = { chronic: { n: 0, ok: 0 }, rest: { n: 0, ok: 0 } }
   for (const e of reads) {
     if (e.at <= since) continue
-    const t = chronic.has(e.idiomId) ? window.chronic : window.rest
+    const t = (wrongBefore.get(e.idiomId) ?? 0) >= CHRONIC_WRONG ? window.chronic : window.rest
     t.n++
     if (e.correct) t.ok++
   }

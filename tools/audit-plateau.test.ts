@@ -44,6 +44,18 @@ describe('plateauProfile', () => {
     expect(p.relapse).toEqual({ afterCorrect: 1, wrongNext: 1 })
   })
 
+  it('창 안에서 쌓인 오답으로는 상습이 되지 않는다 (미래 정보 금지)', () => {
+    const t = 30 * DAY
+    const p = plateauProfile([
+      ev('a', 1, false), ev('a', 2, false), // 창 전 오답 2회
+      ev('a', t - DAY, false), // 창 안 3번째 오답 — 누적으로는 상습이지만 창 판정은 나머지
+      ev('a', t, true),
+    ])!
+    expect(p.chronic).toBe(1)
+    expect(p.window.chronic).toEqual({ n: 0, ok: 0 })
+    expect(p.window.rest).toEqual({ n: 2, ok: 1 })
+  })
+
   it('창은 마지막 이벤트로부터 7일이고 상습과 나머지를 가른다', () => {
     const t = 30 * DAY
     const p = plateauProfile([
