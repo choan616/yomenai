@@ -47,6 +47,13 @@ test('예문은 문제 풀이 화면엔 없고 확인 단계에서만 나온다'
       continue
     }
 
+    // 환기 퀴즈 — 기록이 쌓인 뒤 세션 중간에 선다. 건너뛰기 한 탭으로 넘긴다 (못 넘기면 아래 break 로 루프가 끝난다)
+    const skipQuiz = page.getByRole('button', { name: '건너뛰기', exact: true })
+    if (await skipQuiz.isVisible().catch(() => false)) {
+      await skipQuiz.click()
+      continue
+    }
+
     const input = page.locator('.kana-input')
     if (await input.isVisible().catch(() => false)) {
       // 문제 풀이 화면 — 예문이 있으면 답을 미리 알려주는 셈이라 있으면 안 된다

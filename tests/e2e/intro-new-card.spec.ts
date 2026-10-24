@@ -80,6 +80,12 @@ async function advanceToIntro(page: Page, budget = 30): Promise<void> {
   for (let i = 0; i < budget; i++) {
     await passClassReview(page)
     if (await intro.isVisible().catch(() => false)) return
+    // 환기 퀴즈 — 기록이 쌓인 보통 세션 중간에 설 수 있다. 건너뛰기 한 탭으로 넘긴다
+    const skipQuiz = page.getByRole('button', { name: '건너뛰기', exact: true })
+    if (await skipQuiz.isVisible().catch(() => false)) {
+      await skipQuiz.click()
+      continue
+    }
     const input = page.locator('.kana-input')
     if (await input.isVisible().catch(() => false)) {
       await input.fill('あ')

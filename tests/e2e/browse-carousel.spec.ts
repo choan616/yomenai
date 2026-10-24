@@ -65,6 +65,8 @@ test('다시보기가 스냅되는 캐러셀이다', async ({ page }) => {
     // 처음 만나는 숙어는 소개로 나온다 (2026-09-13) — 보고 넘긴다
     if (await clickIfVisible(page, '봤어요')) continue
     if (await clickIfVisible(page, '알고 있었다')) continue
+    // 환기 퀴즈 — 기록이 쌓인 뒤 세션 중간에 선다. 건너뛰기 한 탭으로 넘긴다
+    if (await clickIfVisible(page, '건너뛰기')) continue
     const input = page.locator('.kana-input')
     if (await input.isVisible().catch(() => false)) {
       await input.fill('tadashii')

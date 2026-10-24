@@ -57,6 +57,8 @@ async function reachMeaningCard(page: Page): Promise<string | null> {
       continue
     }
     if (await clickIfVisible(page, '알고 있었다')) continue
+    // 환기 퀴즈 — 세션 중간에 설 수 있다. 건너뛰기 한 탭으로 넘긴다
+    if (await clickIfVisible(page, '건너뛰기')) continue
     const input = page.locator('.kana-input')
     if (await input.isVisible().catch(() => false)) {
       await input.fill('aaa')

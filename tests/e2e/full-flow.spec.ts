@@ -151,6 +151,8 @@ test('진입 진단 → 세션 → 리포트 전체 흐름을 완주한다', asy
     // 처음 만나는 숙어는 소개로 나온다 (2026-09-13) — 보고 넘긴다
     if (await clickIfVisible(page, '봤어요')) continue
     if (await clickIfVisible(page, '알고 있었다')) continue
+    // 환기 퀴즈 — 진단 기록이 있어 세션 중간에 설 수 있다. 건너뛰기 한 탭으로 넘긴다
+    if (await clickIfVisible(page, '건너뛰기')) continue
     const input = page.locator('.kana-input')
     if (await input.isVisible().catch(() => false)) {
       await input.fill('tadashii')

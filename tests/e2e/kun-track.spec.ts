@@ -65,6 +65,8 @@ async function collectHeadwords(page: Page, rounds: number): Promise<string[]> {
       await page.waitForTimeout(20)
       continue
     }
+    // 환기 퀴즈 — 세션 중간에 설 수 있다. 퀴즈 화면의 .headword 는 세션 카드가 아니므로 표기를 걷기 전에 넘긴다
+    if (await clickIfVisible(page, '건너뛰기')) continue
     if (await page.locator('.headword').first().isVisible().catch(() => false)) {
       const h = await headwordNow(page)
       if (h && heads[heads.length - 1] !== h) heads.push(h)
