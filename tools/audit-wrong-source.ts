@@ -16,6 +16,7 @@
 import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { compareEvents, type LearningEvent, type MistakeType, type ReviewEvent } from '../src/core/types.ts'
+import { alignWrong, type Alignment, type Chunk } from '../src/core/repeatWrong.ts'
 import { decompose, type KanjiReadings } from '../src/lib/onyomi.ts'
 import { sameExceptVoicing, sokuonVariants, stripLongVowels, toHiragana } from '../src/lib/readings.ts'
 import { CHRONIC_WRONG } from './audit-plateau.ts'
@@ -35,49 +36,8 @@ export interface DictIdiom {
   reading: string
 }
 
-/** 한자 한 글자와 그것이 덮는 읽기 구간(표면형) */
-export interface Chunk {
-  kanji: string
-  surface: string
-}
-
-/** 어느 한 조각만 틀렸을 때의 정렬 결과. 실패 이유는 보고용이다 */
-export type Alignment =
-  | { ok: true; index: number; kanji: string; expected: string; wrong: string }
-  | { ok: false; reason: 'NO_PARSE' | 'NO_SINGLE' | 'AMBIGUOUS' }
-
-/**
- * 기대 읽기의 조각 열(`chunks`)에 W 를 맞춘다. 앞쪽 조각들과 뒤쪽 조각들이 W 의 앞뒤에 그대로 붙고
- * 가운데 한 토막만 다르면 그 조각이 틀린 조각이다. 조각이 둘 이상 틀렸거나 글자를 통째로 빠뜨리면
- * `NO_SINGLE`, 맞는 자리가 둘 이상이면(장음 삽입처럼 경계에 걸친 경우) W 자신의 분해 `wrongChunks` 로
- * 가린다 — 그 자리만 기대와 다르고 나머지는 같은 후보 하나가 남으면 채택하고, 아니면 `AMBIGUOUS` 다.
- */
-export function alignWrong(
-  chunks: readonly Chunk[] | null,
-  wrong: string,
-  wrongChunks: readonly Chunk[] | null = null,
-): Alignment {
-  if (chunks === null) return { ok: false, reason: 'NO_PARSE' }
-  const hits: Extract<Alignment, { ok: true }>[] = []
-  for (let i = 0; i < chunks.length; i++) {
-    const prefix = chunks.slice(0, i).map((c) => c.surface).join('')
-    const suffix = chunks.slice(i + 1).map((c) => c.surface).join('')
-    if (wrong.length <= prefix.length + suffix.length) continue
-    if (!wrong.startsWith(prefix) || !wrong.endsWith(suffix)) continue
-    const mid = wrong.slice(prefix.length, wrong.length - suffix.length)
-    if (mid === chunks[i]!.surface) continue
-    hits.push({ ok: true, index: i, kanji: chunks[i]!.kanji, expected: chunks[i]!.surface, wrong: mid })
-  }
-  if (hits.length === 0) return { ok: false, reason: 'NO_SINGLE' }
-  if (hits.length === 1) return hits[0]!
-  if (wrongChunks !== null && wrongChunks.length === chunks.length) {
-    const viable = hits.filter((h) =>
-      chunks.every((c, j) => wrongChunks[j]!.surface === (j === h.index ? h.wrong : c.surface)),
-    )
-    if (viable.length === 1) return viable[0]!
-  }
-  return { ok: false, reason: 'AMBIGUOUS' }
-}
+// 조각 정렬(`alignWrong`)은 런타임 피드백(D4)과 같은 로직이라 src/core/repeatWrong.ts 한 곳에 둔다
+export { alignWrong, type Alignment, type Chunk }
 
 export type BoundaryKind = 'voicing' | 'sokuon' | 'choon'
 
