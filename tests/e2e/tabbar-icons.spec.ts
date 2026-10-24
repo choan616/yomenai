@@ -13,7 +13,8 @@ test('탭마다 아이콘과 글자가 있고, 아이콘은 읽어 주지 않는
 
   const items = page.locator('.tabbar-item')
   await expect(items).toHaveCount(5)
-  for (const [i, label] of ['홈', '단어장', '리포트', '찾기', '설정'].entries()) {
+  // 순서는 사용자가 단어장을 찾기 뒤로 옮긴 것을 따른다 (73aed20, 2026-10-14)
+  for (const [i, label] of ['홈', '리포트', '찾기', '단어장', '설정'].entries()) {
     const item = items.nth(i)
     await expect(item.locator('svg.icon')).toHaveCount(1)
     await expect(item.locator('svg.icon')).toHaveAttribute('aria-hidden', 'true')
