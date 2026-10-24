@@ -32,6 +32,7 @@
     "audit:mistake-rules": "tsx tools/audit-mistake-rules.ts",
     "audit:ko-interference": "tsx tools/audit-ko-interference.ts",
     "audit:pace": "tsx tools/audit-pace.ts",
+    "audit:plateau": "tsx tools/audit-plateau.ts",
     "build:korean-meaning": "tsx tools/build-korean-meaning.ts",
     "build:korean-meaning-worklist": "tsx tools/build-korean-meaning-worklist.ts",
     "apply:korean-meaning": "tsx tools/apply-korean-meaning.ts",
