@@ -90,9 +90,15 @@ export function homophoneQuestion<T extends QuizIdiom>(
   target: T,
   index: HomophoneIndex<T>,
   rand: () => number,
+  /**
+   * 정답·보기에 못 쓰는 idiomId. 보기는 읽기를 보여 주고 답 뒤에 각 보기의 뜻을 보여 주므로,
+   * 세션 뒤에 아직 카드가 남은 숙어를 쓰면 그 카드의 답이 미리 드러난다
+   */
+  exclude?: ReadonlySet<string>,
 ): HomophoneQuestion | null {
   const meaning = meaningOf(target)
   if (meaning === '') return null
+  if (exclude?.has(target.idiomId)) return null
   const key = toHiragana(target.reading)
   const group = index.byReading.get(key)
   if (group === undefined) return null
@@ -103,6 +109,7 @@ export function homophoneQuestion<T extends QuizIdiom>(
   for (const cand of shuffle(group, rand)) {
     if (chosen.length >= MAX_OPTIONS - 1) break
     if (cand.idiomId === target.idiomId || taken.has(cand.headword)) continue
+    if (exclude?.has(cand.idiomId)) continue
     const m = meaningOf(cand)
     if (m === '') continue
     const tokens = senseTokens(m)
@@ -132,6 +139,8 @@ export function pickQuizQuestions<T extends QuizIdiom>(
   index: HomophoneIndex<T>,
   n: number,
   rand: () => number,
+  /** `homophoneQuestion` 의 `exclude` 와 같다 — 정답 후보와 보기 모두에 적용한다 */
+  exclude?: ReadonlySet<string>,
 ): HomophoneQuestion[] {
   const out: HomophoneQuestion[] = []
   const usedReadings = new Set<string>()
@@ -141,7 +150,7 @@ export function pickQuizQuestions<T extends QuizIdiom>(
     if (target === undefined) continue
     const key = toHiragana(target.reading)
     if (usedReadings.has(key)) continue
-    const q = homophoneQuestion(target, index, rand)
+    const q = homophoneQuestion(target, index, rand, exclude)
     if (q === null) continue
     usedReadings.add(key)
     out.push(q)

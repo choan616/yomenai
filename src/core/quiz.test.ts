@@ -90,6 +90,29 @@ describe('homophoneQuestion', () => {
     expect(homophoneQuestion(pool[0]!, buildHomophoneIndex(pool), rng(1))).toBeNull()
   })
 
+  it('exclude 에 든 숙어는 보기에 안 나온다', () => {
+    const index = buildHomophoneIndex(KOUSEI)
+    const exclude = new Set(['a4'])
+    for (let seed = 1; seed <= 20; seed++) {
+      const q = homophoneQuestion(KOUSEI[0]!, index, rng(seed), exclude)!
+      // 후보 5개 중 a4 를 빼면 정답 포함 4개가 정확히 남는다
+      expect(q.options.map((o) => o.idiomId).sort()).toEqual(['a1', 'a2', 'a3', 'a5'])
+    }
+  })
+
+  it('exclude 로 보기가 2개 미만이 되면 null, 정답이 exclude 에 들어도 null', () => {
+    const index = buildHomophoneIndex(KOUSEI)
+    expect(homophoneQuestion(KOUSEI[0]!, index, rng(1), new Set(['a2', 'a3', 'a4']))).toBeNull()
+    expect(homophoneQuestion(KOUSEI[0]!, index, rng(1), new Set(['a1']))).toBeNull()
+  })
+
+  it('exclude 를 안 주거나 비우면 예전과 같다', () => {
+    const index = buildHomophoneIndex(KOUSEI)
+    expect(homophoneQuestion(KOUSEI[0]!, index, rng(5), new Set())).toEqual(
+      homophoneQuestion(KOUSEI[0]!, index, rng(5)),
+    )
+  })
+
   it('보기가 4개를 넘지 않는다', () => {
     const index = buildHomophoneIndex(KOUSEI)
     for (let seed = 1; seed <= 20; seed++) {
@@ -164,6 +187,15 @@ describe('pickQuizQuestions', () => {
     const lone = buildHomophoneIndex([idiom('z', '意思', 'いし', '의사'), ...KOUSEI])
     expect(pickQuizQuestions(['z', 'a1'], lone, 2, rng(1)).map((q) => q.targetId)).toEqual(['a1'])
     expect(pickQuizQuestions([], lone, 2, rng(1))).toEqual([])
+  })
+
+  it('exclude 는 정답 후보와 보기 양쪽에 적용된다', () => {
+    const qs = pickQuizQuestions(['a1', 'c1', 'e1'], index, 3, rng(3), new Set(['a1', 'c4']))
+    expect(qs.map((q) => q.targetId)).toEqual(['c1', 'e1'])
+    for (const q of qs) {
+      expect(q.options.map((o) => o.idiomId)).not.toContain('a1')
+      expect(q.options.map((o) => o.idiomId)).not.toContain('c4')
+    }
   })
 
   it('고정 난수로 결정적이다', () => {
