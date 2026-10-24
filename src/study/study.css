@@ -1132,7 +1132,8 @@ button.tag {
    차지하던 세로 공간(패딩 위아래 20px)이 스크롤 문제에 한몫했다(2026-09-14,
    사용자 요청 "다른 방식으로 노출"). 헤드워드 아래 캡션처럼 가볍게 둔다.
    상자를 없앴어도 「자세히」 뒤로 다시 숨기지는 않는다 — 그건 이미 기각된 대안이다 */
-.rule-hint {
+.rule-hint,
+.repeat-hint {
   margin: 8px auto 0;
   max-width: 32em;
   color: var(--text-dim);

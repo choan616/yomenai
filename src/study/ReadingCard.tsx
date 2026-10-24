@@ -134,6 +134,25 @@ export function ReadingCard({
                 <span className="tag">{mistakeLabel(fb.mistakeType, fb.voicing)}</span>
               </p>
             )}
+            {/* 같은 오답을 전에도 냈으면 그 순간 한 줄로 알린다 (PLAN §11 D4). 횟수·「또」 같은
+                말은 안 쓴다 — 막힘을 세는 문장이 되면 안 된다. 조각과 짝은 알 때만 이어 붙인다 */}
+            {!fb.correct && fb.repeat && (
+              <p className="repeat-hint">
+                전에도 <span lang="ja">{fb.repeat.answer}</span> 로 읽었어요.
+                {fb.repeat.piece && (
+                  <>
+                    {' '}여기서 <span lang="ja">{fb.repeat.piece.kanji}</span> 는{' '}
+                    <span lang="ja">{fb.repeat.piece.expectedPiece}</span> 로 읽어요.
+                  </>
+                )}
+                {fb.repeat.pair && (
+                  <>
+                    {' '}<span lang="ja">{fb.repeat.answer}</span> 는{' '}
+                    <span lang="ja">{fb.repeat.pair.headword}</span> 의 읽기예요.
+                  </>
+                )}
+              </p>
+            )}
             {/* 규칙형 오답이면 규칙 한 줄을 여기서 바로 보여준다 (2026-09-13).
                 전에는 「자세히」 안에만 있어서, 틀리고 + 누르고 + 규칙형이어야 닿았다.
                 어휘형(음독 선택·한국음 간섭)에는 안 붙인다 — 규칙이 없는 자리에 글을

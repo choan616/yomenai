@@ -32,7 +32,8 @@ import { getDeviceId } from '../db/device.ts'
 import { db } from '../db/schema.ts'
 import { LOCAL_USER_ID } from '../db/events.ts'
 import { listEvents } from '../db/events.ts'
-import { buildHomophoneIndex, type HomophoneQuestion } from '../core/quiz.ts'
+import { buildHomophoneIndex, type HomophoneIndex, type HomophoneQuestion } from '../core/quiz.ts'
+import { learnedReadingIds, repeatHint, type RepeatHint } from '../core/repeatWrong.ts'
 import { planQuiz } from './planQuiz.ts'
 import { quizPending, quizProgress, quizRng, saveQuizTime } from './quizSession.ts'
 import { loadBaseIdioms, loadKanji, type RuntimeIdiom } from '../dict/load.ts'
@@ -70,6 +71,11 @@ export interface ReadingFeedback {
    * `recordReadingAnswer` 가 유형을 다시 계산하므로 화면에만 걸면 기록이 어긋난다
    */
   classify: boolean
+  /**
+   * 같은 표현에 같은 오답을 전에도 낸 경우의 한 줄 재료 (PLAN §11 D4). 오답 유형을 붙이는 답
+   * (`classify` 와 같은 기준 — 빈 답·유형 없는 답은 무엇을 골랐는지가 없다)에서만 채워진다
+   */
+  repeat: RepeatHint | null
 }
 
 /**
@@ -248,6 +254,16 @@ export function useStudySession({
 
   const mistakes = useRef<MistakeContext | null>(null)
   /**
+   * 같은 읽기 색인 — 환기 퀴즈의 문항과 오답 피드백의 「짝」이 같이 쓴다. 세션 종류와 무관하게
+   * 로더에서 한 번만 만든다(재대결이 굳은 오답이 가장 많이 나오는 곳이다)
+   */
+  const homophones = useRef<HomophoneIndex<RuntimeIdiom> | null>(null)
+  /**
+   * 읽기 카드를 푼 적 있는 표현 id. 로더에서 기록 전체로 한 번 만들고 이번 세션의 채점은
+   * `record` 가 하나씩 더한다 — 오답마다 전체 이벤트를 훑지 않으려고(카드 전환 예산)
+   */
+  const learnedIds = useRef<Set<string>>(new Set())
+  /**
    * 소개 카드의 요미가나를 렌더 중에 만들려면 사전이 필요한데, `mistakes` 는 ref 라
    * 렌더에서 읽으면 갱신이 안 보일 수 있다. 그래서 사전이 오면 상태로도 한 번 남긴다.
    * 채점 경로(이벤트 핸들러)는 ref 를 그대로 쓴다 — 거기선 ref 가 맞다.
@@ -315,6 +331,7 @@ export function useStudySession({
         setPriorEvents(events)
         setVotes(state.meaningVotes)
         mistakes.current = mistakeContextFromKanji(kanjiAll)
+        learnedIds.current = learnedReadingIds(events)
         const rubyLookup = mistakes.current.lookup
         setRubyOfIdiom(() => (i: RuntimeIdiom) => rubyOf(i.headword, i.reading, rubyLookup))
         const now = Date.now()
@@ -389,15 +406,16 @@ export function useStudySession({
           limit,
         )
         setIntroIds(plan.introIds)
-        // 환기 퀴즈 — 채점 카드 한 장을 빼고 그 자리에 둔다(진행 분모 그대로). 보통 세션만이라
-        // 다른 종류는 색인을 만들 이유가 없다. 색인은 「기본 사전 + 풀에서 기본 사전에 없는 것」 —
-        // 훈독 0% 설정이면 풀만으로는 같은 읽기 보기가 줄어든다
+        // 같은 읽기 색인 — 「기본 사전 + 풀에서 기본 사전에 없는 것」. 훈독 0% 설정이면 풀만으로는
+        // 같은 읽기 보기가 줄어든다. 환기 퀴즈(보통 세션만)와 오답 피드백의 짝(모든 종류)이 같이 쓴다
+        const baseAll = await loadBaseIdioms()
+        if (!alive) return
+        const inBase = new Set(baseAll.map((i) => i.idiomId))
+        const index = buildHomophoneIndex([...baseAll, ...loaded.filter((p) => !inBase.has(p.idiomId))])
+        homophones.current = index
+        // 환기 퀴즈 — 채점 카드 한 장을 빼고 그 자리에 둔다(진행 분모 그대로). 보통 세션만
         let qp: ReturnType<typeof planQuiz> = { cards: plan.cards, quiz: null }
         if (kind === 'normal') {
-          const baseAll = await loadBaseIdioms()
-          if (!alive) return
-          const inBase = new Set(baseAll.map((i) => i.idiomId))
-          const index = buildHomophoneIndex([...baseAll, ...loaded.filter((p) => !inBase.has(p.idiomId))])
           // 세션마다 다른 시드 — 세션 구성(`seed: now`)과 같은 뿌리에서 갈라 쓴다
           qp = planQuiz({
             cards: plan.cards,
@@ -451,6 +469,7 @@ export function useStudySession({
   /** 이벤트를 DB 에 덧붙이면서 세션 요약용으로도 모아 둔다 */
   const record = useCallback((e: LearningEvent) => {
     void appendEvent(db(), e)
+    if (e.type === 'review' && e.deletedAt === null && e.cardType === 'reading') learnedIds.current.add(e.idiomId)
     setSessionEvents((prev) => [...prev, e])
   }, [])
 
@@ -559,6 +578,22 @@ export function useStudySession({
           ? onyomiEcho({ pairIds: idiom.pairIds, before: session.state.onyomi, sessionEvents, pairsOf })
           : []
 
+      // 같은 오답 되풀이 — 이번 답은 아직 기록 전이라 prior 에 안 든다(`next` 가 기록한다).
+      // 오답 유형을 붙이는 답에만: 빈 답·`classify: false` 는 무엇을 골랐는지가 없다
+      const repeat =
+        !correct && args.classify !== false && answer.trim() !== '' && homophones.current
+          ? repeatHint({
+              prior: [...priorEvents, ...sessionEvents],
+              idiomId: idiom.idiomId,
+              headword: idiom.headword,
+              expected: idiom.reading,
+              answer,
+              lookup: mistakes.current.lookup,
+              learned: learnedIds.current,
+              readingIndex: homophones.current,
+            })
+          : null
+
       // 루프 안 관찰 — 정답일 때만, 빈도 게이트를 통과했을 때만
       let observe: Observation | null = null
       if (correct && session) {
@@ -584,9 +619,10 @@ export function useStudySession({
         viaAlt,
         dual,
         classify: args.classify !== false,
+        repeat,
       })
     },
-    [idiom, session, sessionEvents, byId],
+    [idiom, session, sessionEvents, priorEvents, byId],
   )
 
   /**
