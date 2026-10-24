@@ -29,6 +29,11 @@ export interface QuizPlan {
  * 같은 숙어의 카드가 둘(읽기·뜻)이면 **단독인 카드를 먼저** 고르고, 단독이 없을 때만 둘짜리의 한 장을 뺀다.
  * 남는 한 장은 읽기만 또는 뜻만 있는 숙어의 모양이라 순서 규칙(`readingFirst`)이 깨지지 않는다.
  *
+ * **문항 재료**는 ① 퀴즈 앞에 지나온 세션 카드(가까운 것부터), 모자라면 ② `learned`(예전에 푼 표현,
+ * 최근에 푼 것부터)다. 세션 카드만으로는 동음이의 보기를 셋 이상 낼 수 있는 표현이 2% 남짓이라
+ * 퀴즈가 거의 안 섰다(2026-10-24 실측). ②도 노출 방지는 같다 — 뺀 숙어와 퀴즈 뒤에 카드가 남은
+ * 숙어는 정답·보기 양쪽에서 빠진다. 보기(오답)는 어느 쪽이든 사전의 같은 읽기 묶음에서 나온다.
+ *
  * 퀴즈를 못 내는 경우(보통 세션이 아니거나, 짧은 세션이거나, 뺄 카드·문항이 없을 때)는
  * `cards` 를 그대로 돌려주고 `quiz` 는 null 이다. 난수는 문항을 확정할 수 있을 때만 쓴다.
  */
@@ -40,8 +45,13 @@ export function planQuiz<T extends QuizIdiom>(input: {
   questionLimit: number
   index: HomophoneIndex<T>
   rand: () => number
+  /**
+   * 이 세션 **이전에** 읽기·뜻 카드를 채점받은 적 있는 숙어 id, 최근에 푼 것부터.
+   * 세션 카드로 문항이 모자랄 때 채우는 재료다. 안 주면 세션 카드만 쓴다
+   */
+  learned?: readonly string[]
 }): QuizPlan {
-  const { cards, introIds, kind, questionLimit, index, rand } = input
+  const { cards, introIds, kind, questionLimit, index, rand, learned } = input
   const none: QuizPlan = { cards: [...cards], quiz: null }
   if (kind !== 'normal' || questionLimit <= QUICK_SESSION_LIMIT) return none
 
@@ -90,6 +100,16 @@ export function planQuiz<T extends QuizIdiom>(input: {
     if (seenIds.has(id) || exclude.has(id)) continue
     seenIds.add(id)
     candidates.push(id)
+  }
+
+  // ② 예전에 푼 표현 — 세션에 카드가 있는 숙어는 위 ①이 이미 다뤘거나(앞) exclude 에 걸린다(뒤)
+  if (learned !== undefined) {
+    const inSession = new Set(cards.map((c) => c.idiomId))
+    for (const id of learned) {
+      if (seenIds.has(id) || inSession.has(id) || exclude.has(id)) continue
+      seenIds.add(id)
+      candidates.push(id)
+    }
   }
 
   const questions = pickQuizQuestions(candidates, index, QUIZ_QUESTIONS, rand, exclude)

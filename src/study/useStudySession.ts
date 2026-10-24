@@ -360,9 +360,15 @@ export function useStudySession({
         // 한 번이라도 푼 숙어는 소개 대상이 아니다. 카드 종류를 가리지 않고 숙어 단위로 본다 —
         // 읽기로 푼 숙어의 뜻 카드가 처음 나오는 경우가 있어서다 (2026-09-14)
         const seen = new Set<string>()
+        // 숙어별 마지막 채점 시각 — 환기 퀴즈가 세션 카드로 문항을 못 채울 때 쓰는 「예전에 푼 표현」
+        const lastAt = new Map<string, number>()
         for (const e of events) {
-          if (e.type === 'review' && e.deletedAt === null) seen.add(e.idiomId)
+          if (e.type === 'review' && e.deletedAt === null) {
+            seen.add(e.idiomId)
+            if (e.at > (lastAt.get(e.idiomId) ?? -Infinity)) lastAt.set(e.idiomId, e.at)
+          }
         }
+        const learned = [...lastAt].sort((a, b) => b[1] - a[1]).map(([id]) => id)
         // 같은 표기의 읽기 카드는 한 장으로 접는다 — 「읽기 둘」 카드가 한 번에 다
         // 물으므로, 안 접으면 방금 물어본 표기가 세션 뒤에 또 나온다 (2026-09-14).
         // 소개 배치보다 먼저 해야 한다 — 접힌 카드 자리로 소개 간격이 어긋나지 않게
@@ -400,6 +406,7 @@ export function useStudySession({
             questionLimit: limit,
             index,
             rand: quizRng(now ^ 0x9e3779b9),
+            learned,
           })
         }
         setQuiz(qp.quiz)

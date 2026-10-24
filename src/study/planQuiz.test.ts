@@ -52,7 +52,7 @@ const LIMIT = QUICK_SESSION_LIMIT + 5
 
 function plan(
   cards: SessionCard[],
-  opts: Partial<{ introIds: Set<string>; kind: 'normal' | 'rematch' | 'focus'; limit: number; ids: string[]; seed: number }> = {},
+  opts: Partial<{ introIds: Set<string>; kind: 'normal' | 'rematch' | 'focus'; limit: number; ids: string[]; seed: number; learned: string[] }> = {},
 ) {
   const ids = opts.ids ?? [...new Set(cards.map((c) => c.idiomId))]
   return planQuiz({
@@ -62,6 +62,7 @@ function plan(
     questionLimit: opts.limit ?? LIMIT,
     index: indexFor(ids),
     rand: rng(opts.seed ?? 1),
+    learned: opts.learned,
   })
 }
 
@@ -325,6 +326,76 @@ describe('planQuiz', () => {
     const rankOf = Object.fromEntries(plan.cards.map((c) => [c.idiomId, c.rank]))
     expect(rankOf).toEqual({ a: 0, b: 1, c: 2, d: 3, e: 4, new: 5 })
     expect(plan.cards[0]!.idiomId).toBe('c')
+  })
+
+  describe('learned — 예전에 푼 표현으로 문항 채우기', () => {
+    // base() 의 앞쪽 후보(가까운 순)는 n2 d2 n1 d1 — 사전에 넣은 것만 문항이 된다
+    it('세션 카드에서 문항이 없으면 learned 가 최근에 푼 것부터 채운다', () => {
+      const p = plan(base(), { ids: ['L1', 'L2', 'L3'], learned: ['L2', 'L1', 'L3'] })
+      expect(p.quiz!.questions.map((q) => q.targetId)).toEqual(['L2', 'L1'])
+      expect(p.cards.length + 1).toBe(base().length)
+    })
+
+    it('세션 카드에서 문항이 하나뿐이면 나머지 하나를 learned 로 채운다', () => {
+      const p = plan(base(), { ids: ['n2', 'L1', 'L2'], learned: ['L1', 'L2'] })
+      expect(p.quiz!.questions.map((q) => q.targetId)).toEqual(['n2', 'L1'])
+    })
+
+    it('세션 카드에서 문항이 둘 나오면 learned 는 안 쓴다', () => {
+      const p = plan(base(), { ids: ['n2', 'd2', 'L1'], learned: ['L1'] })
+      expect(p.quiz!.questions.map((q) => q.targetId)).toEqual(['n2', 'd2'])
+    })
+
+    it('learned 가 없거나 비면 지금과 같다 — 재료가 모자라면 퀴즈가 없다', () => {
+      const ids = { ids: ['L1', 'L2'] }
+      for (const learned of [undefined, []]) {
+        const p = plan(base(), { ...ids, learned })
+        expect(p.quiz).toBeNull()
+        expect(p.cards).toEqual(base())
+      }
+      expect(plan(base(), { seed: 7, learned: [] })).toEqual(plan(base(), { seed: 7 }))
+    })
+
+    it('세션에 카드가 있는 숙어(퀴즈 뒤·뺀 카드)는 learned 에 있어도 정답·보기에서 빠진다', () => {
+      const def = (t: string) => ({ definition: t, source: 'llm' as const, verified: false })
+      const mk = (id: string, reading: string): QuizIdiom => ({
+        idiomId: id,
+        headword: `${id}#`,
+        reading,
+        koMeaning: def(`${id}뜻`),
+      })
+      const index = buildHomophoneIndex([
+        mk('L1', 'あ'),
+        mk('d3', 'あ'), // 퀴즈 뒤에 카드가 남은 숙어
+        mk('n4', 'あ'), // 뺀 카드의 숙어
+        mk('x1', 'あ'),
+        mk('x2', 'あ'),
+        mk('L2', 'い'),
+        mk('y1', 'い'),
+        mk('y2', 'い'),
+      ])
+      for (let seed = 1; seed <= 20; seed++) {
+        const p = planQuiz({
+          cards: base(),
+          introIds: NONE,
+          kind: 'normal',
+          questionLimit: LIMIT,
+          index,
+          rand: rng(seed),
+          learned: ['d3', 'n4', 'L1', 'L2'],
+        })
+        expect(p.quiz!.questions.map((q) => q.targetId)).toEqual(['L1', 'L2'])
+        const shown = p.quiz!.questions.flatMap((q) => q.options.map((o) => o.idiomId))
+        expect(shown).not.toContain('d3')
+        expect(shown).not.toContain('n4')
+      }
+    })
+
+    it('앞쪽 세션 카드와 겹치는 learned 는 중복 후보가 되지 않는다', () => {
+      // n2 는 세션 앞쪽에도 learned 에도 있다 — 한 문항만 되고 둘째는 L1
+      const p = plan(base(), { ids: ['n2', 'L1'], learned: ['n2', 'L1'] })
+      expect(p.quiz!.questions.map((q) => q.targetId)).toEqual(['n2', 'L1'])
+    })
   })
 
   it('같은 난수면 결과가 같다', () => {
