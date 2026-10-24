@@ -32,7 +32,10 @@ import { getDeviceId } from '../db/device.ts'
 import { db } from '../db/schema.ts'
 import { LOCAL_USER_ID } from '../db/events.ts'
 import { listEvents } from '../db/events.ts'
-import { loadKanji, type RuntimeIdiom } from '../dict/load.ts'
+import { buildHomophoneIndex, type HomophoneQuestion } from '../core/quiz.ts'
+import { planQuiz } from './planQuiz.ts'
+import { quizPending, quizProgress, quizRng, saveQuizTime } from './quizSession.ts'
+import { loadBaseIdioms, loadKanji, type RuntimeIdiom } from '../dict/load.ts'
 import { loadStudyPool } from '../dict/pool.ts'
 import { mistakeContextFromKanji } from '../dict/mistakeContext.ts'
 import { loadSettings, OBSERVE_GATE } from '../app/settings.ts'
@@ -98,6 +101,8 @@ export type StudyStatus =
   | 'classReview'
   /** 처음 만나는 숙어 — 시험 대신 보여준다 (2026-09-13) */
   | 'intro'
+  /** 세션 중간의 환기 퀴즈 덩어리 — 기록하지 않는다 (PLAN §11 S4) */
+  | 'quiz'
   | 'reading'
   | 'reading-feedback'
   | 'meaning'
@@ -132,6 +137,8 @@ export interface StudyState {
   meaningVote: MeaningVerdict | null
   /** 카드 전환마다 1 증가. 화면이 전환 시간을 실측하는 트리거 (PLAN §7) */
   transitionSeq: number
+  /** `status === 'quiz'` 일 때만. 풀이 결과는 어디에도 남지 않는다 */
+  quiz?: HomophoneQuestion[]
 }
 
 export interface StudyActions {
@@ -152,6 +159,8 @@ export interface StudyActions {
   voteMeaning: (verdict: MeaningVerdict) => void
   /** 피드백을 닫고 다음 카드로. 정답이면 자신감 보정을 함께 넘긴다 */
   next: () => void
+  /** 환기 퀴즈 덩어리를 끝내고 다음 카드로 — 다 풀었을 때도, 건너뛸 때도 이 하나다. 이벤트는 안 만든다 */
+  finishQuiz: () => void
 }
 
 /**
@@ -207,6 +216,13 @@ export function useStudySession({
   const skipIds = useRef<Set<string>>(new Set())
   const [error, setError] = useState<string | null>(null)
   const [idx, setIdx] = useState(0)
+  /**
+   * 환기 퀴즈 자리와 문항 (`planQuiz`). 세션을 짤 때 한 번 정해진다. `at` 은 **카드 앞**이라
+   * 순회가 `at` 에 닿으면 그 카드 대신 퀴즈 덩어리가 서고, 끝나면 그 카드가 이어진다
+   */
+  const [quiz, setQuiz] = useState<{ at: number; questions: HomophoneQuestion[] } | null>(null)
+  const [quizDone, setQuizDone] = useState(false)
+  const quizStartedAt = useRef(0)
   /** 지연 검수 질문을 아직 안 지난 카드인지 */
   const [inClassReview, setInClassReview] = useState(false)
   const [feedback, setFeedback] = useState<ReadingFeedback | null>(null)
@@ -367,7 +383,28 @@ export function useStudySession({
           limit,
         )
         setIntroIds(plan.introIds)
-        const built2 = { ...built, cards: plan.cards }
+        // 환기 퀴즈 — 채점 카드 한 장을 빼고 그 자리에 둔다(진행 분모 그대로). 보통 세션만이라
+        // 다른 종류는 색인을 만들 이유가 없다. 색인은 「기본 사전 + 풀에서 기본 사전에 없는 것」 —
+        // 훈독 0% 설정이면 풀만으로는 같은 읽기 보기가 줄어든다
+        let qp: ReturnType<typeof planQuiz> = { cards: plan.cards, quiz: null }
+        if (kind === 'normal') {
+          const baseAll = await loadBaseIdioms()
+          if (!alive) return
+          const inBase = new Set(baseAll.map((i) => i.idiomId))
+          const index = buildHomophoneIndex([...baseAll, ...loaded.filter((p) => !inBase.has(p.idiomId))])
+          // 세션마다 다른 시드 — 세션 구성(`seed: now`)과 같은 뿌리에서 갈라 쓴다
+          qp = planQuiz({
+            cards: plan.cards,
+            introIds: plan.introIds,
+            kind,
+            questionLimit: limit,
+            index,
+            rand: quizRng(now ^ 0x9e3779b9),
+          })
+        }
+        setQuiz(qp.quiz)
+        setQuizDone(false)
+        const built2 = { ...built, cards: qp.cards }
         setSession(built2)
         setInClassReview(built2.cards[0]?.needsClassReview ?? false)
         shownAt.current = performance.now()
@@ -715,6 +752,18 @@ export function useStudySession({
     [card, idiom, feedback, meaningDone, answerCtx, paceMedian, advance, record],
   )
 
+  /**
+   * 환기 퀴즈를 마친다 (다 풀었을 때도 건너뛸 때도). **이벤트·결과·요약 어느 것에도 안 넣는다** —
+   * 소요 시간만 기기에 남긴다(길어졌는지 재려는 계측). 다음 카드의 응답 시간은 지금부터 잰다.
+   */
+  const finishQuiz = useCallback(() => {
+    saveQuizTime(performance.now() - quizStartedAt.current)
+    performance.mark('yomenai:advance')
+    setTransitionSeq((n) => n + 1)
+    setQuizDone(true)
+    shownAt.current = performance.now()
+  }, [])
+
   const events = useMemo(
     () => ({ prior: priorEvents, session: sessionEvents }),
     [priorEvents, sessionEvents],
@@ -725,6 +774,8 @@ export function useStudySession({
     if (error) return 'error'
     if (!session) return 'loading'
     if (idx >= session.cards.length) return 'done'
+    // 퀴즈 덩어리는 지연 검수 질문보다 먼저다 — 그 질문은 퀴즈 뒤 같은 카드에서 이어진다
+    if (quizPending(idx, session.cards.length, quiz?.at ?? null, quizDone)) return 'quiz'
     if (inClassReview) return 'classReview'
     if (card && !knewMeaning && (introIds.has(card.idiomId) || unknownMeaning.has(card.idiomId)))
       return 'intro'
@@ -734,6 +785,8 @@ export function useStudySession({
     error,
     session,
     idx,
+    quiz,
+    quizDone,
     inClassReview,
     card,
     introIds,
@@ -743,15 +796,20 @@ export function useStudySession({
     meaningDone,
   ])
 
+  // 덩어리 시간 계측의 시작점. 상태가 아니라 ref 라 렌더를 늘리지 않는다
+  useEffect(() => {
+    if (status === 'quiz') quizStartedAt.current = performance.now()
+  }, [status])
+
   const state: StudyState = {
     status,
     error: error ?? undefined,
     card,
     idiom,
     feedback: feedback ?? undefined,
+    // 퀴즈 덩어리는 한 칸이다 — 안 문항 번호는 안 세고, 분모는 카드 수에 그 한 칸을 더한 것이다
     progress: {
-      index: Math.min(idx, session?.cards.length ?? 0),
-      total: session?.cards.length ?? 0,
+      ...quizProgress(idx, session?.cards.length ?? 0, quiz?.at ?? null, quizDone),
       intros: introIds.size,
     },
     summary: { total: results.length, correct: results.filter(Boolean).length },
@@ -769,6 +827,7 @@ export function useStudySession({
       ? { total: 2, given: dualGot.map((g) => g.reading) }
       : undefined,
     transitionSeq,
+    quiz: status === 'quiz' ? quiz?.questions : undefined,
   }
 
   return [
@@ -781,6 +840,7 @@ export function useStudySession({
       seenIntro,
       voteMeaning,
       next,
+      finishQuiz,
     },
   ]
 }

@@ -1391,3 +1391,49 @@ button.tag {
 .answer-row.single {
   grid-template-columns: 1fr;
 }
+
+/* ── 환기 퀴즈 (PLAN §11 S4) ── 카드·버튼·정오답 색은 기존 것을 그대로 쓰고, 보기 안에 뜻 줄이 들어갈 만큼만 높이를 푼다.
+   색은 오답에만 朱, 정답은 ✓ 와 굵기로 (PLAN §7) */
+.quiz-opts {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 16px;
+}
+.btn.quiz-opt {
+  height: auto;
+  min-height: var(--tap);
+  padding: 8px 18px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  white-space: normal;
+  font-size: 24px;
+  line-height: 1.3;
+}
+.quiz-opt-mark {
+  font-size: 15px;
+  margin-right: 6px;
+}
+.quiz-opt-mean {
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--text-dim);
+}
+.btn.quiz-opt.is-ok {
+  border-color: var(--ok);
+  background: var(--ok-bg);
+  font-weight: 600;
+}
+.btn.quiz-opt.is-ok .quiz-opt-mark {
+  color: var(--ok);
+}
+.btn.quiz-opt.is-ng {
+  border-color: var(--ng);
+  background: var(--ng-bg);
+}
+.btn.quiz-opt.is-ng .quiz-opt-mark {
+  color: var(--ng);
+}

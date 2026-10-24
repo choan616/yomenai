@@ -3,6 +3,7 @@ import { useLayoutEffect } from 'react'
 import { ClassReviewPrompt } from './ClassReviewPrompt.tsx'
 import { IntroCard } from './IntroCard.tsx'
 import { MeaningCard } from './MeaningCard.tsx'
+import { QuizCard } from './QuizCard.tsx'
 import { ReadingCard } from './ReadingCard.tsx'
 import { ChapterTitle, MidNote } from './SessionShape.tsx'
 import { SessionSummary } from './SessionSummary.tsx'
@@ -87,12 +88,14 @@ export function Study({
         </span>
       </header>
 
-      {atMid && <MidNote index={index} total={total} correct={s.summary.correct} />}
+      {/* 퀴즈 덩어리 위에는 안 띄운다 — 1.8초 뒤 사라지며 보기를 밀어 올려 잘못 누르게 하고, 점수 없는 화면에 「정답 N」이 뜬다 */}
+      {atMid && s.status !== 'quiz' && <MidNote index={index} total={total} correct={s.summary.correct} />}
 
       <main className="study-main">
         {s.status === 'classReview' && s.idiom && (
           <ClassReviewPrompt idiom={s.idiom} onAnswer={a.answerClassReview} />
         )}
+        {s.status === 'quiz' && s.quiz && <QuizCard questions={s.quiz} onFinish={a.finishQuiz} />}
         {s.status === 'intro' && s.idiom && (
           <IntroCard idiom={s.idiom} ruby={s.idiomRuby} onSeen={a.seenIntro} />
         )}
