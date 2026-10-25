@@ -6,14 +6,15 @@
 // 입력 — data/events/*.json (앱 백업 또는 Drive 의 reviews-*.json). 같은 id 는 한 번만 센다.
 import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
+import { CHRONIC_WRONG } from '../src/core/corrected.ts'
 import { compareEvents, type LearningEvent, type ReviewEvent } from '../src/core/types.ts'
 
 const EVENTS_DIR =
   process.argv.find((a) => a.startsWith('--dir='))?.split('=')[1] ??
   join(import.meta.dirname, '..', 'data', 'events')
 
-/** 누적 오답이 이만큼이면 상습 표현으로 본다 */
-export const CHRONIC_WRONG = 3
+// 상습 기준은 앱의 「바로잡은 표현」 판정과 같은 값이어야 해서 한 곳(src/core/corrected.ts)에서 가져온다
+export { CHRONIC_WRONG }
 const DAY_MS = 864e5
 /** 판정 창(`selectWindow`)의 날 수와 같다 */
 const WINDOW_DAYS = 7

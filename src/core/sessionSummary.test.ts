@@ -136,6 +136,17 @@ describe('buildSessionSummary — 기본 수치', () => {
     expect(buildSessionSummary(input(prior, sess)).newPairs).toBe(2)
   })
 
+  it('바로잡은 표현의 누적 수와 이번 세션의 증가 수를 낸다', () => {
+    // 오답 3회로 상습이 되고, 9일 전 정답 하나 — 이번 세션의 정답이 두 번째라 7일을 넘겨 바로잡힌다
+    const prior = [
+      ...session(T0, [{ idiomId: 'a', correct: false }, { idiomId: 'a', correct: false }, { idiomId: 'a', correct: false }]),
+      ...session(T0 + DAY, [{ idiomId: 'a' }]),
+    ]
+    const sess = session(T0 + 10 * DAY, [{ idiomId: 'a' }])
+    expect(buildSessionSummary(input(prior, sess)).corrected).toEqual({ total: 1, gained: 1 })
+    expect(buildSessionSummary(input([...prior, ...sess], [])).corrected).toEqual({ total: 1, gained: 0 })
+  })
+
   it('이미 맞힌 적 있는 음독은 새로 세지 않는다', () => {
     const prior = session(T0, [{ idiomId: 'a' }])
     const sess = session(T0 + DAY, [{ idiomId: 'a' }])

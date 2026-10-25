@@ -86,7 +86,7 @@ export function SessionSummary({
 
   const week = useMemo(() => weekOf(events), [events])
 
-  const done = summary ?? { total: 0, correct: 0, results: [], newPairs: 0, topMistake: null, trend: [], finding: null }
+  const done = summary ?? { total: 0, correct: 0, results: [], newPairs: 0, topMistake: null, trend: [], corrected: { total: 0, gained: 0 }, finding: null }
 
   return (
     <div className="centered summary-screen">
@@ -101,8 +101,11 @@ export function SessionSummary({
 
       <dl className="summary-stats">
         <div>
-          <dt>정답률</dt>
-          <dd>{done.total > 0 ? Math.round((done.correct / done.total) * 100) : 0}%</dd>
+          <dt>바로잡은 표현</dt>
+          <dd>
+            {done.corrected.total}
+            {done.corrected.gained > 0 && <span className="dim stat-gain"> +{done.corrected.gained}</span>}
+          </dd>
         </div>
         <div>
           <dt>새 음독</dt>

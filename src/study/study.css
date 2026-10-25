@@ -837,6 +837,9 @@ button.tag {
   font-size: 14px;
   line-height: 1.5;
 }
+.summary-stats .stat-gain {
+  font-size: 13px;
+}
 
 /* 최근 세션 추이 — 마지막 막대(이번 세션)만 朱 로 세운다 */
 .trend {

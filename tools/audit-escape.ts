@@ -9,7 +9,8 @@
 // 입력 — data/events/*.json (audit-plateau.ts 와 같다). 같은 id 는 한 번만 센다.
 import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { compareEvents, type LearningEvent, type ReviewEvent } from '../src/core/types.ts'
+import { isCorrectedStreak, readingReviews } from '../src/core/corrected.ts'
+import type { LearningEvent, ReviewEvent } from '../src/core/types.ts'
 import { CHRONIC_WRONG } from './audit-plateau.ts'
 
 const EVENTS_DIR =
@@ -51,9 +52,12 @@ export const CRITERIA: readonly Criterion[] = [
   { id: 'K2', label: '연속 3회 정답', test: (s) => s.count >= 3 },
   { id: 'K3', label: '연속 정답이 2일에 걸침', test: (s) => s.days >= 2 },
   { id: 'K4', label: '연속 정답이 3일에 걸침', test: (s) => s.days >= 3 },
-  { id: 'K5', label: '연속 2회+ 정답, 첫 정답에서 7일+', test: (s) => s.count >= 2 && s.spanMs >= 7 * DAY_MS },
+  { id: 'K5', label: '연속 2회+ 정답, 첫 정답에서 7일+', test: (s) => isCorrectedStreak(s.count, s.spanMs) },
   { id: 'K6', label: '직전 만남에서 7일+ 떨어진 정답', test: (s) => s.gapMs >= 7 * DAY_MS },
 ]
+
+// 읽기 채점 추리기는 앱과 같은 구현을 쓴다(src/core/corrected.ts) — 테스트가 여기서 가져간다
+export { readingReviews }
 
 export interface Tally {
   n: number
@@ -136,15 +140,6 @@ export function median(xs: readonly number[]): number | null {
   const s = [...xs].sort((a, b) => a - b)
   const m = s.length >> 1
   return s.length % 2 ? s[m]! : (s[m - 1]! + s[m]!) / 2
-}
-
-/** 읽기 채점만, 삭제 제외, 같은 id 한 번, 시간순 */
-export function readingReviews(events: readonly LearningEvent[]): ReviewEvent[] {
-  const seen = new Map<string, ReviewEvent>()
-  for (const e of events) {
-    if (e.type === 'review' && e.cardType === 'reading' && e.deletedAt === null) seen.set(e.id, e)
-  }
-  return [...seen.values()].sort(compareEvents)
 }
 
 interface Escape {

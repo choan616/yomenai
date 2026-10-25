@@ -1,6 +1,7 @@
 // 벗어남 기준 실측 집계 검증 — 미래 정보 금지, 기준별 벗어남 시점, 날 경계, 무너짐, 주별 집계
 import { describe, expect, it } from 'vitest'
 import { completeWeeks, dayOf, escapeReport, findEscapes, median, readingReviews, wilson } from './audit-escape.ts'
+import { correctedIndex } from '../src/core/corrected.ts'
 import type { ReviewEvent } from '../src/core/types.ts'
 
 const DAY = 864e5
@@ -215,5 +216,26 @@ describe('보조 함수', () => {
   it('completeWeeks 는 끝까지 찬 주만 센다', () => {
     expect(completeWeeks(0, 13)).toBe(2)
     expect(completeWeeks(0, 12)).toBe(1)
+  })
+})
+
+describe('앱의 바로잡은 표현 판정(src/core/corrected.ts)과 K5', () => {
+  it('무작위 기록에서 같은 자리를 가리킨다 — 두 구현이 어긋나지 않게 묶는다', () => {
+    // 고정 시드 선형 합동 난수 — 테스트가 매번 같게 돈다
+    let s = 12345
+    const rnd = (): number => {
+      s = (s * 1103515245 + 12345) % 2 ** 31
+      return s / 2 ** 31
+    }
+    for (let round = 0; round < 300; round++) {
+      let t = BASE
+      const list: ReviewEvent[] = []
+      const n = 3 + Math.floor(rnd() * 14)
+      for (let i = 0; i < n; i++) {
+        t += Math.floor(rnd() * 5 * DAY)
+        list.push(ev('r', t, rnd() < 0.55))
+      }
+      expect(correctedIndex(list)).toBe(findEscapes(list)[4]?.idx ?? null)
+    }
   })
 })

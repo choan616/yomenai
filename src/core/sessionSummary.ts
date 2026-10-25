@@ -1,6 +1,7 @@
 // 세션 종료 요약 — 리포트의 축소판과 "오늘의 발견" 한 줄.
 // 진단 리포트가 이 앱의 얼굴이라면 매 세션 끝에 그 얼굴을 봐야 한다 (PLAN §7)
 import type { OnyomiPair } from '../dict/load.ts'
+import { correctedSummary, type CorrectedSummary } from './corrected.ts'
 import { replay } from './replay.ts'
 import { compareEvents, type LearningEvent, type MistakeType, type ReviewEvent } from './types.ts'
 
@@ -33,6 +34,8 @@ export interface SessionSummary {
   topMistake: { type: MistakeType; count: number } | null
   /** `topMistake` 유형의 세션별 발생 수 (오래된 → 최신, 이번 세션 포함) */
   trend: number[]
+  /** 「바로잡은 표현」 누적 수와 이번 세션에 늘어난 수 */
+  corrected: CorrectedSummary
   finding: Finding | null
 }
 
@@ -86,6 +89,7 @@ export function buildSessionSummary(input: SummaryInput): SessionSummary {
     newPairs: newPairs.length,
     topMistake,
     trend,
+    corrected: correctedSummary(input.prior, all),
     finding: pickFinding({ input, reviews, total, correct, topMistake, trend, newPairs }),
   }
 }
