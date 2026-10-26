@@ -1396,35 +1396,48 @@ button.tag {
   grid-template-columns: 1fr;
 }
 
-/* ── 환기 퀴즈 (PLAN §11 S4) ── 카드·버튼·정오답 색은 기존 것을 그대로 쓰고, 보기 안에 뜻 줄이 들어갈 만큼만 높이를 푼다.
+/* ── 환기 퀴즈 (PLAN §11 S4) ── 카드·버튼·정오답 색은 기존 것을 그대로 쓴다.
+   보기를 고르면 뜻이 드러나는데, 아래에 줄을 얹으면 보기마다 +20px(3개면 +60px)로 영역이 길어져 작은 화면에서
+   스크롤이 생기고 누르는 순간 보기가 밀린다(2026-10-26 사용자 신고). 그래서 뜻은 표기 옆에 두어 높이가 안 변한다.
    색은 오답에만 朱, 정답은 ✓ 와 굵기로 (PLAN §7) */
 .quiz-opts {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  margin-top: 16px;
+  gap: 8px;
+  margin-top: 12px;
 }
 .btn.quiz-opt {
   height: auto;
   min-height: var(--tap);
   padding: 8px 18px;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
   justify-content: center;
-  gap: 2px;
+  gap: 14px;
   white-space: normal;
   font-size: 24px;
   line-height: 1.3;
+}
+/* 고른 뒤: 표기는 왼쪽, 뜻은 그 옆. 두 줄까지만 — 세 줄째가 높이를 다시 늘린다 */
+.quiz-opts.is-answered .btn.quiz-opt {
+  justify-content: flex-start;
 }
 .quiz-opt-mark {
   font-size: 15px;
   margin-right: 6px;
 }
 .quiz-opt-mean {
+  flex: 1;
+  min-width: 0;
+  text-align: left;
   font-size: 13px;
   line-height: 1.4;
   color: var(--text-dim);
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
 }
 .btn.quiz-opt.is-ok {
   border-color: var(--ok);

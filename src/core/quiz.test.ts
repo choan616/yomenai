@@ -38,7 +38,7 @@ describe('homophoneQuestion', () => {
       const q = homophoneQuestion(pool[0]!, index, rng(seed))!
       expect(q).not.toBeNull()
       expect(q.options.length).toBeGreaterThanOrEqual(3)
-      expect(q.options.length).toBeLessThanOrEqual(4)
+      expect(q.options.length).toBeLessThanOrEqual(3)
       const heads = q.options.map((o) => o.headword)
       expect(new Set(heads).size).toBe(heads.length)
       const readingOf = new Map(pool.map((p) => [p.idiomId, p.reading]))
@@ -95,8 +95,11 @@ describe('homophoneQuestion', () => {
     const exclude = new Set(['a4'])
     for (let seed = 1; seed <= 20; seed++) {
       const q = homophoneQuestion(KOUSEI[0]!, index, rng(seed), exclude)!
-      // 후보 5개 중 a4 를 빼면 정답 포함 4개가 정확히 남는다
-      expect(q.options.map((o) => o.idiomId).sort()).toEqual(['a1', 'a2', 'a3', 'a5'])
+      // a4 는 후보에서 빠지고, 남은 넷 중 정답 포함 3개가 선다
+      const ids = q.options.map((o) => o.idiomId)
+      expect(ids).toContain('a1')
+      expect(ids).not.toContain('a4')
+      expect(ids).toHaveLength(3)
     }
   })
 
@@ -113,10 +116,10 @@ describe('homophoneQuestion', () => {
     )
   })
 
-  it('보기가 4개를 넘지 않는다', () => {
+  it('보기가 3개를 넘지 않는다 — 고른 뒤 뜻이 드러나도 작은 화면에 들어간다', () => {
     const index = buildHomophoneIndex(KOUSEI)
     for (let seed = 1; seed <= 20; seed++) {
-      expect(homophoneQuestion(KOUSEI[0]!, index, rng(seed))!.options).toHaveLength(4)
+      expect(homophoneQuestion(KOUSEI[0]!, index, rng(seed))!.options).toHaveLength(3)
     }
   })
 

@@ -206,7 +206,7 @@ test('보기를 누르면 그 자리에서 정답과 뜻이 드러나고, 「다
   const opts = page.locator('.quiz-opt')
   const n = await opts.count()
   expect(n).toBeGreaterThanOrEqual(3)
-  expect(n).toBeLessThanOrEqual(4)
+  expect(n).toBeLessThanOrEqual(3)
   // 고르기 전: 뜻도 정답 표시도 없고, 「다음」은 자리만 지킨다
   await expect(page.locator('.quiz-opt-mean')).toHaveCount(0)
   await expect(page.locator('.quiz-opt.is-ok, .quiz-opt.is-ng')).toHaveCount(0)
@@ -220,6 +220,7 @@ test('보기를 누르면 그 자리에서 정답과 뜻이 드러나고, 「다
   const heads = await page.locator('.quiz-opt-word [lang="ja"]').allInnerTexts()
   const wrongAt = heads.findIndex((h) => !right1.includes(h))
   expect(wrongAt).toBeGreaterThanOrEqual(0)
+  const heightBefore = (await page.locator('.quiz-opts').boundingBox())!.height
   await opts.nth(wrongAt).click()
 
   // 정답 하나는 ✓, 고른 오답만 ✗ + 朱 — 나머지 보기는 평범하다. 보기마다 뜻이 드러난다
@@ -229,6 +230,8 @@ test('보기를 누르면 그 자리에서 정답과 뜻이 드러나고, 「다
   await expect(opts.nth(wrongAt)).toHaveClass(/is-ng/)
   await expect(page.locator('.quiz-opt .quiz-opt-mark')).toHaveCount(2)
   await expect(page.locator('.quiz-opt-mean')).toHaveCount(n)
+  // 뜻이 드러나도 보기 영역은 길어지지 않는다 — 길어지면 작은 화면에서 스크롤이 생기고 누르는 순간 보기가 밀린다
+  expect((await page.locator('.quiz-opts').boundingBox())!.height).toBe(heightBefore)
   await expect(page.locator('.quiz-opt.is-ok .quiz-opt-mean')).toHaveText(meaning1)
   // 점수·축하 문구 없음
   await expect(page.locator('.quiz-card .verdict')).toHaveCount(0)
@@ -330,7 +333,7 @@ test('퀴즈의 일본어 요소에는 lang="ja" 가 붙고 일본어 폰트 스
     const fonts = [...card.querySelectorAll('[lang="ja"]')].map((e) => getComputedStyle(e).fontFamily)
     return { seen, stray, fonts }
   })
-  // 읽기 1 + 보기 3~4 — 하나도 못 봤으면 검사가 헛돈 것이다
+  // 읽기 1 + 보기 3 — 하나도 못 봤으면 검사가 헛돈 것이다
   expect(scan.seen).toBeGreaterThanOrEqual(4)
   expect(scan.stray).toEqual([])
   for (const f of scan.fonts) expect(f).toContain('Noto Sans JP')

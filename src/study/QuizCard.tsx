@@ -44,7 +44,7 @@ export function QuizCard({ questions, onFinish }: Props) {
           {q.reading}
         </p>
         <p className="meaning">{q.meaning}</p>
-        <div className="quiz-opts" role="group" aria-label="보기">
+        <div className={`quiz-opts${answered ? ' is-answered' : ''}`} role="group" aria-label="보기">
           {q.options.map((o) => {
             const isAnswer = o.idiomId === q.targetId
             const state = !answered ? '' : isAnswer ? ' is-ok' : o.idiomId === picked ? ' is-ng' : ''
