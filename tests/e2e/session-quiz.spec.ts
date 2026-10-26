@@ -243,7 +243,7 @@ test('보기를 누르면 그 자리에서 정답이 드러나고, 「다음」�
 
   const nextBtn = page.getByRole('button', { name: '다음', exact: true })
   await expect(nextBtn).toBeVisible()
-  // 고른 뒤에는 다시 눌러도 바뀌지 않는다
+  // 고른 뒤에는 다시 눌러도 정오답 표시가 바뀌지 않는다(눌러서 담기는 아래 테스트)
   await opts.first().click()
   await expect(page.locator('.quiz-opt.is-ng')).toHaveCount(1)
 
@@ -266,6 +266,90 @@ test('보기를 누르면 그 자리에서 정답이 드러나고, 「다음」�
   await expect(page.locator('.quiz-card')).toHaveCount(0)
   // 퀴즈는 어떤 이벤트도 만들지 않았다
   expect(await reviewCount(page)).toBe(reviews)
+})
+
+/** 담기·빼기(`star`) 이벤트를 시간순으로 */
+async function starEvents(page: Page): Promise<{ idiomId: string; on: boolean; list?: string; at: number }[]> {
+  return page.evaluate(
+    () =>
+      new Promise<{ idiomId: string; on: boolean; list?: string; at: number }[]>((res) => {
+        const req = indexedDB.open('yomenai')
+        req.onsuccess = () => {
+          const all = req.result.transaction('events', 'readonly').objectStore('events').getAll()
+          all.onsuccess = () =>
+            res(
+              (all.result as { type: string; idiomId: string; on: boolean; list?: string; at: number }[])
+                .filter((e) => e.type === 'star')
+                .sort((a, b) => a.at - b.at),
+            )
+        }
+      }),
+  )
+}
+
+test('고른 뒤 보기를 누르면 「퀴즈」 묶음에 담기고 ★, 다시 누르면 빠진다 — 안내는 첫 퀴즈에만', async ({ page }) => {
+  // iPhone SE + Safari 툴바 높이 — ★ 와 안내 줄이 들어와도 카드 안에서 스크롤이 생기지 않는다
+  await page.setViewportSize({ width: 375, height: 553 })
+  await startNormal(page)
+  await toQuiz(page)
+  const overflow = () => page.locator('.quiz-card .card-body').evaluate((e) => e.scrollHeight - e.clientHeight)
+
+  // 고르기 전에는 담기지 않는다 — 누르면 고르는 것이다. 안내는 자리만 지킨다
+  await expect(page.locator('.quiz-hint')).toBeHidden()
+  const stars0 = (await starEvents(page)).length
+  await page.locator('.quiz-opt').first().click()
+  expect((await starEvents(page)).length).toBe(stars0)
+  await expect(page.locator('.quiz-hint')).toBeVisible()
+  const heightAfterPick = (await page.locator('.quiz-opts').boundingBox())!.height
+
+  // 이미 담긴 표현은 ★ 로 시작한다(담은 여섯이 이 문항의 재료다). 담기지 않은 보기를 눌러 담는다
+  const before = await page.locator('.quiz-opt-star').count()
+  const plainAt = await page
+    .locator('.quiz-opt')
+    .evaluateAll((els) => els.findIndex((e) => e.querySelector('.quiz-opt-star') === null))
+  expect(plainAt).toBeGreaterThanOrEqual(0)
+  const plain = page.locator('.quiz-opt').nth(plainAt)
+  const head = await plain.locator('[lang="ja"]').innerText()
+  await plain.click()
+  await expect(page.locator('.quiz-opt-star')).toHaveCount(before + 1)
+  await expect(plain.locator('.quiz-opt-star')).toHaveCount(1)
+  await expect(plain).toHaveAttribute('aria-pressed', 'true')
+  await expect.poll(async () => (await starEvents(page)).length).toBe(stars0 + 1)
+  const added = (await starEvents(page)).at(-1)!
+  expect(added.on).toBe(true)
+  expect(added.list).toBe('퀴즈')
+  // ★ 가 붙어도 보기 영역 높이는 그대로고 넘침이 없다
+  expect((await page.locator('.quiz-opts').boundingBox())!.height).toBe(heightAfterPick)
+  expect(await overflow()).toBeLessThanOrEqual(0)
+
+  // 다시 누르면 빠진다 — 마지막 이벤트가 이긴다
+  await plain.click()
+  await expect(page.locator('.quiz-opt-star')).toHaveCount(before)
+  await expect.poll(async () => (await starEvents(page)).length).toBe(stars0 + 2)
+  const removed = (await starEvents(page)).at(-1)!
+  expect(removed.on).toBe(false)
+  expect(removed.idiomId).toBe(added.idiomId)
+  expect(head).not.toBe('')
+
+  // 다음 문항에도 안내가 같은 자리에 있다. 한 번 보인 뒤에는 기기에 표시가 남는다
+  await page.keyboard.press('Enter')
+  await page.locator('.quiz-opt').first().click()
+  await expect(page.locator('.quiz-hint')).toBeVisible()
+  expect(await page.evaluate(() => localStorage.getItem('yomenai.quizStarHint'))).toBe('1')
+})
+
+test('안내를 본 기기의 퀴즈에는 안내 줄이 없다', async ({ page }) => {
+  await page.addInitScript(() => {
+    try {
+      localStorage.setItem('yomenai.quizStarHint', '1')
+    } catch {
+      /* private mode */
+    }
+  })
+  await startNormal(page)
+  await toQuiz(page)
+  await page.locator('.quiz-opt').first().click()
+  await expect(page.locator('.quiz-hint')).toHaveCount(0)
 })
 
 test('건너뛰기 한 탭이면 문항을 풀지 않고 다음 카드로 간다 — 이벤트도 없다', async ({ page }) => {

@@ -68,3 +68,25 @@ export function saveQuizTime(ms: number): void {
     /* 계측일 뿐이다 */
   }
 }
+
+/** 퀴즈에서 담은 표현이 들어가는 묶음 — 끝말잇기(`SHIRITORI_LIST`)와 같은 규칙으로 늘 이 묶음이다 */
+export const QUIZ_STAR_LIST = '퀴즈'
+
+/** 「모르는 표현은 눌러서 담아요」 안내를 이미 보였는지. 한 번 보인 뒤에는 안 띄운다 */
+export const QUIZ_STAR_HINT_KEY = 'yomenai.quizStarHint'
+
+export function quizStarHintSeen(): boolean {
+  try {
+    return localStorage.getItem(QUIZ_STAR_HINT_KEY) === '1'
+  } catch {
+    return false
+  }
+}
+
+export function markQuizStarHintSeen(): void {
+  try {
+    localStorage.setItem(QUIZ_STAR_HINT_KEY, '1')
+  } catch {
+    /* 안내가 한 번 더 뜰 뿐이다 */
+  }
+}

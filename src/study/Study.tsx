@@ -95,7 +95,7 @@ export function Study({
         {s.status === 'classReview' && s.idiom && (
           <ClassReviewPrompt idiom={s.idiom} onAnswer={a.answerClassReview} />
         )}
-        {s.status === 'quiz' && s.quiz && <QuizCard questions={s.quiz} onFinish={a.finishQuiz} />}
+        {s.status === 'quiz' && s.quiz && <QuizCard questions={s.quiz} onFinish={a.finishQuiz} events={s.events} />}
         {s.status === 'intro' && s.idiom && (
           <IntroCard idiom={s.idiom} ruby={s.idiomRuby} onSeen={a.seenIntro} />
         )}

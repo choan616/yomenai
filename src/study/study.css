@@ -1411,6 +1411,7 @@ button.tag {
   grid-column: 1 / -1;
 }
 .btn.quiz-opt {
+  position: relative;
   height: auto;
   min-height: var(--tap);
   padding: 8px 12px;
@@ -1420,6 +1421,24 @@ button.tag {
   white-space: normal;
   font-size: 24px;
   line-height: 1.3;
+}
+/* 담은 표현 — 칸 모서리에 얹어 칸 높이를 안 건드린다 */
+.quiz-opt-star {
+  position: absolute;
+  top: 3px;
+  right: 8px;
+  font-size: 13px;
+  line-height: 1;
+  color: var(--text-dim);
+}
+.quiz-hint {
+  margin: 8px 0 0;
+  text-align: center;
+  font-size: 13px;
+  color: var(--text-dim);
+}
+.quiz-hint.is-hidden {
+  visibility: hidden;
 }
 .quiz-opt-mark {
   font-size: 15px;
