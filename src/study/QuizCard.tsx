@@ -12,7 +12,7 @@ interface Props {
 
 export function QuizCard({ questions, onFinish }: Props) {
   const [qi, setQi] = useState(0)
-  /** 고른 보기의 idiomId. 고르면 그 자리에서 정답과 각 보기의 뜻이 드러난다 */
+  /** 고른 보기의 idiomId. 고르면 그 자리에서 정답이 드러난다 */
   const [picked, setPicked] = useState<string | null>(null)
   const q = questions[qi]!
   const last = qi === questions.length - 1
@@ -44,7 +44,7 @@ export function QuizCard({ questions, onFinish }: Props) {
           {q.reading}
         </p>
         <p className="meaning">{q.meaning}</p>
-        <div className={`quiz-opts${answered ? ' is-answered' : ''}`} role="group" aria-label="보기">
+        <div className="quiz-opts" role="group" aria-label="보기">
           {q.options.map((o) => {
             const isAnswer = o.idiomId === q.targetId
             const state = !answered ? '' : isAnswer ? ' is-ok' : o.idiomId === picked ? ' is-ng' : ''
@@ -70,7 +70,6 @@ export function QuizCard({ questions, onFinish }: Props) {
                   )}
                   <span lang="ja">{o.headword}</span>
                 </span>
-                {answered && <span className="quiz-opt-mean">{o.meaning}</span>}
               </button>
             )
           })}

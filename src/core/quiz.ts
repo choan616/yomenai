@@ -15,8 +15,6 @@ export interface HomophoneIndex<T extends QuizIdiom = QuizIdiom> {
 export interface QuizOption {
   idiomId: string
   headword: string
-  /** 정답을 고른 뒤 보여 줄 뜻 */
-  meaning: string
 }
 
 export interface HomophoneQuestion {
@@ -26,13 +24,13 @@ export interface HomophoneQuestion {
   reading: string
   /** 제시하는 한국어 뜻 — 정답 보기의 뜻과 같다 */
   meaning: string
-  /** 섞인 보기. 3개, 표기 중복 없음, 뜻이 서로 겹치지 않음 */
+  /** 섞인 보기. 3~4개, 표기 중복 없음, 뜻이 서로 겹치지 않음 */
   options: QuizOption[]
 }
 
 /** 정답 포함 보기 수의 하한·상한 */
 export const MIN_OPTIONS = 3
-export const MAX_OPTIONS = 3
+export const MAX_OPTIONS = 4
 
 function meaningOf(it: QuizIdiom): string {
   return (it.koMeaning?.definition ?? '').trim()
@@ -123,7 +121,6 @@ export function homophoneQuestion<T extends QuizIdiom>(
     [target, ...chosen.map((c) => c.it)].map((it) => ({
       idiomId: it.idiomId,
       headword: it.headword,
-      meaning: meaningOf(it),
     })),
     rand,
   )

@@ -198,17 +198,21 @@ test('보통 세션 중간에 퀴즈가 서고, 진행 분모는 설정 장수(2
   await expect.poll(() => reviewCount(page)).toBe(19)
 })
 
-test('보기를 누르면 그 자리에서 정답과 뜻이 드러나고, 「다음」과 Enter 로 넘어간다', async ({ page }) => {
+test('보기를 누르면 그 자리에서 정답이 드러나고, 「다음」과 Enter 로 넘어간다', async ({ page }) => {
+  // iPhone SE + Safari 툴바로 줄어든 높이 — 보기 앞뒤 어느 쪽도 카드 안에서 스크롤이 생기지 않는다
+  await page.setViewportSize({ width: 375, height: 553 })
   await startNormal(page)
   await toQuiz(page)
   const reviews = await reviewCount(page)
 
+  const overflow = () =>
+    page.locator('.quiz-card .card-body').evaluate((e) => e.scrollHeight - e.clientHeight)
+  expect(await overflow()).toBeLessThanOrEqual(0)
   const opts = page.locator('.quiz-opt')
   const n = await opts.count()
   expect(n).toBeGreaterThanOrEqual(3)
-  expect(n).toBeLessThanOrEqual(3)
-  // 고르기 전: 뜻도 정답 표시도 없고, 「다음」은 자리만 지킨다
-  await expect(page.locator('.quiz-opt-mean')).toHaveCount(0)
+  expect(n).toBeLessThanOrEqual(4)
+  // 고르기 전: 정답 표시가 없고, 「다음」은 자리만 지킨다
   await expect(page.locator('.quiz-opt.is-ok, .quiz-opt.is-ng')).toHaveCount(0)
   await expect(page.getByRole('button', { name: '다음', exact: true })).toBeHidden()
 
@@ -223,16 +227,16 @@ test('보기를 누르면 그 자리에서 정답과 뜻이 드러나고, 「다
   const heightBefore = (await page.locator('.quiz-opts').boundingBox())!.height
   await opts.nth(wrongAt).click()
 
-  // 정답 하나는 ✓, 고른 오답만 ✗ + 朱 — 나머지 보기는 평범하다. 보기마다 뜻이 드러난다
+  // 정답 하나는 ✓, 고른 오답만 ✗ + 朱 — 나머지 보기는 평범하다. 보기에는 뜻을 더하지 않는다
   await expect(page.locator('.quiz-opt.is-ok')).toHaveCount(1)
   await expect(page.locator('.quiz-opt.is-ok [lang="ja"]')).toHaveText(right1.length === 1 ? right1[0]! : /.+/)
   await expect(page.locator('.quiz-opt.is-ng')).toHaveCount(1)
   await expect(opts.nth(wrongAt)).toHaveClass(/is-ng/)
   await expect(page.locator('.quiz-opt .quiz-opt-mark')).toHaveCount(2)
-  await expect(page.locator('.quiz-opt-mean')).toHaveCount(n)
-  // 뜻이 드러나도 보기 영역은 길어지지 않는다 — 길어지면 작은 화면에서 스크롤이 생기고 누르는 순간 보기가 밀린다
+  // 고른 뒤에도 보기 영역은 길어지지 않는다 — 길어지면 작은 화면에서 스크롤이 생기고 누르는 순간 보기가 밀린다
+  await expect(page.locator('.quiz-opt-mean')).toHaveCount(0)
+  expect(await overflow()).toBeLessThanOrEqual(0)
   expect((await page.locator('.quiz-opts').boundingBox())!.height).toBe(heightBefore)
-  await expect(page.locator('.quiz-opt.is-ok .quiz-opt-mean')).toHaveText(meaning1)
   // 점수·축하 문구 없음
   await expect(page.locator('.quiz-card .verdict')).toHaveCount(0)
   await expect(page.locator('.quiz-card')).not.toContainText(/정답입니다|맞았|틀렸|축하|점/)
@@ -246,7 +250,6 @@ test('보기를 누르면 그 자리에서 정답과 뜻이 드러나고, 「다
   // Enter 로 문항 2 — 읽기가 바뀐다
   await page.keyboard.press('Enter')
   await expect(page.locator('.quiz-card .headword')).not.toHaveText(reading1)
-  await expect(page.locator('.quiz-opt-mean')).toHaveCount(0)
 
   // 문항 2 — 정답을 고르면 ✗ 가 하나도 없다. 두 번째 문항 뒤에는 「계속」
   const reading2 = await page.locator('.quiz-card .headword').innerText()
@@ -333,7 +336,7 @@ test('퀴즈의 일본어 요소에는 lang="ja" 가 붙고 일본어 폰트 스
     const fonts = [...card.querySelectorAll('[lang="ja"]')].map((e) => getComputedStyle(e).fontFamily)
     return { seen, stray, fonts }
   })
-  // 읽기 1 + 보기 3 — 하나도 못 봤으면 검사가 헛돈 것이다
+  // 읽기 1 + 보기 3~4 — 하나도 못 봤으면 검사가 헛돈 것이다
   expect(scan.seen).toBeGreaterThanOrEqual(4)
   expect(scan.stray).toEqual([])
   for (const f of scan.fonts) expect(f).toContain('Noto Sans JP')
