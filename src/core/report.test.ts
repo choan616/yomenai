@@ -66,15 +66,26 @@ describe('buildReport', () => {
     expect(r.totalReviews).toBe(9)
   })
 
-  it('취약 음독은 seen>=3 && wrong>0 만, 오답률 내림차순', () => {
-    expect(r.weakOnyomi.map((w) => w.pairId)).toEqual(['認:on:にん', '識:on:しき'])
+  it('취약 음독은 오답률 신뢰 하한 30% 이상만 — 4/5 는 올라오고 1/4 는 아니다', () => {
+    expect(r.weakOnyomi.map((w) => w.pairId)).toEqual(['認:on:にん'])
     expect(r.weakOnyomi[0]).toMatchObject({ kanji: '認', base: 'にん', seen: 5, wrong: 4 })
     expect(r.weakOnyomi[0].rate).toBeCloseTo(0.8)
   })
 
+  it('3번에 2번은 아직 취약이 아니다 — 같은 67% 라도 표본이 두꺼운 9/13 만 올라온다', () => {
+    const thin: ReplayState = {
+      ...state(),
+      onyomi: new Map([
+        ['a', { pairId: 'a', seen: 3, wrong: 2 }],
+        ['b', { pairId: 'b', seen: 13, wrong: 9 }],
+      ]),
+    }
+    expect(buildReport(thin, pairs, (id) => names[id]).weakOnyomi.map((w) => w.pairId)).toEqual(['b'])
+  })
+
   it('취약 음독에 상한이 없다 — 요약 타일이 이 길이를 개수로 말한다 (2026-10-28)', () => {
     const many: ReplayState = { ...state(), onyomi: new Map() }
-    for (let i = 0; i < 12; i++) many.onyomi.set(`p${i}`, { pairId: `p${i}`, seen: 4, wrong: 2 })
+    for (let i = 0; i < 12; i++) many.onyomi.set(`p${i}`, { pairId: `p${i}`, seen: 10, wrong: 7 })
     expect(buildReport(many, pairs, (id) => names[id]).weakOnyomi).toHaveLength(12)
   })
 

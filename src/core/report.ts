@@ -5,9 +5,17 @@ import { mistakeTotals, replay, type ReplayState } from './replay.ts'
 import type { IdiomEntry } from './session.ts'
 import type { LearningEvent } from './types.ts'
 import type { MistakeType } from './types.ts'
+import { wilson } from './wilson.ts'
 
 /** 취약 음독으로 올리는 최소 노출 수 */
 export const WEAK_MIN_SEEN = 3
+/**
+ * 취약 음독의 오답률 신뢰 하한. 「이만큼은 틀린다」고 말할 수 있는 쌍만 올린다 (2026-10-28).
+ *
+ * 한 번이라도 틀린 쌍을 다 올리면 1,029개가 돼 개수가 신호가 못 된다(실측).
+ * 수준 판정(`judgeWindow`)이 쓰는 `wilson` 을 그대로 쓴다 — 3번에 2번은 아직 취약이 아니다.
+ */
+export const WEAK_MIN_LOWER = 0.3
 /** 다시보기에 싣는 숙어 상한. 읽는 목록이라 출제 목록보다 길게 둔다 (12 → 30, 사용자 요청) */
 export const BROWSE_N = 30
 
@@ -92,7 +100,7 @@ export function buildReport(
   }
 
   const weakOnyomi: WeakOnyomi[] = [...state.onyomi.values()]
-    .filter((s) => s.seen >= WEAK_MIN_SEEN && s.wrong > 0)
+    .filter((s) => s.seen >= WEAK_MIN_SEEN && wilson(s.wrong, s.seen)[0] >= WEAK_MIN_LOWER)
     .map((s) => {
       const p = pairs.get(s.pairId)
       return {

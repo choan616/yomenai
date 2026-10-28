@@ -3,8 +3,13 @@ import { expect, test, type Page } from '@playwright/test'
 import { closeSheet } from './report-sheets.js'
 import { gradings, putGradings } from './level-seed.js'
 
-/** 어제까지 이어진 `days` 일, 하루 4개(그중 하나는 틀린 것: 음독 선택)를 심는다 */
-async function seed(page: Page, days: number): Promise<void> {
+/**
+ * 어제까지 이어진 `days` 일, 하루 4개(앞 `wrongPerDay` 개는 틀린 것: 음독 선택)를 심는다.
+ *
+ * 하루 1개 오답(25%)은 취약 음독 기준(신뢰 하한 30%)에 안 걸린다 — 음독 처방이 필요한
+ * 테스트는 `wrongPerDay: 2` 로 심는다 (2026-10-28).
+ */
+async function seed(page: Page, days: number, wrongPerDay = 1): Promise<void> {
   await page.addInitScript(() => {
     try {
       localStorage.setItem('yomenai:diagnosticDone', '1')
@@ -16,7 +21,7 @@ async function seed(page: Page, days: number): Promise<void> {
   await page.goto('/')
   await expect(page.getByRole('button', { name: '세션 시작' })).toBeVisible({ timeout: 20_000 })
   await page.evaluate(
-    (days) =>
+    ([days, wrongPerDay]) =>
       new Promise<void>((res, rej) => {
         const req = indexedDB.open('yomenai')
         req.onsuccess = () => {
@@ -27,7 +32,7 @@ async function seed(page: Page, days: number): Promise<void> {
             at.setDate(at.getDate() - d)
             at.setHours(12, 0, 0, 0)
             for (let i = 0; i < 4; i++) {
-              const wrong = i === 0
+              const wrong = i < wrongPerDay
               store.put({
                 id: `sheet-${d}-${i}`,
                 userId: 'local',
@@ -50,7 +55,7 @@ async function seed(page: Page, days: number): Promise<void> {
           tx.onerror = () => rej(new Error('심기 실패'))
         }
       }),
-    days,
+    [days, wrongPerDay],
   )
   await page.reload()
   await page.getByRole('button', { name: '리포트', exact: true }).click()
@@ -166,7 +171,7 @@ test('다음에 볼 것은 옆으로 미는 카드 줄이다 (스냅)', async ({
 
 test('다음에 볼 것 — 마우스 기기에서는 화살표로, 키보드로는 ←/→ 로 넘긴다', async ({ page }) => {
   // 읽기 30개 이상이어야 처방이 선다 — 8일 × 4 = 32개
-  await seed(page, 8)
+  await seed(page, 8, 2)
   const list = page.locator('.rx-rail .rx-list')
   await expect(list).toBeVisible()
   expect(await list.locator('> li').count()).toBeGreaterThanOrEqual(2)
@@ -192,7 +197,7 @@ test('다음에 볼 것 — 마우스 기기에서는 화살표로, 키보드로
 test('다음에 볼 것 — 터치 기기에서는 화살표를 안 보인다', async ({ browser }) => {
   const ctx = await browser.newContext({ hasTouch: true, isMobile: true, viewport: { width: 390, height: 780 } })
   const page = await ctx.newPage()
-  await seed(page, 8)
+  await seed(page, 8, 2)
   await expect(page.locator('.rx-rail .rx-list')).toBeVisible()
   // 점 줄(=카드가 둘 이상)은 있는데 화살표만 안 보인다
   await expect(page.locator('.rx-dots')).toBeVisible()
