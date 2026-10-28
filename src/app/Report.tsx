@@ -499,8 +499,9 @@ function ReportBody({
                 <p className="weak-count">{report.weakOnyomi.length}개</p>
               )}
               <ul className="rows">
+                {/* 목록에 상한이 없으므로 등장 지연은 9번째에서 멈춘다 — 안 묶으면 끝줄이 몇 초 뒤에 뜬다 */}
                 {report.weakOnyomi.map((w, i) => (
-                  <li key={w.pairId} style={{ '--i': i } as React.CSSProperties}>
+                  <li key={w.pairId} style={{ '--i': Math.min(i, 8) } as React.CSSProperties}>
                     <span className="st learning" aria-hidden="true">
                       ◐
                     </span>

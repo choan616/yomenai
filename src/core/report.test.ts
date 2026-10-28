@@ -72,6 +72,12 @@ describe('buildReport', () => {
     expect(r.weakOnyomi[0].rate).toBeCloseTo(0.8)
   })
 
+  it('취약 음독에 상한이 없다 — 요약 타일이 이 길이를 개수로 말한다 (2026-10-28)', () => {
+    const many: ReplayState = { ...state(), onyomi: new Map() }
+    for (let i = 0; i < 12; i++) many.onyomi.set(`p${i}`, { pairId: `p${i}`, seen: 4, wrong: 2 })
+    expect(buildReport(many, pairs, (id) => names[id]).weakOnyomi).toHaveLength(12)
+  })
+
   it('데이터가 없으면 빈 리포트', () => {
     const empty = buildReport(
       { cards: new Map(), meaningKnown: new Map(), onyomi: new Map(), starred: new Set(), wordlist: new Map(), meaningVotes: new Map(), applied: 0 },

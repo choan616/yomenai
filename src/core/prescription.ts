@@ -13,6 +13,8 @@ export const DOMINANT_SHARE = 0.3
 export const MAX_PRESCRIPTIONS = 3
 /** 처방으로 올리는 음독 수 */
 export const ONYOMI_PICKS = 2
+/** 파급력으로 다시 세울 후보 상한. 전수로 열면 흔한 음독이 오답률과 무관하게 1등이 된다 */
+export const WEAK_POOL_N = 8
 
 /**
  * 처방 한 조각.
@@ -61,8 +63,8 @@ export interface PrescriptionInput {
  * 2. 파급력 큰 취약 음독 — 쌍 하나가 여러 숙어에 걸려 있다
  * 3. 경계 밴드 — 어디에 시간을 쓸지의 방향
  *
- * 취약 음독 후보는 `report.weakOnyomi`(오답률 상위)를 그대로 쓰고 그 안에서 파급력으로
- * 다시 세운다. 파급력만으로 전수 정렬하면 흔한 음독이 오답률과 무관하게 늘 1등이 된다.
+ * 취약 음독 후보는 `report.weakOnyomi`의 오답률 상위 `WEAK_POOL_N` 개만 쓰고 그 안에서
+ * 파급력으로 다시 세운다. 파급력만으로 전수 정렬하면 흔한 음독이 오답률과 무관하게 늘 1등이 된다.
  */
 export function prescribe(input: PrescriptionInput): Prescription[] {
   const { report, level, unlocksOf, siblingsOf } = input
@@ -88,6 +90,7 @@ export function prescribe(input: PrescriptionInput): Prescription[] {
   }
 
   const byLeverage = report.weakOnyomi
+    .slice(0, WEAK_POOL_N)
     .map((w) => ({ w, unlocks: unlocksOf(w.pairId) }))
     .sort(
       (a, b) =>

@@ -8,8 +8,6 @@ import type { MistakeType } from './types.ts'
 
 /** 취약 음독으로 올리는 최소 노출 수 */
 export const WEAK_MIN_SEEN = 3
-/** 리포트에 싣는 취약 음독 상한 */
-export const TOP_N = 8
 /** 다시보기에 싣는 숙어 상한. 읽는 목록이라 출제 목록보다 길게 둔다 (12 → 30, 사용자 요청) */
 export const BROWSE_N = 30
 
@@ -107,8 +105,8 @@ export function buildReport(
         rate: s.wrong / s.seen,
       }
     })
+    // 안 자른다 — 요약 타일이 이 길이를 개수로 말하므로 자르면 「8개」가 틀린 값이 된다 (2026-10-28)
     .sort((a, b) => b.rate - a.rate || b.wrong - a.wrong || (a.pairId < b.pairId ? -1 : 1))
-    .slice(0, TOP_N)
 
   return {
     totalReviews,

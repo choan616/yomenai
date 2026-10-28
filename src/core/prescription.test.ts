@@ -134,6 +134,18 @@ describe('prescribe', () => {
     expect(out).toEqual([])
   })
 
+  it('후보는 오답률 상위 WEAK_POOL_N 개까지다 — 리포트 목록이 길어져도 전수 정렬로 안 바뀐다', () => {
+    // 오답률 내림차순으로 9개. 9번째(z)만 파급력이 압도적이다
+    const weakOnyomi = [...Array(8)].map((_, i) => weak(`a${i}`, '甲', 9 - i, 10))
+    weakOnyomi.push(weak('z', '乙', 1, 10))
+    const out = prescribe({
+      report: report({ weakOnyomi }),
+      level: level({ edge: null }),
+      unlocksOf: (id) => (id === 'z' ? 999 : 1),
+    })
+    expect(out.map((p) => (p.kind === 'ONYOMI' ? p.pairId : p.kind))).toEqual(['a0', 'a1'])
+  })
+
   it('오답 유형이 없어도 경계 밴드는 나온다', () => {
     const out = prescribe({ report: report(), level: level(), unlocksOf: () => 0 })
     expect(out).toEqual([{ kind: 'BAND', band: 2, rate: 0.5, seen: 40 }])
