@@ -32,7 +32,8 @@ export interface QuizPlan {
  * **문항 재료**는 ① 퀴즈 앞에 지나온 세션 카드(가까운 것부터), 모자라면 ② `learned`(예전에 푼 표현,
  * 최근에 푼 것부터)다. 세션 카드만으로는 동음이의 보기를 셋 이상 낼 수 있는 표현이 2% 남짓이라
  * 퀴즈가 거의 안 섰다(2026-10-24 실측). ②도 노출 방지는 같다 — 뺀 숙어와 퀴즈 뒤에 카드가 남은
- * 숙어는 정답·보기 양쪽에서 빠진다. 보기(오답)는 어느 쪽이든 사전의 같은 읽기 묶음에서 나온다.
+ * 숙어는 **표기 단위로** 정답·보기 양쪽에서 빠진다. 보기(오답)는 어느 쪽이든 사전에서 읽기가
+ * 같거나 비슷한 묶음에서 나온다(`core/quiz.ts`).
  *
  * 퀴즈를 못 내는 경우(보통 세션이 아니거나, 짧은 세션이거나, 뺄 카드·문항이 없을 때)는
  * `cards` 를 그대로 돌려주고 `quiz` 는 null 이다. 난수는 문항을 확정할 수 있을 때만 쓴다.
@@ -91,6 +92,14 @@ export function planQuiz<T extends QuizIdiom>(input: {
   // 남은 숙어는 정답으로도 보기로도 못 쓴다. 그 카드의 답이 미리 드러난다
   const exclude = new Set<string>([removedId])
   for (const c of rest.slice(at)) exclude.add(c.idiomId)
+
+  // 동형이독은 표기 하나에 숙어가 둘이다(早々 はやばや·そうそう). idiomId 로만 가리면 짝이
+  // 안 걸려, 뒤에 남은 「읽기 둘」 카드의 답 절반이 퀴즈 보기로 먼저 드러난다
+  for (const id of [...exclude]) {
+    const hw = index.byId.get(id)?.headword
+    if (hw === undefined) continue
+    for (const other of index.byHeadword.get(hw) ?? []) exclude.add(other)
+  }
 
   // 이미 지나온 숙어만, 가까운 것부터 (소개 숙어도 읽기·뜻을 이미 보여 준 것이라 쓴다)
   const candidates: string[] = []

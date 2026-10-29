@@ -273,6 +273,48 @@ describe('planQuiz', () => {
     for (const q of p.quiz!.questions) expect(q.options.map((o) => o.idiomId)).not.toContain('n2')
   })
 
+  it('동형이독 짝은 표기 단위로 가린다 — 뒤에 남은 「읽기 둘」 카드의 답이 미리 드러나지 않게', () => {
+    const def = (t: string) => ({ definition: t, source: 'llm' as const, verified: false })
+    const mk = (id: string, headword: string, reading: string): QuizIdiom => ({
+      idiomId: id,
+      headword,
+      reading,
+      koMeaning: def(`${id}뜻`),
+    })
+    // h-a·h-b 는 표기가 같고 읽기가 다르다(早々 はやばや·そうそう). h-b 카드가 퀴즈 뒤에 남는다
+    const dict = [
+      mk('d1', 'D1', 'あ'),
+      mk('a1', 'A1', 'あ'),
+      mk('a2', 'A2', 'あ'),
+      mk('h-a', '早々', 'あ'),
+      mk('h-b', '早々', 'い'),
+      mk('d3', 'D3', 'う'),
+      mk('u1', 'U1', 'う'),
+      mk('u2', 'U2', 'う'),
+      mk('d2', 'D2', 'え'),
+      mk('d4', 'D4', 'お'),
+    ]
+    const cards = [
+      card('d1', true, 'reading', 1),
+      card('d2', true, 'reading', 9), // rank 최대 — 이 카드가 빠지고 그 자리에 퀴즈가 선다
+      card('d3', true, 'reading', 2),
+      card('d4', true, 'reading', 3),
+      card('h-b', false, 'reading', 0),
+    ]
+    const p = planQuiz({
+      cards,
+      introIds: NONE,
+      kind: 'normal',
+      questionLimit: LIMIT,
+      index: buildHomophoneIndex(dict),
+      rand: rng(1),
+    })
+    expect(p.quiz!.questions).toHaveLength(2)
+    const shown = p.quiz!.questions.flatMap((q) => [q.targetId, ...q.options.map((o) => o.idiomId)])
+    expect(shown).not.toContain('h-a') // idiomId 로만 가리면 여기서 早々 가 새어 나온다
+    expect(shown).not.toContain('h-b')
+  })
+
   it('뒤에 카드가 남은 숙어와 뺀 카드의 숙어는 오답 보기에도 안 나온다', () => {
     // n2·d1 은 앞쪽 후보. n2 의 동음이의 무리에 뒤쪽 숙어(d3)와 뺀 카드의 숙어(n4)가 끼어 있다
     const def = (t: string) => ({ definition: t, source: 'llm' as const, verified: false })
