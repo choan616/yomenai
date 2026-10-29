@@ -1,15 +1,19 @@
 // 세션 중간 환기 퀴즈(동음이의 표기 고르기)의 문항을 만드는 순수 함수 — 기록·채점과 무관하다 (PLAN §11 S4)
-import { toHiragana } from '../lib/readings.ts'
+import { stripLongVowels, toHiragana, unvoiceAll } from '../lib/readings.ts'
 import type { RuntimeIdiom } from '../dict/load.ts'
 
 /** 문항 재료로 쓰는 사전 항목의 최소 모양. `RuntimeIdiom` 은 그대로 넘기면 된다 */
 export type QuizIdiom = Pick<RuntimeIdiom, 'idiomId' | 'headword' | 'reading' | 'koMeaning'>
 
-/** 같은 읽기로 묶은 색인. 한 번 만들어 문항마다 재사용한다 */
+/** 읽기로 묶은 색인. 한 번 만들어 문항마다 재사용한다 */
 export interface HomophoneIndex<T extends QuizIdiom = QuizIdiom> {
   /** 읽기(히라가나) → 그 읽기가 대표 읽기인 항목. 같은 표기는 한 줄만 남긴다 */
   byReading: Map<string, T[]>
+  /** `nearKey` → 읽기가 비슷한 항목. 같은 읽기 묶음을 **포함한다** */
+  byNear: Map<string, T[]>
   byId: Map<string, T>
+  /** 표기 → 그 표기를 쓰는 모든 id. 동형이독을 표기 단위로 가릴 때 쓴다 */
+  byHeadword: Map<string, string[]>
 }
 
 export interface QuizOption {
@@ -55,19 +59,42 @@ function overlaps(a: Set<string>, b: Set<string>): boolean {
   return false
 }
 
+/**
+ * 탁음·장음·촉음 차이를 한 자리에 모으는 키 — こうしょう·こうしょ·こうじょう 가 한 묶음이 된다.
+ * 읽기가 꼭 같은 보기를 셋 이상 낼 수 있는 표현은 세션 카드의 2% 남짓이라(2026-10-24 실측)
+ * 그것만으로는 퀴즈가 거의 안 섰다. 뜻이 겹치는 보기를 버리는 규칙은 묶음과 무관하게 그대로다.
+ *
+ * shortcut: じ↔し·ず↔す 쌍은 한 묶음이 안 된다(`unvoiceAll` 이 글자마다 청음을 하나만 들어
+ * 人心 じんしん 이 しんしん 과 안 만난다 — `readings.ts` 의 四つ仮名 주석). 그 문항이
+ * 필요해지면 키에 ち→し·つ→す 한 겹을 더한다
+ */
+function nearKey(hira: string): string {
+  return unvoiceAll(stripLongVowels(hira.replace(/っ/gu, '')))
+}
+
 export function buildHomophoneIndex<T extends QuizIdiom>(idioms: readonly T[]): HomophoneIndex<T> {
   const byReading = new Map<string, T[]>()
+  const byNear = new Map<string, T[]>()
   const byId = new Map<string, T>()
+  const byHeadword = new Map<string, string[]>()
   for (const it of idioms) {
     byId.set(it.idiomId, it)
+    const ids = byHeadword.get(it.headword)
+    if (ids === undefined) byHeadword.set(it.headword, [it.idiomId])
+    else ids.push(it.idiomId)
     const key = toHiragana(it.reading)
     if (key === '') continue
-    let list = byReading.get(key)
-    if (list === undefined) byReading.set(key, (list = []))
-    // JMdict 는 읽기마다 항목을 따로 둬서 같은 표기가 겹칠 수 있다 — 첫 줄만 남긴다
-    if (!list.some((o) => o.headword === it.headword)) list.push(it)
+    for (const [map, k] of [
+      [byReading, key],
+      [byNear, nearKey(key)],
+    ] as const) {
+      let list = map.get(k)
+      if (list === undefined) map.set(k, (list = []))
+      // JMdict 는 읽기마다 항목을 따로 둬서 같은 표기가 겹칠 수 있다 — 첫 줄만 남긴다
+      if (!list.some((o) => o.headword === it.headword)) list.push(it)
+    }
   }
-  return { byReading, byId }
+  return { byReading, byNear, byId, byHeadword }
 }
 
 function shuffle<T>(items: readonly T[], rand: () => number): T[] {
@@ -80,9 +107,12 @@ function shuffle<T>(items: readonly T[], rand: () => number): T[] {
 }
 
 /**
- * 같은 읽기의 다른 표기를 고르는 문항. 조건 미달이면 null —
+ * 읽기가 같거나 비슷한 다른 표기를 고르는 문항. 조건 미달이면 null —
  * 정답에 뜻이 없거나, 뜻으로 갈리는 보기를 2개 이상 못 채우는 경우다.
  * 같은 `rand` 순서면 결과가 같다.
+ *
+ * **두 묶음 중 어느 쪽을 먼저 볼지는 난수가 정한다**(사용자 결정 2026-10-29). 비율을 강제하지
+ * 않는다 — 동음 재료가 2% 뿐이라 「동음 1 + 근접 1」 로 고정하면 퀴즈가 아예 안 서는 날이 생긴다.
  */
 export function homophoneQuestion<T extends QuizIdiom>(
   target: T,
@@ -98,27 +128,37 @@ export function homophoneQuestion<T extends QuizIdiom>(
   if (meaning === '') return null
   if (exclude?.has(target.idiomId)) return null
   const key = toHiragana(target.reading)
-  const group = index.byReading.get(key)
-  if (group === undefined) return null
-
-  const chosen: { it: T; tokens: Set<string> }[] = []
-  const taken = new Set<string>([target.headword])
+  const exact = index.byReading.get(key)
+  if (exact === undefined) return null
+  const near = index.byNear.get(nearKey(key)) ?? exact
   const targetTokens = senseTokens(meaning)
-  for (const cand of shuffle(group, rand)) {
-    if (chosen.length >= MAX_OPTIONS - 1) break
-    if (cand.idiomId === target.idiomId || taken.has(cand.headword)) continue
-    if (exclude?.has(cand.idiomId)) continue
-    const m = meaningOf(cand)
-    if (m === '') continue
-    const tokens = senseTokens(m)
-    if (overlaps(tokens, targetTokens) || chosen.some((c) => overlaps(tokens, c.tokens))) continue
-    chosen.push({ it: cand, tokens })
-    taken.add(cand.headword)
+
+  const pick = (group: readonly T[]): T[] => {
+    const chosen: { it: T; tokens: Set<string> }[] = []
+    const taken = new Set<string>([target.headword])
+    for (const cand of shuffle(group, rand)) {
+      if (chosen.length >= MAX_OPTIONS - 1) break
+      if (cand.idiomId === target.idiomId || taken.has(cand.headword)) continue
+      if (exclude?.has(cand.idiomId)) continue
+      const m = meaningOf(cand)
+      if (m === '') continue
+      const tokens = senseTokens(m)
+      if (overlaps(tokens, targetTokens) || chosen.some((c) => overlaps(tokens, c.tokens))) continue
+      chosen.push({ it: cand, tokens })
+      taken.add(cand.headword)
+    }
+    return chosen.map((c) => c.it)
   }
+
+  // 못 채우면 다른 묶음으로 간다. 근접 묶음이 동음 묶음을 포함하므로 근접이 먼저였던 경우의
+  // 두 번째 시도는 더 나올 것이 없지만, 한 줄을 아끼려고 양쪽을 같은 모양으로 둔다
+  const nearFirst = rand() < 0.5
+  let chosen = pick(nearFirst ? near : exact)
+  if (chosen.length + 1 < MIN_OPTIONS) chosen = pick(nearFirst ? exact : near)
   if (chosen.length + 1 < MIN_OPTIONS) return null
 
   const options: QuizOption[] = shuffle(
-    [target, ...chosen.map((c) => c.it)].map((it) => ({
+    [target, ...chosen].map((it) => ({
       idiomId: it.idiomId,
       headword: it.headword,
     })),
@@ -128,8 +168,10 @@ export function homophoneQuestion<T extends QuizIdiom>(
 }
 
 /**
- * 우선순위 순 후보에서 최대 `n` 문항. 같은 읽기 묶음은 한 문항만 낸다 —
+ * 우선순위 순 후보에서 최대 `n` 문항. 같은 묶음은 한 문항만 낸다 —
  * 연달아 같은 보기 무리를 보면 환기가 아니라 반복이 된다.
+ * 가리는 단위는 `nearKey` 다. 읽기 단위로 가리면 こうしょう 다음에 こうしょ 가 서서
+ * 보기 무리가 겹친다
  */
 export function pickQuizQuestions<T extends QuizIdiom>(
   candidates: readonly string[],
@@ -140,16 +182,16 @@ export function pickQuizQuestions<T extends QuizIdiom>(
   exclude?: ReadonlySet<string>,
 ): HomophoneQuestion[] {
   const out: HomophoneQuestion[] = []
-  const usedReadings = new Set<string>()
+  const usedGroups = new Set<string>()
   for (const id of candidates) {
     if (out.length >= n) break
     const target = index.byId.get(id)
     if (target === undefined) continue
-    const key = toHiragana(target.reading)
-    if (usedReadings.has(key)) continue
+    const group = nearKey(toHiragana(target.reading))
+    if (usedGroups.has(group)) continue
     const q = homophoneQuestion(target, index, rand, exclude)
     if (q === null) continue
-    usedReadings.add(key)
+    usedGroups.add(group)
     out.push(q)
   }
   return out

@@ -1,4 +1,4 @@
-// 세션 중간 환기 퀴즈 화면 — 같은 읽기의 다른 표기 고르기. 점수·기록 없이 한 탭으로 건너뛴다 (PLAN §11 S4)
+// 세션 중간 환기 퀴즈 화면 — 읽기가 같거나 비슷한 다른 표기 고르기. 점수·기록 없이 한 탭으로 건너뛴다 (PLAN §11 S4)
 import { useEffect, useState } from 'react'
 import { appendStar } from '../app/star.ts'
 import type { HomophoneQuestion } from '../core/quiz.ts'
@@ -58,7 +58,8 @@ export function QuizCard({ questions, onFinish, events }: Props) {
   return (
     <div className="card quiz-card">
       <div className="card-head">
-        <span className="tag">잠깐, 같은 소리 다른 글자</span>
+        {/* 문항 종류(동음·근접)를 가리지 않는 한 문구다 — 머리가 문항마다 바뀌지 않게 */}
+        <span className="tag">잠깐, 헷갈리는 소리</span>
         <button type="button" className="skip-btn" onClick={onFinish}>
           건너뛰기
         </button>

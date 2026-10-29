@@ -1,4 +1,4 @@
-// 환기 퀴즈 문항 생성(동음이의 표기 고르기)을 검증한다
+// 환기 퀴즈 문항 생성(읽기가 같거나 비슷한 표기 고르기)을 검증한다
 import { describe, expect, it } from 'vitest'
 import { buildHomophoneIndex, homophoneQuestion, pickQuizQuestions, type QuizIdiom } from './quiz.ts'
 
@@ -144,6 +144,44 @@ describe('homophoneQuestion', () => {
     expect(orders.size).toBeGreaterThan(1) // 난수에 따라 보기가 섞인다
   })
 
+  // 읽기가 비슷한 묶음(탁음·장음·촉음 차이) — nearKey 가 こきょ 로 같다
+  const KOKYO = [
+    idiom('g0', '工業', 'こうぎょう', '공업'),
+    idiom('g1', '公共', 'こうきょう', '공공'),
+    idiom('g2', '好況', 'こうきょう', '호황'),
+    idiom('g3', '故郷', 'こきょう', '고향'),
+    idiom('g4', '五経', 'ごきょう', '오경'),
+  ]
+
+  it('같은 읽기로 모자라면 비슷한 읽기 묶음으로 보기를 채운다', () => {
+    const index = buildHomophoneIndex(KOKYO)
+    for (let seed = 1; seed <= 20; seed++) {
+      // 工業 こうぎょう 는 같은 읽기가 혼자다 — 근접 묶음이 없으면 null 이 된다
+      const q = homophoneQuestion(KOKYO[0]!, index, rng(seed))
+      expect(q).not.toBeNull()
+      expect(q!.targetId).toBe('g0')
+      expect(q!.reading).toBe('こうぎょう') // 제시 읽기는 정답의 읽기 그대로다
+      expect(q!.options).toHaveLength(4)
+      expect(q!.options.map((o) => o.idiomId)).toContain('g0')
+    }
+  })
+
+  it('난수가 두 묶음을 모두 쓴다 — 동음만인 문항과 근접이 섞인 문항이 다 나온다', () => {
+    // 構成 こうせい 는 같은 읽기로 이미 보기가 차지만, 근접 묶음에는 こせい·ごせい 가 더 있다
+    const pool = [...KOUSEI, idiom('k1', '個性', 'こせい', '개성'), idiom('k2', '悟性', 'ごせい', '오성')]
+    const index = buildHomophoneIndex(pool)
+    const near = new Set(['k1', 'k2'])
+    let onlyExact = 0
+    let withNear = 0
+    for (let seed = 1; seed <= 40; seed++) {
+      const ids = homophoneQuestion(pool[0]!, index, rng(seed))!.options.map((o) => o.idiomId)
+      if (ids.some((id) => near.has(id))) withNear++
+      else onlyExact++
+    }
+    expect(onlyExact).toBeGreaterThan(0)
+    expect(withNear).toBeGreaterThan(0)
+  })
+
   it('카타카나 읽기도 같은 묶음으로 본다', () => {
     const pool = [
       idiom('t', '構成', 'こうせい', '구성'),
@@ -172,6 +210,13 @@ describe('pickQuizQuestions', () => {
     // 앞의 후보 둘이 같은 묶음 — 두 번째는 건너뛰고 다음 묶음으로 간다
     const qs = pickQuizQuestions(['a1', 'a2', 'c1'], index, 2, rng(3))
     expect(qs.map((q) => q.reading)).toEqual(['こうせい', 'いし'])
+    expect(qs.map((q) => q.targetId)).toEqual(['a1', 'c1'])
+  })
+
+  it('읽기가 비슷한 묶음도 두 문항에 겹치지 않는다', () => {
+    // こうせい 와 こせい 는 읽기가 다르지만 보기 무리가 같다 — 둘째는 안 낸다
+    const wide = buildHomophoneIndex([...pool, idiom('k1', '個性', 'こせい', '개성')])
+    const qs = pickQuizQuestions(['a1', 'k1', 'c1'], wide, 2, rng(3))
     expect(qs.map((q) => q.targetId)).toEqual(['a1', 'c1'])
   })
 
