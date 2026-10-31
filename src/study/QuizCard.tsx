@@ -20,6 +20,8 @@ export function QuizCard({ questions, onFinish, events }: Props) {
   const [qi, setQi] = useState(0)
   /** 고른 보기의 idiomId. 고르면 그 자리에서 정답이 드러난다 */
   const [picked, setPicked] = useState<string | null>(null)
+  /** 뜻을 탭해서 연 문항. 읽기만으로 먼저 떠올려 보게 처음엔 가린다 */
+  const [revealed, setRevealed] = useState(false)
   /** 단어장에 담긴 표현. 고른 뒤 보기를 누르면 담고 뺀다 — 퀴즈 풀이는 안 남겨도 이 표시는 사용자의 뜻이라 남긴다 */
   const [starred, setStarred] = useState<ReadonlySet<string>>(
     () => replay([...events.prior, ...events.session]).starred,
@@ -51,6 +53,7 @@ export function QuizCard({ questions, onFinish, events }: Props) {
     }
     setQi(qi + 1)
     setPicked(null)
+    setRevealed(false)
   }
   // 정답·오답 화면의 Enter 와 같은 관례 — 고르기 전에는 꺼 둔다
   useEnterForNext(answered, next)
@@ -70,7 +73,15 @@ export function QuizCard({ questions, onFinish, events }: Props) {
         <p className="headword sm" lang="ja">
           {q.reading}
         </p>
-        <p className="meaning">{q.meaning}</p>
+        {/* 뜻 줄은 가려도 자리를 지킨다 — 탭해서 나타나며 보기를 밀지 않게. 고르면 저절로 드러난다 */}
+        <div className="quiz-meaning">
+          <p className={`meaning${revealed || answered ? '' : ' is-hidden'}`}>{q.meaning}</p>
+          {!revealed && !answered && (
+            <button type="button" className="meaning-reveal" onClick={() => setRevealed(true)}>
+              뜻 보기
+            </button>
+          )}
+        </div>
         <div className="quiz-opts" role="group" aria-label="보기">
           {q.options.map((o) => {
             const isAnswer = o.idiomId === q.targetId

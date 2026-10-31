@@ -218,6 +218,10 @@ test('보기를 누르면 그 자리에서 정답이 드러나고, 「다음」�
 
   // 문항 1 — 일부러 오답을 고른다
   const reading1 = await page.locator('.quiz-card .headword').innerText()
+  // 뜻은 처음에 가려져 있고(자리는 지킨다), 탭하면 보인다
+  await expect(page.locator('.quiz-card .meaning')).toBeHidden()
+  await page.getByRole('button', { name: '뜻 보기', exact: true }).click()
+  await expect(page.locator('.quiz-card .meaning')).toBeVisible()
   const meaning1 = await page.locator('.quiz-card .meaning').innerText()
   const right1 = await answerHeadwords(page, reading1, meaning1)
   expect(right1.length).toBeGreaterThan(0)
@@ -253,6 +257,8 @@ test('보기를 누르면 그 자리에서 정답이 드러나고, 「다음」�
 
   // 문항 2 — 정답을 고르면 ✗ 가 하나도 없다. 두 번째 문항 뒤에는 「계속」
   const reading2 = await page.locator('.quiz-card .headword').innerText()
+  await expect(page.locator('.quiz-card .meaning')).toBeHidden() // 다음 문항은 다시 가려진다
+  await page.getByRole('button', { name: '뜻 보기', exact: true }).click()
   const meaning2 = await page.locator('.quiz-card .meaning').innerText()
   const right2 = await answerHeadwords(page, reading2, meaning2)
   const heads2 = await page.locator('.quiz-opt-word [lang="ja"]').allInnerTexts()

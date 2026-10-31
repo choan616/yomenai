@@ -1431,6 +1431,24 @@ button.tag {
   line-height: 1;
   color: var(--text-dim);
 }
+.quiz-meaning {
+  position: relative;
+}
+.quiz-meaning .meaning.is-hidden {
+  visibility: hidden;
+}
+.meaning-reveal {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  padding: 4px 14px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-dim);
+  font-size: 13px;
+}
 .quiz-hint {
   margin: 8px 0 0;
   text-align: center;
