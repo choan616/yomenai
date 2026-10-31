@@ -451,6 +451,23 @@ test('퀴즈의 일본어 요소에는 lang="ja" 가 붙고 일본어 폰트 스
   for (const f of scan.fonts) expect(f).toContain('Noto Sans JP')
 })
 
+test('읽기 고르기의 히라가나 보기는 칸을 넘치지 않는다 — 좁은 화면에서도', async ({ page }) => {
+  // iPhone SE 1세대 폭 + Safari 툴바 높이
+  await page.setViewportSize({ width: 320, height: 553 })
+  await startNormal(page)
+  await toQuiz(page)
+  await page.locator('.quiz-opt').first().click()
+  await page.keyboard.press('Enter')
+  // 마지막 칸이 표기 고르기로 채워진 날은 검사할 것이 없다
+  if ((await page.locator('.quiz-meaning').count()) > 0) return
+  await page.locator('.quiz-opt').nth(1).click() // 고른 뒤 ✓·✗ 표시가 붙은 상태까지 본다
+  const over = await page.locator('.quiz-opt').evaluateAll((els) => els.filter((e) => e.scrollWidth > e.clientWidth).length)
+  expect(over).toBe(0)
+  const rows = await page.locator('.quiz-opt').evaluateAll((els) => els.map((e) => e.getBoundingClientRect().height))
+  expect(Math.max(...rows)).toBeLessThan(60) // 줄이 바뀌면 칸이 두 줄 높이로 자란다
+  expect(await page.locator('.quiz-card .card-body').evaluate((e) => e.scrollHeight - e.clientHeight)).toBeLessThanOrEqual(0)
+})
+
 /**
  * 취약 음독이 잡히고 재대결 후보가 되도록 틀린 기록을 심는다. **방금 틀린 것**으로 심는다 — 기한이 아직 안 온
  * 카드(`due: false`)여야 퀴즈 자리(단독 신규 카드)가 날 수 있어, 게이트(`kind !== 'normal'`)가 빠지면 이 검사가 깨진다

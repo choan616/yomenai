@@ -1406,6 +1406,17 @@ button.tag {
   gap: 8px;
   margin-top: 12px;
 }
+/* 읽기 고르기의 보기는 히라가나라 표기보다 길다 — 가장 긴 보기(--n 자)가 칸에 들어가게 글자를 줄이고
+   줄을 바꾸지 않는다. 칸 폭 = (100cqw - 간격 8px) / 2, 패딩 24px·✓ 표시 22px 를 뺀 나머지를 글자 수로 나눈다.
+   cqw 를 모르는 브라우저는 앞의 20px 로 둔다 */
+.quiz-opts.is-reading {
+  container-type: inline-size;
+}
+.quiz-opts.is-reading .quiz-opt {
+  white-space: nowrap;
+  font-size: 20px;
+  font-size: clamp(14px, calc(((100cqw - 8px) / 2 - 46px) / var(--n)), 24px);
+}
 /* 보기가 3개면 마지막 하나가 한 줄을 다 쓴다 */
 .quiz-opts > :last-child:nth-child(odd) {
   grid-column: 1 / -1;

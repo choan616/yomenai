@@ -1,5 +1,5 @@
 // 세션 중간 환기 퀴즈 화면 — 읽기가 같거나 비슷한 다른 표기 고르기. 점수·기록 없이 한 탭으로 건너뛴다 (PLAN §11 S4)
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type CSSProperties } from 'react'
 import { appendStar } from '../app/star.ts'
 import type { QuizQuestion } from '../core/quiz.ts'
 import { replay } from '../core/replay.ts'
@@ -37,6 +37,7 @@ export function QuizCard({ questions, onFinish, events }: Props) {
     q.kind === 'reading'
       ? q.options.map((o) => ({ idiomId: o.idiomId, text: o.reading }))
       : q.options.map((o) => ({ idiomId: o.idiomId, text: o.headword }))
+  const maxLen = Math.max(...options.map((o) => [...o.text].length))
   useEffect(() => {
     if (showHint && canStar && answered) markQuizStarHintSeen()
   }, [showHint, canStar, answered])
@@ -90,7 +91,12 @@ export function QuizCard({ questions, onFinish, events }: Props) {
             )}
           </div>
         )}
-        <div className="quiz-opts" role="group" aria-label="보기">
+        <div
+          className={`quiz-opts${q.kind === 'reading' ? ' is-reading' : ''}`}
+          style={q.kind === 'reading' ? ({ '--n': maxLen } as CSSProperties) : undefined}
+          role="group"
+          aria-label="보기"
+        >
           {options.map((o) => {
             const isAnswer = o.idiomId === q.targetId
             const state = !answered ? '' : isAnswer ? ' is-ok' : o.idiomId === picked ? ' is-ng' : ''
