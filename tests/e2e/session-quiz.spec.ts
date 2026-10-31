@@ -451,6 +451,21 @@ test('퀴즈의 일본어 요소에는 lang="ja" 가 붙고 일본어 폰트 스
   for (const f of scan.fonts) expect(f).toContain('Noto Sans JP')
 })
 
+test('건너뛰기·뜻 보기 칩은 모양보다 넓은 영역(44px 높이)이 눌린다', async ({ page }) => {
+  await startNormal(page)
+  await toQuiz(page)
+  const reveal = page.getByRole('button', { name: '뜻 보기', exact: true })
+  const rb = (await reveal.boundingBox())!
+  // 칩 위쪽 가장자리에서 7px 바깥을 누른다 — 칩 안이 아니다
+  await page.mouse.click(rb.x + rb.width / 2, rb.y - 7)
+  await expect(page.locator('.quiz-card .meaning')).toBeVisible()
+
+  const skip = page.getByRole('button', { name: '건너뛰기', exact: true })
+  const sb = (await skip.boundingBox())!
+  await page.mouse.click(sb.x + sb.width / 2, sb.y + sb.height + 7)
+  await expect(page.locator('.quiz-card')).toHaveCount(0)
+})
+
 test('읽기 고르기의 히라가나 보기는 칸을 넘치지 않는다 — 좁은 화면에서도', async ({ page }) => {
   // iPhone SE 1세대 폭 + Safari 툴바 높이
   await page.setViewportSize({ width: 320, height: 553 })

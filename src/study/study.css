@@ -1360,6 +1360,7 @@ button.tag {
 /* 카드 머리 오른쪽 끝의 SKIP (2026-09-19). 빠져나가는 길이라 눈에 먼저 들어오면 안 되지만,
    찾을 때는 바로 보여야 한다 — 태그와 같은 높이·같은 알약 모양에 테두리만 준다 */
 .skip-btn {
+  position: relative;
   margin-left: auto;
   padding: 3px 12px;
   border: 1px solid var(--border);
@@ -1373,6 +1374,13 @@ button.tag {
 }
 .skip-btn:active {
   background: var(--surface-2);
+}
+/* 모양은 작게 두고 눌리는 영역만 44px 높이로 — 매일 쓰는 버튼이라 엄지가 빗나가지 않게 (2026-10-31) */
+.skip-btn::after,
+.meaning-reveal::after {
+  content: '';
+  position: absolute;
+  inset: -9px -6px;
 }
 
 /* 찾기처럼 본문이 스크롤하는 화면에서는 자판을 화면 아래에 고정한다 (2026-09-19 사용자 요청) —
