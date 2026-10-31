@@ -22,6 +22,7 @@ export interface QuizOption {
 }
 
 export interface HomophoneQuestion {
+  kind: 'headword'
   /** 정답 표현 id */
   targetId: string
   /** 제시하는 읽기(히라가나) */
@@ -31,6 +32,22 @@ export interface HomophoneQuestion {
   /** 섞인 보기. 3~4개, 표기 중복 없음, 뜻이 서로 겹치지 않음 */
   options: QuizOption[]
 }
+
+export interface ReadingOption {
+  idiomId: string
+  reading: string
+}
+
+/** 표기를 보여 주고 읽기를 고르는 문항 — 보기는 읽기가 비슷한 다른 표현의 읽기다 */
+export interface ReadingQuestion {
+  kind: 'reading'
+  targetId: string
+  headword: string
+  /** 섞인 보기. 3~4개, 읽기 중복 없음, 같은 표기의 다른 읽기는 들어가지 않음 */
+  options: ReadingOption[]
+}
+
+export type QuizQuestion = HomophoneQuestion | ReadingQuestion
 
 /** 정답 포함 보기 수의 하한·상한 */
 export const MIN_OPTIONS = 3
@@ -164,7 +181,47 @@ export function homophoneQuestion<T extends QuizIdiom>(
     })),
     rand,
   )
-  return { targetId: target.idiomId, reading: key, meaning, options }
+  return { kind: 'headword', targetId: target.idiomId, reading: key, meaning, options }
+}
+
+const HAS_KANJI = /[々〆一-鿿㐀-䶿]/u
+
+/**
+ * 표기를 보고 읽기를 고르는 문항. 조건 미달이면 null — 표기에 한자가 없거나, 정답과 다른 읽기를
+ * 2개 이상 못 채우는 경우다. 보기는 읽기가 비슷한 **실제 표현**의 읽기라 헷갈리는 소리를 그대로 묻는다.
+ *
+ * 같은 표기의 읽기는 전부 정답이라 보기에서 뺀다 — 早々 そうそう·はやばや 처럼 동형이독이면
+ * 정답이 둘로 갈린다. `exclude` 는 보기의 읽기에도 적용한다: 세션 뒤에 남은 카드의 읽기가 미리 드러난다
+ */
+export function readingQuestion<T extends QuizIdiom>(
+  target: T,
+  index: HomophoneIndex<T>,
+  rand: () => number,
+  exclude?: ReadonlySet<string>,
+): ReadingQuestion | null {
+  if (exclude?.has(target.idiomId) || !HAS_KANJI.test(target.headword)) return null
+  const key = toHiragana(target.reading)
+  const near = index.byNear.get(nearKey(key))
+  if (near === undefined) return null
+  const taken = new Set<string>([key])
+  for (const id of index.byHeadword.get(target.headword) ?? []) {
+    const r = index.byId.get(id)?.reading
+    if (r !== undefined) taken.add(toHiragana(r))
+  }
+  const chosen: T[] = []
+  for (const cand of shuffle(near, rand)) {
+    if (chosen.length >= MAX_OPTIONS - 1) break
+    const r = toHiragana(cand.reading)
+    if (exclude?.has(cand.idiomId) || taken.has(r)) continue
+    chosen.push(cand)
+    taken.add(r)
+  }
+  if (chosen.length + 1 < MIN_OPTIONS) return null
+  const options = shuffle(
+    [target, ...chosen].map((it) => ({ idiomId: it.idiomId, reading: toHiragana(it.reading) })),
+    rand,
+  )
+  return { kind: 'reading', targetId: target.idiomId, headword: target.headword, options }
 }
 
 /**
@@ -180,8 +237,8 @@ export function pickQuizQuestions<T extends QuizIdiom>(
   rand: () => number,
   /** `homophoneQuestion` 의 `exclude` 와 같다 — 정답 후보와 보기 모두에 적용한다 */
   exclude?: ReadonlySet<string>,
-): HomophoneQuestion[] {
-  const out: HomophoneQuestion[] = []
+): QuizQuestion[] {
+  const out: QuizQuestion[] = []
   const usedGroups = new Set<string>()
   for (const id of candidates) {
     if (out.length >= n) break
@@ -189,7 +246,11 @@ export function pickQuizQuestions<T extends QuizIdiom>(
     if (target === undefined) continue
     const group = nearKey(toHiragana(target.reading))
     if (usedGroups.has(group)) continue
-    const q = homophoneQuestion(target, index, rand, exclude)
+    // 읽기 고르기는 마지막 칸에만 한 문항(2026-10-31 「가볍게」) — 못 세우면 표기 고르기로 채운다
+    const last = n >= 2 && out.length === n - 1
+    const q =
+      (last ? readingQuestion(target, index, rand, exclude) : null) ??
+      homophoneQuestion(target, index, rand, exclude)
     if (q === null) continue
     usedGroups.add(group)
     out.push(q)

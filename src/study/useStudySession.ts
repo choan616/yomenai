@@ -32,7 +32,7 @@ import { getDeviceId } from '../db/device.ts'
 import { db } from '../db/schema.ts'
 import { LOCAL_USER_ID } from '../db/events.ts'
 import { listEvents } from '../db/events.ts'
-import { buildHomophoneIndex, type HomophoneIndex, type HomophoneQuestion } from '../core/quiz.ts'
+import { buildHomophoneIndex, type HomophoneIndex, type QuizQuestion } from '../core/quiz.ts'
 import { learnedReadingIds, repeatHint, type RepeatHint } from '../core/repeatWrong.ts'
 import { planQuiz } from './planQuiz.ts'
 import { quizPending, quizProgress, quizRng, saveQuizTime } from './quizSession.ts'
@@ -144,7 +144,7 @@ export interface StudyState {
   /** 카드 전환마다 1 증가. 화면이 전환 시간을 실측하는 트리거 (PLAN §7) */
   transitionSeq: number
   /** `status === 'quiz'` 일 때만. 풀이 결과는 어디에도 남지 않는다 */
-  quiz?: HomophoneQuestion[]
+  quiz?: QuizQuestion[]
 }
 
 export interface StudyActions {
@@ -226,7 +226,7 @@ export function useStudySession({
    * 환기 퀴즈 자리와 문항 (`planQuiz`). 세션을 짤 때 한 번 정해진다. `at` 은 **카드 앞**이라
    * 순회가 `at` 에 닿으면 그 카드 대신 퀴즈 덩어리가 서고, 끝나면 그 카드가 이어진다
    */
-  const [quiz, setQuiz] = useState<{ at: number; questions: HomophoneQuestion[] } | null>(null)
+  const [quiz, setQuiz] = useState<{ at: number; questions: QuizQuestion[] } | null>(null)
   const [quizDone, setQuizDone] = useState(false)
   const quizStartedAt = useRef(0)
   /** 지연 검수 질문을 아직 안 지난 카드인지 */

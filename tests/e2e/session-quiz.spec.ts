@@ -165,6 +165,15 @@ async function answerHeadwords(page: Page, reading: string, meaning: string): Pr
   )
 }
 
+/** 사전에서 이 표기의 모든 읽기(히라가나)를 구한다 — 읽기 고르기의 정답이다 */
+async function readingsOf(page: Page, headword: string): Promise<string[]> {
+  return page.evaluate(async (hw) => {
+    const d = (await (await fetch('/dict/base.json')).json()) as { idioms: { headword: string; reading: string }[] }
+    const hira = (s: string) => s.replace(/[ァ-ヶ]/g, (c) => String.fromCharCode(c.charCodeAt(0) - 0x60))
+    return d.idioms.filter((i) => i.headword === hw).map((i) => hira(i.reading))
+  }, headword)
+}
+
 test('보통 세션 중간에 퀴즈가 서고, 진행 분모는 설정 장수(20) 그대로다', async ({ page }) => {
   await startNormal(page)
   expect(parseCount(await countText(page))).toEqual({ index: 0, total: 20 })
@@ -257,12 +266,20 @@ test('보기를 누르면 그 자리에서 정답이 드러나고, 「다음」�
 
   // 문항 2 — 정답을 고르면 ✗ 가 하나도 없다. 두 번째 문항 뒤에는 「계속」
   const reading2 = await page.locator('.quiz-card .headword').innerText()
-  await expect(page.locator('.quiz-card .meaning')).toBeHidden() // 다음 문항은 다시 가려진다
-  await page.getByRole('button', { name: '뜻 보기', exact: true }).click()
-  const meaning2 = await page.locator('.quiz-card .meaning').innerText()
-  const right2 = await answerHeadwords(page, reading2, meaning2)
   const heads2 = await page.locator('.quiz-opt-word [lang="ja"]').allInnerTexts()
-  await opts.nth(heads2.findIndex((h) => right2.includes(h))).click()
+  if ((await page.locator('.quiz-card .meaning').count()) === 0) {
+    // 마지막 칸은 읽기 고르기일 수 있다 — 표기를 주고 읽기를 고른다. 뜻 줄·담기 안내가 없고 정답은 하나다
+    await expect(page.locator('.quiz-hint')).toHaveCount(0)
+    const rightReadings = await readingsOf(page, reading2)
+    expect(heads2.filter((h) => rightReadings.includes(h))).toHaveLength(1)
+    await opts.nth(heads2.findIndex((h) => rightReadings.includes(h))).click()
+  } else {
+    await expect(page.locator('.quiz-card .meaning')).toBeHidden() // 다음 문항은 다시 가려진다
+    await page.getByRole('button', { name: '뜻 보기', exact: true }).click()
+    const meaning2 = await page.locator('.quiz-card .meaning').innerText()
+    const right2 = await answerHeadwords(page, reading2, meaning2)
+    await opts.nth(heads2.findIndex((h) => right2.includes(h))).click()
+  }
   await expect(page.locator('.quiz-opt.is-ok')).toHaveCount(1)
   await expect(page.locator('.quiz-opt.is-ng')).toHaveCount(0)
   await expect(page.getByRole('button', { name: '계속', exact: true })).toBeVisible()
@@ -340,7 +357,9 @@ test('고른 뒤 보기를 누르면 「퀴즈」 묶음에 담기고 ★, 다�
   // 다음 문항에도 안내가 같은 자리에 있다. 한 번 보인 뒤에는 기기에 표시가 남는다
   await page.keyboard.press('Enter')
   await page.locator('.quiz-opt').first().click()
-  await expect(page.locator('.quiz-hint')).toBeVisible()
+  // 마지막 칸이 읽기 고르기면 담기·안내가 없다(보기가 읽기뿐이라 담을 표기가 안 보인다)
+  if ((await page.locator('.quiz-meaning').count()) > 0) await expect(page.locator('.quiz-hint')).toBeVisible()
+  else await expect(page.locator('.quiz-hint')).toHaveCount(0)
   expect(await page.evaluate(() => localStorage.getItem('yomenai.quizStarHint'))).toBe('1')
 })
 

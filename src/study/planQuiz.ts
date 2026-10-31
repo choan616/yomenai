@@ -3,7 +3,7 @@ import { QUICK_SESSION_LIMIT } from '../app/settings.ts'
 import {
   pickQuizQuestions,
   type HomophoneIndex,
-  type HomophoneQuestion,
+  type QuizQuestion,
   type QuizIdiom,
 } from '../core/quiz.ts'
 import type { SessionCard } from '../core/session.ts'
@@ -16,7 +16,7 @@ export interface QuizPlan {
   /** 퀴즈 자리를 만들려고 카드 한 장을 뺀 결과. 퀴즈가 없으면 입력 그대로다 */
   cards: SessionCard[]
   /** 퀴즈 덩어리는 `cards[at]` **앞에** 들어간다. 진행 분모 = `cards.length + (quiz ? 1 : 0)` */
-  quiz: { at: number; questions: HomophoneQuestion[] } | null
+  quiz: { at: number; questions: QuizQuestion[] } | null
 }
 
 /**

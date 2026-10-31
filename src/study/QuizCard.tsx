@@ -1,7 +1,7 @@
 // 세션 중간 환기 퀴즈 화면 — 읽기가 같거나 비슷한 다른 표기 고르기. 점수·기록 없이 한 탭으로 건너뛴다 (PLAN §11 S4)
 import { useEffect, useState } from 'react'
 import { appendStar } from '../app/star.ts'
-import type { HomophoneQuestion } from '../core/quiz.ts'
+import type { QuizQuestion } from '../core/quiz.ts'
 import { replay } from '../core/replay.ts'
 import type { LearningEvent } from '../core/types.ts'
 import { QUIZ_STAR_LIST, markQuizStarHintSeen, quizStarHintSeen } from './quizSession.ts'
@@ -9,7 +9,7 @@ import { useEnterForNext } from './useEnterForNext.ts'
 
 interface Props {
   /** 한 덩어리의 문항들(보통 2개). 번호는 화면에 안 보인다 — 숫자가 늘면 길게 느껴진다 */
-  questions: HomophoneQuestion[]
+  questions: QuizQuestion[]
   /** 다 풀었을 때와 건너뛸 때 모두 이 하나다. 결과는 어디에도 안 남는다 */
   onFinish: () => void
   /** 이미 담긴 표현을 ★ 로 시작하려고 세션이 읽은 기록 */
@@ -31,9 +31,15 @@ export function QuizCard({ questions, onFinish, events }: Props) {
   const q = questions[qi]!
   const last = qi === questions.length - 1
   const answered = picked !== null
+  // 읽기 고르기의 보기는 읽기만 보여 줘서 눌러 담을 수 없다 — 담기와 안내는 표기 고르기에만 있다
+  const canStar = q.kind === 'headword'
+  const options =
+    q.kind === 'reading'
+      ? q.options.map((o) => ({ idiomId: o.idiomId, text: o.reading }))
+      : q.options.map((o) => ({ idiomId: o.idiomId, text: o.headword }))
   useEffect(() => {
-    if (showHint && answered) markQuizStarHintSeen()
-  }, [showHint, answered])
+    if (showHint && canStar && answered) markQuizStarHintSeen()
+  }, [showHint, canStar, answered])
 
   const toggleStar = (id: string) => {
     const on = !starred.has(id)
@@ -69,21 +75,23 @@ export function QuizCard({ questions, onFinish, events }: Props) {
       </div>
 
       <div className="card-body">
-        <p className="prompt-q">어느 표기일까요?</p>
+        <p className="prompt-q">{q.kind === 'reading' ? '어떻게 읽을까요?' : '어느 표기일까요?'}</p>
         <p className="headword sm" lang="ja">
-          {q.reading}
+          {q.kind === 'reading' ? q.headword : q.reading}
         </p>
-        {/* 뜻 줄은 가려도 자리를 지킨다 — 탭해서 나타나며 보기를 밀지 않게. 고르면 저절로 드러난다 */}
-        <div className="quiz-meaning">
-          <p className={`meaning${revealed || answered ? '' : ' is-hidden'}`}>{q.meaning}</p>
-          {!revealed && !answered && (
-            <button type="button" className="meaning-reveal" onClick={() => setRevealed(true)}>
-              뜻 보기
-            </button>
-          )}
-        </div>
+        {q.kind === 'headword' && (
+          /* 뜻 줄은 가려도 자리를 지킨다 — 탭해서 나타나며 보기를 밀지 않게. 고르면 저절로 드러난다 */
+          <div className="quiz-meaning">
+            <p className={`meaning${revealed || answered ? '' : ' is-hidden'}`}>{q.meaning}</p>
+            {!revealed && !answered && (
+              <button type="button" className="meaning-reveal" onClick={() => setRevealed(true)}>
+                뜻 보기
+              </button>
+            )}
+          </div>
+        )}
         <div className="quiz-opts" role="group" aria-label="보기">
-          {q.options.map((o) => {
+          {options.map((o) => {
             const isAnswer = o.idiomId === q.targetId
             const state = !answered ? '' : isAnswer ? ' is-ok' : o.idiomId === picked ? ' is-ng' : ''
             return (
@@ -91,13 +99,13 @@ export function QuizCard({ questions, onFinish, events }: Props) {
                 key={o.idiomId}
                 type="button"
                 className={`btn quiz-opt${state}`}
-                aria-pressed={answered ? starred.has(o.idiomId) : undefined}
+                aria-pressed={answered && canStar ? starred.has(o.idiomId) : undefined}
                 onClick={() => {
                   if (!answered) setPicked(o.idiomId)
-                  else toggleStar(o.idiomId)
+                  else if (canStar) toggleStar(o.idiomId)
                 }}
               >
-                {answered && starred.has(o.idiomId) && (
+                {answered && canStar && starred.has(o.idiomId) && (
                   <span className="quiz-opt-star" role="img" aria-label="담았어요">
                     ★
                   </span>
@@ -113,14 +121,14 @@ export function QuizCard({ questions, onFinish, events }: Props) {
                       ✗
                     </span>
                   )}
-                  <span lang="ja">{o.headword}</span>
+                  <span lang="ja">{o.text}</span>
                 </span>
               </button>
             )
           })}
         </div>
         {/* 자리는 고르기 전에도 지킨다 — 나타나며 보기를 밀지 않게 */}
-        {showHint && (
+        {showHint && canStar && (
           <p className={`quiz-hint${answered ? '' : ' is-hidden'}`} aria-hidden={answered ? undefined : true}>
             모르는 표현은 눌러서 담아요
           </p>

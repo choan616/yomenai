@@ -1,6 +1,12 @@
 // 환기 퀴즈 문항 생성(읽기가 같거나 비슷한 표기 고르기)을 검증한다
 import { describe, expect, it } from 'vitest'
-import { buildHomophoneIndex, homophoneQuestion, pickQuizQuestions, type QuizIdiom } from './quiz.ts'
+import {
+  buildHomophoneIndex,
+  homophoneQuestion,
+  pickQuizQuestions,
+  readingQuestion,
+  type QuizIdiom,
+} from './quiz.ts'
 
 /** mulberry32 — select.ts 와 같은 계열의 재현 가능한 난수 */
 function rng(seed: number): () => number {
@@ -209,7 +215,7 @@ describe('pickQuizQuestions', () => {
   it('같은 읽기 묶음은 두 문항에 겹치지 않는다', () => {
     // 앞의 후보 둘이 같은 묶음 — 두 번째는 건너뛰고 다음 묶음으로 간다
     const qs = pickQuizQuestions(['a1', 'a2', 'c1'], index, 2, rng(3))
-    expect(qs.map((q) => q.reading)).toEqual(['こうせい', 'いし'])
+    expect(qs.flatMap((q) => (q.kind === 'headword' ? [q.reading] : []))).toEqual(['こうせい', 'いし'])
     expect(qs.map((q) => q.targetId)).toEqual(['a1', 'c1'])
   })
 
@@ -245,5 +251,78 @@ describe('pickQuizQuestions', () => {
   it('고정 난수로 결정적이다', () => {
     const ids = ['a1', 'c1', 'e1']
     expect(pickQuizQuestions(ids, index, 2, rng(11))).toEqual(pickQuizQuestions(ids, index, 2, rng(11)))
+  })
+})
+
+describe('readingQuestion', () => {
+  const KOKYO = [
+    idiom('g0', '工業', 'こうぎょう', '공업'),
+    idiom('g1', '公共', 'こうきょう', '공공'),
+    idiom('g2', '好況', 'こうきょう', '호황'),
+    idiom('g3', '故郷', 'こきょう', '고향'),
+    idiom('g4', '五経', 'ごきょう', '오경'),
+  ]
+
+  it('표기를 주고, 읽기가 비슷한 다른 표현의 읽기를 중복 없이 보기로 낸다', () => {
+    const index = buildHomophoneIndex(KOKYO)
+    for (let seed = 1; seed <= 20; seed++) {
+      const q = readingQuestion(KOKYO[3]!, index, rng(seed))!
+      expect(q.kind).toBe('reading')
+      expect(q.headword).toBe('故郷')
+      const readings = q.options.map((o) => o.reading)
+      expect(new Set(readings).size).toBe(readings.length)
+      expect(q.options.find((o) => o.idiomId === 'g3')!.reading).toBe('こきょう')
+    }
+  })
+
+  // 같은 표기의 다른 읽기는 정답이다 — 보기에 두면 정답이 둘로 갈린다
+  const KOUSHOU = [
+    idiom('t1', '交渉', 'こうしょう', '교섭'),
+    idiom('t2', '交渉', 'こうじょう', '교섭(가상의 다른 읽기)'),
+    idiom('o1', '御所', 'ごしょ', '어소'),
+    idiom('o2', '古書', 'こしょ', '고서'),
+    idiom('o3', '呼称', 'こしょう', '호칭'),
+  ]
+
+  it('같은 표기의 다른 읽기는 보기에 들어가지 않는다', () => {
+    const index = buildHomophoneIndex(KOUSHOU)
+    for (let seed = 1; seed <= 30; seed++) {
+      const readings = readingQuestion(KOUSHOU[0]!, index, rng(seed))!.options.map((o) => o.reading)
+      expect(readings).toHaveLength(4)
+      expect(readings).not.toContain('こうじょう')
+    }
+  })
+
+  it('exclude 는 정답 후보와 보기의 읽기에 적용된다', () => {
+    const index = buildHomophoneIndex(KOUSHOU)
+    expect(readingQuestion(KOUSHOU[0]!, index, rng(1), new Set(['o1', 'o2']))).toBeNull()
+    expect(readingQuestion(KOUSHOU[0]!, index, rng(1), new Set(['t1']))).toBeNull()
+  })
+
+  it('한자가 없는 표기와, 서로 다른 읽기를 못 채우는 묶음은 null 이다', () => {
+    const kana = [idiom('k0', 'きょう', 'きょう', '오늘'), ...KOUSHOU]
+    expect(readingQuestion(kana[0]!, buildHomophoneIndex(kana), rng(1))).toBeNull()
+    // 읽기가 모두 같은 동음 묶음 — 구별할 읽기가 없다
+    expect(readingQuestion(KOUSEI[0]!, buildHomophoneIndex(KOUSEI), rng(1))).toBeNull()
+  })
+})
+
+describe('pickQuizQuestions — 읽기 고르기', () => {
+  const pool = [
+    ...KOUSEI,
+    idiom('g0', '工業', 'こうぎょう', '공업'),
+    idiom('g1', '公共', 'こうきょう', '공공'),
+    idiom('g3', '故郷', 'こきょう', '고향'),
+    idiom('g4', '五経', 'ごきょう', '오경'),
+  ]
+  const index = buildHomophoneIndex(pool)
+
+  it('마지막 칸에만 읽기 고르기를 한 문항 낸다', () => {
+    expect(pickQuizQuestions(['a1', 'g3'], index, 2, rng(3)).map((q) => q.kind)).toEqual(['headword', 'reading'])
+    expect(pickQuizQuestions(['g3', 'a1'], index, 1, rng(3)).map((q) => q.kind)).toEqual(['headword'])
+  })
+
+  it('읽기 고르기를 못 세우면 표기 고르기로 채운다', () => {
+    expect(pickQuizQuestions(['a1', 'a2'], index, 2, rng(3)).map((q) => q.kind)).toEqual(['headword'])
   })
 })
