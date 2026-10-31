@@ -79,6 +79,22 @@ test('내밀 카드가 없으면 면이 아예 없다', async ({ page }) => {
   expect((await start.boundingBox())?.height).toBe(56)
 })
 
+test('면 안의 주 동작은 40px 모양 밖 2px 까지 눌린다 — 눌리는 높이 44px', async ({ page }) => {
+  await page.goto('/')
+  await expect(page.getByRole('button', { name: '세션 시작' })).toBeVisible({ timeout: 20_000 })
+  await resetState(page)
+  await page.reload()
+  await putGradings(page, gradings(0, 30, 30, 30), 'tap')
+  await page.reload()
+
+  await expect(page.locator('.lead-face .lead-word')).toBeVisible({ timeout: 20_000 })
+  const b = (await page.locator('.lead-go').boundingBox())!
+  expect(b.height).toBe(40)
+  // 버튼 아래 가장자리에서 1.5px 바깥 — 면이지 버튼이 아닌 자리다
+  await page.mouse.click(b.x + b.width / 2, b.y + b.height + 1.5)
+  await expect(page.locator('.study-bar')).toBeVisible({ timeout: 20_000 })
+})
+
 test('세션에서 푼 표기는 돌아온 홈에 다시 안 선다', async ({ page }) => {
   await page.goto('/')
   await expect(page.getByRole('button', { name: '세션 시작' })).toBeVisible({ timeout: 20_000 })

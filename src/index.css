@@ -12,7 +12,7 @@
   --border: #35302c;
   --text: #eeeae6;
   --text-dim: #a8a29b;
-  --text-faint: #756f68;
+  --text-faint: #8f8982;
 
   /* 피드백 — 색만으로 구분하지 않는다. 아이콘·위치를 병행한다 (PLAN §7).
      --ok 는 무채(= text-dim 계열). 정답에 색을 주면 정답도 이벤트가 된다 */
@@ -91,7 +91,7 @@
     --border: #ddd8d0;
     --text: #1a1714;
     --text-dim: #605a53;
-    --text-faint: #8d867d;
+    --text-faint: #716a61;
     --ok: #605a53;
     --ok-bg: rgba(0, 0, 0, 0.035);
     --ng: #c33a1c;
@@ -129,7 +129,7 @@
   --border: #ddd8d0;
   --text: #1a1714;
   --text-dim: #605a53;
-  --text-faint: #8d867d;
+  --text-faint: #716a61;
   --ok: #605a53;
   --ok-bg: rgba(0, 0, 0, 0.035);
   --ng: #c33a1c;
@@ -163,7 +163,7 @@
   --border: #35302c;
   --text: #eeeae6;
   --text-dim: #a8a29b;
-  --text-faint: #756f68;
+  --text-faint: #8f8982;
   --ok: #a8a29b;
   --ok-bg: rgba(255, 255, 255, 0.05);
   --ng: #e8563c;
@@ -220,6 +220,14 @@ body {
 
 body {
   margin: 0;
+  /* 한국어는 어절 단위로 줄을 바꾼다 — 기본값은 글자 사이에서 끊어 「쪽인/지」 처럼 읽기 걸린다 (2026-10-31 검토).
+     너무 긴 어절은 넘치지 않게 마지막에 끊는다 */
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+/* 일본어는 어절이 없어 어디서든 끊겨야 한다. 표기처럼 안 끊는 것이 맞는 요소는 제 규칙이 뒤에서 덮는다 */
+[lang='ja'] {
+  word-break: normal;
 }
 
 #root {

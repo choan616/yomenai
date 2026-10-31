@@ -503,11 +503,18 @@ button.tag {
 /* 면 안의 주 동작. 혼자 설 때(.big 56px)보다 작고, **모서리는 면보다 덜 둥글다** —
    둥근 면 안에 같은 반지름이 들어가면 두 모서리가 겹쳐 보인다 (2026-10-13 사용자 지적) */
 .btn-primary.lead-go {
+  position: relative;
   width: 50%;
   height: 40px;
   padding: 0 20px;
   border-radius: 10px;
   font-size: calc(16px * var(--ui-scale));
+}
+/* 모양은 40px 그대로, 눌리는 영역만 44px 로 (2026-10-31 검토) — 높이를 늘리면 홈이 넘친다 */
+.btn-primary.lead-go::after {
+  content: '';
+  position: absolute;
+  inset: -4px 0; /* 기준이 테두리 안쪽이라 2px 테두리를 넘어 2px 더 나가려면 -4px */
 }
 .btn:disabled,
 .btn-primary:disabled {
