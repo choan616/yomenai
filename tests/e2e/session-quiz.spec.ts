@@ -246,6 +246,9 @@ test('보기를 누르면 그 자리에서 정답이 드러나고, 「다음」�
   await expect(page.locator('.quiz-opt.is-ng')).toHaveCount(1)
   await expect(opts.nth(wrongAt)).toHaveClass(/is-ng/)
   await expect(page.locator('.quiz-opt .quiz-opt-mark')).toHaveCount(2)
+  // ✓·✗ 는 글자에 묻히지 않을 크기다(2026-10-31 검토에서 15px 가 작다고 봤다)
+  for (const px of await page.locator('.quiz-opt-mark').evaluateAll((els) => els.map((e) => parseFloat(getComputedStyle(e).fontSize))))
+    expect(px).toBeGreaterThanOrEqual(20)
   // 고른 뒤에도 보기 영역은 길어지지 않는다 — 길어지면 작은 화면에서 스크롤이 생기고 누르는 순간 보기가 밀린다
   await expect(page.locator('.quiz-opt-mean')).toHaveCount(0)
   expect(await overflow()).toBeLessThanOrEqual(0)
