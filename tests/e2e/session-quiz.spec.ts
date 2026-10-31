@@ -320,8 +320,9 @@ test('고른 뒤 보기를 누르면 「퀴즈」 묶음에 담기고 ★, 다�
   await toQuiz(page)
   const overflow = () => page.locator('.quiz-card .card-body').evaluate((e) => e.scrollHeight - e.clientHeight)
 
-  // 고르기 전에는 담기지 않는다 — 누르면 고르는 것이다. 안내는 자리만 지킨다
+  // 고르기 전에는 담기지 않는다 — 누르면 고르는 것이다. 안내는 자리만 지키고 ☆ 도 없다
   await expect(page.locator('.quiz-hint')).toBeHidden()
+  await expect(page.locator('.quiz-opt-star-off')).toHaveCount(0)
   const stars0 = (await starEvents(page)).length
   await page.locator('.quiz-opt').first().click()
   expect((await starEvents(page)).length).toBe(stars0)
@@ -330,6 +331,9 @@ test('고른 뒤 보기를 누르면 「퀴즈」 묶음에 담기고 ★, 다�
 
   // 이미 담긴 표현은 ★ 로 시작한다(담은 여섯이 이 문항의 재료다). 담기지 않은 보기를 눌러 담는다
   const before = await page.locator('.quiz-opt-star').count()
+  // 담을 수 있다는 단서 — 안 담은 모든 보기에 빈 ☆ 가 보인다(고르기 전에는 없다)
+  const optCount = await page.locator('.quiz-opt').count()
+  await expect(page.locator('.quiz-opt-star-off')).toHaveCount(optCount - before)
   const plainAt = await page
     .locator('.quiz-opt')
     .evaluateAll((els) => els.findIndex((e) => e.querySelector('.quiz-opt-star') === null))
@@ -339,6 +343,8 @@ test('고른 뒤 보기를 누르면 「퀴즈」 묶음에 담기고 ★, 다�
   await plain.click()
   await expect(page.locator('.quiz-opt-star')).toHaveCount(before + 1)
   await expect(plain.locator('.quiz-opt-star')).toHaveCount(1)
+  await expect(plain.locator('.quiz-opt-star-off')).toHaveCount(0)
+  await expect(page.locator('.quiz-opt-star-off')).toHaveCount(optCount - before - 1)
   await expect(plain).toHaveAttribute('aria-pressed', 'true')
   await expect.poll(async () => (await starEvents(page)).length).toBe(stars0 + 1)
   const added = (await starEvents(page)).at(-1)!

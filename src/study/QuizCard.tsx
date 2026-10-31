@@ -111,11 +111,18 @@ export function QuizCard({ questions, onFinish, events }: Props) {
                   else if (canStar) toggleStar(o.idiomId)
                 }}
               >
-                {answered && canStar && starred.has(o.idiomId) && (
-                  <span className="quiz-opt-star" role="img" aria-label="담았어요">
-                    ★
-                  </span>
-                )}
+                {answered &&
+                  canStar &&
+                  (starred.has(o.idiomId) ? (
+                    <span className="quiz-opt-star" role="img" aria-label="담았어요">
+                      ★
+                    </span>
+                  ) : (
+                    // 담을 수 있다는 단서 — 상태는 버튼의 aria-pressed 가 말하므로 읽지 않는다
+                    <span className="quiz-opt-star-off" aria-hidden="true">
+                      ☆
+                    </span>
+                  ))}
                 <span className="quiz-opt-word">
                   {state === ' is-ok' && (
                     <span className="quiz-opt-mark" role="img" aria-label="정답">
