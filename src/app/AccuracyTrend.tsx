@@ -8,7 +8,7 @@ import { smoothPath } from './trendPath.ts'
 
 const W = 320
 const H = 116
-const PLOT = { l: 34, r: 306, t: 12, b: 88 }
+const PLOT = { l: 40, r: 306, t: 12, b: 88 }
 
 /** `date` 가 4주 첫날에서 며칠째인가 (0 ~ TREND_DAYS-1) */
 function dayIndex(from: string, date: string): number {

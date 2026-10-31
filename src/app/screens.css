@@ -49,6 +49,28 @@
   font-size: calc(18px * var(--ui-scale));
 }
 
+/* 모양은 그대로, 눌리는 영역만 44px 이상으로 — 가운데를 기준으로 넓힌다 (2026-11-01 디자인 검토) */
+.back,
+.chip,
+.wl-view button,
+.wl-group-acts button,
+.sheet-grab {
+  position: relative;
+}
+.back::after,
+.chip::after,
+.wl-view button::after,
+.wl-group-acts button::after,
+.sheet-grab::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: max(100%, 44px);
+  height: max(100%, 44px);
+  transform: translate(-50%, -50%);
+}
+
 /* ── 홈 네비 ── */
 .home-nav {
   display: flex;
@@ -666,7 +688,7 @@
   stroke: var(--text-faint);
 }
 .trend-tick {
-  font-size: 10.5px;
+  font-size: 12px;
   fill: var(--text-faint);
   font-variant-numeric: tabular-nums;
 }
@@ -2199,7 +2221,8 @@ p.rule-record {
   flex: 1;
   min-width: 0;
 }
-.search-field .search-input {
+/* 지우기 버튼은 값이 있을 때만 뜬다 — 비었을 때는 안내 문구가 그 자리까지 쓴다 */
+.search-field .search-input:not(:placeholder-shown) {
   padding-right: var(--tap);
 }
 .search-clear {

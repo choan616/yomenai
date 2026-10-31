@@ -144,6 +144,21 @@
   padding: 4px 8px;
   font-size: 18px;
 }
+/* 모양은 그대로, 눌리는 영역만 44px 이상으로 (2026-11-01 디자인 검토) */
+.link,
+.tts-btn {
+  position: relative;
+}
+.link::after,
+.tts-btn::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: max(100%, 44px);
+  height: max(100%, 44px);
+  transform: translate(-50%, -50%);
+}
 
 .study-main {
   flex: 1;
@@ -830,7 +845,7 @@ button.tag {
   border-left: 0;
 }
 .summary-stats dt {
-  font-size: 11px;
+  font-size: 12px;
   letter-spacing: 0.08em;
   color: var(--text-faint);
 }
@@ -885,7 +900,7 @@ button.tag {
   background: var(--ng);
 }
 .trend-bar b {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 400;
   color: var(--text-faint);
   font-variant-numeric: tabular-nums;
@@ -1113,7 +1128,7 @@ button.tag {
   min-width: 2.6em;
 }
 .md-cg-mark {
-  font-size: 11px;
+  font-size: 12px;
   letter-spacing: 0.06em;
   color: var(--text-faint);
   min-width: 3.4em;

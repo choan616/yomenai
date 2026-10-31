@@ -329,7 +329,7 @@ export function Search({
           autoComplete="off"
           autoCorrect="off"
           spellCheck={false}
-          placeholder="읽는 법 · 한자 (붙여넣기)"
+          placeholder="읽는 법·한자 (붙여넣기)"
           aria-label="읽기 또는 한자 검색"
           value={raw}
           onChange={(e) => setRaw(toKana(e.target.value, { IMEMode: 'toHiragana' }))}

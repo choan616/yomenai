@@ -77,6 +77,18 @@ test('칩으로 전체와 코스별 선을 고르고, 점을 눌러 날짜별 �
   await expect(trend.getByRole('button', { name: '중턱' })).toBeDisabled()
   await expect(trend.getByRole('button', { name: '능선' })).toBeDisabled()
 
+  // 눈금 글자(12px)가 그림 밖으로 잘리지 않는다 — 「100%」가 왼쪽 여백을 가장 많이 쓴다
+  const clipped = await trend.locator('.trend-tick').evaluateAll((ticks) =>
+    ticks
+      .map((t) => {
+        const r = t.getBoundingClientRect()
+        const svg = (t as SVGTextElement).ownerSVGElement!.getBoundingClientRect()
+        return { text: t.textContent, over: Math.max(svg.left - r.left, r.right - svg.right) }
+      })
+      .filter((t) => t.over > 0),
+  )
+  expect(clipped).toEqual([])
+
   // 값이 먼저, 날짜가 뒤 — 마지막 점이 기본이다
   const readout = trend.locator('.trend-readout')
   await expect(readout).toContainText('72%')
