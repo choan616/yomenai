@@ -93,6 +93,15 @@ export function stableReadingCount(
  */
 export type BandStatus = 'solid' | 'near' | 'shaky' | 'thin' | 'unseen'
 
+/**
+ * 판정이 없는 상태. 코스 사슬(`solidThrough`·`nearThrough`)은 이 코스를 **건너뛴다** — 끊지 않는다 (2026-11-07).
+ * 「모른다」와 「흔들린다」는 다르다. 산책로(0)처럼 거의 안 나오는 코스는 표현 수가 영영 문턱을 못 넘는데,
+ * 그것이 사슬을 끊으면 64일을 풀어도 수준이 「—」였다(실사용 백업).
+ */
+function isUnjudged(status: BandStatus): boolean {
+  return status === 'thin' || status === 'unseen'
+}
+
 /** 판정 창에 들어가는 채점 하나 — 날짜 순으로 쌓는다 */
 export interface WindowEntry {
   /** 로컬 날짜 키 `YYYY-MM-DD` */
@@ -279,11 +288,13 @@ export function buildLevel(
 
   let solidThrough: Band | null = null
   for (const row of inScope) {
+    if (isUnjudged(row.status)) continue
     if (row.status !== 'solid') break
     solidThrough = row.band
   }
   let nearThrough: Band | null = null
   for (const row of inScope) {
+    if (isUnjudged(row.status)) continue
     if (row.status !== 'solid' && row.status !== 'near') break
     nearThrough = row.band
   }
@@ -322,7 +333,9 @@ export function solidReachDays(
       .sort((a, b) => a - b)
     let through: Band | null = null
     for (const band of bands) {
-      if (judgeWindow(selectWindow(history.get(band) ?? [])).status !== 'solid') break
+      const status = judgeWindow(selectWindow(history.get(band) ?? [])).status
+      if (isUnjudged(status)) continue
+      if (status !== 'solid') break
       through = band
     }
     if (through !== null && (best === null || through > best)) {

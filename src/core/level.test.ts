@@ -17,7 +17,7 @@ import { newCard } from './scheduler.ts'
 import type { Band } from '../lib/bands.ts'
 import { cardKey, type CardState, type LearningEvent } from './types.ts'
 
-const band: Record<string, Band> = { b1: 1, b2: 2, b3: 3, b4: 4 }
+const band: Record<string, Band> = { b0: 0, b1: 1, b2: 2, b3: 3, b4: 4 }
 /** 표현 id 는 `b1-7` 처럼 코스 접두사를 달고 있다 */
 const bandOf = (id: string) => band[id.slice(0, 2)]
 
@@ -144,6 +144,38 @@ describe('buildLevel', () => {
     expect(level.solidThrough).toBeNull()
     expect(level.nearThrough).toBeNull()
     expect(level.edge).toBe(1)
+  })
+
+  it('표본이 모자란 코스(thin)는 사슬을 끊지 않는다 — 판정이 없을 뿐 흔들림이 아니다 (2026-11-07)', () => {
+    // 실사용 백업(64일): 산책로·중턱은 표현 수가 문턱 미만이고 뒷산·능선은 기준 부근인데 수준 타일이 「—」였다
+    const level = buildLevel(
+      [
+        ...batch('b0', 30, 10, 1),
+        ...batch('b1', 80, 20, 1),
+        ...batch('b2', 40, 10, 1),
+        ...batch('b3', 80, 20, 1),
+      ],
+      bandOf,
+    )
+    expect(level.bands.map((b) => b.status)).toEqual(['thin', 'near', 'thin', 'near'])
+    expect(level.nearThrough).toBe(3)
+    expect(level.solidThrough).toBeNull()
+    expect(level.edge).toBeNull()
+  })
+
+  it('thin 은 위쪽 판정을 가리지도 않고 아래의 흔들림을 숨기지도 않는다', () => {
+    const solid = buildLevel([...batch('b1', 30, 10, 1), ...batch('b2', 100, 0, 1)], bandOf)
+    expect(solid.solidThrough).toBe(2)
+    const shaky = buildLevel([...batch('b1', 30, 10, 1), ...batch('b2', 40, 60, 1)], bandOf)
+    expect(shaky.edge).toBe(2)
+    expect(shaky.solidThrough).toBeNull()
+  })
+
+  it('판정이 하나도 없으면 사슬도 없다 — 아직 기록이 적은 상태', () => {
+    const level = buildLevel([...batch('b0', 30, 10, 1), ...batch('b1', 30, 10, 1)], bandOf)
+    expect(level.solidThrough).toBeNull()
+    expect(level.nearThrough).toBeNull()
+    expect(level.edge).toBeNull()
   })
 
   it('기준 부근은 안정의 끊김이지 흔들림이 아니다 — 경계로 안 잡히고 nearThrough 가 이어진다', () => {
@@ -325,6 +357,14 @@ describe('solidReachDays', () => {
   it('밴드 1 이 안정에 닿은 날을 낸다', () => {
     const days = solidReachDays(batch('b1', 100, 0, 3), bandOf)
     expect([...days]).toEqual([['2026-09-03', 1]])
+  })
+
+  it('표본이 모자란 코스를 건너뛰는 것도 buildLevel 과 같다', () => {
+    const events = [...batch('b1', 100, 0, 1), ...batch('b2', 30, 10, 2), ...batch('b3', 100, 0, 2)]
+    expect([...solidReachDays(events, bandOf)]).toEqual([
+      ['2026-09-01', 1],
+      ['2026-09-02', 3],
+    ])
   })
 
   it('새 높이에 닿은 날만 — 판정이 내려갔다 되찾은 날은 다시 안 센다', () => {
