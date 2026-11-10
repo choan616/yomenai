@@ -1,7 +1,7 @@
 {
  "_meta": {
   "note": "사전 밖(넓힌 사전) 표현의 뜻 검수 결과. build-wide-dict.ts 가 번역 초안 위에 얹는다",
-  "count": 9
+  "count": 20
  },
  "byId": {
   "1201170": {
@@ -9,8 +9,53 @@
    "source": "llm",
    "verified": true
   },
+  "1258290": {
+   "definition": "견제, 제지",
+   "source": "llm",
+   "verified": true
+  },
+  "1472490": {
+   "definition": "배설",
+   "source": "llm",
+   "verified": true
+  },
+  "1481910": {
+   "definition": "범주",
+   "source": "llm",
+   "verified": true
+  },
+  "1500840": {
+   "definition": "복수",
+   "source": "llm",
+   "verified": true
+  },
+  "1507600": {
+   "definition": "평탄함, 평평함, 잔잔함",
+   "source": "llm",
+   "verified": true
+  },
+  "1560960": {
+   "definition": "당황, 혼란, 낭패",
+   "source": "manual",
+   "verified": true
+  },
   "1564270": {
    "definition": "억울한 죄, 누명",
+   "source": "llm",
+   "verified": true
+  },
+  "1565150": {
+   "definition": "씹음, 소화(지식 등)",
+   "source": "llm",
+   "verified": true
+  },
+  "1569260": {
+   "definition": "교활함, 간사함",
+   "source": "llm",
+   "verified": true
+  },
+  "1571020": {
+   "definition": "방광",
    "source": "llm",
    "verified": true
   },
@@ -29,6 +74,11 @@
    "source": "llm",
    "verified": true
   },
+  "1616250": {
+   "definition": "창백함, 희어짐",
+   "source": "llm",
+   "verified": true
+  },
   "1668160": {
    "definition": "유골함",
    "source": "llm",
@@ -36,6 +86,11 @@
   },
   "1735210": {
    "definition": "적대심, 원한",
+   "source": "llm",
+   "verified": true
+  },
+  "1778090": {
+   "definition": "거짓말, 꾸밈말",
    "source": "llm",
    "verified": true
   },
