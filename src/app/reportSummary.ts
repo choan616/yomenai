@@ -28,7 +28,7 @@ interface LevelLike {
 
 export interface TileInput {
   level: LevelLike
-  streak: { current: number; longest: number }
+  streak: { current: number; longest: number; total: number }
   /** 이번 달 학습일·장수 */
   month: { days: number; cards: number }
   /** 1등 오답 유형. 분류된 오답이 없으면 null */
@@ -72,20 +72,21 @@ export function summaryTiles(i: TileInput): Tile[] {
         ? { sheet: 'level', label: '수준', value: bandName(edge), sub: '흔들리고 있어요', shade: edge }
         : { sheet: 'level', label: '수준', value: '—', sub: '아직 기록이 적어요' }
 
-  const days: Tile =
-    i.streak.current >= 2
-      ? {
-          sheet: 'days',
-          label: '학습한 날',
-          value: `${i.streak.current}일째`,
-          sub: i.streak.longest > i.streak.current ? `최장 ${i.streak.longest}일` : '이어 가는 중',
-        }
-      : {
-          sheet: 'days',
-          label: '학습한 날',
-          value: i.month.days > 0 ? `이번 달 ${i.month.days}일` : '—',
-          sub: i.month.cards > 0 ? `${i.month.cards}장` : '아직 없어요',
-        }
+  // 값은 **총 학습일**이다 — 연속은 쉬면 1로 돌아가 「학습한 날」 이름과 어긋났다(2026-11-20 사용자 지적).
+  // 총일수는 줄지 않는다(PLAN §5 원칙 3). 연속은 부제로 내리고, 연속이 없으면 끊겼다고 말하지 않고 이번 달로 말한다
+  const days: Tile = {
+    sheet: 'days',
+    label: '학습한 날',
+    value: i.streak.total > 0 ? `${i.streak.total}일` : '—',
+    sub:
+      i.streak.current >= 2
+        ? i.streak.longest > i.streak.current
+          ? `${i.streak.current}일째 · 최장 ${i.streak.longest}일`
+          : `${i.streak.current}일째 이어 가는 중`
+        : i.month.days > 0
+          ? `이번 달 ${i.month.days}일`
+          : '아직 없어요',
+  }
 
   const mist: Tile = i.top
     ? {

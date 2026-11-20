@@ -4,7 +4,7 @@ import { summaryTiles, type TileInput } from './reportSummary.ts'
 
 const base: TileInput = {
   level: { solidThrough: null, edge: 0 },
-  streak: { current: 8, longest: 8 },
+  streak: { current: 8, longest: 8, total: 40 },
   month: { days: 12, cards: 90 },
   top: { label: '음독 선택', count: 29 },
   totalWrong: 53,
@@ -56,23 +56,23 @@ describe('summaryTiles', () => {
     expect(t.value).toBe('—')
   })
 
-  it('연속 중이면 일수를, 최장이 더 길면 최장도 말한다', () => {
-    expect(summaryTiles(base)[1]).toMatchObject({ value: '8일째', sub: '이어 가는 중', sheet: 'days' })
-    expect(summaryTiles({ ...base, streak: { current: 3, longest: 20 } })[1]).toMatchObject({
-      value: '3일째',
-      sub: '최장 20일',
+  it('값은 총 학습일이고, 연속 중이면 부제가 연속을, 최장이 더 길면 최장도 말한다', () => {
+    expect(summaryTiles(base)[1]).toMatchObject({ value: '40일', sub: '8일째 이어 가는 중', sheet: 'days' })
+    expect(summaryTiles({ ...base, streak: { current: 3, longest: 20, total: 40 } })[1]).toMatchObject({
+      value: '40일',
+      sub: '3일째 · 최장 20일',
     })
   })
 
-  it('연속이 없으면 끊겼다고 말하지 않고 이번 달 학습일로 말한다', () => {
-    const t = summaryTiles({ ...base, streak: { current: 0, longest: 20 } })[1]!
-    expect(t.value).toBe('이번 달 12일')
-    expect(t.sub).toBe('90장')
+  it('중간에 쉬어도 총 학습일은 그대로다 — 연속이 없으면 끊겼다고 말하지 않고 이번 달로 말한다', () => {
+    const t = summaryTiles({ ...base, streak: { current: 0, longest: 20, total: 40 } })[1]!
+    expect(t.value).toBe('40일')
+    expect(t.sub).toBe('이번 달 12일')
     expect(JSON.stringify(t)).not.toMatch(/끊/)
   })
 
-  it('이번 달 기록도 없으면 빈 칸이다', () => {
-    const t = summaryTiles({ ...base, streak: { current: 0, longest: 0 }, month: { days: 0, cards: 0 } })[1]!
+  it('학습한 날이 없으면 빈 칸이다', () => {
+    const t = summaryTiles({ ...base, streak: { current: 0, longest: 0, total: 0 }, month: { days: 0, cards: 0 } })[1]!
     expect(t).toMatchObject({ value: '—', sub: '아직 없어요' })
   })
 

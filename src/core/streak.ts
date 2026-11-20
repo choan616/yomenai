@@ -32,6 +32,8 @@ export interface StreakRecord {
   /** 오늘 칸이 채워졌나 (`touched` 이상) */
   todayDone: boolean
   longest: number
+  /** 학습한 날 수 전체 — 연속이 끊겨도 줄지 않는다 */
+  total: number
   /** 달성 순. 같은 이정표를 연속이 끊긴 뒤 다시 채우면 또 들어간다 */
   milestones: Milestone[]
 }
@@ -66,7 +68,7 @@ export function buildStreak(
   const lastLive = todayDone ? todayKey : shiftDateKey(todayKey, -1)
   const current = prev === lastLive ? run : 0
 
-  return { current, todayDone, longest, milestones }
+  return { current, todayDone, longest, total: days.length, milestones }
 }
 
 /** 이정표 이름 — "1주 연속" */

@@ -17,6 +17,7 @@ describe('buildStreak', () => {
       current: 0,
       todayDone: false,
       longest: 0,
+      total: 0,
       milestones: [],
     })
   })
@@ -34,6 +35,11 @@ describe('buildStreak', () => {
   it('어제도 안 했으면 current 0 — 최장은 남는다', () => {
     const s = buildStreak(new Map(run('2026-09-20', 6)), '2026-09-30')
     expect(s).toMatchObject({ current: 0, longest: 6 })
+  })
+
+  it('total 은 학습한 날 전체다 — 중간에 쉬어도 줄지 않고 문턱 미만(none)은 세지 않는다', () => {
+    const days = new Map([...run('2026-09-10', 5), ...run('2026-09-20', 3), ...run('2026-09-29', 1, 'none'), ...run('2026-09-30', 1)])
+    expect(buildStreak(days, '2026-09-30')).toMatchObject({ current: 1, longest: 5, total: 9 })
   })
 
   it('문턱 미만(none)인 날은 연속을 잇지 않는다', () => {
