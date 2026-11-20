@@ -4,14 +4,15 @@
 // 1. **덩치.** 로그인·동기화·진행 막대까지 붙어 설정 본문의 절반을 먹었다
 // 2. **위험.** 「학습 기록 초기화」는 되돌릴 수 없는데 스크롤하다 만나는 자리에 있었다
 //    — 한 겹 안으로 들여 일부러 찾아 들어가게 한다
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useSyncExternalStore } from 'react'
 import { db } from '../db/schema.ts'
 import { countUnsynced, LOCAL_USER_ID } from '../db/events.ts'
 import { getDeviceId } from '../db/device.ts'
 import { googleDrive } from '../sync/googleDrive.ts'
-import { resetLearning, syncNow, type SyncProgress } from '../sync/sync.ts'
+import { resetLearning, type SyncProgress } from '../sync/sync.ts'
+import { syncRunner } from '../sync/syncRunner.ts'
 import { clearIntroduced } from '../study/introduced.ts'
-import { getLastSyncAt, setLastSyncAt, setSignedIn, wasSignedIn } from '../sync/syncState.ts'
+import { setSignedIn, wasSignedIn } from '../sync/syncState.ts'
 import { clearDiagnosticDone } from './diagnostic-state.ts'
 import { clearWelcomeSeen } from './welcome.ts'
 
@@ -45,11 +46,13 @@ function progressLabel(p: SyncProgress): string {
 /** Google Drive 백업 — 로그인 → 지금 동기화. 기기별 파일 분리라 충돌 UI가 없다 (PLAN §5 원칙 3) */
 function BackupSetting() {
   const [authed, setAuthed] = useState(googleDrive.isAuthenticated())
-  const [busy, setBusy] = useState<'idle' | 'signIn' | 'sync'>('idle')
-  const [error, setError] = useState<string | null>(null)
-  const [lastSyncAt, setLastSyncAtState] = useState<number | null>(getLastSyncAt)
-  const [progress, setProgress] = useState<SyncProgress | null>(null)
-  const [syncMsg, setSyncMsg] = useState<string | null>(null)
+  const [signInBusy, setSignInBusy] = useState(false)
+  const [signInError, setSignInError] = useState<string | null>(null)
+  // 동기화 실행은 화면 밖(syncRunner)이 쥔다 — 이 화면을 나갔다 와도 진행·결과가 이어진다
+  const run = useSyncExternalStore(syncRunner.subscribe, syncRunner.getState)
+  const { lastSyncAt, progress, running: syncing } = run
+  const busy = signInBusy || syncing
+  const error = signInError ?? run.error
   /** 아직 안 올린 이 기기 기록 수 (2026-10-01). 계산 전엔 null */
   const [pending, setPending] = useState<number | null>(null)
 
@@ -72,8 +75,8 @@ function BackupSetting() {
    * 것보다는 낫다 — 누르는 건 의도한 행동이고, 뜨는 건 아니다.
    */
   const handleSignIn = () => {
-    setBusy('signIn')
-    setError(null)
+    setSignInBusy(true)
+    setSignInError(null)
     // 전에 동의한 세션이면 팝업 없이 풀린다. 안 풀릴 때만 구글 화면이 뜬다
     const attempt = wasSignedIn()
       ? googleDrive.restoreSession().then((ok) => (ok ? true : googleDrive.signIn()))
@@ -82,10 +85,10 @@ function BackupSetting() {
       .then((ok) => {
         setAuthed(ok)
         setSignedIn(ok)
-        if (!ok) setError('로그인이 취소되었거나 실패했어요.')
+        if (!ok) setSignInError('로그인이 취소되었거나 실패했어요.')
       })
-      .catch((err: unknown) => setError(err instanceof Error ? err.message : String(err)))
-      .finally(() => setBusy('idle'))
+      .catch((err: unknown) => setSignInError(err instanceof Error ? err.message : String(err)))
+      .finally(() => setSignInBusy(false))
   }
 
 
@@ -96,29 +99,8 @@ function BackupSetting() {
   }
 
   const handleSync = () => {
-    setBusy('sync')
-    setError(null)
-    setProgress(null)
-    setSyncMsg(null)
-    // 기준 시각은 **시작** 시각이다 (2026-10-01). 끝난 시각으로 적으면 동기화 도중에 생긴
-    // 기록이 올라가지 않았는데도 「올린 것」으로 셈이 빠진다. 시작으로 적으면 많이 세는 쪽으로만 틀린다
-    const startedAt = Date.now()
-    void syncNow(db(), getDeviceId(), googleDrive, setProgress)
-      .then(({ restored, backupTotal }) => {
-        setLastSyncAt(startedAt)
-        setLastSyncAtState(startedAt)
-        // 무슨 일이 있었는지 알린다 — 조용히 넘기면 기록이 늘거나 준 이유를 모른다
-        setSyncMsg(
-          restored > 0
-            ? `이 기기에 없던 기록 ${restored}건을 백업에서 되살렸어요. 백업에 모두 ${backupTotal}건.`
-            : `백업에 모두 ${backupTotal}건 있어요.`,
-        )
-      })
-      .catch((err: unknown) => setError(err instanceof Error ? err.message : String(err)))
-      .finally(() => {
-        setBusy('idle')
-        setProgress(null)
-      })
+    setSignInError(null)
+    void syncRunner.start()
   }
 
   return (
@@ -127,10 +109,10 @@ function BackupSetting() {
       {authed ? (
         <>
           <div className="seg" role="group" aria-label="백업">
-            <button type="button" onClick={handleSync} disabled={busy !== 'idle'}>
-              {busy === 'sync' ? '동기화 중…' : '지금 동기화'}
+            <button type="button" onClick={handleSync} disabled={busy}>
+              {syncing ? '동기화 중…' : '지금 동기화'}
             </button>
-            <button type="button" onClick={handleSignOut} disabled={busy !== 'idle'}>
+            <button type="button" onClick={handleSignOut} disabled={busy}>
               로그아웃
             </button>
           </div>
@@ -151,14 +133,14 @@ function BackupSetting() {
             </div>
           )}
           <span className="hint">
-            {syncMsg ??
+            {run.message ??
               'Drive 의 YomenaiSync 폴더에 backup.json 하나만 둬요. 동기화할 때마다 전체 기록이 거기 모여요.'}
           </span>
         </>
       ) : (
         <>
-          <button type="button" onClick={handleSignIn} disabled={busy !== 'idle'}>
-            {busy === 'signIn' ? '로그인 중…' : wasSignedIn() ? 'Google 다시 연결' : 'Google로 로그인'}
+          <button type="button" onClick={handleSignIn} disabled={busy}>
+            {signInBusy ? '로그인 중…' : wasSignedIn() ? 'Google 다시 연결' : 'Google로 로그인'}
           </button>
           <span className="hint">
             {wasSignedIn()

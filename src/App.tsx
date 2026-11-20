@@ -22,6 +22,7 @@ import { MeaningReview } from './app/MeaningReview.tsx'
 import { Wordlist } from './app/Wordlist.tsx'
 import { useDocumentScrollGuard } from './app/useDocumentScrollGuard.ts'
 import { Backup } from './app/Backup.tsx'
+import { installSyncResume } from './sync/syncRunner.ts'
 import { Feedback } from './app/Feedback.tsx'
 import { Rules } from './app/Rules.tsx'
 import { TabBar } from './app/TabBar.tsx'
@@ -77,6 +78,8 @@ export type Flow =
   | { kind: 'focus'; pairIds: string[] }
 
 export default function App() {
+  // 숨은 사이 끊긴 동기화를 돌아오면 이어 한다 (syncRunner)
+  useEffect(() => installSyncResume(), [])
   return (
     <>
       <Shell />
